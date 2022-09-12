@@ -205,3 +205,4 @@ Browse will instantiate your Web Page for you and all of it's dependencies.
 
 To start from a different `Browse`, make sure your provided `url` does not need to be updated (which currently requires a new call to Site),
 and `Browse` a different `WebPage`. To start at your profile page to test session persistence simply `site.Browse(ProfilePage)`
+ 
