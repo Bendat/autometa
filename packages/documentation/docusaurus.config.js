@@ -24,7 +24,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/Bendat/jest-automation',
+          editUrl: 'https://github.com/Bendat/automaton',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
