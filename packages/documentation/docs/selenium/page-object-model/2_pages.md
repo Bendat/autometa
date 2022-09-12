@@ -80,7 +80,7 @@ export class LoginModal extends WebPage, Submittable {
 ```
 
 :::info
-`Submittable` is a [Documented Interface](documented-interfaces), which expose WebElement actions
+`Submittable` is a [Documented Interface](documented_interfaces), which expose WebElement actions
 and provide inheritable documentation. They are optional but useful for declaring the intent of your
 component.
 :::
