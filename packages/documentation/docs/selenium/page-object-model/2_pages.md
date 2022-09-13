@@ -40,7 +40,7 @@ Using simple provided Components we can start creating our page model:
 
 ```ts
 export class MyHomePage extends WebPage {
-  @component(Button, By.id('login-btn'))
+  @component(By.id('login-btn'))
   loginButton: Button;
 }
 ```
@@ -51,10 +51,10 @@ Perhaps you have already made a `LoginModal` component which provides input fiel
 
 ```ts
 export class MyHomePage extends WebPage {
-  @component(Button, By.id('login-btn'))
+  @component(By.id('login-btn'))
   loginButton: Button;
 
-  @component(LoginModal, By.id('login-modal'))
+  @component(By.id('login-modal'))
   loginModal: LoginModal;
 }
 ```
@@ -63,10 +63,10 @@ Which brings you to a `ProfilePage` when submitted
 
 ```ts title='login-modal.ts'
 export class LoginModal extends WebPage, Submittable {
-  @component(TextInput, By.id('login-btn'))
+  @component(By.id('login-btn'))
   usernameField: TextInput;
 
-  @component(TextInput, By.id('login-btn'))
+  @component(By.id('login-btn'))
   passwordField: TextInput;
 
   submit = this._submit
@@ -74,7 +74,7 @@ export class LoginModal extends WebPage, Submittable {
   // alternatively
 
   async submit(){
-    this._submit()
+    await this._submit()
   }
 }
 ```
@@ -90,10 +90,10 @@ export class MyHomePage extends WebPage {
   @page(ProfilePage)
   profilePage: ProfilePage;
 
-  @component(Button, By.id('login-btn'))
+  @component(By.id('login-btn'))
   loginButton: Button;
 
-  @component(LoginModal, By.id('login-modal'))
+  @component(By.id('login-modal'))
   loginModal: LoginModal;
 }
 ```
@@ -117,7 +117,7 @@ describe('testing my home page loaded', () => {
     await page.loginModal.username.write('me@you.com');
     await page.loginModal.password.write('5ecur3');
     await page.loginModal.submit();
-    await page.profilePage.waitForTitleIs('My Name')
+    await page.profilePage.waitForTitleIs('My Name');
   });
 
   afterEach(async () => {
@@ -134,34 +134,28 @@ export class MyHomePage extends WebPage {
   @page(ProfilePage)
   profilePage: ProfilePage;
 
-  @component(Button, By.id('login-btn'))
+  @component(By.id('login-btn'))
   loginButton: Button;
 
-  @component(LoginModal, By.id('login-modal'))
+  @component(By.id('login-modal'))
   loginModal: LoginModal;
 
-  async login(username: string, password: string){
-    await this.loginButton.click()
-    await this.loginModal.login(username, password)
+  async login(username: string, password: string) {
+    await this.loginButton.click();
+    await this.loginModal.login(username, password);
   }
 }
 ```
 
 ```ts title='login-modal.ts'
 export class LoginModal extends WebPage, Submittable {
-  @component(TextInput, By.id('login-btn'))
+  @component(By.id('login-btn'))
   usernameField: TextInput;
 
-  @component(TextInput, By.id('login-btn'))
+  @component(By.id('login-btn'))
   passwordField: TextInput;
 
   submit = this._submit
-
-  // alternatively
-
-  async submit(){
-    this._submit()
-  }
 
   async login(username: string, password: string){
     await this.usernameField.write(username)
@@ -172,7 +166,6 @@ export class LoginModal extends WebPage, Submittable {
 ```
 
 which makes our test:
-
 
 ```ts title='Jest Example'
 import { siteUrl, configuredDriver } from '../my-setup';
@@ -187,8 +180,8 @@ describe('testing my home page loaded', () => {
 
   it('should have the title "My Home Page"', async () => {
     await page.waitForTitleIs('My Home Page');
-    await page.login('me@you.com', '5ecur3')
-    await page.profilePage.waitForTitleIs('My Name')
+    await page.login('me@you.com', '5ecur3');
+    await page.profilePage.waitForTitleIs('My Name');
   });
 
   afterEach(async () => {
@@ -199,10 +192,9 @@ describe('testing my home page loaded', () => {
 
 ## Launching other Pages
 
-The `Site` function returns an object that contains a  `Browse` and both a `Leave` and `quit` method. `Leave` and `quit` exit
+The `Site` function returns an object that contains a `Browse` and both a `Leave` and `quit` method. `Leave` and `quit` exit
 the `WebDriver` while `Browse` accepts a `WebPage` class reference (not an object instantiated with `new`, just the class blueprint).
-Browse will instantiate your Web Page for you and all of it's dependencies. 
+Browse will instantiate your Web Page for you and all of it's dependencies.
 
 To start from a different `Browse`, make sure your provided `url` does not need to be updated (which currently requires a new call to Site),
 and `Browse` a different `WebPage`. To start at your profile page to test session persistence simply `site.Browse(ProfilePage)`
- 

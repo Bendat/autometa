@@ -17,7 +17,7 @@ The default condition can also be overridden by referencing a replacement
 in the third argument of `@component`
 
 ```ts
-@component(Button, By.id('foo'), Until.isEnabled)
+@component(By.id('foo'), Until.isEnabled)
 myButton: Button
 ```
 

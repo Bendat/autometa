@@ -11,16 +11,16 @@ create our Component model as before and use it from one of your pages (or compo
 
 ```ts title=Example
 export class SearchContainer extends WebComponent {
-  @component(TextInput, By.id('search-bar'))
+  @component(By.id('search-bar'))
   searchBar: TextInput;
 
-  @component(Checkbox, By.id('advance-check'))
+  @component(By.id('advance-check'))
   someAdvancedOption: Checkbox;
 
-  @component(Button, By.id('advance-check'))
+  @component(By.id('advance-check'))
   searchButton: Button;
 
-  @component(Anchor, By.css('#search-results a:nth-of-type(1)'))
+  @component(By.css('#search-results a:nth-of-type(1)'))
   firstResult: Anchor;
 }
 ```
@@ -29,7 +29,7 @@ You can now being using your component! Just add a reference to it to your Searc
 
 ```ts title='/search.html'
 export class SearchPage extends WebPage {
-  @component(SearchContainer, By.id('search-div'))
+  @component(By.id('search-div'))
   searchContainer: SearchContainer;
 }
 ```
@@ -60,16 +60,16 @@ or function properties.
 
 ```ts title=Example
 export class SearchContainer extends WebComponent {
-  @component(TextInput, By.id('search-bar'))
+  @component(By.id('search-bar'))
   searchBar: TextInput;
 
-  @component(Checkbox, By.id('advance-check'))
+  @component(By.id('advance-check'))
   someAdvancedOption: Checkbox;
 
-  @component(Button, By.id('advance-check'))
+  @component(By.id('advance-check'))
   searchButton: Button;
 
-  @component(Anchor, By.css('#search-results a:nth-of-type(1)'))
+  @component(By.css('#search-results a:nth-of-type(1)'))
   firstResult: Anchor;
 
   async searchFor(text: string, advanced: boolean = false){
@@ -104,7 +104,7 @@ Or add a shortcut to your page
 
 ```ts title='/search.html'
 export class SearchPage extends WebPage {
-  @component(SearchContainer, By.id('search-div'))
+  @component(By.id('search-div'))
   searchContainer: SearchContainer;
 
   search(term: string, advanced=false){

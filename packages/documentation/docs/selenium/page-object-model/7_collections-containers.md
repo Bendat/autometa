@@ -55,7 +55,7 @@ Added to our page model:
 
 ```ts
 export class MyPage extends WebPage {
-  @component(UnorderedList, By.css('ul'))
+  @component(By.css('ul'))
   myList: UnorderedList;
 }
 ```

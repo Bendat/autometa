@@ -16,7 +16,7 @@ semantic components. This way you show the intent of your web page, not just the
 
 ```ts title='my-page.ts'
 export class MyPage {
-    @component(Paragraph, By.id('my-id))
+    @component(By.id('my-id))
     intro: Paragraph
 }
 ```
@@ -30,7 +30,7 @@ A `Button` meanwhile exposes both `text` and `click`
 
 ```ts title='my-page.ts'
 export class MyPage {
-    @component(Button, By.id('my-id))
+    @component(By.id('my-id))
     addToCart: Button
 }
 ```
@@ -101,6 +101,8 @@ _attributes_
 
 - `href`
 - `target`
+  
+---
 
 ### Button
 
@@ -115,6 +117,27 @@ _actions_
 
 
 ---
+
+### Image
+
+Tag: **`<img>`**
+
+Represents an image
+
+_actions_
+
+- `click`
+
+_attributes_
+
+- `src`
+- `alt`
+
+## UnorderedList
+
+Tag: **`<ul>`**
+
+Represents an image unordered list. Collection of type `Collection<ListItem>`
 
 - Anchor
 - Button

@@ -25,17 +25,17 @@ Automaton POM defines pages with simple classes and decorators.
 ```ts title='Example Home Page Page Object Model'
 export class MyHomePage extends WebPage {
   // reference pages which are navigable from the home page
-  @page(ResultsPage)
+  @page()
   results: ResultsPage;
 
   @page(SignInPage)
   signInPage: SignInPage;
 
   // zero instantiation/initialization. The Automaton does it for you.
-  @component(TextInput, By.id('search-bar'))
+  @component(By.id('search-bar'))
   searchBarInput: TextInput;
 
-  @component(Button, By.css('.style-container button'), Until.isVisible, 1500)
+  @component( By.css('.style-container button'), Until.isVisible, 1500)
   searchButton: Button;
 }
 ```
@@ -127,20 +127,31 @@ Set a slow mode time to force selenium to run at a speed you can actually watch.
 ## Logging (WIP)
 
 Automatically log your actions as they happen with readable `info` logs. Currently only node's default console
-is supported.
+is supported. Logs will show as an action, followed by a 'breadcrumb' of the component executing that action.
+The breadcrumb is the the full path to the component in the page model
 
 Example log:
 
 ```sh
-$> Clicking On Button[checkOutButton] By(css selector, button)
+$> Reading Text From MyHomePage[$root] > MainDiv[mainDiv, By(css selector, *[id="main-div"])] > Paragraph[2, By(css selector, p)][3]
 ```
 
 Where 'checkoutButton' is the name of the button in your page object:
 
 ```ts
 export class Foo {
-    @component(Button, By.css('button'))
+    @component(By.css('button'))
     checkoutButton: Button
     // ^--------------------------------
 }
 ```
+
+## Automatic Staleness Handling
+
+Sometimes elements move in the DOM, or a form causes a refreshed page, rendering your WebElements stale.
+WebComponents automatically detect when their underlying WebElement is stale and attempt to rediscover it
+at least once and continuing your action before simply failing. Refreshes will propagate through out the page
+model if necessary.
+
+Alternatively, the entire Page Model can be forced to lazily reinitialize if you know it will be stale due to some
+action occurring.
