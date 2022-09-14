@@ -69,12 +69,12 @@ export class LoginModal extends WebPage, Submittable {
   @component(By.id('login-btn'))
   passwordField: TextInput;
 
-  submit = this._submit
+  submit = super._submit
 
   // alternatively
 
   async submit(){
-    await this._submit()
+    await super.submit()
   }
 }
 ```
@@ -155,7 +155,7 @@ export class LoginModal extends WebPage, Submittable {
   @component(By.id('login-btn'))
   passwordField: TextInput;
 
-  submit = this._submit
+  submit = super._submit
 
   async login(username: string, password: string){
     await this.usernameField.write(username)

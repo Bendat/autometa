@@ -149,7 +149,7 @@ export class Foo {
 ## Automatic Staleness Handling
 
 Sometimes elements move in the DOM, or a form causes a refreshed page, rendering your WebElements stale.
-WebComponents automatically detect when their underlying WebElement is stale and attempt to rediscover it
+Components automatically detect when their underlying WebElement is stale and attempt to rediscover it
 at least once and continuing your action before simply failing. Refreshes will propagate through out the page
 model if necessary.
 

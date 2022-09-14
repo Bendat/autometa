@@ -3,14 +3,14 @@
 While the provided semantic components like Paragraph and Button are useful, for more sophisticated container
 types it's best to build components that model your own website or app.
 
-Creating new components is as easy as defining a Page is. Simply export a class which inherits `WebComponent` and
+Creating new components is as easy as defining a Page is. Simply export a class which inherits `Component` and
 that contains properties with `@component()` decorators.
 
 For example, imagine you have a `<div>` in your web page that contains some search options. We simply
 create our Component model as before and use it from one of your pages (or components!)
 
 ```ts title=Example
-export class SearchContainer extends WebComponent {
+export class SearchContainer extends Component {
   @component(By.id('search-bar'))
   searchBar: TextInput;
 
@@ -59,7 +59,7 @@ or function properties.
 
 
 ```ts title=Example
-export class SearchContainer extends WebComponent {
+export class SearchContainer extends Component {
   @component(By.id('search-bar'))
   searchBar: TextInput;
 

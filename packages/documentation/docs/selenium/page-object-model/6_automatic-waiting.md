@@ -6,7 +6,7 @@ By default, all components will wait until `isLocated` has been met.
 This value can be overridden in Component subclasses. For example to wait for `isEnabled`
 
 ```ts
-export class MyComponent extends WebComponent {
+export class MyComponent extends Component {
   protected override _defaultUntil: UntilCondition = Until.isEnabled;
 }
 ```
