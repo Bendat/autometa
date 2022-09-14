@@ -82,7 +82,7 @@ export class LoginModal extends WebPage {
 
 ```ts
 export class MyHomePage extends WebPage {
-  @page(ProfilePage)
+  @page()
   profilePage: ProfilePage;
 
   @component(By.id('login-btn'))
@@ -126,7 +126,7 @@ as you feel appropriate:
 
 ```ts
 export class MyHomePage extends WebPage {
-  @page(ProfilePage)
+  @page()
   profilePage: ProfilePage;
 
   @component(By.id('login-btn'))
