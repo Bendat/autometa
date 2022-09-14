@@ -114,6 +114,15 @@ describe('Logging the user in', () => {
 });
 ```
 
+Other pages can also be bound for easy navigation
+
+```ts
+export class MyHomePage extends WebPage{
+    @page()
+    myProfilePage: MyProfilePage
+}
+```
+
 ## Benefits
 
 ### Declarative Model
