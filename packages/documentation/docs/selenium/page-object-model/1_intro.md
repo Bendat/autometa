@@ -28,14 +28,14 @@ export class MyHomePage extends WebPage {
   @page()
   results: ResultsPage;
 
-  @page(SignInPage)
+  @page()
   signInPage: SignInPage;
 
   // zero instantiation/initialization. The Automaton does it for you.
   @component(By.id('search-bar'))
   searchBarInput: TextInput;
 
-  @component( By.css('.style-container button'), Until.isVisible, 1500)
+  @component(By.css('.style-container button'), Until.isVisible, 1500)
   searchButton: Button;
 }
 ```
