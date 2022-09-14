@@ -1,5 +1,6 @@
 # Introduction
 
+**Page Component Model** is an interpretation of the Page Object Model which intends to make Selenium automation easy.
 :::caution
 This is an experimental, WIP library that is not yet rigorously tested and should not be considered stable. `Semver` versioning is not yet in place.
 :::
@@ -9,7 +10,7 @@ This library requires a reflect poly-fill like [`reflect-metadata`](https://www.
 Ensure it's called early in your code, preferably in a setup script
 :::
 
-Automaton Page Object Model is a declarative page object model library for `TypeScript` which streamlines the definition
+Automaton Page Component Model is a declarative page object model library for `TypeScript` which streamlines the definition
 of page objects for Selenium users on node. It aims to automatically create and wire together all your page objects seamlessly
 so you can focus on writing tests.
 

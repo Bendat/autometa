@@ -11,8 +11,8 @@ export class MyHomePage extends WebPage {}
 And that's it! You're ready to start testing.
 
 ```ts title='Jest Example'
-import { siteUrl, configuredDriver } from '../my-setup';
-const site = Site(siteUrl, configuredDriver);
+import { siteUrl, configuredDriveBuilder } from '../my-setup';
+const site = Site(siteUrl, configuredDriveBuilder);
 
 describe('testing my home page loaded', () => {
   let page: MyHomePage;
@@ -69,16 +69,15 @@ export class LoginModal extends WebPage {
   @component(By.id('login-btn'))
   passwordField: TextInput;
 
-  submit = super._submit
+  submit = super._submit;
 
   // alternatively
 
-  async submit(){
-    await super.submit()
+  async submit() {
+    await super.submit();
   }
 }
 ```
-
 
 ```ts
 export class MyHomePage extends WebPage {

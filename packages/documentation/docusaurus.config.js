@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Automaton documentation',
-  tagline: 'Dinosaurs are cool',
+  tagline: 'An Automation Framework Toolkit for Typescript and Node',
   url: 'https://bendat.github.io/',
   baseUrl: '/automaton/',
   onBrokenLinks: 'throw',
