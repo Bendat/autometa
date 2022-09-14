@@ -62,7 +62,7 @@ export class MyHomePage extends WebPage {
 Which brings you to a `ProfilePage` when submitted
 
 ```ts title='login-modal.ts'
-export class LoginModal extends WebPage, Submittable {
+export class LoginModal extends WebPage {
   @component(By.id('login-btn'))
   usernameField: TextInput;
 
@@ -79,11 +79,6 @@ export class LoginModal extends WebPage, Submittable {
 }
 ```
 
-:::info
-`Submittable` is a [Documented Interface](documented_interfaces), which expose WebElement actions
-and provide inheritable documentation. They are optional but useful for declaring the intent of your
-component.
-:::
 
 ```ts
 export class MyHomePage extends WebPage {
