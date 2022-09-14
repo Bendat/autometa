@@ -7,7 +7,6 @@ import {
   IRectangle,
   ILocation,
   IWebElementId,
-  until,
   WebElementCondition,
 } from 'selenium-webdriver';
 import { ShadowRootPromise } from 'selenium-webdriver/lib/webdriver';
@@ -15,10 +14,10 @@ import { WaitOptions } from '../types';
 import { PageObject } from './page-object';
 
 export class ComponentProxyWebElement implements WebElement {
-  #innerElementUnsafe: WebElement;
-  #loader: () => Promise<WebElement>;
-  #driver: WebDriver;
-  #component: PageObject;
+  #innerElementUnsafe?: WebElement;
+  #loader?: () => Promise<WebElement>;
+  #driver?: WebDriver;
+  #component?: PageObject;
   #options: () => WaitOptions;
   constructor(component: PageObject, options: () => WaitOptions) {
     this.#component = component;
@@ -40,27 +39,40 @@ export class ComponentProxyWebElement implements WebElement {
       return this.#innerElementUnsafe;
     }
     const { until, by, timeout } = this.#options();
-    try{
+    try {
       this.#innerElementUnsafe = await (
-        await this.#component.searcher
-      ).findElement(by);
-    }catch(err){
-      if(err.toString().includes("TypeError: Cannot read properties of undefined")){
-        err.message = `Component searcher for '${this.#component.pomName}' was undefined. Searcher is automatically injected by Automaton after instantiation. Did you accidentally call a method while exposing it? For example 'click = this.click()' instead of 'click = this.click'? \n\t${err.message}`
+        await this.#component?.searcher
+      )?.findElement(by);
+    } catch (err) {
+      const error = err as Error;
+      if (
+        error
+          .toString()
+          .includes('TypeError: Cannot read properties of undefined')
+      ) {
+        error.message = `Component searcher for '${
+          this.#component?.pomName
+        }' was undefined. Searcher is automatically injected by Automaton after instantiation. Did you accidentally call a method while exposing it? For example 'click = this.click()' instead of 'click = this.click'? \n\t${
+          error.message
+        }`;
       }
-      throw err
+      throw err;
     }
-    //TypeError: Cannot read properties of undefined 
-   
+    //TypeError: Cannot read properties of undefined
+    if (!this.#innerElementUnsafe) {
+      throw new Error(
+        "Lazy Element attempted to access it's inner WebElement without assigning it"
+      );
+    }
     const condition = until.extract(this.#innerElementUnsafe, by);
     try {
       if (condition instanceof WebElementCondition) {
-        await this.#component.driver.wait(condition, timeout);
+        await this.#component?.driver.wait(condition, timeout);
       }
     } catch (err) {
       const clsName = this.constructor.name;
       throw new Error(`Attempt to wait for ${clsName}[${
-        this.#component.pomName
+        this.#component?.pomName
       }][${by}, ${until}] failed with error:
     ${err}`);
     }
@@ -72,6 +84,9 @@ export class ComponentProxyWebElement implements WebElement {
   };
 
   getDriver = (): WebDriver => {
+    if (!this.#driver) {
+      throw new Error('Tried to use an unassigned driver');
+    }
     return this.#driver;
   };
 
@@ -87,14 +102,22 @@ export class ComponentProxyWebElement implements WebElement {
       const element = await this.element;
       return fn(element);
     } catch (err) {
+      if (!this.#component) {
+        throw new Error(
+          'ComponentProxyWebElement does not have a reference to its parent component.'
+        );
+      }
       if (`${err}`.startsWith('StaleElementReferenceError')) {
-        console.warn(`Element was found to be stale. Refreshing POM and attempting one more time to communicate with the webdriver. \n${this.#component.breadcrumbs()}`)
+        console.warn(
+          `Element was found to be stale. Refreshing POM and attempting one more time to communicate with the webdriver. \n${this.#component.breadcrumbs()}`
+        );
         this.#component.refresh(true);
         const element = await this.element;
         return fn(element);
       }
-      err.message = `Failed to perform action on ${this.#component.breadcrumbs()}.${prefix} \n ${err}`;
-      throw err;
+      const error = err as Error;
+      error.message = `Failed to perform action on ${this.#component.breadcrumbs()}.${prefix} \n ${err}`;
+      throw error;
     }
   };
   #use = <T>(prefix: string, fn: (element: WebElement) => Promise<T>) => {

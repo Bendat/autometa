@@ -1,7 +1,6 @@
 import { By } from 'selenium-webdriver';
-import { Component } from '../../meta-types/component';
 import { Collection } from '../groups/collection';
-import { Text } from './text';
+import { TextComponent } from './text';
 
 /**
  * Represents the `<ol>` tag
@@ -20,4 +19,4 @@ export class UnorderedList extends Collection<ListItem> {
 /**
  * Represents the `<li>` tag
  */
-export class ListItem extends Text {}
+export class ListItem extends TextComponent {}

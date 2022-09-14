@@ -1,5 +1,5 @@
 import { Component } from '../meta-types';
-import { By, WebElement } from 'selenium-webdriver';
+import {  WebElement } from 'selenium-webdriver';
 import { EventEmitter } from 'stream';
 import { constructor } from 'tsyringe/dist/typings/types';
 
@@ -74,7 +74,8 @@ export class ElementArray<T extends Component> implements Iterable<T> {
     const elements = await this.elements;
     const result = elements.at(index);
     if (onElement) {
-      await onElement(result);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await onElement(result!);
     }
     return result;
   };

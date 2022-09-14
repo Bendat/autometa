@@ -1,3 +1,4 @@
+import { Click } from '../../meta-types/actions';
 import { Button } from '../standard/button';
 import { Input } from './input';
 
@@ -14,17 +15,16 @@ export class SubmitButton extends ButtonInput {}
  */
 export class ResetButton extends ButtonInput {}
 
-
 class ToggleableButton extends ButtonInput {
   get isSelected(): Promise<boolean> {
     return super.isSelected;
   }
 
-  click = this.click;
+  click: Click = this.click;
   /**
    * Selects this input by clicking on it.
    */
-  select = this.click;
+  select: Click = this.click;
 }
 /**
  * Represents the tag `<input type='radio'>`

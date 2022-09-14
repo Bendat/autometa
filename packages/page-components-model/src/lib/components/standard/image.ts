@@ -1,3 +1,4 @@
+import { Click } from '../../meta-types/actions';
 import { Component } from '../../meta-types/component';
 
 export class Image extends Component {
@@ -7,5 +8,5 @@ export class Image extends Component {
   get alt() {
     return this.getAttribute('alt');
   }
-  click = super.click;
+  click: Click = this.click;
 }

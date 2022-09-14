@@ -8,7 +8,7 @@ import {
 import { PAGE_META_KEY } from '../decorators/page';
 import { DI_BASE_CONTAINER } from '../injection.ts/default-di-container';
 import { PageObject } from './page-object';
-import { ConstructionOptions, UntilAction, WaitOptions } from '../types';
+import { ConstructionOptions, WaitOptions } from '../types';
 import { Until } from '../until/until';
 import { WebPage } from './web-page';
 import { constructor } from 'tsyringe/dist/typings/types';
@@ -31,10 +31,8 @@ export function applyComponentDecorators(target: PageObject) {
     constructComponentFromMetadata(match, target, propertyKey);
   }
 
-  const collections: Record<string, CollectionDecoratorAdditionalConfig> = Reflect.getMetadata(
-    COLLECTION_META_KEY,
-    target
-  );
+  const collections: Record<string, CollectionDecoratorAdditionalConfig> =
+    Reflect.getMetadata(COLLECTION_META_KEY, target);
 
   for (const propertyKey in collections) {
     const match = collections[propertyKey];
@@ -61,10 +59,7 @@ export function applyPageDecorators(target: PageObject) {
   }
 }
 
-function buildAndAssignPage(
-  target: PageObject,
-  propertyKey?: string
-) {
+function buildAndAssignPage(target: PageObject, propertyKey: string) {
   const type: constructor<Component> = Reflect.getMetadata(
     'design:type',
     target,
@@ -77,10 +72,9 @@ function buildAndAssignPage(
   assignParent(instance, target);
   assignPomName(instance, propertyKey);
   applyComponentDecorators(instance);
-
 }
 
-export function assignPomName(target: PageObject, propertyKey: string) {
+export function assignPomName(target: PageObject, propertyKey?: string) {
   if (!propertyKey) {
     return;
   }
@@ -115,7 +109,7 @@ export function constructDynamicComponentFromFind<T extends Component>(
 export function constructComponentFromMetadata(
   match: ConstructionOptions<Component>,
   target: PageObject,
-  propertyKey?: string
+  propertyKey: string
 ) {
   const type: constructor<Component> = Reflect.getMetadata(
     'design:type',
@@ -150,7 +144,11 @@ export function constructCollectionFromMetadata(
   return instance;
 }
 
-function assignCollectionChildLocators(instance: Collection<Component>, innerType: constructor<Component>, innerBy: By) {
+function assignCollectionChildLocators(
+  instance: Collection<Component>,
+  innerType: constructor<Component>,
+  innerBy?: By
+) {
   Reflect.deleteProperty(instance, 'childType');
   Reflect.defineProperty(instance, 'childType', {
     get: () => {
@@ -172,7 +170,7 @@ export function assignComponent(
   propertyKey?: string
 ) {
   if (!(instance instanceof Component)) {
-    const inst = instance as unknown
+    const inst = instance as { constructor: { name: string } };
     throw new Error(
       `Trying to create a component ${inst.constructor.name} which does not inherit from '${Component.name}'`
     );

@@ -1,8 +1,8 @@
 import { By } from 'selenium-webdriver';
-import { constructor } from 'tsyringe/dist/typings/types';
 import { Component } from '../meta-types/component';
 import { Until } from '../until/until';
 import { ConstructionOptions, WaitOptions } from '../types';
+import { constructor } from './injectables';
 export const COMPONENT_META_KEY = 'properties:decorated:component';
 export const COLLECTION_META_KEY = 'properties:decorated:collections';
 
@@ -57,7 +57,8 @@ export function collection<T extends Component>(
   itemBy?: By,
   options?: CollectionDecoratorAdditionalConfig
 ): PropertyDecorator {
-  return (target: Component, key): void => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (target: any, key): void => {
     const existing = Reflect.getMetadata(COLLECTION_META_KEY, target);
     
     const { collection, innerComponent } = {...options};

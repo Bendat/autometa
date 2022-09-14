@@ -5,7 +5,7 @@ import { ConstructionOptions } from '../../types';
 import { ElementArray } from '../lazy-element-array';
 
 export abstract class Collection<T extends Component> extends Component {
-  protected cachedComponents: ElementArray<T>;
+  protected cachedComponents!: ElementArray<T>;
 
   /**
    * The Type of the child Components to construct
@@ -79,9 +79,15 @@ export abstract class Collection<T extends Component> extends Component {
     byOrIndex: By | number,
     onElement: (component: T) => Promise<void> = async () => undefined
   ) => {
-    const element: T = await this.#findSingleComponent(byOrIndex, onElement);
-    await onElement(element);
-    return element;
+    const element: T | undefined = await this.#findSingleComponent(
+      byOrIndex,
+      onElement
+    );
+    if (element) {
+      await onElement(element);
+      return element;
+    }
+    return undefined
   };
 
   forEach = (action: (component: T, index: number) => Promise<void>) => {
@@ -109,7 +115,7 @@ export abstract class Collection<T extends Component> extends Component {
    * @returns A Component of the found element.
    */
   by = <T extends Component>(by: By, type: constructor<T>) => {
-    return this.find({ type, by });
+    return this.find({ type, by }, this.childIdentifierString ?? '');
   };
 
   async #findSingleComponent(
@@ -128,7 +134,7 @@ export abstract class Collection<T extends Component> extends Component {
       this.cachedComponents &&
       this.cachedComponents.lengthSnapshot < byOrIndex
     ) {
-      return this.cachedComponents[byOrIndex];
+      return this.cachedComponents.at(byOrIndex);
     }
     return await this.entries.at(byOrIndex, onElement);
   }
@@ -145,7 +151,7 @@ export abstract class Collection<T extends Component> extends Component {
   }
 }
 
-export class InjectedCollection<T extends Component> extends Collection<T>{
-  protected childType: constructor<T>;
-  protected childElementLocator: By;
+export class InjectedCollection<T extends Component> extends Collection<T> {
+  protected childType!: constructor<T>;
+  protected childElementLocator!: By;
 }

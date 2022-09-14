@@ -3,13 +3,13 @@ import { PageObject } from './page-object';
 import { ConstructionOptions, WaitOptions } from '../types';
 import { Until } from '../until/until';
 import { UntilCondition } from '../until/until-condition';
-import { constructDynamicComponentFromFind, getName } from './util';
+import { constructDynamicComponentFromFind } from './util';
 import { ComponentProxyWebElement } from './lazy-web-element';
 import { ComponentSettings } from '../components/component-settings';
 import { POM } from '../settings';
 import { ElementArray } from '../components/lazy-element-array';
 import { green } from 'colors-cli';
-import { Find } from './actions';
+import { FindElement, SendKeys } from './actions';
 
 /**
  * Base class for Web Components. Web Components are
@@ -437,7 +437,7 @@ export abstract class Component extends PageObject {
    * @param others Any other text or keys to enter.
    * @returns an asynchronous action which will call `sendKeys`
    */
-  protected write = (text: string | number, ...others: unknown[]) =>
+  protected write: SendKeys = (text: string | number, ...others: unknown[]) =>
     this._action(
       (element) => element.sendKeys(text, ...(others as string[])),
       `Typing '${text}' into`
@@ -505,7 +505,7 @@ export abstract class Component extends PageObject {
    * @param options Type and Locator information to find and construct the expected Component
    * @returns a new Component which matches the provided options.
    */
-  protected find: Find = async <T extends Component>(
+  protected find: FindElement = async <T extends Component>(
     options: ConstructionOptions<T>,
     name: string
   ): Promise<T> => {

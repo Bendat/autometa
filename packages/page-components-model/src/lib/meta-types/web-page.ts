@@ -16,7 +16,7 @@ import { applyComponentDecorators, applyPageDecorators } from './util';
  */
 export abstract class WebPage extends PageObject {
   readonly route: string | undefined = undefined;
-  protected _parent: WebPage;
+  protected _parent!: WebPage;
   wait = (until: Condition<unknown>, timeout: number) =>
     this.driver.wait(until, timeout);
   waitForTitleIs = (title: string, timeout = 1500) => {
@@ -62,9 +62,10 @@ export abstract class WebPage extends PageObject {
    * marks all Components as stale and forces
    * them to be lazily reinitialized on next access
    */
-  refresh = (propogate = true, name?: string) => {
-    if (name) this[name].refresh();
-    if (propogate) this.events.emit('ForceRefreshAll');
+  refresh = (propagate = true, name?: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (name) (this as any)[name].refresh();
+    if (propagate) this.events.emit('ForceRefreshAll');
   };
 
   get depth(): number {

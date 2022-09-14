@@ -1,4 +1,4 @@
-import { WebElement, Locator } from 'selenium-webdriver';
+import { WebElement, Locator, WebElementCondition, Condition } from 'selenium-webdriver';
 import { UntilAction } from '../types';
 
 export abstract class UntilCondition {
@@ -12,5 +12,9 @@ export abstract class UntilCondition {
   get name() {
     return `Until.${this.#name}`;
   }
-  abstract extract(element: WebElement, locator: Locator, ...args: unknown[]);
+  abstract extract(
+    element: WebElement,
+    locator: Locator,
+    ...args: unknown[]
+  ): WebElementCondition | Condition<boolean> ;
 }

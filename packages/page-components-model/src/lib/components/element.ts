@@ -1,5 +1,6 @@
 import { WebElement } from 'selenium-webdriver';
 import { InjectableComponent } from '../decorators/injectables';
+import { Clear, Click, FindElement, FindElements } from '../meta-types/actions';
 import { Component } from '../meta-types/component';
 
 /**
@@ -8,12 +9,12 @@ import { Component } from '../meta-types/component';
  */
 @InjectableComponent()
 export class Element extends Component {
-  click = this.click;
-  clear = this.clear;
-  find = this.find;
-  findAll = this.findAll;
+  click: Click = this.click;
+  clear: Clear = this.clear;
+  find: FindElement = this.find;
+  findAll: FindElements = this.findAll;
   get text() {
-    return super.text;
+    return super.read();
   }
   get isVisible(): Promise<boolean> {
     return super.isVisible;

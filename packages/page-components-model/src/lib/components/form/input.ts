@@ -1,3 +1,4 @@
+import { Click, Submit } from '../../meta-types/actions';
 import { Component } from '../../meta-types/component';
 
 /**
@@ -12,7 +13,7 @@ export class Input
 {
  
   get text(){
-    return super.text
+    return super.read()
   }
 
   get name() {
@@ -31,7 +32,7 @@ export class Input
     return this.getAttribute('type');
   }
 
-  click = this.click;
+  click: Click = this.click;
 
-  submit = this.submit;
+  submit: Submit = this.submit;
 }

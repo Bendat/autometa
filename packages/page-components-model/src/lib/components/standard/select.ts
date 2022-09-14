@@ -1,4 +1,5 @@
 import { By } from 'selenium-webdriver';
+import { Click } from '../../meta-types/actions';
 import { Component } from '../../meta-types/component';
 import { Collection } from '../groups/collection';
 
@@ -26,9 +27,9 @@ export class Select extends Collection<Option> {
   choose = async (byOrIndex: By | number) => {
     await this.click();
     const selected = await this.at(byOrIndex);
-    return selected.choose();
+    return selected?.choose();
   };
-  click = this.click;
+  click: Click = this.click;
 }
 
 /**
@@ -45,7 +46,7 @@ export class Option extends Component {
    * @returns a promise which resolves to the options inner text
    */
   get displayedText() {
-    return this.text;
+    return this.read();
   }
 
   /**
@@ -77,7 +78,7 @@ export class Option extends Component {
   /**
    * Alias for {@see Select.choose}
    */
-  click = this.click;
+  click: Click = this.click;
 }
 
 export class OptionGroup extends Collection<Option> {
@@ -85,6 +86,6 @@ export class OptionGroup extends Collection<Option> {
   protected childElementLocator: By = By.css('option');
 
   get text() {
-    return super.text;
+    return super.read();
   }
 }

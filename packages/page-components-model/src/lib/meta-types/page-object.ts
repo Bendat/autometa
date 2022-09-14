@@ -1,4 +1,4 @@
-import EventEmitter = require('events');
+import {EventEmitter} from 'events';
 import { Locator, WebDriver, WebElement } from 'selenium-webdriver';
 
 interface Searcher {
@@ -15,13 +15,13 @@ interface Searcher {
  * at run time.
  */
 export abstract class PageObject {
-  protected _eventEmitter: EventEmitter;
+  protected _eventEmitter!: EventEmitter;
   get events() {
     return this._eventEmitter;
   }
-  protected _pomName: string;
+  protected _pomName!: string;
   protected _driver!: WebDriver;
-  protected _searcher: Promise<Searcher>;
+  protected _searcher!: Promise<Searcher>;
   /**
    * Reference to the WebDriver powering this PageObject
    */

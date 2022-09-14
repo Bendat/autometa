@@ -12,7 +12,7 @@ Collections are Components which contain a list of Components that share a shape
 Collections are intended to deal with only a single component type.
 
 :::info
-Collections are an abstract type and must be inherited by another component.
+Collections are an abstract type and must be inherited by another component, or initialized with the `@collection` decorator.
 :::
 
 Default implementations of Collections available are `OrderedList` and `UnorderedList`, which are of type `Collection<ListItem>`.
@@ -88,3 +88,22 @@ await myPage.mybuttons.forEach(async (button) => {
 :::info
 These buttons will be clicked in DOM order. If Slow Mode is in effect, it will apply to these clicks.
 :::
+
+### Using an Anonymous Collection
+
+It's also possible to use the `@collection` decorator and specifying
+the child types to collect.
+
+```ts
+export class MyPage extends WebPage {
+  @collection(By.id('btn-div'), Button, By.css('button'))
+  myListOfButtons: Collection<Button>
+}
+```
+
+This creates a collection which is a `<div>` and contains multiple
+buttons, but any Component can be used as a child element.
+
+## Containers
+
+Coming soon (maybe)

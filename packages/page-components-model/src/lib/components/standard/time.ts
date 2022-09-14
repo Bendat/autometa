@@ -5,6 +5,6 @@ export class Time extends Component{
         return this.getAttribute('datetime')
     }
     get text(){
-        return super.text
+        return super.read()
     }
 }

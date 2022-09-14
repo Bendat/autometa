@@ -1,4 +1,5 @@
 import { Component } from '../../meta-types';
+import { Click } from '../../meta-types/actions';
 /**
  * Represents the `<a>` tag. Exposes its common attributes as asynchronous
  * getters.
@@ -17,9 +18,9 @@ export class Anchor extends Component {
   get href() {
     return this.getAttribute('href');
   }
-  click = this.click;
+  click: Click = this.click;
 
   get text() {
-    return super.text;
+    return super.read();
   }
 }
