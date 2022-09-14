@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkautomaton=self.webpackChunkautomaton||[]).push([[283],{4456:a=>{a.exports=JSON.parse('{"allTagsPath":"/automaton/blog/tags","slug":"/automaton/blog/tags/hello","name":"hello","count":2,"permalink":"/automaton/blog/tags/hello"}')}}]);
