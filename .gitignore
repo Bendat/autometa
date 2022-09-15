@@ -41,3 +41,6 @@ Thumbs.db
 # Generated Docusaurus files
 .docusaurus/
 .cache-loader/
+
+# package-lock - use yarn
+**/package-lock.json
