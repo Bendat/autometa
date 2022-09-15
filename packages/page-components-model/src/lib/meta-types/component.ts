@@ -43,6 +43,7 @@ import { FindElement, SendKeys } from './actions';
  *
  */
 export abstract class Component extends PageObject {
+  [key: string]: unknown
   get depth(): number {
     return this._parent.depth + 1;
   }

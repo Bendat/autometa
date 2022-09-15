@@ -76,8 +76,7 @@ export class MyFormPage extends WebPage {
 
 Onto our test
 
-```ts
-title='Using Jest Or Mocha`
+```ts title='Using Jest Or Mocha`
 const url = process.env.MY_URL;
 const wdBuilder = new Builder().forBrowser(Browser.Chrome);
 const site = Site(url, wdBuilder);
@@ -103,6 +102,110 @@ describe('Submitting my application form', () => {
     expect(await useCloudService.isSelected).toBe('false')
 
     await submitButton.submit()
+    await page.waitForTitleIs('Application Submitted')
+  });
+
+});
+
+```
+
+It's likely this behavior will be repeated across tests, it's
+a good idea to compose it into a method on the Component or page
+object.
+
+We can start with our fieldset.
+
+```ts
+export class RoleFieldSet extends Component {
+  @component(By.css('input[type="radio"]'))
+  seller: Checkbox;
+
+  @component(By.css('input[type="radio"]:last-of-type'))
+  buyer: CheckBox;
+
+  select = async (role: 'buyer' | 'seller') => {
+    const checkbox = this[role] as Checkbox;
+    await checkbox.click();
+  };
+}
+
+export class SetupFieldSet extends Component {
+  @component(By.css('input[type="checkbox"]'))
+  internationalAccount: RadioButton;
+
+  @component(By.css('input[type="checkbox"]:last-of-type'))
+  useCloudService: RadioButton;
+
+  select = async (
+    useInternationalAccount: boolean,
+    useCloudService: boolean
+  ) => {
+    if (useInternationalAccount) {
+      await this.internationalAccount.select();
+    }
+    if (useCloudService) {
+      await this.internationalAccount.select();
+    }
+  };
+}
+```
+
+And now our form
+
+```ts
+export class MyFormPage extends WebPage {
+  @component(By.css('input'))
+  nameInput: TextInput;
+
+  @component(By.css('textarea'))
+  description: TextArea;
+
+  @component(By.css('fieldset'))
+  roleSettings: RoleFieldSet;
+
+  @component(By.css('fieldset:last-of-type'))
+  setupSettings: SetupFieldSet;
+
+  @component(By.css('input[type="submit"'))
+  submitForm: SubmitButton;
+
+  submitApplication = async (
+    name,
+    description,
+    role: string,
+    useIntl: boolean,
+    useCloud: boolean // could also you a JSON object instead of params
+  ) => {
+    await this.nameInput.write(name);
+    await this.description.write(description);
+    await this.roleSettings.select(role);
+    await this.setupSettings.select(useIntl, useCloud);
+    await this.submitForm.submit();
+  };
+}
+```
+
+And with that our test becomes
+
+```ts title='Using Jest Or Mocha`
+const url = process.env.MY_URL;
+const wdBuilder = new Builder().forBrowser(Browser.Chrome);
+const site = Site(url, wdBuilder);
+
+describe('Submitting my application form', () => {
+  let page: MyPage;
+
+  beforeEach(async () => {
+    page = await site.browse(MyPage);
+  });
+
+  it('should fill and submit my application form', async () => {
+    const { submitApplication, roleSettings, setupSettings} = page;
+    const {buyer, seller} = roleSettings;
+    const {internationalAccount, useCloudService } = setupSettings;
+
+    await submitApplication('bob', 'my description', 'seller', true, false)
+
     await page.waitForTitleIs('Application Submitted')
   });
 
