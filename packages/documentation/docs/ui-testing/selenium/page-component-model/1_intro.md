@@ -21,7 +21,7 @@ Components are automatically scoped to their parent for faster searching, and la
 
 ## At a Glance
 
-Automaton POM defines pages with simple classes and decorators.
+Automaton PCM defines pages with simple classes and decorators.
 
 ```ts title='Example Home Page Page Object Model'
 export class MyHomePage extends WebPage {
@@ -134,18 +134,33 @@ The breadcrumb is the the full path to the component in the page model
 Example log:
 
 ```sh
-$> Reading Text From MyHomePage[$root] > MainDiv[mainDiv, By(css selector, *[id="main-div"])] > Paragraph[2, By(css selector, p)][3]
+  console.info
+    Clicking On IndexPage[$root] >
+      GridContainer[grid, By(css selector, .grid)] > 
+        SimpleTypeDiv[simpleTypes, By(css selector, div:nth-of-type(1))] >
+          Button[button, By(css selector, button)]( { text: "Click Me" } )
+
+      at Button.#logActionOccurring (src/lib/meta-types/component.ts:558:17)
+
+  console.info
+    Searching for [ListItem, By(css selector, li)] in IndexPage[$root] > 
+      GridContainer[grid, By(css selector, .grid)] >
+        SimpleTypeDiv[simpleTypes, By(css selector, div:nth-of-type(1))] >
+          UnorderedList[unorderedList, By(css selector, ul)]
+
+      at ElementArray.<anonymous> (src/lib/meta-types/component.ts:540:17)
+
+  console.info
+    Reading Text From IndexPage[$root] >
+      GridContainer[grid, By(css selector, .grid)] >
+        SimpleTypeDiv[simpleTypes, By(css selector, div:nth-of-type(1))] >
+          UnorderedList[unorderedList, By(css selector, ul)] >
+            ListItem[0, By(css selector, li)]( { text: "ul item 1" } )
 ```
 
-Where 'checkoutButton' is the name of the button in your page object:
 
-```ts
-export class Foo {
-    @component(By.css('button'))
-    checkoutButton: Button
-    // ^--------------------------------
-}
-```
+
+
 
 ## Automatic Staleness Handling
 

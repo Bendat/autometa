@@ -14,7 +14,7 @@ export class MyComponent extends Component {
 By default, waits with this component will check for the 'isEnabled' property before proceeding.
 
 The default condition can also be overridden by referencing a replacement
-in the third argument of `@component`
+in the second argument of `@component`
 
 ```ts
 @component(By.id('foo'), Until.isEnabled)

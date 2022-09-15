@@ -16,7 +16,7 @@ semantic components. This way you show the intent of your web page, not just the
 
 ```ts title='my-page.ts'
 export class MyPage {
-    @component(By.id('my-id))
+    @component(By.id('my-id'))
     intro: Paragraph
 }
 ```
@@ -30,7 +30,7 @@ A `Button` meanwhile exposes both `text` and `click`
 
 ```ts title='my-page.ts'
 export class MyPage {
-    @component(By.id('my-id))
+    @component(By.id('my-id'))
     addToCart: Button
 }
 ```
@@ -57,6 +57,36 @@ Collections act as a list of Components, while containers represent components w
 them.
 
 [Read more about collections and containers](collections-containers)
+
+## Exposing Behavior
+
+By default all non-universal actions are disabled. `<p>` while technically clickable is not typically a clickable element. Unless your `<p>` tag for a Component does handle clicks, then the behavior
+is hidden. To hide them, they are made `protected` by default in
+component.
+
+To expose behavior, simply create a public method in your Component
+with the same name and assign it to your parent copy
+
+```ts
+export class MyComponent extends Component {
+  click = this.click;
+  write = this.write;
+}
+```
+
+:::caution
+Since these are raw class properties, 'this.click' etc. refers
+to the already existing copy. similar to the following line of code
+
+```ts
+let x = 1;
+x = x;
+```
+
+If you are wrapping them inside another method, or producing
+a getter, you may need to call `super` instead, as at that point `this` has been fully initialized and may cause a stack overflow
+:::
+
 
 ## Semantic Components
 
@@ -101,7 +131,7 @@ _attributes_
 
 - `href`
 - `target`
-  
+
 ---
 
 ### Button
@@ -114,7 +144,6 @@ _actions_
 
 - `click`
 - `getText` **as _`text`_** (getter)
-
 
 ---
 

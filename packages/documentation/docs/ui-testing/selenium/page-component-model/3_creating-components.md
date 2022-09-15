@@ -52,6 +52,26 @@ Then("The first result is for 'https://puppies.com'", async function () {
 });
 ```
 
+:::tip
+There are interfaces for the hidden actions which correspond
+to the Selenium name of that action, e.g. `click` implements `Click`
+and `write` implements `SendKeys`.
+
+If your linter is complaining about `click` etc. being implicitly type any, you can mark your methods as one of these interfaces. This
+should shut up your linter while also providing more contextual
+cues about your Page Model
+
+Example:
+
+```ts
+export class MyComponent extends Component {
+  click: Click = this.click;
+  write: SendKeys = this.write;
+}
+```
+
+:::
+
 ## Behaviors
 
 You can also define behaviors on your Components by creating undecorated (custom or third party decorators should be supported) methods

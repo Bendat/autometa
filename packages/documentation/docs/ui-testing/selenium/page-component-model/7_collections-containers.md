@@ -97,12 +97,52 @@ the child types to collect.
 ```ts
 export class MyPage extends WebPage {
   @collection(By.id('btn-div'), Button, By.css('button'))
-  myListOfButtons: Collection<Button>
+  myListOfButtons: Collection<Button>;
 }
 ```
 
 This creates a collection which is a `<div>` and contains multiple
 buttons, but any Component can be used as a child element.
+
+## Array-like behavior
+
+Collections are array-like, and implement methods for `forEach`, `map`, `at` etc(but not all array methods at this time).
+
+These functions are async (return a Promise) but are iterated
+through synchronously by DOM order - i.e they are deterministic for
+a deterministic input.
+
+```ts
+it('should check the list', () => {
+  // array-like functions
+  const expected = ['first', 'second', 'third', 'fourth'];
+
+  await page.numericList.forEach(async (li, idx) => {
+    expect(await li.text).toBe(expected[idx]);
+  });
+
+  const mapped = await page.numericList.map(async (li) => li.text);
+  expect(mapped).toStrictEqual(expected);
+
+  expect(await page.numericList.at(0)).toBe(expected[0]);
+});
+```
+
+The Collection is Iterable, but due to depending on
+an async `findElements` call, it must be initialized first. The
+easiest way to do that is with the `values` property, which is a promise of the Collection itself, which will be loaded once complete
+
+```ts
+for (const button of await page.buttonList.values) {
+  await button.click();
+}
+```
+This too is executed in DOM order.
+
+### Caching
+
+By default Collections cache their WebElements. They can be `reload`ed
+if new elements are expected to be in the DOM.
 
 ## Containers
 

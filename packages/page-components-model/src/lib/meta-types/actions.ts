@@ -14,7 +14,7 @@ export interface Click {
  * Action Interface for the methods which
  * expose Seleniums 'text()' method.
  */
-export interface Text {
+export interface GetText {
   (): Promise<string>;
 }
 

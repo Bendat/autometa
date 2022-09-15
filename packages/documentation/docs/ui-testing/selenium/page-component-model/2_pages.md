@@ -69,10 +69,9 @@ export class LoginModal extends WebPage {
   @component(By.id('login-btn'))
   passwordField: TextInput;
 
-  submit = super._submit;
+  submit: Submit = this.submit;
 
   // alternatively
-
   async submit() {
     await super.submit();
   }
@@ -143,13 +142,13 @@ export class MyHomePage extends WebPage {
 
 ```ts title='login-modal.ts'
 export class LoginModal extends WebPage, Submittable {
-  @component(By.id('login-btn'))
+  @component(By.id('username-field'))
   usernameField: TextInput;
 
-  @component(By.id('login-btn'))
+  @component(By.id('password-field'))
   passwordField: TextInput;
 
-  submit = super._submit
+  submit: Submit = this.submit
 
   async login(username: string, password: string){
     await this.usernameField.write(username)
@@ -186,9 +185,23 @@ describe('testing my home page loaded', () => {
 
 ## Launching other Pages
 
-The `Site` function returns an object that contains a `Browse` and both a `Leave` and `quit` method. `Leave` and `quit` exit
+The `Site` function returns an object that contains a `browse` and both a `leave` and `quit` method. `leave` and `quit` exit
 the `WebDriver` while `Browse` accepts a `WebPage` class reference (not an object instantiated with `new`, just the class blueprint).
 Browse will instantiate your Web Page for you and all of it's dependencies.
 
-To start from a different `Browse`, make sure your provided `url` does not need to be updated (which currently requires a new call to Site),
-and `Browse` a different `WebPage`. To start at your profile page to test session persistence simply `site.Browse(ProfilePage)`
+It also contains `visit`, which is similar to browse except
+it works on an already running WebDriver (browse will attempt to start
+the WebDriver).
+
+If a HTTP `route` is configured in the `WebPage` instance, `browse` and `visit` will attempt to load the configured route.
+
+e.g
+
+```ts
+export class MySecondPage extends WebPage {
+  override route = 'second'
+}
+```
+
+Which for the url `my-site.com` will visit `my-site.com/second`. If
+a route is passed to `browse` or `visit` it will override the inherited route.
