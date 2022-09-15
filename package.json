@@ -42,6 +42,7 @@
     "colors-cli": "^1.0.28",
     "prism-react-renderer": "^1.2.1",
     "selenium-webdriver": "^4.4.0",
-    "tsyringe": "^4.7.0"
+    "tsyringe": "^4.7.0",
+    "react-dom": "^17.0.1"
   }
 }
