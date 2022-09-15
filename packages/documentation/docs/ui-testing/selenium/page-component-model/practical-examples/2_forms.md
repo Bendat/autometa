@@ -29,7 +29,7 @@ no classes or IDs
 </body>
 ```
 
-This time we'll start by writing our most nested components, the fieldsets.
+This time we'll start by writing our most nested components, the field sets.
 
 ```ts
 export class RoleFieldSet extends Component {
@@ -76,7 +76,7 @@ export class MyFormPage extends WebPage {
 
 Onto our test
 
-```ts title='Using Jest Or Mocha`
+```ts title='Using Jest Or Mocha'
 const url = process.env.MY_URL;
 const wdBuilder = new Builder().forBrowser(Browser.Chrome);
 const site = Site(url, wdBuilder);
@@ -89,31 +89,33 @@ describe('Submitting my application form', () => {
   });
 
   it('should fill and submit my application form', async () => {
-    const { nameInput, description, roleSettings, setupSettings, submitButton} = page;
-    const {buyer, seller} = roleSettings;
-    const {internationalAccount, useCloudService } = setupSettings;
+    const {
+      nameInput,
+      description,
+      roleSettings: { buyer, seller },
+      setupSettings: { internationalAccount, useCloudService },
+      submitButton,
+    } = page;
 
-    await nameInput.write('Bob Franklin')
-    await description.write('I am an appealing candidate because....')
-    await seller.select()
-    await internationalAccount.select()
+    await nameInput.write('Bob Franklin');
+    await description.write('I am an appealing candidate because....');
+    await seller.select();
+    await internationalAccount.select();
 
-    expect(await buyer.isSelected).toBe('false')
-    expect(await useCloudService.isSelected).toBe('false')
+    expect(await buyer.isSelected).toBe('false');
+    expect(await useCloudService.isSelected).toBe('false');
 
-    await submitButton.submit()
-    await page.waitForTitleIs('Application Submitted')
+    await submitButton.submit();
+    await page.waitForTitleIs('Application Submitted');
   });
-
 });
-
 ```
 
 It's likely this behavior will be repeated across tests, it's
 a good idea to compose it into a method on the Component or page
 object.
 
-We can start with our fieldset.
+We can start with our field sets.
 
 ```ts
 export class RoleFieldSet extends Component {
@@ -187,7 +189,7 @@ export class MyFormPage extends WebPage {
 
 And with that our test becomes
 
-```ts title='Using Jest Or Mocha`
+```ts title='Using Jest Or Mocha'
 const url = process.env.MY_URL;
 const wdBuilder = new Builder().forBrowser(Browser.Chrome);
 const site = Site(url, wdBuilder);
@@ -200,15 +202,72 @@ describe('Submitting my application form', () => {
   });
 
   it('should fill and submit my application form', async () => {
-    const { submitApplication, roleSettings, setupSettings} = page;
-    const {buyer, seller} = roleSettings;
-    const {internationalAccount, useCloudService } = setupSettings;
+    const { submitApplication, waitForTitleIs } = page;
 
-    await submitApplication('bob', 'my description', 'seller', true, false)
+    await submitApplication('bob', 'my description', 'seller', true, false);
 
-    await page.waitForTitleIs('Application Submitted')
+    await waitForTitleIs('Application Submitted');
+  });
+});
+```
+
+We could also make it more modular/specific
+
+```ts
+export class MyFormPage extends WebPage {
+  @component(By.css('input'))
+  nameInput: TextInput;
+
+  @component(By.css('textarea'))
+  description: TextArea;
+
+  @component(By.css('fieldset'))
+  roleSettings: RoleFieldSet;
+
+  @component(By.css('fieldset:last-of-type'))
+  setupSettings: SetupFieldSet;
+
+  @component(By.css('input[type="submit"'))
+  submitForm: SubmitButton;
+
+  addUserDetails = (name: string, description: string) => {
+    await this.nameInput.write(name);
+    await this.description.write(description);
+  };
+
+  selectSettings = async (
+    role: string,
+    useIntl: boolean,
+    useCloud: boolean
+  ) => {
+    await this.roleSettings.select(role);
+    await this.setupSettings.select(useIntl, useCloud);
+  };
+
+  submit: Submit = this.submit;
+}
+```
+
+```ts title='Using Jest Or Mocha'
+const url = process.env.MY_URL;
+const wdBuilder = new Builder().forBrowser(Browser.Chrome);
+const site = Site(url, wdBuilder);
+
+describe('Submitting my application form', () => {
+  let page: MyPage;
+
+  beforeEach(async () => {
+    page = await site.browse(MyPage);
   });
 
-});
+  it('should fill and submit my application form', async () => {
+    const { addUserDetails, selectSettings, submit, waitForTitleIs } = page;
 
+    await addUserDetails('bob', 'my description');
+    await selectSettings('seller', true, false);
+    await submit();
+
+    await waitForTitleIs('Application Submitted');
+  });
+});
 ```

@@ -119,6 +119,34 @@ describe('testing my home page loaded', () => {
 });
 ```
 
+:::tip
+Page and WebComponent methods use fat-arrow functions and can be safely de-structured to reduce nesting.
+
+```ts
+it('should test my page', async () => {
+  const {
+    loginButton,
+    searchBar,
+    blogPosts: {
+      highlighted: { title, intro, date },
+      yesterdays: { date: yesterdaysDate },
+    },
+  } = myHomePage;
+
+  await loginButton.click();
+  await searchBar.showsSuggestion(
+    "We've",
+    "We've been trying to reach you about your cars extended warranty"
+  );
+  expect(await title.text).toBe('It might be one of the days of all time');
+  expect(await yesterdaysDate.datetime).toBe(MyDateUtil.yesterday);
+
+  // .... etc
+});
+```
+
+:::
+
 You can also use functions in your Components. These can act to group behavior together
 as you feel appropriate:
 
@@ -199,7 +227,7 @@ e.g
 
 ```ts
 export class MySecondPage extends WebPage {
-  override route = 'second'
+  override route = 'second';
 }
 ```
 

@@ -3,6 +3,8 @@
   "version": 2,
   "projects": {
     "documentation": "packages/documentation",
-    "page-components-model": "packages/page-components-model"
+    "old-components-tests": "packages/old-components-tests",
+    "page-components": "packages/page-object-models/page-components",
+    "page-object-models-page-components-tests": "packages/page-object-models/page-components-tests"
   }
 }

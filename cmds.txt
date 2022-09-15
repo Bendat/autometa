@@ -1,0 +1,3 @@
+node libs: yarn add @nrwl/node --dev -W
+publishable:  nx g @nrwl/node:library foo --publishable --importPath="@automaton/foo" --tags="scope:public,type:util,target:all"
+move: nx g move --project booking-some-library shared/some-library

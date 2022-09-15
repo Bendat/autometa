@@ -8,15 +8,21 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2022",
+    "target": "ES2022",
     "module": "esnext",
-    "lib": ["es2017", "node"],
+    "lib": ["es2022"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@automaton/page-components-model": [
-        "packages/page-components-model/src/index.ts"
+      "@automaton/old-components-tests": [
+        "packages/old-components-tests/src/index.ts"
+      ],
+      "@automaton/page-components": [
+        "packages/page-object-models/page-components/src/index.ts"
+      ],
+      "@automaton/page-object-models/page-components-tests": [
+        "packages/page-object-models/page-components-tests/src/index.ts"
       ]
     }
   },

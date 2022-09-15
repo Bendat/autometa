@@ -69,7 +69,6 @@ export class MyComponent extends Component {
   write: SendKeys = this.write;
 }
 ```
-
 :::
 
 ## Behaviors

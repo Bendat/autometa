@@ -162,18 +162,44 @@ _attributes_
 - `src`
 - `alt`
 
-## UnorderedList
+## UnorderedList, OrderedList
 
 Tag: **`<ul>`**
 
-Represents an image unordered list. Collection of type `Collection<ListItem>`
+Represents an unordered list. Collection of type `Collection<ListItem>`. See [Collections](collections-containers)
 
-- Anchor
-- Button
-- Image
-- UnorderedList
-- OrderedList
-- ListItem
-- Progress
-- Select
-- Option
+## ListItem
+
+Tag: **`<li>`**
+
+
+_actions_
+
+- `getText` **as _`text`_** (getter)
+
+## Select
+
+Tag: **`<select>`**
+
+Collection of type `Collection<Option>`. Allows list-like
+access to it's inner options
+
+_behaviors_
+
+- `select(byOrIndex)` - clicks on the `<select>`, finds the matching `<option>` by `By` locator or numeric index, and clicks on the option.
+
+## Option
+
+
+Tag: **`<option>`**
+
+Simple text type for a form option.
+
+_exposes_
+
+- `click`
+- `getText` **as _`text`_** (getter)
+
+_attributes_
+
+- `value`
