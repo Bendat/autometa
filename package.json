@@ -24,6 +24,7 @@
     "jest-environment-jsdom": "28.1.1",
     "nx": "14.7.3",
     "prettier": "^2.6.2",
+    "react": "^17.0.2",
     "ts-jest": "28.0.5",
     "ts-node": "10.9.1",
     "tslib": "^2.4.0",
