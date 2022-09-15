@@ -15,9 +15,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@automaton/old-components-tests": [
-        "packages/old-components-tests/src/index.ts"
-      ],
       "@automaton/page-components": [
         "packages/page-object-models/page-components/src/index.ts"
       ],
