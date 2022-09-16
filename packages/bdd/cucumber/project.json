@@ -1,0 +1,34 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/bdd/cucumber/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/bdd/cucumber/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/bdd/cucumber"],
+      "options": {
+        "jestConfig": "packages/bdd/cucumber/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/bdd/cucumber",
+        "tsConfig": "packages/bdd/cucumber/tsconfig.lib.json",
+        "packageJson": "packages/bdd/cucumber/package.json",
+        "main": "packages/bdd/cucumber/src/index.ts",
+        "assets": ["packages/bdd/cucumber/*.md"]
+      }
+    }
+  },
+  "tags": ["scope:public", "type:util", "target:all"]
+}

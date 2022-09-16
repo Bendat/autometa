@@ -15,13 +15,23 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@automaton/cucumber": ["packages/bdd/cucumber/src/index.ts"],
+      "@automaton/dependency-injection": [
+        "packages/utils/dependency-injection/src/index.ts"
+      ],
+      "@automaton/logging": ["packages/utils/logging/src/index.ts"],
       "@automaton/page-components": [
         "packages/page-object-models/page-components/src/index.ts"
       ],
       "@automaton/page-object-models/page-components-tests": [
         "packages/page-object-models/page-components-tests/src/index.ts"
-      ]
+      ],
+      "@automaton/shared-utilities": [
+        "packages/utils/shared-utilities/src/index.ts"
+      ],
+      "@automaton/store": ["packages/utils/store/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp"],
+  "include": ["src"]
 }

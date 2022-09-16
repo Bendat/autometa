@@ -1,0 +1,7 @@
+{
+  "name": "@automaton/store",
+  "version": "0.0.1",
+  "dependencies": {
+    "@automaton/dependency-injection": "*"
+  }
+}
