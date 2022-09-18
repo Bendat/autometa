@@ -15,7 +15,7 @@ import { matchesFilter } from '../tag-filtering/tag-filtering';
 import Background from './backgrounds/background';
 import { ScenarioOutline } from './scenario-outline/scenario-outline';
 import { Scenario } from './scenario/scenario';
-import { di } from '@automaton/dependency-injection';
+import { di } from '@autometa/dependency-injection';
 
 interface Group<T> {
   [key: string]: T;

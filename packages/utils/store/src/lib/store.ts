@@ -1,4 +1,4 @@
-import { Injectable } from "@automaton/dependency-injection";
+import { Injectable } from "@autometa/dependency-injection";
 
 export enum StoreAction {
   PUT = 'PUT',

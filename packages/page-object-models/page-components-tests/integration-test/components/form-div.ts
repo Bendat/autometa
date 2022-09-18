@@ -1,4 +1,4 @@
-import { Checkbox, Component, component, TextArea, TextInput } from '@automaton/page-components';
+import { Checkbox, Component, component, TextArea, TextInput } from '@autometa/page-components';
 import { By } from 'selenium-webdriver';
 import { GridDiv } from './grid-div-base';
 

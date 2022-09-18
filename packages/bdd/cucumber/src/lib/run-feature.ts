@@ -5,7 +5,7 @@ import TestTrackingSubscribers from './tracking/test-subscribers';
 import TestTrackingEvents from './tracking/test-tracker';
 import { FeatureCallback, FeatureCallbackObject } from './types';
 import { readFeature } from './utils';
-import {getCallerFromIndex} from '@automaton/shared-utilities'
+import {getCallerFromIndex} from '@autometa/shared-utilities'
 function runFeatureFile(featureCallback: FeatureCallback, featurePath: string) {
   const parsedGherkin = getFeature(featurePath);
   const tracker = new TestTrackingEvents(new TestTrackingSubscribers());
@@ -28,7 +28,7 @@ function getFeature(file: string) {
 }
 
 /**
- * Entrypoint function for @automaton.
+ * Entrypoint function for @autometa.
  *
  * Takes a callback which provides Scenarios, ScenarioOutlines,
  * Backgrounds and other options to build out the step code for gherkin

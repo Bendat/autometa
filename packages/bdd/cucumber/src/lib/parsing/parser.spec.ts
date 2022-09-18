@@ -1,4 +1,4 @@
-import { EMPTY_STRING } from '@automaton/shared-utilities';
+import { EMPTY_STRING } from '@autometa/shared-utilities';
 import { parseCucumber } from './parser';
 const bareFeature = `Feature:`;
 const bareFeatureWithName = `Feature: A feature with no scenarios`;

@@ -10,7 +10,7 @@ This library requires a reflect poly-fill like [`reflect-metadata`](https://www.
 Ensure it's called early in your code, preferably in a setup script
 :::
 
-Automaton Page Component Model is a declarative page object model library for `TypeScript` which streamlines the definition
+Autometa Page Component Model is a declarative page object model library for `TypeScript` which streamlines the definition
 of page objects for Selenium users on node. It aims to automatically create and wire together all your page objects seamlessly
 so you can focus on writing tests.
 
@@ -21,7 +21,7 @@ Components are automatically scoped to their parent for faster searching, and la
 
 ## At a Glance
 
-Automaton PCM defines pages with simple classes and decorators.
+Autometa PCM defines pages with simple classes and decorators.
 
 ```ts title='Example Home Page Page Object Model'
 export class MyHomePage extends WebPage {
@@ -32,7 +32,7 @@ export class MyHomePage extends WebPage {
   @page()
   signInPage: SignInPage;
 
-  // zero instantiation/initialization. The Automaton does it for you.
+  // zero instantiation/initialization. The Autometa does it for you.
   @component(By.id('search-bar'))
   searchBarInput: TextInput;
 
@@ -44,7 +44,7 @@ export class MyHomePage extends WebPage {
 :::info
 
 `Button` and `TextInput` are some of the default [Components](components) provided
-by Automaton POM. Building your own custom components and connecting them to your page
+by Autometa POM. Building your own custom components and connecting them to your page
 objects is trivial and encouraged. While there are patterns provided for dealing
 with containers, where possible it's best to define a custom component.
 :::

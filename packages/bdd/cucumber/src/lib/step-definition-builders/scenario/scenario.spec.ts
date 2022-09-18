@@ -8,7 +8,7 @@ import TestTrackingEvents from '../../tracking/test-tracker';
 import { StepFunctions } from '../../types';
 import Background from '../backgrounds/background';
 import { Global } from '@jest/types';
-import { World, Store } from '@automaton/store';
+import { World, Store } from '@autometa/store';
 const world = new World();
 const store = new Store();
 describe('scenario', () => {

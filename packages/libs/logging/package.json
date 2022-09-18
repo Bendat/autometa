@@ -1,5 +1,5 @@
 {
-  "name": "@automaton/logging",
+  "name": "@autometa/logging",
   "version": "0.0.1",
   "dependencies": {
     "colors-cli": "^1.0.28",

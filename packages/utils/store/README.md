@@ -1,1 +1,1 @@
-This is an internal library for [@automaton](https://npmjs.com/automaton)
+This is an internal library for [@autometa](https://npmjs.com/autometa)

@@ -1,4 +1,4 @@
-import { Instantiable } from '@automaton/shared-utilities';
+import { Instantiable } from '@autometa/shared-utilities';
 import 'reflect-metadata';
 import { container, DependencyContainer, Lifecycle } from 'tsyringe';
 

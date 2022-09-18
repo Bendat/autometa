@@ -3,8 +3,8 @@
 Flags are toggles which can be method chained.
 They are accessible through the `Flags` object
 
-```ts title='automaton.setup.ts'
-import { Flags } from '@automaton/cucumber';
+```ts title='autometa.setup.ts'
+import { Flags } from '@autometa/cucumber';
 
 Flags.enableLoggingGroups();
 ```

@@ -6,15 +6,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Automaton documentation',
+  title: 'Autometa documentation',
   tagline: 'An Automation Framework Toolkit for Typescript and Node',
   url: 'https://bendat.github.io/',
-  baseUrl: '/automaton/',
+  baseUrl: '/autometa/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'automaton', // Usually your GitHub org/user name.
-  projectName: 'automaton', // Usually your repo name.
+  organizationName: 'bendat', // Usually your GitHub org/user name.
+  projectName: 'autometa', // Usually your repo name.
 
   presets: [
     [
@@ -24,7 +24,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/Bendat/automaton',
+          editUrl: 'https://github.com/Bendat/autometa',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -36,7 +36,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Automaton',
+        title: 'Autometa',
         logo: {
           alt: 'My Site Logo',
           src: 'img/logo.svg',

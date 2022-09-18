@@ -4,7 +4,7 @@ import {
   Paragraph,
   Anchor,
   Component,
-} from '@automaton/page-components';
+} from '@autometa/page-components';
 import { By } from 'selenium-webdriver';
 import { GridDiv } from './grid-div-base';
 

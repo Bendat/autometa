@@ -1,9 +1,9 @@
-# Automaton
+# Autometa
 
-_Automaton_ is intended to be an automation framework toolkit, which provides libraries to help automate the automation
+_Autometa_ is intended to be an automation framework toolkit, which provides libraries to help automate the automation
 process on node
 
-Below is a summary of Automaton Libraries
+Below is a summary of Autometa Libraries
 
 ## Page Component Model - Selenium
 

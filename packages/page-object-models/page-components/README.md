@@ -1,8 +1,8 @@
 # Page Components Model
 
-### [Full Documentation/Tutorial Here](https://bendat.github.io/automaton/docs/ui-testing/selenium/page-component-model/intro)
+### [Full Documentation/Tutorial Here](https://bendat.github.io/autometa/docs/ui-testing/selenium/page-component-model/intro)
 
-**Automaton** Page Components Model is an (early and experimental) interpretation of the Page Object Model, built for use with selenium
+**Autometa** Page Components Model is an (early and experimental) interpretation of the Page Object Model, built for use with selenium
 
 ## Quick Intro
 

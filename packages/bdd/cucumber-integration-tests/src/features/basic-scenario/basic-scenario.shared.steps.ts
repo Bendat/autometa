@@ -1,4 +1,4 @@
-import { Feature } from "@automaton/cucumber";
+import { Feature } from "@autometa/cucumber";
 
 const mainCallbacks = ({ Given, When, Then }) => {
   Given('a {word} step', (keyword) => {

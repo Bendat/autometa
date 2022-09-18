@@ -1,4 +1,4 @@
-import { component, Select } from '@automaton/page-components';
+import { component, Select } from '@autometa/page-components';
 import { By } from 'selenium-webdriver';
 import { GridDiv } from './grid-div-base';
 

@@ -1,4 +1,4 @@
-import { Feature } from "@automaton/cucumber";
+import { Feature } from "@autometa/cucumber";
 
 Feature(({ Scenario }) => {
   Scenario('Something Simple Can Happen', ({ Given, When, Then, And, But }) => {

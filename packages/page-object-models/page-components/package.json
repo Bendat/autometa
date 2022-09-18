@@ -1,12 +1,12 @@
 {
-  "name": "@automaton/page-components",
-  "version": "0.0.0",
+  "name": "@autometa/page-components",
+  "version": "0.0.2",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bendat/automaton"
+    "url": "https://github.com/Bendat/autometa"
   },
-  "homepage": "https://bendat.github.io/automaton/docs/ui-testing/selenium/page-component-model/intro",
+  "homepage": "https://bendat.github.io/autometa/docs/ui-testing/selenium/page-component-model/intro",
   "keywords": [
     "page object",
     "page object model",
@@ -18,7 +18,6 @@
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.7.0",
     "colors-cli": "^1.0.28"
-
   },
   "devDependencies": {
     "@types/jest": "^29.0.2",

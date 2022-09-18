@@ -3,7 +3,7 @@ import {
   StepCallbackProvider,
   StepFunctions,
 } from '../../types';
-import { Store, World } from '@automaton/store';
+import { Store, World } from '@autometa/store';
 
 const store = {Store: new Store(), World: new World()}
 describe('background', () => {

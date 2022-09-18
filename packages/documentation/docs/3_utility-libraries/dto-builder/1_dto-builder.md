@@ -3,11 +3,11 @@
 This is a simple library for defining DTO (data transfer object) classes with decorators, and automatically generating builder classes
 to simplify defining a DTO's data.
 
-[NPM](https://www.npmjs.com/package/@automaton/dto)
+[NPM](https://www.npmjs.com/package/@autometa/dto)
 ## Installing
 
 ```
-npm i -s @automaton/dto
+npm i -s @autometa/dto
 ```
 ## DTOs
 
@@ -16,16 +16,16 @@ A DTO is a class with the `@Property` decorator applied to at least one property
 For example:
 
 ```ts
-import { Property } from '@automaton/dto';
+import { Property } from '@autometa/dto';
 
 export class CreateUserDto {
-  @Property
+  @property
   username!: string;
 
-  @Property
+  @property
   password!: string;
 
-  @Property
+  @property
   email?: string;
 }
 ```
@@ -38,7 +38,7 @@ builder functions corresponding to the DTO properties.
 
 ```ts
 import { CreateUserDto } from './somewhere';
-import { Builder } from '@automaton/dto';
+import { Builder } from '@autometa/dto';
 
 const CreateUserBuilder = Builder(CreateUserDTO);
 

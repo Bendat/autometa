@@ -1,10 +1,10 @@
 # Setup & Configuration
 
-To start configuring `automaton`, create a file near the root of your project called `automation.setup.ts` (or any name of your choosing) and add it to `jest.config.[j|t]s` as a [setup file](https://jestjs.io/docs/configuration#setupfilesafterenv-array).
+To start configuring `autometa`, create a file near the root of your project called `automation.setup.ts` (or any name of your choosing) and add it to `jest.config.[j|t]s` as a [setup file](https://jestjs.io/docs/configuration#setupfilesafterenv-array).
 
 ```ts title='jest.config.ts'
 export default {
-  setupFilesAfterEnv: ['reflect-metadata', './automaton.setup.ts'],
+  setupFilesAfterEnv: ['reflect-metadata', './autometa.setup.ts'],
 }
 ```
 

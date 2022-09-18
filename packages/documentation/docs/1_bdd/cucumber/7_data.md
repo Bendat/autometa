@@ -2,7 +2,7 @@
 
 An issue arises with steps when data must be passed between them. In vanilla Cucumber, that is achieved with the [World](https://github.com/cucumber/cucumber-js/blob/main/docs/support_files/world.md) object.
 
-As automaton is a structured test runner, it is possible to create objects inside the test `Scenario`s themselves.
+As autometa is a structured test runner, it is possible to create objects inside the test `Scenario`s themselves.
 
 ```ts title='Using a plain object'
 Feature(({ Scenario }) => {

@@ -1,4 +1,4 @@
-import { Component, component } from '@automaton/page-components';
+import { Component, component } from '@autometa/page-components';
 import { By } from 'selenium-webdriver';
 import { CompoundTypesDiv } from './compound-types';
 import { ContainerDiv } from './container-types';

@@ -8,7 +8,7 @@ A DTO is a class with the `@Property` decorator applied to at least one property
 For example:
 
 ```ts
-import { property } from '@automatondto';
+import { property } from '@autometadto';
 
 export class CreateUserDto {
   @property
@@ -28,7 +28,7 @@ builder functions corresponding to the DTO properties.
 
 ```ts
 import { CreateUserDto } from './somewhere';
-import { Builder } from '@automatondto';
+import { Builder } from '@autometadto';
 
 const CreateUserBuilder = Builder(CreateUserDTO);
 

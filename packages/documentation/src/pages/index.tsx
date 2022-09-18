@@ -18,7 +18,7 @@ function HomepageHeader() {
             className="button button--secondary button--lg"
             to="/docs/intro"
           >
-            Automaton Tutorial
+            Autometa Tutorial
           </Link>
         </div>
       </div>

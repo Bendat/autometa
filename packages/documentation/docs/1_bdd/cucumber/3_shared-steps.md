@@ -6,7 +6,7 @@ simple create a variable which provides a `ScenarioInnerCallback` function.
 For example
 
 ```ts
-import {ScenarioInnerCallback} from '@automaton/cucumber'
+import {ScenarioInnerCallback} from '@autometa/cucumber'
 
 export const applyUserCredentials: ScenarioInnerCallback = (({Given, And}))=>{
     Given('the user has provided their username', ()=>....)
@@ -57,7 +57,7 @@ Scenario(({When, Shared})=>{
 To pass data to a shared step, wrap it in a function.
 
 ```ts
-import {ScenarioInnerCallback} from '@automaton/cucumber'
+import {ScenarioInnerCallback} from '@autometa/cucumber'
 
 export const applyUserCredentials: ScenarioInnerCallback = (userName: string)=>{
     return (({ Given, And }))=>{

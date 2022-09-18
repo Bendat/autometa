@@ -1,7 +1,7 @@
 {
-  "name": "@automaton/shared-utilities",
+  "name": "@autometa/shared-utilities",
   "version": "0.0.1",
   "dependencies": {
-    "@automaton/shared-utilities": "*"
+    "@autometa/shared-utilities": "*"
   }
 }

@@ -1,6 +1,6 @@
 import 'reflect-metadata'
-import { useConsoleGroups } from '@automaton/logging';
-import { parseBoolOrUndefined } from '@automaton/shared-utilities';
+import { useConsoleGroups } from '@autometa/logging';
+import { parseBoolOrUndefined } from '@autometa/shared-utilities';
 import * as dotenv from 'dotenv';
 dotenv.config();
 console.log('loading')

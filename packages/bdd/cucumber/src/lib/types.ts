@@ -1,4 +1,4 @@
-import { Store, World } from '@automaton/store';
+import { Store, World } from '@autometa/store';
 import { GherkinTable } from './parsing/gherkin-objects';
 
 export type StepCallbackProvider = (

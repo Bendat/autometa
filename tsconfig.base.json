@@ -21,27 +21,27 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@automaton/cucumber-integration-tests": [
+      "@autometa/cucumber-integration-tests": [
         "packages/bdd/cucumber-integration-tests/src/index.ts"
       ],
-      "@automaton/cucumber": ["packages/bdd/cucumber/src/index.ts"],
-      "@automaton/dependency-injection": [
+      "@autometa/cucumber": ["packages/bdd/cucumber/src/index.ts"],
+      "@autometa/dependency-injection": [
         "packages/utils/dependency-injection/src/index.ts"
       ],
-      "@automaton/dto-builder": ["packages/libs/dto-builder/src/index.ts"],
-      "@automaton/logging": ["packages/libs/logging/src/index.ts"],
-      "@automaton/page-components": [
+      "@autometa/dto-builder": ["packages/libs/dto-builder/src/index.ts"],
+      "@autometa/logging": ["packages/libs/logging/src/index.ts"],
+      "@autometa/page-components": [
         "packages/page-object-models/page-components/src/index.ts"
       ],
-      "@automaton/page-object-models/page-components-tests": [
+      "@autometa/page-object-models/page-components-tests": [
         "packages/page-object-models/page-components-tests/src/index.ts"
       ],
-      "@automaton/shared-utilities": [
+      "@autometa/shared-utilities": [
         "packages/utils/shared-utilities/src/index.ts"
       ],
-      "@automaton/store": ["packages/utils/store/src/index.ts"]
+      "@autometa/store": ["packages/utils/store/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "tmp"],
+  "exclude": ["node_modules", "**/*/node_modules", "tmp"],
   "include": ["src"]
 }

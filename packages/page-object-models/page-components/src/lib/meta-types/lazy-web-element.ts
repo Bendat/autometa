@@ -52,7 +52,7 @@ export class ComponentProxyWebElement implements WebElement {
       ) {
         error.message = `Component searcher for '${
           this.#component?.pomName
-        }' was undefined. Searcher is automatically injected by Automaton after instantiation. Did you accidentally call a method while exposing it? For example 'click = this.click()' instead of 'click = this.click'? \n\t${
+        }' was undefined. Searcher is automatically injected by Autometa after instantiation. Did you accidentally call a method while exposing it? For example 'click = this.click()' instead of 'click = this.click'? \n\t${
           error.message
         }`;
       }

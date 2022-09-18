@@ -12,7 +12,7 @@ import { ScenarioOutline } from '../scenario-outline/scenario-outline';
 import { Scenario } from '../scenario/scenario';
 import { TestGroup } from '../test-group/test-group';
 import { PassiveRule } from '../rules/passive-rule';
-import { di } from '@automaton/utils-dependency-injection';
+import { di } from '@autometa/utils-dependency-injection';
 
 export class TopLevelRun extends TestGroup {
   readonly callbacks: Steps[] = [];

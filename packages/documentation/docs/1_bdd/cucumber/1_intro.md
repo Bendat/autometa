@@ -1,6 +1,6 @@
 # Introduction
 
-[Automaton](https://www.npmjs.com/package/automaton/cucumber) is a runner for [Cucumber](https://cucumber.io/) which runs on [Jest](https://jestjs.io/).
+[Autometa](https://www.npmjs.com/package/autometa/cucumber) is a runner for [Cucumber](https://cucumber.io/) which runs on [Jest](https://jestjs.io/).
 
 It replaces Cucumber with a callback style of test using `Scenarios`, `Scenario Outlines` and `Given` `When` `Then` etc steps.
 
@@ -16,8 +16,8 @@ put this could be the first line of your [configuration file](Configuration/1_se
 
 # Getting Started
 
-```bash title="Install automaton"
-npm i -D @automaton/cucumber
+```bash title="Install autometa"
+npm i -D @autometa/cucumber
 ```
 
 ```json title="Add test pattern to jest config"
@@ -35,7 +35,7 @@ Feature: Search For Houses
 ```
 
 ```ts title="Create a Steps file"
-import { Feature } from '@automaton/cucumber';
+import { Feature } from '@autometa/cucumber';
 
 Feature(() => {}, './features/SearchHouses.feature');
 ```
@@ -57,7 +57,7 @@ Also provided is a shared step `Background` function which will be applied to al
 a `Feature` and provides `Scenario` and `ScenarioOutline`.
 
 ```ts title="Add a Scenario"
-import { Feature } from '@automaton/cucumber';
+import { Feature } from '@autometa/cucumber';
 
 Feature(({ Scenario }) => {
   Scenario('I Can Search For A House In London', () => {});
@@ -70,7 +70,7 @@ The callback objects like `Scenario` also take a callback, which
 provides the step functions.
 
 ```ts title="Add Steps"
-import { Feature } from '@automaton/cucumber';
+import { Feature } from '@autometa/cucumber';
 import { Searcher } from '../src/test-actions';
 
 Feature(({ Scenario }) => {
@@ -118,7 +118,7 @@ Feature(({ ScenarioOutline }) => {
 Backgrounds are another test callback. Steps in a Background
 will be reused across any scenarios within scope of that Background - i.e a Background inside a rule is not relevant to a Scenario outside a rule.
 
-Backgrounds in automaton do not have to match the Background blocks in a Feature file - They can be ignored entirely or used to reduce initialization steps that don't have a Background in Feature.
+Backgrounds in autometa do not have to match the Background blocks in a Feature file - They can be ignored entirely or used to reduce initialization steps that don't have a Background in Feature.
 
 ### Background In Feature File
 

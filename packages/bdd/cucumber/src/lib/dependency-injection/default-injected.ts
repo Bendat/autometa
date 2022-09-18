@@ -1,5 +1,5 @@
-import { registerProvider } from '@automaton/utils-dependency-injection';
-import { World, Store } from '@automaton/utils-store';
+import { registerProvider } from '@autometa/utils-dependency-injection';
+import { World, Store } from '@autometa/utils-store';
 
 registerProvider({
   World: World,

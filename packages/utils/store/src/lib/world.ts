@@ -1,4 +1,4 @@
-import { Injectable } from "@automaton/dependency-injection";
+import { Injectable } from "@autometa/dependency-injection";
 
 /**
  * Simple storage cache containing name:value pairs.
