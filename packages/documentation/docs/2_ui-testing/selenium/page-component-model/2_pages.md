@@ -120,7 +120,7 @@ describe('testing my home page loaded', () => {
 ```
 
 :::tip
-Page and WebComponent methods use fat-arrow functions and can be safely de-structured to reduce nesting.
+Page and WebComponent methods use fat-arrow functions and can be safely de-structured to reduce chaining.
 
 ```ts
 it('should test my page', async () => {
