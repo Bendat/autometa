@@ -1,5 +1,4 @@
-import { Injectable } from '@automaton/utils-dependency-injection';
-import { startGroup, endGroup } from '@automaton/logger';
+import { Injectable } from '@automaton/dependency-injection';
 import Bag from './bag';
 
 enum ConsoleGroupToken {

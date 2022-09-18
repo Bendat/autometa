@@ -1,12 +1,6 @@
-import { bold } from 'ansi-colors';
-import {
-  endGroup,
-  useConsoleGroups,
-  startGroup,
-  grouping,
-} from './console';
+import { bold } from 'colors-cli';
+import { endGroup, useConsoleGroups, startGroup, grouping } from './console';
 import { ConsoleGroupToken } from './group-tokens';
-
 
 useConsoleGroups();
 describe('console', () => {
@@ -46,7 +40,9 @@ describe('console', () => {
         throw new Error('bad error');
       };
       const result = () => grouping('a test group', action);
-      expect(result).toThrow('grouping failed due to action throwing an error Error: bad error');
+      expect(result).toThrow(
+        'grouping failed due to action throwing an error Error: bad error'
+      );
       expect(groupSpy).toHaveBeenCalled();
       expect(groupEndSpy).toHaveBeenCalled();
     });

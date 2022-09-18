@@ -1,7 +1,9 @@
+import 'reflect-metadata'
 import { useConsoleGroups } from '@automaton/logging';
+import { parseBoolOrUndefined } from '@automaton/shared-utilities';
 import * as dotenv from 'dotenv';
 dotenv.config();
-
+console.log('loading')
 const env = {
   loggingGroups: parseBoolOrUndefined(process.env.USE_LOGGING_GROUPS),
   filterQuery: process.env.CUCUMBER_FILTER,
@@ -67,19 +69,4 @@ const flagToggles = new FlagToggles(flags);
 
 export const Flags = flagToggles;
 export const Env = env;
-/**
- * @deprecated
- * @param value
- * @returns
- */
-export function parseBoolOrUndefined(
-  value: string | undefined
-): boolean | undefined {
-  if (value === 'true') {
-    return true;
-  }
-  if (value === 'false') {
-    return false;
-  }
-  return undefined;
-}
+

@@ -1,5 +1,6 @@
 /* eslint-disable */
 export default {
+  setupFilesAfterEnv : ['reflect-metadata', 'src/setup.ts'],
   displayName: 'bdd-cucumber',
   preset: '../../../jest.preset.js',
   globals: {

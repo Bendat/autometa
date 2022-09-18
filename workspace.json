@@ -2,12 +2,14 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "cucumber-integration-tests": "packages/bdd/cucumber-integration-tests",
     "cucumber": "packages/bdd/cucumber",
     "dependency-injection": "packages/utils/dependency-injection",
     "documentation": "packages/documentation",
+    "dto-builder": "packages/libs/dto-builder",
+    "logging": "packages/libs/logging",
     "page-components": "packages/page-object-models/page-components",
     "page-components-tests": "packages/page-object-models/page-components-tests",
-    "shared-utilities": "packages/utils/shared-utilities",
-    "utils-logging": "packages/utils/logging"
+    "shared-utilities": "packages/utils/shared-utilities"
   }
 }

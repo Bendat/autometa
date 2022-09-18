@@ -5,7 +5,7 @@ import TestTrackingSubscribers from './tracking/test-subscribers';
 import TestTrackingEvents from './tracking/test-tracker';
 import { FeatureCallback, FeatureCallbackObject } from './types';
 import { readFeature } from './utils';
-import {getCallerFromIndex} from '@automaton/utilities'
+import {getCallerFromIndex} from '@automaton/shared-utilities'
 function runFeatureFile(featureCallback: FeatureCallback, featurePath: string) {
   const parsedGherkin = getFeature(featurePath);
   const tracker = new TestTrackingEvents(new TestTrackingSubscribers());

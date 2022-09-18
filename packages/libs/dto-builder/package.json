@@ -1,0 +1,18 @@
+{
+  "name": "@automaton/dto-builder",
+  "version": "0.0.1",
+  "license": "MIT",
+  "keywords": [
+    "dto",
+    "builder",
+    "builder-pattern",
+    "builder pattern"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bendat/jest-automation/tree/main/packages/dto"
+  },
+  "dependencies": {
+    "class-validators": "^1.0.1"
+  }
+}

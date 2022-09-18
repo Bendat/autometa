@@ -1,4 +1,4 @@
-import { Injectable } from '@automaton/shared-utilities';
+import { Injectable } from '@automaton/dependency-injection';
 import Bag from './bag';
 import TestTrackingSubscribers from './test-subscribers';
 

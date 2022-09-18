@@ -1,4 +1,4 @@
-import { di } from '@automaton/utils-dependency-injection';
+import { di } from '@automaton/dependency-injection';
 import { afterAll, beforeAll } from '@jest/globals';
 import { Global } from '@jest/types';
 import {

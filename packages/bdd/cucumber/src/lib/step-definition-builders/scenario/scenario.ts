@@ -17,8 +17,8 @@ import { throwErrorIfNoMatch } from '../../utils';
 import Background from '../backgrounds/background';
 import { TestGroup } from '../test-group/test-group';
 import '../../dependency-injection/default-injected';
-import { Injectable } from '@automaton/utils-dependency-injection';
-import { Store, World } from '@automaton/utils-store';
+import { Injectable } from '@automaton/dependency-injection';
+import { Store, World } from '@automaton/store';
 @Injectable()
 export class Scenario extends TestGroup {
   #parsedScenario: GherkinScenario;

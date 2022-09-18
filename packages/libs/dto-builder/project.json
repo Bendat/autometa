@@ -1,20 +1,20 @@
 {
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/utils/logging/src",
+  "sourceRoot": "packages/libs/dto-builder/src",
   "projectType": "library",
   "targets": {
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/utils/logging/**/*.ts"]
+        "lintFilePatterns": ["packages/libs/dto-builder/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/utils/logging"],
+      "outputs": ["coverage/packages/libs/dto-builder"],
       "options": {
-        "jestConfig": "packages/utils/logging/jest.config.ts",
+        "jestConfig": "packages/libs/dto-builder/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -22,11 +22,11 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/utils/logging",
-        "tsConfig": "packages/utils/logging/tsconfig.lib.json",
-        "packageJson": "packages/utils/logging/package.json",
-        "main": "packages/utils/logging/src/index.ts",
-        "assets": ["packages/utils/logging/*.md"]
+        "outputPath": "dist/packages/libs/dto-builder",
+        "tsConfig": "packages/libs/dto-builder/tsconfig.lib.json",
+        "packageJson": "packages/libs/dto-builder/package.json",
+        "main": "packages/libs/dto-builder/src/index.ts",
+        "assets": ["packages/libs/dto-builder/*.md"]
       }
     }
   },
