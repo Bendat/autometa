@@ -22,7 +22,7 @@ npm i -D @autometa/cucumber
 
 ```json title="Add test pattern to jest config"
 "testMatch": [
-    "**/*.steps.js"
+    "**/*.steps.ts"
 ],
 ```
 
