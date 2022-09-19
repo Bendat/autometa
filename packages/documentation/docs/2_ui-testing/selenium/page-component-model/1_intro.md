@@ -64,8 +64,8 @@ describe('Searching on our homepage', () => {
   });
 
   it('should search for puppies', () => {
-    await site.searchBarInput.write('puppies');
-    await site.searchButton.click();
+    await home.searchBarInput.write('puppies');
+    await home.searchButton.click();
     await site.waitForTitleIs('Search Results');
 
     const resultsCount = await site.results.length;
