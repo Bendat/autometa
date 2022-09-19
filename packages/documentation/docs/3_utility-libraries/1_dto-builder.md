@@ -1,4 +1,4 @@
-# Getting Started
+# DTO & Builder Pattern
 
 This is a simple library for defining DTO (data transfer object) classes with decorators, and automatically generating builder classes
 to simplify defining a DTO's data.

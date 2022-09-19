@@ -1,6 +1,11 @@
 {
   "name": "@autometa/logging",
   "version": "0.0.1",
+  "homepage": "https://bendat.github.io/autometa/docs/utility-libraries/group-logger",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bendat/autometa/tree/main/packages/libs/logging"
+  },
   "dependencies": {
     "colors-cli": "^1.0.28",
     "get-current-line": "^6.6.0",
