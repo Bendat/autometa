@@ -6,16 +6,31 @@ import { SimpleTypeDiv } from './components/simple-types-div';
 import { CompoundTypesDiv } from './components/compound-types';
 import { ContainerArticle } from './components/container-types';
 import { FormDiv } from './components/form-div';
-import { Site } from '../../page-components/src';
+import { Site } from '@autometa/page-components';
 jest.setTimeout(500_000);
 const wbBuilder = new Builder().forBrowser(Browser.CHROME);
 const url = 'http://127.0.0.1:8080/';
+
 describe('Integration test', () => {
   const site = Site(url, wbBuilder);
   let page: IndexPage;
+  let {
+    grid: {
+      simpleTypes: { firstParagraph },
+      compoundTypes,
+      containerTypes,
+    },
+  }: IndexPage = site.blueprint(IndexPage);
 
   beforeEach(async () => {
     page = await site.browse(IndexPage);
+    ({
+      grid: {
+        simpleTypes: { firstParagraph },
+        compoundTypes,
+        containerTypes,
+      },
+    } = page);
   });
 
   describe('Simple Type Div', () => {

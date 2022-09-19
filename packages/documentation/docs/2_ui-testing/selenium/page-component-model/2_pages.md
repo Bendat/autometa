@@ -145,6 +145,46 @@ it('should test my page', async () => {
 });
 ```
 
+`Site` has a `blueprint` method that will return a valid but
+useless blueprint of your Page. It can be used to create a `let`
+statement outside of your test functions which can be assigned by
+`beforeEach`
+
+e.g.
+
+```ts
+let {
+    loginButton,
+    searchBar,
+    blogPosts: {
+      highlighted: { title, intro, date },
+      yesterdays: { date: yesterdaysDate },
+    },
+  } : MyHomePage = site.blueprint(MyHomePage)
+beforeEach(()=>{
+  {
+    loginButton,
+    searchBar,
+    blogPosts: {
+      highlighted: { title, intro, date },
+      yesterdays: { date: yesterdaysDate },
+    },
+  } = site.browse(MyHomePage)
+}
+
+it('should test my page', async () => {
+  await loginButton.click();
+  await searchBar.showsSuggestion(
+    "We've",
+    "We've been trying to reach you about your cars extended warranty"
+  );
+  expect(await title.text).toBe('It might be one of the days of all time');
+  expect(await yesterdaysDate.datetime).toBe(MyDateUtil.yesterday);
+
+  // .... etc
+});
+```
+
 :::
 
 You can also use functions in your Components. These can act to group behavior together

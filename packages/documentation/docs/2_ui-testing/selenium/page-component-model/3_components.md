@@ -1,7 +1,7 @@
 # Components
 
 At the heart of this library are `Component`s. Components are an alternative to `WebElements`
-and which hide or expose behaviors of a WebElement to display **intent**.
+and which hide or expose behaviors of a WebElement to express **intent**.
 
 The base class for a Component is `Component`. A `Component` resembles a `WebElement` but hides
 actions which are not applicable to all elements. `Component` is an abstract class and cannot

@@ -84,6 +84,15 @@ export class WebsiteHandler {
   };
 
   /**
+   * Valid but functionally useless implementation to allow
+   * for destructuring with `let` statements
+   * @param page 
+   * @returns 
+   */
+  blueprint = <T extends WebPage>(page: constructor<T>) => {
+    return new page()
+  }
+  /**
    * Load a new Page Object without reloading the browser
    * @param page The class of the WebPage to be assembled
    * @returns An assembled WebPage/Page Object
