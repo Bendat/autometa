@@ -1,4 +1,5 @@
-import { Injectable } from '@autometa/dependency-injection';
+import { endGroup, GroupLogger, startGroup, } from '@autometa/logging';
+import { injectable } from 'tsyringe';
 import Bag from './bag';
 
 enum ConsoleGroupToken {
@@ -9,8 +10,9 @@ enum ConsoleGroupToken {
   Step = '',
 }
 
-@Injectable()
+@injectable()
 export default class TestTrackingSubscribers {
+
   readonly featureStarted = new Bag((title: string) =>
     startGroup(ConsoleGroupToken.Feature, title)
   );

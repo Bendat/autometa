@@ -2,6 +2,5 @@
   "name": "@autometa/shared-utilities",
   "version": "0.0.1",
   "dependencies": {
-    "@autometa/shared-utilities": "*"
   }
 }

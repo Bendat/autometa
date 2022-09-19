@@ -1,4 +1,4 @@
-import { Injectable } from "@autometa/dependency-injection";
+import { injectable } from "tsyringe";
 
 /**
  * Simple storage cache containing name:value pairs.
@@ -9,7 +9,7 @@ import { Injectable } from "@autometa/dependency-injection";
  * expect(World.userCount).toBe(1)
  * ```
  */
-@Injectable()
+@injectable()
 export class World {
   [key: string]: unknown;
 }

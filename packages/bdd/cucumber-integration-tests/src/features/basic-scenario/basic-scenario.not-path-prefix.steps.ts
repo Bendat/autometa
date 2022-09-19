@@ -7,19 +7,14 @@ Feature(({ Scenario }) => {
     })
     
     Given('a given step', () => {
-      console.log('dog')
       expect(1).toBe(1);
     });
 
     When('a when step', () => {
-      console.log('dog')
-
       expect(1).toBe(1);
     });
 
     Then('a then step', () => {
-      console.log('dog')
-
       expect(1).toBe(1);
     });
 

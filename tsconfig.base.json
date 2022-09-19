@@ -1,8 +1,8 @@
 {
   "compileOnSave": false,
   "references": [
-    { "path": "./packages/libs/logging" },
-    { "path": "./packages/utils/libs" },
+    { "path": "./packages/utils/store" },
+    { "path": "./packages/libs/dto-builder" },
     { "path": "./packages/utils/logging" },
     { "path": "./packages/utils/dependency-injection" }
   ],
@@ -33,7 +33,7 @@
       "@autometa/page-components": [
         "packages/page-object-models/page-components/src/index.ts"
       ],
-      "@autometa/page-object-models/page-components-tests": [
+      "@autometa/page-components-tests": [
         "packages/page-object-models/page-components-tests/src/index.ts"
       ],
       "@autometa/shared-utilities": [

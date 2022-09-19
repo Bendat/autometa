@@ -6,6 +6,7 @@
     "declaration": true,
     "types": ["node"]
   },
+  "paths": { "@autometa/*": ["dist/**/*"] },
   "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
   "include": ["**/*.ts"]
 }

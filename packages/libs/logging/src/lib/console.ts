@@ -9,7 +9,6 @@ const originalWarn = console.warn;
 const originalError = console.error;
 const originalGroup = console.group;
 const originalGroupEnd = console.groupEnd;
-let groupsEnabled = false;
 const groupLogger = new GroupLogger();
 
 /**
@@ -18,7 +17,7 @@ const groupLogger = new GroupLogger();
  * with an instance of { @see GroupLogger }
  */
 export function useConsoleGroups() {
-  groupsEnabled = true;
+  groupLogger.groupsEnabled = true
   console.log = groupLogger.log;
   console.info = groupLogger.info;
   console.warn = groupLogger.warn;
@@ -32,7 +31,7 @@ export function useConsoleGroups() {
  * original function implementations
  */
 export function disableConsoleGroups() {
-  groupsEnabled = false;
+  groupLogger.groupsEnabled = false
   console.log = originalLog;
   console.warn = originalWarn;
   console.error = originalError;
@@ -52,13 +51,9 @@ export function startGroup(
   type: ConsoleGroupToken | string,
   ...tags: (string | RegExp)[]
 ) {
-  if (groupsEnabled) {
     groupLogger.group(type, ...tags);
-  }
 }
 
 export function endGroup(type: ConsoleGroupToken | string) {
-  if (groupsEnabled) {
     groupLogger.ungroup(type);
-  }
 }

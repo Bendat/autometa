@@ -33,7 +33,7 @@ export default abstract class Category {
   constructor(
     test: GherkinTest,
     base: GherkinFeature | GherkinRule,
-    events: TestTrackingEvents
+    events: TestTrackingEvents,
   ) {
     this._test = test;
     this._events = events;

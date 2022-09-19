@@ -1,4 +1,8 @@
 {
   "name": "@autometa/dependency-injection",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "dependencies": {
+    "@autometa/shared-utilities": "^0.0.1",
+    "@autometa/store": "^0.0.1"
+  }
 }

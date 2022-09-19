@@ -7,22 +7,22 @@ As autometa is a structured test runner, it is possible to create objects inside
 ```ts title='Using a plain object'
 Feature(({ Scenario }) => {
   Scenario('Search Google', ({ Given, When, Then }) => {
-    const data: any = {}
-    Given('a user on the google homepage', ()=>{
-        data.user = new User()
-    })
+    const data: any = {};
+    Given('a user on the google homepage', () => {
+      data.user = new User();
+    });
 
-    When('they search for {string} on google', async (searchTerm)=>{
-       data.result = await  data.user.SearchGoogle(searchTerm)
-    })
+    When('they search for {string} on google', async (searchTerm) => {
+      data.result = await data.user.SearchGoogle(searchTerm);
+    });
 
-    Then('they see a result for {string}', (website)=>{
-        const desiredWebsite = getWebsite(website, data.result);
-        expect(desireWebsite).toBeDefined()
-        // other validations
-    })
+    Then('they see a result for {string}', (website) => {
+      const desiredWebsite = getWebsite(website, data.result);
+      expect(desireWebsite).toBeDefined();
+      // other validations
+    });
   });
-}, './sample.feature);
+}, './sample.feature');
 ```
 
 This works, but there is no type safety and no way to communicate this object with shared steps.
@@ -60,21 +60,21 @@ call back and can be destructured with the name `World`
 ```ts title="World Object
 Feature(({ Scenario }) => {
   Scenario('Search Google', ({ Given, When, Then }, { World }) => {
-    Given('a user on the google homepage', ()=>{
-        World.user = new User()
-    })
+    Given('a user on the google homepage', () => {
+      World.user = new User();
+    });
 
-    When('they search for {string} on google', async (searchTerm)=>{
-       World.result = await data.user.SearchGoogle(searchTerm)
-    })
+    When('they search for {string} on google', async (searchTerm) => {
+      World.result = await data.user.SearchGoogle(searchTerm);
+    });
 
-    Then('they see a result for {string}', (website)=>{
-        const desiredWebsite = getWebsite(website, World.result);
-        expect(desireWebsite).toBeDefined()
-        // other validations
-    })
+    Then('they see a result for {string}', (website) => {
+      const desiredWebsite = getWebsite(website, World.result);
+      expect(desireWebsite).toBeDefined();
+      // other validations
+    });
   });
-}, './sample.feature);
+}, './sample.feature');
 ```
 
 `World` is unique to each `Scenario` (including the scenarios of a `Scenario Outline`, and scenarios automatically constructed by [Automatic Scenarios](2_all-steps.md)).
@@ -142,6 +142,6 @@ Store.put('returnedResponse', response, { warn: true });
 ....
 
 const storedResponse = Store.read<UserObject>('returnedResponse', {
-  error: true,
+  throws: true,
 });
 ```

@@ -13,8 +13,8 @@ export type LogLevels = 'log' | 'trace' | 'info' | 'debug' | 'error' | 'warn';
 export class GroupLogger {
   #prefix = '';
   #groupStack: (ConsoleGroupToken | string)[] = [];
-  #groupsEnabled = process.env.USE_LOGGING_GROUPS !== 'true';
-  
+  #groupsEnabled = process.env.USE_LOGGING_GROUPS === 'true';
+
   set groupsEnabled(value: boolean) {
     this.#groupsEnabled = value;
   }
@@ -98,9 +98,9 @@ export class GroupLogger {
       console.warn(
         `Attempting to end console group '${name}', however currently active group is '${peek}'. Make sure you end any open inner groups, and beware asynchronous grouping.`
       );
-      this.#prefix = this.#prefix.slice(0, -cutLength());
-      this.#groupStack.pop();
     }
+    this.#prefix = this.#prefix.slice(0, -cutLength());
+    this.#groupStack.pop();
   };
 
   /**
@@ -198,3 +198,4 @@ function getFramesToSkip() {
     },
   };
 }
+

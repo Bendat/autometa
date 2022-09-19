@@ -2,6 +2,5 @@
   "name": "@autometa/store",
   "version": "0.0.1",
   "dependencies": {
-    "@autometa/dependency-injection": "*"
   }
 }

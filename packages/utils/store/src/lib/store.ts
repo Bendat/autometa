@@ -1,4 +1,4 @@
-import { Injectable } from "@autometa/dependency-injection";
+import { injectable } from "tsyringe";
 
 export enum StoreAction {
   PUT = 'PUT',
@@ -30,7 +30,7 @@ export interface ValidationOptions {
  * 
  * This class is injectable with and requires `tsyringe`.
  */
-@Injectable()
+@injectable()
 export class Store {
   #history: History = {};
   #data: Cache = {};

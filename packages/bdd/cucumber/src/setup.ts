@@ -3,7 +3,6 @@ import { useConsoleGroups } from '@autometa/logging';
 import { parseBoolOrUndefined } from '@autometa/shared-utilities';
 import * as dotenv from 'dotenv';
 dotenv.config();
-console.log('loading')
 const env = {
   loggingGroups: parseBoolOrUndefined(process.env.USE_LOGGING_GROUPS),
   filterQuery: process.env.CUCUMBER_FILTER,

@@ -1,4 +1,4 @@
-import { notEmpty } from '@autometa/utilities';
+import { notEmpty } from '@autometa/shared-utilities';
 import {
   AstBuilder,
   GherkinClassicTokenMatcher,

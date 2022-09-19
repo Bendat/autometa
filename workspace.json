@@ -10,6 +10,7 @@
     "logging": "packages/libs/logging",
     "page-components": "packages/page-object-models/page-components",
     "page-components-tests": "packages/page-object-models/page-components-tests",
-    "shared-utilities": "packages/utils/shared-utilities"
+    "shared-utilities": "packages/utils/shared-utilities",
+    "store": "packages/utils/store"
   }
 }
