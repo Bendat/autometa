@@ -161,15 +161,16 @@ let {
       yesterdays: { date: yesterdaysDate },
     },
   } : MyHomePage = site.blueprint(MyHomePage)
+
 beforeEach(()=>{
-  {
+  ({
     loginButton,
     searchBar,
     blogPosts: {
       highlighted: { title, intro, date },
       yesterdays: { date: yesterdaysDate },
     },
-  } = site.browse(MyHomePage)
+  } = site.browse(MyHomePage))
 }
 
 it('should test my page', async () => {
