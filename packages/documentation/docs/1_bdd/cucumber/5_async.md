@@ -35,19 +35,3 @@ Feature(({ Scenario }) => {
   });
 });
 ```
-
-You can also declare functions which can be used directly by the step
-
-```ts
-async function someAsyncFunction(){
-    const response = await HTTP.getThing('something')
-    const updated = modifyResponse(response);
-    return updated
-}
-
-Feature(({ Scenario }) => {
-  Scenario('', ({ Given }) => {
-    Given('', someActionAsyncFunction);
-  });
-});
-```
