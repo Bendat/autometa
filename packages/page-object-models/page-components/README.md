@@ -81,7 +81,7 @@ And make a shortcut on our home-page if we like
 ```ts title='my-home-page.ts'
 export class MyLoginModal extends Component {
   @component(By.id('login-modal'))
-  login: MyLoginModal;
+  loginModal: MyLoginModal;
 
   @component(By.className('login-btn'))
   login: Button;
@@ -108,7 +108,7 @@ describe('Logging the user in', () => {
 
   it('should log the user in', () => {
     await page.waitForTitleIs('My Home Page!');
-    await page.login.logUserIn('myname', 'mYpa55');
+    await page.logUserIn('myname', 'mYpa55');
     await page.waitForTitleIs('mynames Profile')
   });
 });
