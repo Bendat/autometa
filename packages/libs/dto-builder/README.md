@@ -1,6 +1,7 @@
 
 # DTO & Builder Pattern
 
+[**Full Docs**](https://bendat.github.io/autometa/docs/ui-testing/selenium/page-component-model/intro)
 This library provides functionality to help create data types and builder classes for them.
 
 A DTO is a class with the `@Property` decorator applied to at least one property.

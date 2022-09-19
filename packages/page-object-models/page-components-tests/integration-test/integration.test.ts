@@ -14,24 +14,6 @@ const url = 'http://127.0.0.1:8080/';
 describe('Integration test', () => {
   const site = Site(url, wbBuilder);
   let page: IndexPage;
-  let {
-    grid: {
-      simpleTypes: { firstParagraph },
-      compoundTypes,
-      containerTypes,
-    },
-  }: IndexPage = site.blueprint(IndexPage);
-
-  beforeEach(async () => {
-    page = await site.browse(IndexPage);
-    ({
-      grid: {
-        simpleTypes: { firstParagraph },
-        compoundTypes,
-        containerTypes,
-      },
-    } = page);
-  });
 
   describe('Simple Type Div', () => {
     let div: SimpleTypeDiv;
