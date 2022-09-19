@@ -65,3 +65,4 @@ export function Builder<T>(dtoType: Class<T>): Class<DtoBuilder<T>> {
 
   return GeneratedBuilder as Class<DtoBuilder<T>>;
 }
+

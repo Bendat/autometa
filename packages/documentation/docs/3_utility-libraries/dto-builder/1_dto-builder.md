@@ -7,7 +7,7 @@ to simplify defining a DTO's data.
 ## Installing
 
 ```
-npm i -s @autometa/dto
+npm i -s @autometa/dto-builder
 ```
 ## DTOs
 
@@ -16,7 +16,7 @@ A DTO is a class with the `@Property` decorator applied to at least one property
 For example:
 
 ```ts
-import { Property } from '@autometa/dto';
+import { property } from '@autometa/dto-builder';
 
 export class CreateUserDto {
   @property
@@ -38,7 +38,7 @@ builder functions corresponding to the DTO properties.
 
 ```ts
 import { CreateUserDto } from './somewhere';
-import { Builder } from '@autometa/dto';
+import { Builder } from '@autometa/dto-builder';
 
 const CreateUserBuilder = Builder(CreateUserDTO);
 

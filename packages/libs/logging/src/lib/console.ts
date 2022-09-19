@@ -1,13 +1,3 @@
-import {
-  blackBright,
-  bold,
-  red,
-  StyleFunction,
-  white,
-  yellow,
-} from 'ansi-colors';
-import * as util from 'util';
-import getCurrentLine from 'get-current-line';
 import { ConsoleGroupToken } from './group-tokens';
 import { GroupLogger } from './group-logger';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,6 +11,12 @@ const originalGroup = console.group;
 const originalGroupEnd = console.groupEnd;
 let groupsEnabled = false;
 const groupLogger = new GroupLogger();
+
+/**
+ * Enables the use of console groups,
+ * replacing `console`s underlying implementations
+ * with an instance of { @see GroupLogger }
+ */
 export function useConsoleGroups() {
   groupsEnabled = true;
   console.log = groupLogger.log;
@@ -31,6 +27,10 @@ export function useConsoleGroups() {
   console.groupEnd = groupLogger.ungroup;
 }
 
+/**
+ * Disables group logging, returning `console`s
+ * original function implementations
+ */
 export function disableConsoleGroups() {
   groupsEnabled = false;
   console.log = originalLog;
@@ -41,20 +41,11 @@ export function disableConsoleGroups() {
   console.info = originalInfo;
 }
 
-const groupStack: (ConsoleGroupToken | string)[] = [];
-
 export function grouping<T>(
   title: string,
   action: () => T | Promise<T>
 ): T | Promise<T> {
-  console.group(title);
-  try {
-    return action();
-  } catch (e) {
-    throw new Error('grouping failed due to action throwing an error ' + e);
-  } finally {
-    console.groupEnd();
-  }
+  return groupLogger.grouping(title, action);
 }
 
 export function startGroup(
@@ -62,20 +53,12 @@ export function startGroup(
   ...tags: (string | RegExp)[]
 ) {
   if (groupsEnabled) {
-    groupStack.push(type);
-    console.group([type, ...tags].join(' ').trim());
+    groupLogger.group(type, ...tags);
   }
 }
 
 export function endGroup(type: ConsoleGroupToken | string) {
   if (groupsEnabled) {
-    const peek = groupStack.at(-1);
-    if (peek !== type) {
-      console.warn(
-        `Attempting to end console group '${type}', however currently active group is '${peek}'. Make sure you end any open inner groups, and beware asynchronous grouping.`
-      );
-    }
-    console.groupEnd();
-    groupStack.pop();
+    groupLogger.ungroup(type);
   }
 }

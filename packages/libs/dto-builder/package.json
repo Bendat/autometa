@@ -1,6 +1,6 @@
 {
   "name": "@autometa/dto-builder",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "license": "MIT",
   "keywords": [
     "dto",
@@ -8,11 +8,13 @@
     "builder-pattern",
     "builder pattern"
   ],
+  "homepage": "https://bendat.github.io/autometa/docs/utility-libraries/dto-builder/dto-builder",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bendat/jest-automation/tree/main/packages/dto"
+    "url": "https://github.com/Bendat/autometa/tree/main/packages/libs/dto-builder"
   },
   "dependencies": {
-    "class-validators": "^1.0.1"
+    "class-validators": "^1.0.1",
+    "reflect-metadata": "^0.1.13"
   }
 }

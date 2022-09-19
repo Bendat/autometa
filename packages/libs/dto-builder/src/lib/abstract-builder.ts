@@ -1,4 +1,4 @@
-import { validateSync, ValidationError } from 'class-validator';
+import { validateSync, ValidationError } from 'class-validators';
 import { FailedValidationError } from './errors/validation-errors';
 import { Class, Dict } from './types';
 
