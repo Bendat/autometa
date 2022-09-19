@@ -66,7 +66,7 @@ enum values by declaring the type somewhere in your project.
 
 ```ts
 // in 'typings.d.ts' or similar file
-declare module "@autometa/console" {
+declare module "@autometa/logging" {
     export enum ConsoleGroupToken {
         Scenario = 'Scenario',
         Test = 'Test'
