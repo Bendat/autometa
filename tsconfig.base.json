@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "references": [
     { "path": "./packages/utils/store" },
+    { "path": "./packages/bdd/cucumber" },
     { "path": "./packages/libs/dto-builder" },
     { "path": "./packages/utils/logging" },
     { "path": "./packages/utils/dependency-injection" }

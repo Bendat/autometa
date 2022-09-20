@@ -8,7 +8,7 @@ import Category from '../category';
 import ActiveRule from '../rules/active-rule';
 import { TopLevelRun } from '../top-level-run/top-level-run';
 
-export default class FeatureRun extends Category {
+export class FeatureRun extends Category {
 
   #run?: TopLevelRun;
   constructor(test: GherkinTest, events: TestTrackingEvents) {

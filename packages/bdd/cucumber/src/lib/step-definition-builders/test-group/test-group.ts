@@ -1,4 +1,4 @@
-import { PreparedStepCallback, PreparedStepGroup, PreparedSteps, ScenarioSteps, StepCallbackProvider, StepData, Steps } from "../../types";
+import { ExtendedStepCallbackProvider, PreparedStepCallback, PreparedStepGroup, PreparedSteps, ScenarioSteps, StepCallbackProvider, StepData, Steps } from "../../types";
 import { assignRegexStep, assignTextStep } from "../../utils";
 
 type StepMatcher = (
@@ -25,13 +25,14 @@ export abstract class TestGroup {
   protected abstract _findMatch: StepMatcher;
 
   protected _step = (group: PreparedStepGroup) => {
-    return (text: string | RegExp, callback: PreparedStepCallback) => {
+    const fn: Partial<ExtendedStepCallbackProvider> =  (text: string | RegExp, callback: PreparedStepCallback) => {
       if (text instanceof RegExp) {
         assignRegexStep(text, callback, group, this._findMatch);
         return;
       }
       assignTextStep(text, group, callback);
     };
+    const 
   };
 
   Given: StepCallbackProvider = this._step(this._steps.Given);

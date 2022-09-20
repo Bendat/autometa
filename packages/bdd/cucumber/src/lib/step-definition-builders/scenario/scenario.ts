@@ -167,14 +167,20 @@ export class Scenario extends TestGroup {
     actualVars: unknown[]
   ) {
     if (!matchingStep) {
-      const group = this._steps[keyword];
-      const matchingExpression = findMatchingExpression(text, group);
+      let group = this._steps[keyword];
+      let matchingExpression = findMatchingExpression(text, group);
+      if (!matchingExpression) {
+        if ((['And', 'But', '*'].includes(keyword))) {
+          const { Given, When, Then} = this.steps;
+          group= {...Given, ...When, ...Then};
+          matchingExpression = findMatchingExpression(text, group);
+        }
+      }
       if (!matchingExpression) {
         throw new GherkinTestValidationError(
           `Could not find a matching step definition implementation for '${keyword} ${text}'`
         );
       }
-
       actualVars = [...matchingExpression.args];
       matchingStep = group[matchingExpression.expression];
     }

@@ -5,7 +5,13 @@ export type StepCallbackProvider = (
   text: string | RegExp,
   callback: PreparedStepCallback
 ) => void;
-
+export type ExtendedStepCallbackProvider = StepCallbackProvider & {
+  global: { isGlobal: true } & ((
+    text: string | RegExp,
+    callback: PreparedStepCallback
+  ) => void);
+  isGlobal: false;
+};
 export type PreparedStepCallback = (
   ...args: (
     | string
@@ -61,7 +67,7 @@ function attachName(name: string): PreparedStepGroup {
 }
 
 export interface StepFunctions {
-  Given: StepCallbackProvider;
+  Given: ExtendedStepCallbackProvider;
   When: StepCallbackProvider;
   Then: StepCallbackProvider;
   And: StepCallbackProvider;

@@ -1,4 +1,4 @@
-import { Env } from '../../setup';
+import { Env } from '../../../setup';
 import { GherkinTestValidationError } from '../errors/validation-errors';
 import {
   GherkinFeature,

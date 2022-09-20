@@ -1,15 +1,13 @@
 
 import { describe } from '@jest/globals';
-import FeatureRun from './step-definition-builders/feature/feature-run';
+import { FeatureRun } from './step-definition-builders/feature/feature-run';
 import TestTrackingSubscribers from './tracking/test-subscribers';
 import TestTrackingEvents from './tracking/test-tracker';
 import { FeatureCallback, FeatureCallbackObject } from './types';
 import { readFeature } from './utils';
 import {getCallerFromIndex} from '@autometa/shared-utilities'
-import { GroupLogger } from '@autometa/logging';
 function runFeatureFile(featureCallback: FeatureCallback, featurePath: string) {
   const parsedGherkin = getFeature(featurePath);
-  const logger = new GroupLogger()
   const tracker = new TestTrackingEvents(new TestTrackingSubscribers());
   tracker.featureStarted(parsedGherkin.feature.title);
 
