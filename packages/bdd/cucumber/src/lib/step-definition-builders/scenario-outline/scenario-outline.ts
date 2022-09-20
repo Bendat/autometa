@@ -40,8 +40,8 @@ export class ScenarioOutline {
   }
 
   execute(
-    group: Global.DescribeBase,
-    testFn: Global.ItBase,
+    group: Global.Describe,
+    testFn: Global.It,
     isSkipped = false,
     after = afterAll,
     before = beforeAll

@@ -19,6 +19,7 @@ import { TestGroup } from '../test-group/test-group';
 import '../../dependency-injection/default-injected';
 import { Injectable } from '@autometa/dependency-injection';
 import { Store, World } from '@autometa/store';
+import { it } from 'node:test';
 @Injectable()
 export class Scenario extends TestGroup {
   #parsedScenario: GherkinScenario;
@@ -48,18 +49,14 @@ export class Scenario extends TestGroup {
     return this;
   }
 
-  execute(
-    testFunction: Global.ItBase,
-    isSkipped = false
-  ): void | Promise<void> {
+  execute(testFunction: Global.It, isSkipped = false): void | Promise<void> {
     const scenario = this.#parsedScenario;
     this.#loadBackgroundSteps();
-    return testFunction(
+
+    const fn = isSkipped || this._isPending ? testFunction.skip : testFunction;
+    return fn(
       'Scenario: ' + scenario.title ?? 'Untitled Scenario',
       async () => {
-        if (isSkipped) {
-          return;
-        }
         this.#events.scenarioStarted(this._title);
         try {
           await this.#runBackgroundSteps();
@@ -111,7 +108,7 @@ export class Scenario extends TestGroup {
           continue;
         }
         if (regex.test(text)) {
-          return new StepData(text, regex, callback);
+          return new StepData(text, regex, callback, false);
         }
       }
     }
@@ -123,7 +120,7 @@ export class Scenario extends TestGroup {
         if (keyword !== group) {
           continue;
         }
-        return new StepData(text, regex, callback);
+        return new StepData(text, regex, callback, false);
       }
     }
   }
@@ -144,14 +141,21 @@ export class Scenario extends TestGroup {
 
   async #runStep(step: GherkinStep): Promise<void> {
     const { keyword, text, variables } = step;
+
     let matchingStep = this._steps[keyword][text];
+
     let actualVars: unknown[] = [...variables];
+
+
     ({ matchingStep, actualVars } = this.tryMatchExpression(
       matchingStep,
       keyword,
       text,
       actualVars
     ));
+    if (matchingStep.isGlobal) {
+      actualVars.push(this.Store);
+    }
     this.#events.stepStarted(keyword, text, variables);
     try {
       await this.#executeStepCallback(matchingStep, actualVars, step);
@@ -170,9 +174,9 @@ export class Scenario extends TestGroup {
       let group = this._steps[keyword];
       let matchingExpression = findMatchingExpression(text, group);
       if (!matchingExpression) {
-        if ((['And', 'But', '*'].includes(keyword))) {
-          const { Given, When, Then} = this.steps;
-          group= {...Given, ...When, ...Then};
+        if (['And', 'But', '*'].includes(keyword)) {
+          const { Given, When, Then } = this.steps;
+          group = { ...Given, ...When, ...Then };
           matchingExpression = findMatchingExpression(text, group);
         }
       }
@@ -198,6 +202,7 @@ export class Scenario extends TestGroup {
       const [_, matchedVariables] = text.match(regex) ?? [];
       args = [...args, matchedVariables];
     }
+
     throwErrorIfNoMatch(matchingStep, keyword, text);
     const { action } = matchingStep;
     await action(...args, table);

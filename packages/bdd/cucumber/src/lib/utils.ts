@@ -12,10 +12,11 @@ import { parseCucumber } from './parsing/parser';
 export function assignTextStep(
   text: string | RegExp,
   group: PreparedStepGroup,
-  callback: PreparedStepCallback
+  callback: PreparedStepCallback,
+  isGlobal
 ) {
   const value = text as unknown as string;
-  group[value] = new StepData(value, undefined, callback);
+  group[value] = new StepData(value, undefined, callback, isGlobal);
 }
 
 export function throwErrorIfNoMatch(

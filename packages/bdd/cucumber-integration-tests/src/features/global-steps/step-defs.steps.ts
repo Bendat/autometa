@@ -1,10 +1,13 @@
 import { Given, Then, When } from "@autometa/cucumber";
+import { World } from "@autometa/store";
 
-Given('a registered user', ()=>{
+Given('a registered user', ({World}: {World: World})=>{
+    World.dog = 'my dog'
     console.log('given a registered user')
 })
 
-When("they enter their username '{word}'", (username: string)=>{
+When("they enter their username '{word}'", (username: string, {World}: {World: World})=>{
+    console.log(World.dog)
     console.log('when username '+username)
 })
 

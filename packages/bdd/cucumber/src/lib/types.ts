@@ -1,17 +1,24 @@
 import { Store, World } from '@autometa/store';
 import { GherkinTable } from './parsing/gherkin-objects';
 
-export type StepCallbackProvider = (
+type StepCallbackProvider = (
   text: string | RegExp,
   callback: PreparedStepCallback
 ) => void;
-export type ExtendedStepCallbackProvider = StepCallbackProvider & {
-  global: { isGlobal: true } & ((
-    text: string | RegExp,
-    callback: PreparedStepCallback
-  ) => void);
-  isGlobal: false;
-};
+// export type ExtendedStepCallbackProvider = StepCallbackProvider & {
+//   global: { isGlobal: boolean } & ((
+//     text: string | RegExp,
+//     callback: PreparedStepCallback
+//   ) => void);
+//   isGlobal: boolean;
+// };
+export interface ExtendedStepCallbackProvider {
+  (text: string | RegExp, callback: PreparedStepCallback): void;
+  global: ExtendedStepCallbackProvider;
+  pending: ExtendedStepCallbackProvider;
+  isGlobal: boolean;
+  isPending: boolean;
+}
 export type PreparedStepCallback = (
   ...args: (
     | string
@@ -25,6 +32,7 @@ export interface PreparedStepData {
   text?: string;
   regex: RegExp | undefined;
   action: PreparedStepCallback;
+  isGlobal: boolean;
 }
 
 interface NamedStepGroup {
@@ -49,7 +57,8 @@ export class StepData implements PreparedStepData {
   constructor(
     public text: string,
     public regex: RegExp | undefined,
-    public action: PreparedStepCallback
+    public action: PreparedStepCallback,
+    public isGlobal: boolean
   ) {}
 }
 
@@ -68,10 +77,10 @@ function attachName(name: string): PreparedStepGroup {
 
 export interface StepFunctions {
   Given: ExtendedStepCallbackProvider;
-  When: StepCallbackProvider;
-  Then: StepCallbackProvider;
-  And: StepCallbackProvider;
-  But: StepCallbackProvider;
+  When: ExtendedStepCallbackProvider;
+  Then: ExtendedStepCallbackProvider;
+  And: ExtendedStepCallbackProvider;
+  But: ExtendedStepCallbackProvider;
   Shared: (...steps: Steps[]) => void;
 }
 /**

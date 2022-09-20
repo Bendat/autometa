@@ -81,7 +81,7 @@ export class TopLevelRun extends TestGroup {
     });
   }
 
-  execute(testGroupFn: Global.DescribeBase, testFn: Global.ItBase) {
+  execute(testGroupFn: Global.Describe, testFn: Global.It) {
     for (const scenario of this.scenarios) {
       scenario.loadDefinedSteps(...this.#steps);
     }
@@ -126,7 +126,7 @@ class TopLevelCategory extends Category {
     outlines.forEach((it) => (this._outlines[it.title] = it));
     rules.forEach((it) => (this._rules[it.title] = it));
   }
-  execute(testGrouping: Global.DescribeBase, testFn: Global.ItBase): void {
+  execute(testGrouping: Global.Describe, testFn: Global.It): void {
     this.runRules(this._test.feature.rules, testGrouping, testFn);
     this.runOutlines(this._test.feature.outlines, testGrouping, testFn);
     this.runScenarios(this._test.feature.scenarios, testFn);

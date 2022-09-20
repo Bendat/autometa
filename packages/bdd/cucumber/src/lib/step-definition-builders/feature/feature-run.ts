@@ -40,7 +40,7 @@ export class FeatureRun extends Category {
     this.#run.assembleScenarioRules();
   }
 
-  execute(testGrouping: Global.DescribeBase, testFn?: Global.ItBase) {
+  execute(testGrouping: Global.Describe, testFn?: Global.It) {
     testGrouping(`Feature: ${this._test.feature.title}`, () => {
       const { feature } = this._test;
       const { scenarios, outlines, rules } = feature;

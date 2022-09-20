@@ -24,8 +24,8 @@ export class PassiveRule extends Category {
   }
 
   execute(
-    testGroupFn: Global.DescribeBase,
-    testFn: Global.ItBase,
+    testGroupFn: Global.Describe,
+    testFn: Global.It,
     isSkipped = false,
     before = beforeAll,
     after = afterAll

@@ -52,19 +52,19 @@ export class GlobalCacheAssembler {
       gf,
       ({ Given, When, Then }) => {
         globalCache.Given.forEach(({ action, text, regex }) => {
-          Given(regex ?? text, action);
+          Given.global(regex ?? text, action);
         });
         globalCache.When.forEach(({ action, text, regex }) => {
-          When(regex ?? text, action);
+          When.global(regex ?? text, action);
         });
         globalCache.Then.forEach(({ action, text, regex }) => {
-          Then(regex ?? text, action);
+          Then.global(regex ?? text, action);
         });
       },
       new TestTrackingEvents(new TestTrackingSubscribers())
     );
     run.assembleScenarios();
-    run.assembleScenarioOutlines();
+     run.assembleScenarioOutlines();
     run.assembleScenarioRules();
     describe(`Feature: ${gf.feature.title}`, () => {
       run.execute(describe, it);
@@ -87,6 +87,8 @@ export function Given(
     text,
     regex,
     action,
+    isGlobal: true
+
   };
   globalCache.Given.push(step);
 }
@@ -106,6 +108,8 @@ export function When(
     text,
     regex,
     action,
+    isGlobal: true
+
   };
 
   globalCache.When.push(step);
@@ -127,6 +131,7 @@ export function Then(
     text,
     regex,
     action,
+    isGlobal: true
   };
   globalCache.Then.push(step);
 }

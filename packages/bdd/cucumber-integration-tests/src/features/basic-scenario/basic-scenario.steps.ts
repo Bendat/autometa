@@ -11,7 +11,7 @@ Feature(({ Scenario }) => {
 
     })
     
-    Given('a given step', () => {
+    Given.pending('a given step', () => {
       console.log('dog')
       expect(1).toBe(1);
     });

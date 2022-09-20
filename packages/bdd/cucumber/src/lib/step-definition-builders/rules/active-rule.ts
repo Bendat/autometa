@@ -35,8 +35,8 @@ export default class ActiveRule extends Category {
   }
 
   execute(
-    testGrouping: Global.DescribeBase,
-    testFn: Global.ItBase | undefined,
+    testGrouping: Global.Describe,
+    testFn: Global.It | undefined,
     isSkipped: boolean,
     after = afterAll
   ): void {

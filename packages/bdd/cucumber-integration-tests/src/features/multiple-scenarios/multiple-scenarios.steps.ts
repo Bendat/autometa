@@ -1,5 +1,5 @@
 import { Feature } from "@autometa/cucumber";
-
+jest.setTimeout(1000000)
 Feature(({ Scenario, ScenarioOutline }) => {
   Scenario('First Scenario', ({Given}) => {
     Given('{int} dingo',(number: string)=>{
@@ -8,7 +8,7 @@ Feature(({ Scenario, ScenarioOutline }) => {
   });
   
   Scenario('Second Scenario', ({Given}) => {
-    Given('{int} dingos',(number: number)=>{
+    Given.pending('{int} dingos',(number: number)=>{
         expect(number).toBe(2)
     })
   });
