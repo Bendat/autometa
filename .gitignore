@@ -46,3 +46,4 @@ Thumbs.db
 **/package-lock.json
 
 **/*/.node-persist/*
+**/*/.secret.env
