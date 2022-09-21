@@ -19,7 +19,6 @@ import { TestGroup } from '../test-group/test-group';
 import '../../dependency-injection/default-injected';
 import { Injectable } from '@autometa/dependency-injection';
 import { Store, World } from '@autometa/store';
-import { it } from 'node:test';
 @Injectable()
 export class Scenario extends TestGroup {
   #parsedScenario: GherkinScenario;
