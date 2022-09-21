@@ -44,3 +44,5 @@ Thumbs.db
 
 # package-lock - use yarn
 **/package-lock.json
+
+**/*/.node-persist/*

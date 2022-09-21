@@ -1,11 +1,24 @@
 {
   "compileOnSave": false,
   "references": [
-    { "path": "./packages/utils/store" },
-    { "path": "./packages/bdd/cucumber" },
-    { "path": "./packages/libs/dto-builder" },
-    { "path": "./packages/utils/logging" },
-    { "path": "./packages/utils/dependency-injection" }
+    {
+      "path": "./packages/utils/store"
+    },
+    {
+      "path": "./packages/bdd/cucumber"
+    },
+    {
+      "path": "./packages/libs/dto-builder"
+    },
+    {
+      "path": "./packages/utils/logging"
+    },
+    {
+      "path": "./packages/test-management/testrails/testrail-cucumber"
+    },
+    {
+      "path": "./packages/utils/dependency-injection"
+    }
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -16,16 +29,17 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "esnext",
+    "module": "commonjs",
     "lib": ["es2022"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
+      "@autometa/cucumber": ["packages/bdd/cucumber/src/index.ts"],
       "@autometa/cucumber-integration-tests": [
         "packages/bdd/cucumber-integration-tests/src/index.ts"
       ],
-      "@autometa/cucumber": ["packages/bdd/cucumber/src/index.ts"],
       "@autometa/dependency-injection": [
         "packages/utils/dependency-injection/src/index.ts"
       ],
@@ -40,7 +54,10 @@
       "@autometa/shared-utilities": [
         "packages/utils/shared-utilities/src/index.ts"
       ],
-      "@autometa/store": ["packages/utils/store/src/index.ts"]
+      "@autometa/store": ["packages/utils/store/src/index.ts"],
+      "@autometa/test-rail-cucumber": [
+        "packages/test-management/testrails/testrail-cucumber/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "**/*/node_modules", "tmp"],
