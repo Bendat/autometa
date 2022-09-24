@@ -1,6 +1,6 @@
 {
   "name": "@autometa/logging",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "keywords": [
     "logging", "console.group", "console", "grouping"
   ],

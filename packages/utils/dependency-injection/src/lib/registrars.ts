@@ -11,7 +11,7 @@ export type DiContainerWithDefaults = {
 
 export function di(): DiContainerWithDefaults {
   const child = container.createChildContainer();
-  child.registerInstance('container', child);
+  child.registerInstance('Container', child);
   constructProviders(child);
   const groups = constructGroups(child);
   return { container: child, providers: [groups] };

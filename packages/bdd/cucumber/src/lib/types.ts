@@ -1,5 +1,5 @@
 import { Store, World } from '@autometa/store';
-import { GherkinTable } from './parsing/gherkin-objects';
+import { GherkinTable } from '@autometa/shared-utilities';
 
 type StepCallbackProvider = (
   text: string | RegExp,
@@ -39,7 +39,7 @@ interface NamedStepGroup {
   __keyword__: string;
 }
 interface StepGroupData {
-  [text: string]: PreparedStepData;
+  [text: string]: StepData;
 }
 
 export type PreparedStepGroup = NamedStepGroup & StepGroupData;

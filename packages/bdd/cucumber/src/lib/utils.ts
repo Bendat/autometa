@@ -7,7 +7,7 @@ import {
   StepData,
   PreparedStepData,
 } from './types';
-import { parseCucumber } from './parsing/parser';
+import { parseCucumber } from '@autometa/shared-utilities';
 
 export function assignTextStep(
   text: string | RegExp,

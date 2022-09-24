@@ -3,7 +3,7 @@ import { Step } from '@cucumber/messages';
 export class GherkinTest {
   constructor(
     public readonly language: string,
-    public readonly feature: GherkinFeature,
+    public readonly feature: GherkinFeature
   ) {}
 }
 
@@ -21,7 +21,7 @@ export class GherkinFeature {
 export class GherkinBackground {
   public constructor(
     public readonly title: string | undefined,
-    public readonly steps: GherkinSteps,
+    public readonly steps: GherkinSteps
   ) {}
 }
 
@@ -51,7 +51,7 @@ export class GherkinScenarioOutline {
     public examples: GherkinExample[],
     public scenarios: GherkinScenario[],
     public readonly tags: string[],
-    public rule?: string,
+    public rule?: string
   ) {}
 }
 
@@ -59,7 +59,7 @@ export class GherkinStepBluePrint {
   constructor(
     public readonly keyword: string,
     public readonly text: string,
-    public readonly table?: GherkinTable,
+    public readonly table?: GherkinTable
   ) {}
 }
 
@@ -68,8 +68,12 @@ export class GherkinStep {
     public readonly keyword: string,
     public readonly text: string,
     public readonly variables: string[],
-    public readonly table?: GherkinTable,
+    public readonly table?: GherkinTable
   ) {}
+
+  tosString() {
+    return `Step({ keyword: ${this.keyword}, text: ${this.text} })`;
+  }
 }
 
 export type GherkinSteps = GherkinStep[];
@@ -79,7 +83,7 @@ export type GherkinStepBlueprints = GherkinStepBluePrint[];
 export class GherkinTable {
   constructor(
     public readonly titles: string[],
-    public readonly rows: GherkinTableRow,
+    public readonly rows: GherkinTableRow
   ) {}
 }
 
@@ -89,14 +93,14 @@ export class FlatTestSpec {
   constructor(
     public readonly backgrounds: GherkinBackground[],
     public readonly scenarios: GherkinScenario[],
-    public readonly scenarioOutlines: GherkinScenarioOutline[],
+    public readonly scenarioOutlines: GherkinScenarioOutline[]
   ) {}
 }
 
 export class GherkinExample {
   constructor(
     public readonly headers: string[],
-    public readonly values: string[][],
+    public readonly values: string[][]
   ) {}
 }
 

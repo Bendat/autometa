@@ -1,5 +1,5 @@
 import Category from '../category';
-import { GherkinRule, GherkinTest } from '../../parsing/gherkin-objects';
+import { GherkinRule, GherkinTest } from '../../../../../../utils/shared-utilities/src/lib/cucumber/parsing/gherkin-objects';
 import TestTrackingEvents from '../../tracking/test-tracker';
 import { CategoryCallbackObject, RuleInnerCallback } from '../../types';
 import { afterAll, beforeAll } from '@jest/globals';

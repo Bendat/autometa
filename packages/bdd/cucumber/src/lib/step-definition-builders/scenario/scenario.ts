@@ -4,8 +4,12 @@ import {
   GherkinScenario,
   GherkinBackground,
   GherkinStep,
-} from '../../parsing/gherkin-objects';
-import { findMatchingExpression } from '../../step-expressions/expressions';
+} from '@autometa/shared-utilities';
+import {
+  findMatchingExpression,
+  findMatchingGlobalExpression,
+  findMatchingGlobalTargetExpression,
+} from '../../step-expressions/expressions';
 import TestTrackingEvents from '../../tracking/test-tracker';
 import {
   Steps,
@@ -19,6 +23,8 @@ import { TestGroup } from '../test-group/test-group';
 import '../../dependency-injection/default-injected';
 import { Injectable } from '@autometa/dependency-injection';
 import { Store, World } from '@autometa/store';
+import { DependencyContainer, inject } from 'tsyringe';
+import TestTrackingSubscribers from '../../tracking/test-subscribers';
 @Injectable()
 export class Scenario extends TestGroup {
   #parsedScenario: GherkinScenario;
@@ -26,11 +32,16 @@ export class Scenario extends TestGroup {
   #parsedBackgrounds: GherkinBackground[];
   #events: TestTrackingEvents;
   #store: { Store: Store; World: World };
-
-  constructor(world: World, store: Store, events: TestTrackingEvents) {
+  #container: DependencyContainer
+  constructor(@inject('Container') container: DependencyContainer) {
     super();
-    this.#events = events;
-    this.#store = { World: world, Store: store };
+    container.register(TestTrackingSubscribers, TestTrackingSubscribers)
+    this.#events = container.resolve(TestTrackingEvents);
+    this.#store = {
+      World: container.resolve(World),
+      Store: container.resolve(Store),
+    };
+    this.#container = container
   }
   get Store() {
     return this.#store;
@@ -140,18 +151,23 @@ export class Scenario extends TestGroup {
 
   async #runStep(step: GherkinStep): Promise<void> {
     const { keyword, text, variables } = step;
-
+    console.log(step.text);
     let matchingStep = this._steps[keyword][text];
 
     let actualVars: unknown[] = [...variables];
 
-
-    ({ matchingStep, actualVars } = this.tryMatchExpression(
+    ({ matchingStep, actualVars } = this.#tryMatchExpression(
       matchingStep,
       keyword,
       text,
       actualVars
     ));
+
+    if (!matchingStep) {
+      throw new Error(
+        `Could not find matching step definition for ${step.tosString()}`
+      );
+    }
     if (matchingStep.isGlobal) {
       actualVars.push(this.Store);
     }
@@ -163,29 +179,29 @@ export class Scenario extends TestGroup {
     }
   }
 
-  private tryMatchExpression(
-    matchingStep: PreparedStepData,
+  #tryMatchExpression(
+    matchingStep: StepData,
     keyword: string,
     text: string,
     actualVars: unknown[]
   ) {
     if (!matchingStep) {
-      let group = this._steps[keyword];
-      let matchingExpression = findMatchingExpression(text, group);
-      if (!matchingExpression) {
-        if (['And', 'But', '*'].includes(keyword)) {
-          const { Given, When, Then } = this.steps;
-          group = { ...Given, ...When, ...Then };
-          matchingExpression = findMatchingExpression(text, group);
-        }
-      }
-      if (!matchingExpression) {
+      const group = this._steps[keyword];
+      const matchingExpression = findMatchingExpression(text, group);
+      const globalMatch = findMatchingGlobalExpression(text)
+      ??  findMatchingGlobalTargetExpression(text, this.#container);
+      if (!matchingExpression && !globalMatch) {
         throw new GherkinTestValidationError(
           `Could not find a matching step definition implementation for '${keyword} ${text}'`
         );
       }
-      actualVars = [...matchingExpression.args];
-      matchingStep = group[matchingExpression.expression];
+      if (matchingExpression) {
+        actualVars = [...matchingExpression.args];
+        matchingStep = group[matchingExpression.expression];
+        return { matchingStep, actualVars };
+      } else {
+        return { matchingStep: (globalMatch).step, actualVars: globalMatch.args };
+      }
     }
     return { matchingStep, actualVars };
   }
@@ -197,6 +213,7 @@ export class Scenario extends TestGroup {
   ) {
     const { regex } = matchingStep;
     let args = [...variables];
+
     if (regex && variables.length === 0) {
       const [_, matchedVariables] = text.match(regex) ?? [];
       args = [...args, matchedVariables];

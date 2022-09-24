@@ -1,7 +1,10 @@
-import { Feature, GlobalCacheAssembler } from "@autometa/cucumber";
+import 'reflect-metadata'
+import { Feature, TopLevelRun, GlobalRun } from "@autometa/cucumber";
 import { useConsoleGroups } from "@autometa/logging";
-import './step-defs.steps'
+// import {Foo} from './test-class'
+import './step-class.steps'
+import path from 'path';
 useConsoleGroups()
 jest.setTimeout(100000)
-const assembler = new GlobalCacheAssembler()
-assembler.assembleFeature('./basic-scenario.feature')
+
+new GlobalRun().assembleFeature('./basic-scenario.feature')

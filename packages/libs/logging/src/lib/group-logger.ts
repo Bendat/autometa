@@ -18,6 +18,9 @@ export class GroupLogger {
   set groupsEnabled(value: boolean) {
     this.#groupsEnabled = value;
   }
+  get groupsEnabled() {
+    return this.#groupsEnabled;
+  }
   info = (...args: unknown[]) => {
     this.#writeOut('info', x250, ...args);
   };
@@ -70,7 +73,7 @@ export class GroupLogger {
    * @param tags Additional context strings to be appended to title
    */
   group = (name: ConsoleGroupToken | string, ...tags: (string | RegExp)[]) => {
-    if (this.#groupsEnabled !== true) {
+    if (this.groupsEnabled !== true) {
       return;
     }
     this.#groupStack.push(name);
@@ -188,7 +191,7 @@ function formatColor(
 }
 
 function getFramesToSkip() {
-  const framesToSkip = 2;
+  const framesToSkip = 3;
 
   return {
     framesToSkip: {

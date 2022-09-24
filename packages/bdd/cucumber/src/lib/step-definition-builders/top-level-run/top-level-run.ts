@@ -3,7 +3,7 @@ import {
   GherkinFeature,
   GherkinRule,
   GherkinTest,
-} from '../../parsing/gherkin-objects';
+} from '@autometa/shared-utilities';
 import TestTrackingEvents from '../../tracking/test-tracker';
 import { Steps } from '../../types';
 import { Global } from '@jest/types';

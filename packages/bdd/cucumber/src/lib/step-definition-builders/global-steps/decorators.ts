@@ -1,42 +1,42 @@
-import { globalCache } from './global-steps';
+import { container } from 'tsyringe';
+import { globalCache } from './global-step-cache';
+import { StepMetaDataKey, DecoratedStepBlueprint } from './meta-types';
 
-class DecoratedStepBlueprint {
-  constructor(
-    public propertyKey: string,
-    public stepKeyword: string,
-    public stepText: string
-  ) {}
+export function given(text: string) {
+  console.log("decorated")
+  return function (target: any, propertyKey: string) {
+    const blueprints: DecoratedStepBlueprint[] =
+      Reflect.getMetadata(StepMetaDataKey, target) ?? [];
+    const blueprint = new DecoratedStepBlueprint(propertyKey, 'given', text);
+    blueprints.push(blueprint);
+    if (!Reflect.hasMetadata(StepMetaDataKey, target)) {
+      Reflect.defineMetadata(StepMetaDataKey, blueprints, target);
+    }
+    globalCache.Targets.add(target);
+
+  };
 }
 
-const reflectionStore: DecoratedStepBlueprint[] = [];
-
-function given(text: string) {
+export function when(text: string) {
   return function (target: any, propertyKey: string) {
-    const blueprint = new DecoratedStepBlueprint(propertyKey, 'given', text);
-    Reflect.defineMetadata(propertyKey, blueprint, target);
+    const blueprints = Reflect.getMetadata(StepMetaDataKey, target) ?? [];
+    const blueprint = new DecoratedStepBlueprint(propertyKey, 'when', text);
+    blueprints.push(blueprint);
+    if (!Reflect.hasMetadata(StepMetaDataKey, target)) {
+      Reflect.defineMetadata(StepMetaDataKey, blueprint, target);
+    }
     globalCache.Targets.add(target);
   };
 }
 
-function when(text: string) {
+export function then(text: string) {
   return function (target: any, propertyKey: string) {
-    const blueprint = new DecoratedStepBlueprint(propertyKey, 'given', text);
-    Reflect.defineMetadata(propertyKey, blueprint, target);
+    const blueprints = Reflect.getMetadata(StepMetaDataKey, target) ?? [];
+    const blueprint = new DecoratedStepBlueprint(propertyKey, 'then', text);
+    blueprints.push(blueprint);
+    if (!Reflect.hasMetadata(StepMetaDataKey, target)) {
+      Reflect.defineMetadata(StepMetaDataKey, blueprints, target);
+    }
     globalCache.Targets.add(target);
   };
-}
-
-function then(text: string) {
-  return function (target: any, propertyKey: string) {
-    const blueprint = new DecoratedStepBlueprint(propertyKey, 'given', text);
-    Reflect.defineMetadata(propertyKey, blueprint, target);
-    globalCache.Targets.add(target);
-  };
-}
-
-export class Foo {
-  @given('a foo')
-  givenAFoo() {
-    console.log('was given a foo');
-  }
 }

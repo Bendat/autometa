@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@autometa/logging": "0.0.1",
-    "@autometa/shared-utilities": "0.0.1",
+    "@autometa/shared-utilities": "0.0.2",
     "@autometa/dependency-injection": "0.0.1",
     "@cucumber/cucumber-expressions": "^16.0.0",
     "@cucumber/gherkin": "^24.0.0",

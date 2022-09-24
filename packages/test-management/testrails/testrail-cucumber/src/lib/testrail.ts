@@ -8,13 +8,7 @@ import {
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseCucumber } from './parsing/parser';
-import {
-  GherkinBackground,
-  GherkinRule,
-  GherkinScenario,
-  GherkinScenarioOutline,
-} from './parsing/gherkin-objects';
+import {GherkinBackground, GherkinRule, GherkinScenarioOutline, parseCucumber} from '@autometa/shared-utilities'
 dotenv.config({ path: path.resolve(__dirname, '../../.secret.env') });
 
 

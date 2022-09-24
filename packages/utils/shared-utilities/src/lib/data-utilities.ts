@@ -6,9 +6,10 @@ export interface Instantiable<T> extends Function {
 
 export interface Constructor<T> extends Function {
   // eslint-disable-next-line @typescript-eslint/no-misused-new
-  constructor (...args: unknown[]): T;
+  constructor (...args: any[]): unknown;
 }
 
 export interface Class<T> extends Instantiable<T>, Constructor<T>{
+  new (...args: any[]): unknown;
   
 }

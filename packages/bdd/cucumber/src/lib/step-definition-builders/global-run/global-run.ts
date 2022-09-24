@@ -1,3 +1,21 @@
+import { getCallerFromIndex } from '@autometa/shared-utilities';
+import TestTrackingSubscribers from '../../tracking/test-subscribers';
+import TestTrackingEvents from '../../tracking/test-tracker';
+import { readFeature } from '../../utils';
+import { TopLevelRun } from '../top-level-run';
+
+export class GlobalRun {
+  assembleFeature(pathToFeature: string) {
+    const gf = readFeature(pathToFeature, getCallerFromIndex(2));
+    const run = new TopLevelRun(gf, () => undefined, new TestTrackingEvents(new TestTrackingSubscribers()));
+    run.assembleScenarios();
+    run.assembleScenarioOutlines();
+    run.assembleScenarioRules();
+    describe(`Feature: ${gf.feature.title}`, () => {
+      run.execute(describe, it);
+    });
+  }
+}
 // import {
 //   GherkinBackground,
 //   GherkinFeature,

@@ -1,8 +1,8 @@
-import { globalCache, StepCache } from './global-steps';
-import { GherkinStep } from '../parsing/gherkin-objects';
 import { table } from 'console';
 import './sample-steps';
 import './decorators'
+import { globalCache, StepCache } from './global-step-cache';
+import { GherkinStep } from '@autometa/shared-utilities';
 test('globalCache', () => {
   console.log(JSON.stringify(globalCache, null, 2));
 });
@@ -13,6 +13,7 @@ describe('global steps', () => {
       cache.Given.push({
         text: 'my text',
         regex: undefined,
+        isGlobal: true,
         action: () => console.log('actioned'),
       });
       const step = cache.findStep(
@@ -26,6 +27,7 @@ describe('global steps', () => {
       cache.Given.push({
         text: 'my text',
         regex: undefined,
+        isGlobal: true,
         action: () => console.log('actioned'),
       });
       const step = cache.findStep('Given', new GherkinStep('*', 'my text', []));

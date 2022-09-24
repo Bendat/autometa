@@ -13,6 +13,7 @@ import {
   Step,
   TableRow,
 } from '@cucumber/messages';
+import { notEmpty } from '../../collection-utilities';
 import {
   GherkinBackground,
   GherkinExample,
@@ -24,12 +25,6 @@ import {
   GherkinTable,
   GherkinTest,
 } from './gherkin-objects';
-const notEmpty = <TValue>(
-  value: TValue | null | undefined,
-): value is TValue => {
-  return value !== null && value !== undefined;
-};
-
 const uuidFn = IdGenerator.uuid();
 const builder = new AstBuilder(uuidFn);
 const matcher = new GherkinClassicTokenMatcher(); // or Gherkin.GherkinInMarkdownTokenMatcher()
@@ -228,7 +223,7 @@ function extractVariablesForScenario(
       variables[index] = variable;
     }
   }
-  steps.push({ keyword, text, table, variables });
+  steps.push(new GherkinStep(keyword, text, variables, table));
 }
 
 function injectVariables(text: string, headers: string[], row: string[]) {
@@ -245,12 +240,15 @@ function injectVariables(text: string, headers: string[], row: string[]) {
 
 function parseSteps(steps: Step[]): GherkinSteps {
   // TODO swap to loop, keep context of Given, When Then in And, But
-  return steps.map<GherkinStep>(({ keyword, text, dataTable }) => ({
-    keyword: keyword.trimEnd(),
-    text,
-    variables: [...parseStepVariables(text)],
-    table: parseTable(dataTable?.rows),
-  }));
+  return steps.map<GherkinStep>(
+    ({ keyword, text, dataTable }) =>
+      new GherkinStep(
+        keyword.trimEnd(),
+        text,
+        [...parseStepVariables(text)],
+        parseTable(dataTable?.rows)
+      )
+  );
 }
 
 function parseExamples(examples: Examples[]): GherkinExample[] {

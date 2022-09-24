@@ -1,7 +1,7 @@
 import {
   GherkinBackground,
   GherkinScenario,
-} from '../../parsing/gherkin-objects';
+} from '../../../../../../utils/shared-utilities/src/lib/cucumber/parsing/gherkin-objects';
 import {Scenario} from './scenario';
 import TestTrackingSubscribers from '../../tracking/test-subscribers';
 import TestTrackingEvents from '../../tracking/test-tracker';

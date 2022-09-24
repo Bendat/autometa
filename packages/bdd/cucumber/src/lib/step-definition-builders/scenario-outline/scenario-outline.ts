@@ -4,7 +4,7 @@ import { Global } from '@jest/types';
 import {
   GherkinScenarioOutline,
   GherkinBackground,
-} from '../../parsing/gherkin-objects';
+} from '../../../../../../utils/shared-utilities/src/lib/cucumber/parsing/gherkin-objects';
 import TestTrackingEvents from '../../tracking/test-tracker';
 import { Steps } from '../../types';
 import Background from '../backgrounds/background';

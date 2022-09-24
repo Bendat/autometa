@@ -1,8 +1,7 @@
 
+import { GherkinTest } from '@autometa/shared-utilities';
 import { afterAll, test, } from '@jest/globals';
-import type { Global } from '@jest/types';
-import { GherkinTest } from '../../parsing/gherkin-objects';
-import TestTrackingEvents from '../../tracking/test-tracker';
+import type { Global } from '@jest/types';import TestTrackingEvents from '../../tracking/test-tracker';
 import { RuleInnerCallback, Steps } from '../../types';
 import Category from '../category';
 import ActiveRule from '../rules/active-rule';
