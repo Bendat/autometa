@@ -10,8 +10,10 @@
     "logging": "packages/libs/logging",
     "page-components": "packages/page-object-models/page-components",
     "page-components-tests": "packages/page-object-models/page-components-tests",
+    "behaviors": "packages/page-object-models/behaviors",
     "shared-utilities": "packages/utils/shared-utilities",
     "store": "packages/utils/store",
-    "testrail-cucumber": "packages/test-management/testrails/testrail-cucumber"
+    "testrail-cucumber": "packages/test-management/testrails/testrail-cucumber",
+    "user-behavior-tests": "packages/page-object-models/user-behavior-tests"
   }
 }

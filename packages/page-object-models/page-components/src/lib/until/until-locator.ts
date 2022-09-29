@@ -3,6 +3,8 @@ import {
   Locator,
   WebElementCondition,
   Condition,
+  RelativeBy,
+  locateWith,
 } from 'selenium-webdriver';
 import { UntilCondition } from './until-condition';
 

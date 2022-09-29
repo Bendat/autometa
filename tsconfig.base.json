@@ -18,6 +18,9 @@
     },
     {
       "path": "./packages/utils/dependency-injection"
+    },
+    {
+      "path": "./packages/page-object-models/*"
     }
   ],
   "compilerOptions": {
@@ -36,6 +39,9 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
+      "@autometa/behaviors": [
+        "packages/page-object-models/behaviors/src/index.ts"
+      ],
       "@autometa/cucumber": ["packages/bdd/cucumber/src/index.ts"],
       "@autometa/cucumber-integration-tests": [
         "packages/bdd/cucumber-integration-tests/src/index.ts"
@@ -57,6 +63,12 @@
       "@autometa/store": ["packages/utils/store/src/index.ts"],
       "@autometa/test-rail-cucumber": [
         "packages/test-management/testrails/testrail-cucumber/src/index.ts"
+      ],
+      "@autometa/user-behavior-tests": [
+        "packages/page-object-models/user-behavior-tests/src/index.ts"
+      ],
+      "@autometa/user-behaviors": [
+        "packages/page-object-models/user-behavior/src/index.ts"
       ]
     }
   },

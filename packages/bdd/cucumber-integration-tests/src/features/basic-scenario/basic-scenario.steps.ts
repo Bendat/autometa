@@ -1,5 +1,6 @@
 import { Feature } from "@autometa/cucumber";
 import { useConsoleGroups } from "@autometa/logging";
+
 useConsoleGroups()
 
 Feature(({ Scenario }) => {
@@ -11,20 +12,18 @@ Feature(({ Scenario }) => {
 
     })
     
-    Given.pending('a given step', () => {
+    Given('a given step', () => {
       console.log('dog')
       expect(1).toBe(1);
     });
 
     When('a when step', () => {
       console.log('dog')
-
       expect(1).toBe(1);
     });
 
     Then('a then step', () => {
       console.log('dog')
-
       expect(1).toBe(1);
     });
 

@@ -260,9 +260,9 @@ export abstract class Component extends PageObject {
     fn: (element: WebElement) => Promise<T>,
     logPrefix: string
   ): Promise<T> => {
-    const details = await this.#loggableDetails(this.element);
-    this.#logActionOccurring(logPrefix, details);
-    await this.slowMode;
+    // const details = await this.#loggableDetails(this.element);
+    // this.#logActionOccurring(logPrefix, details);
+    // await this.slowMode;
     return this.#tryPerformAction(fn, this.element, logPrefix);
   };
 

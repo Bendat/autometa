@@ -24,7 +24,7 @@ export class Select extends Collection<Option> {
    * @param by The locator to find an Option by
    * @returns The Option Component that matches that locator
    */
-  choose = async (byOrIndex: By | number) => {
+  choose = async (byOrIndex: By | number | string) => {
     await this.click();
     const selected = await this.at(byOrIndex);
     return selected?.choose();

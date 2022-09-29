@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/page-components/user-behavior-tests/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/page-components/user-behavior-tests/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/page-components/user-behavior-tests"],
+      "options": {
+        "jestConfig": "packages/page-components/user-behavior-tests/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/page-components/user-behavior-tests",
+        "tsConfig": "packages/page-components/user-behavior-tests/tsconfig.lib.json",
+        "packageJson": "packages/page-components/user-behavior-tests/package.json",
+        "main": "packages/page-components/user-behavior-tests/src/index.ts",
+        "assets": ["packages/page-components/user-behavior-tests/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

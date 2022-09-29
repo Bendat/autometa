@@ -74,4 +74,8 @@ export abstract class WebPage extends PageObject {
     }
     return this._parent.depth;
   }
+
+  get title(){
+    return this._driver.getTitle()
+  }
 }

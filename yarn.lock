@@ -147,6 +147,13 @@
     get-current-line "^6.6.0"
     tslib "^2.4.0"
 
+"@autometa/page-components@0.0.2":
+  version "0.0.3"
+  dependencies:
+    colors-cli "^1.0.28"
+    reflect-metadata "^0.1.13"
+    tsyringe "^4.7.0"
+
 "@autometa/shared-utilities@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@autometa/shared-utilities/-/shared-utilities-0.0.1.tgz#f9dc34fb2b9d8cc94bd5eb8cc918595cd3b5f225"

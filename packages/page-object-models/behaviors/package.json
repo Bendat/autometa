@@ -1,0 +1,9 @@
+{
+  "name": "@autometa/behaviors",
+  "version": "0.0.1",
+  "dependencies": {
+    "@autometa/page-components": "0.0.3",
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.7.0"
+  }
+}

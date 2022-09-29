@@ -1,6 +1,5 @@
 
 import { PreparedStepCallback, PreparedStepData, StepData } from '../../types';
-import { readFeature } from '../../utils';
 import { globalCache } from './global-step-cache';
 // import { TopLevelRun } from '../top-level-run';
 

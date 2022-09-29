@@ -1,0 +1,8 @@
+{
+  "name": "@autometa/user-behavior-tests",
+  "version": "0.0.1",
+  "dependencies": {
+    "@autometa/behaviors": "0.0.1",
+    "@autometa/page-components": "0.0.3"
+  }
+}

@@ -1,4 +1,3 @@
-import { container } from 'tsyringe';
 import { globalCache } from './global-step-cache';
 import { StepMetaDataKey, DecoratedStepBlueprint } from './meta-types';
 

@@ -61,16 +61,16 @@ export class Until {
     'isLocated'
   );
 
-  static readonly containsText: UntilCondition = new UntilLocator(
+  static readonly containsText: UntilCondition = new UntilElement(
     elementTextContains,
     'containsText'
   );
 
   static readonly hasText = (text: string) =>
-    new UntilLocator(hasTextFunction(text), 'hasText') as UntilCondition;
+    new UntilElement(hasTextFunction(text), 'hasText') as UntilCondition;
 
   static readonly matchesText = (pattern: RegExp) =>
-    new UntilLocator(
+    new UntilElement(
       matchesTextFunction(pattern),
       'matchesText'
     ) as UntilCondition;

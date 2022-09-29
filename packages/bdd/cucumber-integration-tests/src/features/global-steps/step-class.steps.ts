@@ -2,8 +2,6 @@
 import { given, then, when } from '@autometa/cucumber';
 import { injectable } from 'tsyringe';
 
-
-@injectable()
 export default class MyStepsClass {
   @given('a registered user')
   givenARegisteredUser = () => {

@@ -41,7 +41,7 @@ export class ComponentProxyWebElement implements WebElement {
     const { until, by, timeout } = this.#options();
     try {
       this.#innerElementUnsafe = await (
-        await this.#component?.searcher
+        this.#component?.searcher
       )?.findElement(by);
     } catch (err) {
       const error = err as Error;

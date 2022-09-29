@@ -206,7 +206,7 @@ Example test:
 ```ts
 it('should check the list', () => {
   // array-like functions
-  const expected = ['first', 'second', 'third', 'fourth'];
+  const expected = ['first', 'second', 'third', '...D!'];
 
   await page.numericList.forEach(async (li, idx) => {
     expect(await li.text).toBe(expected[idx]);

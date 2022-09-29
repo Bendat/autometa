@@ -11,8 +11,10 @@ export class GridContainer extends Component {
 
   @component(By.css('div:nth-of-type(2)'))
   compoundTypes: CompoundTypesDiv;
+
   @component(By.css('div:nth-of-type(3)'))
   containerTypes: ContainerDiv;
+  
   @component(By.css('div:nth-of-type(4)'))
   formTypes: FormDiv;
 }

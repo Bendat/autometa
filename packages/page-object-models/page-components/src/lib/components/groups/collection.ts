@@ -76,7 +76,7 @@ export abstract class Collection<T extends Component> extends Component {
    * @returns The Component if it exists.
    */
   at = async (
-    byOrIndex: By | number,
+    byOrIndex: By | number | string,
     onElement: (component: T) => Promise<void> = async () => undefined
   ) => {
     const element: T | undefined = await this.#findSingleComponent(
@@ -93,12 +93,14 @@ export abstract class Collection<T extends Component> extends Component {
   forEach = (action: (component: T, index: number) => Promise<void>) => {
     return this.entries.forEach(action);
   };
+  
   includes = async <TExpectedType>(
     contents: TExpectedType | TExpectedType[],
     mapper: (component: T) => Promise<TExpectedType>
   ) => {
     return this.entries.includes(contents, mapper);
   };
+
   map = <K>(action: (component: T, index: number) => Promise<K>) => {
     return this.entries.map(action);
   };
@@ -119,16 +121,15 @@ export abstract class Collection<T extends Component> extends Component {
   };
 
   async #findSingleComponent(
-    byOrIndex: number | By,
+    byOrIndex: number | By | string,
     onElement: (component: T) => Promise<void>
   ) {
     if (byOrIndex instanceof By) {
-      const element = await this.find(
-        { type: this.childType, by: byOrIndex },
-        `${this.childType.name}[${byOrIndex}]`
-      );
-      this.driver.wait(until.elementIsVisible(element.element));
+      const element = await this.findByLocator(byOrIndex);
       return element;
+    }
+    if (typeof byOrIndex === 'string') {
+      return await this.findByTextEquals(byOrIndex);
     }
     if (
       this.cachedComponents &&
@@ -137,6 +138,26 @@ export abstract class Collection<T extends Component> extends Component {
       return this.cachedComponents.at(byOrIndex);
     }
     return await this.entries.at(byOrIndex, onElement);
+  }
+
+  private async findByLocator(byOrIndex: By) {
+    const element = await this.find(
+      { type: this.childType, by: byOrIndex },
+      `${this.childType.name}[${byOrIndex}]`
+    );
+    this.driver.wait(until.elementIsVisible(element.element));
+    return element;
+  }
+
+  private async findByTextEquals(byOrIndex: string) {
+    return await this.find(
+      {
+        type: this.childType,
+        by: By.xpath(`//*[text()='${byOrIndex}')]`),
+      },
+
+      `${this.childType.name}[${byOrIndex}]`
+    );
   }
 
   #findComponents() {

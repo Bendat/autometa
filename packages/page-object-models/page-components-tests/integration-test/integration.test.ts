@@ -14,7 +14,7 @@ const url = 'http://127.0.0.1:8080/';
 describe('Integration test', () => {
   const site = Site(url, wbBuilder);
   let page: IndexPage;
-
+  beforeEach(async ()=>page = await site.browse(IndexPage))
   describe('Simple Type Div', () => {
     let div: SimpleTypeDiv;
     beforeEach(() => (div = page.grid.simpleTypes));

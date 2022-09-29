@@ -21,7 +21,7 @@ export abstract class PageObject {
   }
   protected _pomName!: string;
   protected _driver!: WebDriver;
-  protected _searcher!: Promise<Searcher>;
+  protected _searcher!: Searcher;
   /**
    * Reference to the WebDriver powering this PageObject
    */
@@ -55,7 +55,8 @@ export abstract class PageObject {
    * improving performance.
    */
   get searcher() {
-    return this._searcher;
+    const searc = this._searcher;
+    return searc
   }
 
   /**
