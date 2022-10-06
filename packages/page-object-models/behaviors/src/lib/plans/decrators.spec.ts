@@ -2,7 +2,7 @@ import { Button, component, PageObject, WebPage } from '@autometa/page-component
 import { Component } from 'react'
 import { By } from 'selenium-webdriver'
 import { text } from 'stream/consumers'
-import { ActionOn, Is, Observe, Observer } from '../behaviors'
+import { ActionOn, Is, Observe, Observation } from '../behaviors'
 import  {action, observation, Plans, StepOf} from './'
 class TestPage extends WebPage{
     @component(By.id('none'))

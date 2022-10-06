@@ -1,29 +1,24 @@
-import { Component, PageObject, WebPage } from '@autometa/page-components';
+import { PageObject } from '@autometa/page-components';
 import { constructor } from 'tsyringe/dist/typings/types';
-import { Observer } from './observation';
+import { Observation } from './observation';
 
 export class Action<T extends PageObject, K extends PageObject> {
+  readonly observing: Observation<T, K>;
   constructor(
-    public readonly on: Observer<T, T|K>,
+    on: constructor<T> | Observation<T, K>,
     public readonly action: (item: K) => unknown | Promise<unknown>
-  ) {}
-
-  get targetName() {
-    return this.on.type.name;
+  ) {
+    if (on instanceof Observation) {
+      this.observing = on;
+    } else {
+      this.observing = new Observation(on, (page) => page as unknown as K);
+    }
   }
 }
 
-export function ActionOn<T extends PageObject, K extends Component>(
-  on: Observer<T, K>,
+export function ActionOn<T extends PageObject, K extends PageObject>(
+  on: constructor<T> | Observation<T, K>,
   action: (page: K) => unknown | Promise<unknown>
 ): Action<T, K> {
   return new Action(on, action);
-}
-
-export function ActionFrom<T extends PageObject, K extends PageObject>(
-  on: constructor<T>,
-  action: (page: T) => unknown | Promise<unknown>
-): Action<T, K> {
-  const observer = new Observer(on, (page) => page);
-  return new Action(observer as any, action as any);
 }

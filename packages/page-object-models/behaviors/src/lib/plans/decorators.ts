@@ -3,39 +3,54 @@ import { constructor } from 'tsyringe/dist/typings/types';
 import {
   Action,
   AssertionFn,
-  Observer,
+  Observation,
   Thought,
   ThoughtAbout,
   ThoughtFor,
 } from '../behaviors';
+import { Switcher, WindowContext } from '../subplot';
 import { Plans } from './plans';
+export class ActionMetadata {
+  readonly userAction = 'will';
 
+  constructor(
+    public readonly key: string,
+    public readonly action: Action<PageObject, Component>
+  ) {}
+}
+export class ObservationMetadata {
+  readonly userAction = 'see';
+  constructor(
+    public readonly key: string,
+    public readonly observer:
+      | constructor<WebPage>
+      | Observation<PageObject, unknown>,
+    public readonly assertion: AssertionFn
+  ) {}
+}
+export class ThoughtMetadata {
+  readonly userAction = 'think';
+  constructor(
+    public readonly key: string,
+    public readonly condition: Thought,
+    public readonly reason: string
+  ) {}
+}
 export interface PlanMetaStructure {
   subPlans: {
     procedures: { key: string; type: constructor<unknown> }[];
     agendas: { key: string; type: constructor<unknown> }[];
   };
-  steps: {
-    actions: { key: string; action: Action<PageObject> }[];
-    observations: {
-      key: string;
-      observer: Observer<PageObject, unknown>;
-      assertion: AssertionFn;
-    }[];
-    thoughts: { key: string; condition: Thought; reason: string }[];
-  };
+  steps: (ActionMetadata | ObservationMetadata | ThoughtMetadata)[];
 }
+
 const emptyStructure = (): PlanMetaStructure => {
   return {
     subPlans: {
       procedures: [],
       agendas: [],
     },
-    steps: {
-      actions: [],
-      observations: [],
-      thoughts: [],
-    },
+    steps: [],
   };
 };
 export function agenda<T extends Plans>(
@@ -52,14 +67,21 @@ function withMetaStructure(
   target: unknown,
   action: (struct: PlanMetaStructure) => unknown
 ) {
-  const structure: PlanMetaStructure =
-    Reflect.getMetadata(target.constructor, 'plan-structure') ??
-    emptyStructure();
-  action(structure);
-  if (!Reflect.hasMetadata(target.constructor, 'plan-structure')) {
-    Reflect.defineMetadata('plan-structure', structure, target.constructor);
+  const structure: PlanMetaStructure = Reflect.getMetadata(
+    'plan-structure',
+    target.constructor
+  );
+  const actualStructure = structure ?? emptyStructure();
+  action(actualStructure);
+  if (!Reflect.hasMetadata('plan-structure', target.constructor)) {
+    Reflect.defineMetadata(
+      'plan-structure',
+      actualStructure,
+      target.constructor
+    );
   }
 }
+
 export function procedure<T extends Plans>(
   plans: constructor<T>
 ): PropertyDecorator {
@@ -70,27 +92,27 @@ export function procedure<T extends Plans>(
   };
 }
 
-export function action(...args: Action<PageObject, Component>[]): PropertyDecorator {
+export function action(
+  ...args: Action<PageObject, Component>[]
+): PropertyDecorator {
   return (target, key): void => {
     withMetaStructure(target, (structure) =>
       args.map((arg) =>
-        structure.steps.actions.push({ key: String(key), action: arg })
+        structure.steps.push(new ActionMetadata(String(key), arg))
       )
     );
   };
 }
 
-export function observation<T extends WebPage, K extends Component>(
-  observer: Observer<T, K>,
+export function observation<T extends PageObject, K>(
+  observer: constructor<WebPage> | Observation<T, K>,
   assertion: AssertionFn
 ): PropertyDecorator {
   return (target, key): void => {
     withMetaStructure(target, (structure) =>
-      structure.steps.observations.push({
-        key: String(key),
-        observer,
-        assertion,
-      })
+      structure.steps.push(
+        new ObservationMetadata(String(key), observer, assertion)
+      )
     );
   };
 }
@@ -98,11 +120,26 @@ export function observation<T extends WebPage, K extends Component>(
 export function thought(condition: Thought, reason: string): PropertyDecorator {
   return (target, key): void => {
     withMetaStructure(target, (structure) =>
-      structure.steps.thoughts.push({
-        key: String(key),
-        condition,
-        reason,
-      })
+      structure.steps.push(new ThoughtMetadata(String(key), condition, reason))
     );
+  };
+}
+
+export function toStartAsSubplot(
+  windowType: WindowContext
+): ClassDecorator {
+  return (target): void => {
+    // withMetaStructure(target, (structure) =>
+    //   structure.steps.push(new ThoughtMetadata(String(key), condition, reason))
+    // );
+  };
+}
+export function which(
+  then: Switcher, name: string
+): ClassDecorator {
+  return (target): void => {
+    // withMetaStructure(target, (structure) =>
+    //   structure.steps.push(new ThoughtMetadata(String(key), condition, reason))
+    // );
   };
 }

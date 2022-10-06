@@ -3,20 +3,221 @@ import { constructor } from 'tsyringe/dist/typings/types';
 import { URL } from 'url';
 import { WebPage } from './meta-types/web-page';
 
-export class DriverProxy {
+export class WindowHandle {
+  constructor(
+    public readonly type: string,
+    public readonly handle: string,
+    public readonly owner?: unknown
+  ) {}
+}
+export interface WindowGroup {
+  [key: string]: WindowHandle;
+}
+export class Browser {
   #started = false;
   #driver: WebDriver;
+  windows: WindowGroup = {};
+
   constructor(private readonly builder: Builder) {}
   get driver() {
     return this.#driver;
   }
-  async start() {
+  #currentHandle: string;
+  #lastHandle: string;
+
+  get lastHandle(){
+    return this.#lastHandle
+  }
+  get window() {
+    return {
+      get handle() {
+        return this.driver.getWindowHandle();
+      },
+      get handles() {
+        return this.driver.getAllWindowHandles();
+      },
+      open: async (
+        name: string,
+        type: 'tab' | 'window',
+        url?: string | URL,
+        owner?: unknown
+      ) => {
+        const urlString = url instanceof URL ? url.href : url;
+        await this.driver.switchTo().newWindow(type);
+        if (url) {
+          await this.driver.get(urlString);
+        }
+        const created = await this.driver.getWindowHandle();
+        this.windows[name] = new WindowHandle(type, created, owner);
+        this.#lastHandle = this.#currentHandle;
+        this.#currentHandle = created;
+        return created;
+      },
+      switchTo: {
+        named: async (name: string) => {
+          const window = this.windows[name].handle;
+          await this.driver.switchTo().window(window);
+          this.#lastHandle = this.#currentHandle;
+          this.#currentHandle = window;
+          return window
+        },
+        handle: async (handle: string) => {
+          await this.driver.switchTo().window(handle);
+          this.#lastHandle = handle;
+          this.#lastHandle = this.#currentHandle;
+          this.#currentHandle = handle;
+          return handle
+
+        },
+        next: async (cacheName?: string, owner?: unknown) => {
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          const currentHandle = await this.driver.getWindowHandle();
+          const currentIndex = handles.findIndex((it) => it === currentHandle);
+          const next =
+            currentIndex + 1 >= handles.length ? 0 : currentIndex + 1;
+          await this.driver.switchTo().window(handles[next]);
+          const selected = await this.driver.getWindowHandle();
+          if (cacheName) {
+            this.windows[cacheName] = new WindowHandle('tab', selected, owner);
+          }
+          this.#lastHandle = this.#currentHandle;
+          this.#currentHandle = selected;
+          return selected;
+        },
+
+        titleIs: async (title: string, cacheName?: string, owner?: unknown) => {
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          for (const handle in handles) {
+            const pageTitle = await this.driver.getTitle();
+            if (title === pageTitle) {
+              this.windows[cacheName] = new WindowHandle('tab', handle, owner);
+              this.#lastHandle = this.#currentHandle;
+              this.#currentHandle = handle;
+              return;
+            }
+          }
+          throw new Error(`No tab was found with title '${title}'`);
+        },
+
+        titleMatches: async (
+          title: RegExp,
+          cacheName?: string,
+          owner?: unknown
+        ) => {
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          for (const handle in handles) {
+            await this.driver.switchTo().window(handle);
+            const pageTitle = await this.driver.getTitle();
+            if (pageTitle.match(title).length > 0) {
+              this.#lastHandle = this.#currentHandle;
+              this.#currentHandle = handle;
+              this.windows[cacheName] = new WindowHandle('tab', handle, owner);
+              return;
+            }
+          }
+          throw new Error(`No tab was found with title matching'${title}'`);
+        },
+
+        titleContains: async (
+          title: string,
+          cacheName?: string,
+          owner?: unknown
+        ) => {
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          for (const handle in handles) {
+            await this.driver.switchTo().window(handle);
+            const pageTitle = await this.driver.getTitle();
+            if (pageTitle.includes(title)) {
+              this.windows[cacheName] = new WindowHandle('tab', handle, owner);
+              this.#lastHandle = this.#currentHandle;
+              this.#currentHandle = handle;
+              return;
+            }
+          }
+          throw new Error(`No tab was found with title containing'${title}'`);
+        },
+
+        urlIs: async (
+          url: string | URL,
+          cacheName?: string,
+          owner?: unknown
+        ) => {
+          const urlString = url instanceof URL ? url.href : url;
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          for (const handle in handles) {
+            await this.driver.switchTo().window(handle);
+
+            const pageUrl = await this.driver.getCurrentUrl();
+            if (urlString === pageUrl) {
+              this.windows[cacheName] = new WindowHandle('tab', handle, owner);
+              this.#lastHandle = this.#currentHandle;
+              this.#currentHandle = handle;
+              return;
+            }
+          }
+          throw new Error(`No tab was found with title '${url}'`);
+        },
+        urlMatches: async (
+          url: string | URL,
+          cacheName?: string,
+          owner?: unknown
+        ) => {
+          const urlString = url instanceof URL ? url.href : url;
+
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          for (const handle in handles) {
+            await this.driver.switchTo().window(handle);
+
+            const pageUrl = await this.driver.getCurrentUrl();
+
+            if (pageUrl.match(urlString).length > 0) {
+              this.windows[cacheName] = new WindowHandle('tab', handle, owner);
+              this.#lastHandle = this.#currentHandle;
+              this.#currentHandle = handle;
+              return;
+            }
+          }
+          throw new Error(`No tab was found with url matching'${url}'`);
+        },
+        urlContains: async (
+          url: string | URL,
+          cacheName?: string,
+          owner?: unknown
+        ) => {
+          const urlString = url instanceof URL ? url.href : url;
+
+          const handles: string[] = await this.driver.getAllWindowHandles();
+          for (const handle in handles) {
+            await this.driver.switchTo().window(handle);
+
+            const pageTitle = await this.driver.getCurrentUrl();
+            if (pageTitle.includes(urlString)) {
+              this.windows[cacheName] = new WindowHandle('tab', handle, owner);
+              this.#lastHandle = this.#currentHandle;
+              this.#currentHandle = handle;
+              return;
+            }
+          }
+          throw new Error(`No tab was found with url containing'${url}'`);
+        },
+      },
+      // switchTo: (name: string)=>{
+
+      // },
+      get: (url: string) => this.driver.get(url),
+    };
+  }
+  async start(owner?: unknown) {
     if (this.#started) {
       throw new Error("Can't 'start' a driver that is already running");
     }
     this.#started = true;
     this.#driver = await this.builder.build();
+    const handle = await this.driver.getWindowHandle();
+    this.#currentHandle = handle;
+    this.windows.initial = new WindowHandle('window', handle, owner);
   }
+
   async get(url: string | URL) {
     if (!this.#started) {
       throw new Error('Cannot "get" a driver which has not been "start"ed');
@@ -24,11 +225,10 @@ export class DriverProxy {
     const urlstring = url instanceof URL ? url.href : url;
     await this.#driver.get(urlstring);
   }
-
+  async close() {
+    return this.#driver.close();
+  }
   async quit() {
-    if (!this.#started) {
-      throw new Error('Cannot "quit" a driver which has not been "start"ed');
-    }
     return this.#driver.quit();
   }
 }
@@ -42,8 +242,8 @@ export class DriverProxy {
  *          and allow execution.
  */
 export function Site(
-  urlOrDriverBuilder: string | Builder | DriverProxy,
-  driverBuilder?: Builder | DriverProxy
+  urlOrDriverBuilder: string | Builder | Browser,
+  driverBuilder?: Builder | Browser
 ): Website {
   if (
     !process.env.SELENIUM_BASE_URL &&
@@ -68,10 +268,9 @@ export function Site(
 
 export class Website {
   #url: string;
-  #driver: DriverProxy;
-  constructor(url: string, builder: Builder | DriverProxy) {
-    this.#driver =
-      builder instanceof Builder ? new DriverProxy(builder) : builder;
+  #driver: Browser;
+  constructor(url: string, builder: Builder | Browser) {
+    this.#driver = builder instanceof Builder ? new Browser(builder) : builder;
     this.#url = url;
   }
 
@@ -109,6 +308,7 @@ export class Website {
 
   async start() {
     await this.#driver.start();
+    await this.#driver.get(this.#url);
   }
 
   /**

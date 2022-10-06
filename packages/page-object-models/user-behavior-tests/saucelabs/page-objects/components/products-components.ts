@@ -12,7 +12,6 @@ import {
   TextInput,
   WebPage,
 } from '@autometa/page-components';
-import { Click } from 'packages/page-object-models/page-components/src/lib/meta-types/actions';
 import { By } from 'selenium-webdriver';
 
 export class OrderBy extends Select {
@@ -45,7 +44,7 @@ export class ItemLabel extends Anchor {
     return this.itemNameText.text;
   }
 
-  click: Click = () => this.itemLink.click();
+  click = () => this.itemLink.click();
 }
 
 export class InventoryItem extends Component {
@@ -53,4 +52,7 @@ export class InventoryItem extends Component {
   label: Paragraph;
   @component(By.className('inventory_item_desc'))
   description: Paragraph;
+
+  @component(By.className('btn_inventory'))
+  addToCart: Button;
 }

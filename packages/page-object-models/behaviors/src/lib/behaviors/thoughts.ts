@@ -3,7 +3,7 @@ import {
   UntilCondition,
   WebPage,
 } from '@autometa/page-components';
-import { Observer } from './observation';
+import { Observation } from './observation';
 
 export type TimeUnitTransformer = (num: number) => number;
 export function MilliSeconds(count: number) {
@@ -23,7 +23,7 @@ export abstract class Thought {}
 
 export class ThoughtAbout<T extends WebPage, K> extends Thought {
   constructor(
-    public readonly object: Observer<T, K | undefined>,
+    public readonly object: Observation<T, K | undefined>,
     public readonly until: UntilCondition,
     public readonly duration: ThoughtFor,
     public readonly args: (string | RegExp)[]
@@ -45,7 +45,7 @@ export class ThoughtFor extends Thought {
 }
 
 export function About<T extends WebPage, K extends Component>(
-  type: Observer<T, K | undefined>,
+  type: Observation<T, K | undefined>,
   until: UntilCondition,
   ...args: (string | RegExp | ThoughtFor)[]
 ): ThoughtAbout<T, K> {

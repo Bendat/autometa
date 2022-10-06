@@ -48,8 +48,8 @@ export const LogInAs = ({ username, password }: Credentials) =>
       await loginButton.click();
     }
   );
-// Example Credentials Store somewhere in your project
 
+// Example Credentials Store somewhere in your project
 export const credentials = {
   Johnny: { username: 'johnnym2', password: '*******' },
 };
@@ -102,7 +102,72 @@ chains that are repeated many times across your tests, and which may act as a pr
 User Behaviors look to break these components back up again based on how the user actually
 uses them in reality. They describe the parts of the page the user looks for, then the actions the user will take.
 
-User behaviors describe clear intent about what the test should do. They are designed to read
-easily, minimize conditional logic, and ensure tests are as declarative as possible. Importantly,
+User behaviors describe clear intent about what the test should do. They are designed to read easily, minimize conditional logic, and ensure tests are as declarative as possible. Importantly,
 behaviors are easily composable, giving testers the pieces they need to define a test, without
 worrying about specific page details or implementations.
+
+```ts
+
+@driver(new Builder().forBrowser(Browser.Chrome))
+class Users extends Community {
+  @role('Traveller')
+  @browses('hostelworld.com')
+  @plans(JohnnysPlans)
+  Johnny: User<JohnnysPlans>;
+
+  @role('Property Manager')
+  @browses('inbox.hostelworld.com')
+  @plans(JennysPlans)
+  Jenny: User<JennysPlans>;
+}
+
+class JohnnyLoginPlans extends Plans{
+  @action(LoginAs(credentials.Johnny))
+  toLoginSuccessfully: StepOf<JohnnyPlans>
+
+  @action(LoginAs(credentials.Nameless))
+  toFailToLoginWithoutUsername: StepOf<JohnnyPlans>
+
+  @action(LoginAs(credentials.Passwordless))
+  toFailToLoginWithoutPassword: StepOf<JohnnyPlans>
+}
+
+class JohnnyPlans extend Plans {
+  @composed(JohnnyLoginPlans)
+  toLogin: Procedure<JohnnyPlans, JohnnyLoginPlans>
+
+  @action(SearchFor('hostel dublifornia'), SelectCheapest)
+  toChooseACheapDublinHostel: StepOf<Johnny>
+}
+
+// Subplots - Jenny the Admin
+const JennyToVerifyBooking = ({Jenny}: Community) => 
+    Jenny.plans
+      .toLogin()
+      .toVerifyBooking()
+      .verifyInventoryReduced();
+
+const JennyToCancelHisBooking = ({Jenny}: Community) => Jenny.plans.toCancelBooking();
+
+await Johnny.plans
+  .toLogin(async (has)=>{
+    await has.toLoginWithCredentials().withJog.toJogOn().recompose.andAgain.toBreakFree()
+  })
+  .toSearchForHostel()
+  .toBookThreeWeekNights()
+  .trigger(JennyToVerifyBooking, Switches, Tab)
+  .toConfirmHisBooking()
+  .trigger(JennyToCancelHisBooking, Closes, Tab)
+  .toLogout();
+
+
+
+  await Johnny.plans
+  .withLogin.toLoginWithCredentials().recommence
+  .toSearchForHostel()
+  .toBookThreeWeekNights()
+  .trigger(JennyVerifiesBooking, Switches, Tab)
+  .toConfirmHisBooking()
+  .trigger(JennyCancelsBooking, Closes, Tab)
+  .toLogout();
+```

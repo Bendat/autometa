@@ -1,16 +1,21 @@
 import { Website } from '@autometa/page-components';
 import { Builder } from 'selenium-webdriver';
+import { constructor } from 'tsyringe/dist/typings/types';
 import { URL } from 'url';
+import { Plans } from '../plans';
 
 export function roleKey(propertyKey: string | symbol) {
-  return `cast:meta:user:role:${String(propertyKey)}`;
+  return `community:meta:user:role:${String(propertyKey)}`;
 }
 export function browsesKey(propertyKey: string | symbol) {
-  return `cast:meta:user:browses:${String(propertyKey)}`;
+  return `community:meta:user:browses:${String(propertyKey)}`;
 }
-export const defaultDriverKey = 'cast:meta:driver:default';
-export const driverNamesKey = 'cast:meta:driver:named';
-export const namedDriverKey = (name: string) => `cast:meta:driver:${name}`;
+export function plansKey(propertyKey: string | symbol) {
+  return `community:meta:user:plans:${String(propertyKey)}`;
+}
+export const defaultDriverKey = 'community:meta:driver:default';
+export const driverNamesKey = 'community:meta:driver:named';
+export const namedDriverKey = (name: string) => `community:meta:driver:${name}`;
 // const n = new Builder().forBrowser()
 export function driver(builder: Builder, name?: string): ClassDecorator {
   return (target): void => {
@@ -25,7 +30,7 @@ export function driver(builder: Builder, name?: string): ClassDecorator {
     Reflect.defineMetadata(namedDriverKey(name), builder, target);
   };
 }
-export const nameKey = `cast:meta:users:names`;
+export const nameKey = `community:meta:users:names`;
 export function role(title: string): PropertyDecorator {
   return (target, key): void => {
     let names: Set<unknown> = Reflect.getMetadata(nameKey, target.constructor);
@@ -53,5 +58,15 @@ export function browses(site: string | URL): PropertyDecorator {
       [key]: site,
     };
     Reflect.defineMetadata(browsesKey(key), appended, target.constructor);
+  };
+}
+
+export function plans<T extends Plans>(plans: constructor<T>): PropertyDecorator {
+  return (target, key): void => {
+    const existing = Reflect.getMetadata(plansKey(key), target.constructor);
+    if(existing){
+      throw new Error(`User ${target.constructor.name} can only have 1 plan attached. Has ${existing}, attempting to attach ${plans}`)
+    }
+    Reflect.defineMetadata(plansKey(key), plans, target.constructor);
   };
 }

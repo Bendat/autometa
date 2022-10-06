@@ -79,6 +79,7 @@ export abstract class Collection<T extends Component> extends Component {
     byOrIndex: By | number | string,
     onElement: (component: T) => Promise<void> = async () => undefined
   ) => {
+    await this.load()
     const element: T | undefined = await this.#findSingleComponent(
       byOrIndex,
       onElement
