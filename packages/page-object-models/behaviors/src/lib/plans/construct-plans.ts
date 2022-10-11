@@ -1,5 +1,5 @@
 import { constructor } from 'tsyringe/dist/typings/types';
-import { Community, User } from '../performers';
+import { User } from '../performers';
 import { ContextHandler, WindowContext } from '../subplot';
 import {
   ActionMetadata,
@@ -27,7 +27,7 @@ export function constructPlans<T extends Plans>(
   const keys = metadata?.steps?.map((it) => it.key) ?? [];
   for (const key of keys) {
     const behaviors = metadata.steps.filter((it) => it.key === key);
-    instance.trigger = <T extends Community>(
+    instance.trigger = (
       context: WindowContext,
       plans: Plans,
       handler: ContextHandler

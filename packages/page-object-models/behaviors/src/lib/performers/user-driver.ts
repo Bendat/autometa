@@ -30,6 +30,13 @@ import {
 import { ThoughtFn, ActionFn, ObserverFn } from './types';
 import { User } from './user';
 
+interface Memory{
+  observation: Observation<PageObject, unknown>
+  value: unknown
+}
+/**
+ * Primary implementation of the {@see User} interface. 
+ */
 export class UserDriver<T extends Plans = NoPlans> {
   private behaviors: QueuedBehavior[] = [];
   private site: Website;
@@ -106,7 +113,20 @@ export class UserDriver<T extends Plans = NoPlans> {
     fn(...actions);
     return this as unknown as UserDriver & RunningUser<ActionFn>;
   };
+  #memories: {[key: string]: Memory} = {}
+  // remember =  <T extends WebPage, K>(
+  //   observer: constructor<T> | Observation<T, K>,
+  //   as: string
+  // ) => {
+  //   const fn = <T extends WebPage, K>(
+  //     observer: constructor<T> | Observation<T, K>,
+  //     as: string
+  //   ) => {
+  //   }
+  // }
+  // recall(memory: string){
 
+  // }
   see = <T extends WebPage, K>(
     observer: constructor<T> | Observation<T, K>,
     assertion: AssertionFn
@@ -122,6 +142,7 @@ export class UserDriver<T extends Plans = NoPlans> {
     ) => {
       const type = observer instanceof Observation ? observer.type : observer;
       let performance: () => Promise<void>;
+
       if (observer instanceof Observation) {
         performance = async () => {
           const element = await observer.select(this.site);

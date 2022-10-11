@@ -6,19 +6,19 @@ import {
   StepOf,
 } from '@autometa/behaviors';
 import { LoginAs } from '../behaviours/actions/homepage-actions';
+import { Logout } from '../behaviours/actions/product-page-actions';
 import { credentials } from '../communities/credentials';
-import { SauceDemo } from '../page-objects/pages/homepage';
+import { SauceDemoPage } from '../page-objects/pages/homepage';
 
-type JohnnyStep = StepOf<JohnnyLoginPlans>;
+type LoginStep = StepOf<LoginPlans>;
 
-export class JohnnyLoginPlans extends Plans {
+export class LoginPlans extends Plans {
   @action(LoginAs(credentials.Johnny))
-  toLoginWithCredentials: JohnnyStep;
+  toLoginWithCredentials: LoginStep;
 
-  @observation(SauceDemo, HasTitle('Swag Labs'))
-  toSeeTitle: JohnnyStep;
-}
+  @action(Logout)
+  toLogout: LoginStep;
 
-export class JennyGooglePlans extends Plans {
-  toSearchForPuppies: StepOf<JennyGooglePlans>;
+  @observation(SauceDemoPage, HasTitle('Swag Labs'))
+  toSeeTitle: LoginStep;
 }

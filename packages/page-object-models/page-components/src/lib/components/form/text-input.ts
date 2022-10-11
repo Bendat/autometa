@@ -1,5 +1,4 @@
 import { Key } from 'selenium-webdriver';
-import { Component } from '../../meta-types';
 import { SendKeys } from '../../meta-types/actions';
 import { Input } from './input';
 export interface SendKeysEnter {

@@ -8,9 +8,15 @@ import {
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import {GherkinBackground, GherkinRule, GherkinScenarioOutline, parseCucumber} from '@autometa/shared-utilities'
+import {
+  GherkinBackground,
+  GherkinRule,
+  GherkinScenario,
+  GherkinScenarioOutline,
+  GherkinTable,
+  parseCucumber,
+} from '@autometa/shared-utilities';
 dotenv.config({ path: path.resolve(__dirname, '../../.secret.env') });
-
 
 function parseFile(path: string) {
   const text = fs.readFileSync(path, 'utf-8');
@@ -21,7 +27,7 @@ export async function addFeatureToSuite(
   path: string,
   projectId: number,
   suiteId: number,
-  clientOptions: {username: string, password: string, url: string}
+  clientOptions: { username: string; password: string; url: string }
 ) {
   const client = new TestRailClient(clientOptions);
 
@@ -55,21 +61,16 @@ async function uploadRulesAsSections(
   backgrounds: GherkinBackground[]
 ) {
   for (const rule of [...rules]) {
-    const {
-      scenarios,
-      outlines,
-      backgrounds: ruleBackgrounds,
-      title,
-    } = rule;
+    const { scenarios, outlines, backgrounds: ruleBackgrounds, title } = rule;
     const ruleSection = new INewSectionImpl();
     ruleSection.suite_id = suiteId;
     ruleSection.name = title;
     ruleSection.parent_id = addedSection.id;
 
     const addedRuleSection = await client.addSection(projectId, ruleSection);
-    const bgs = [...backgrounds, ...ruleBackgrounds]
-    await uploadedScenariosAsCases(scenarios, bgs, client, addedRuleSection)
-    await uploadOutlinesAsCases(outlines, bgs, client, addedRuleSection)
+    const bgs = [...backgrounds, ...ruleBackgrounds];
+    await uploadedScenariosAsCases(scenarios, bgs, client, addedRuleSection);
+    await uploadOutlinesAsCases(outlines, bgs, client, addedRuleSection);
   }
 }
 
@@ -107,10 +108,17 @@ async function uploadedScenariosAsCases(
     const testCase = new ICaseImpl();
     testCase.title = scenario.title;
     testCase.custom_steps_separated = steps.map((step) => {
+      console.log(step.table + ' table')
       return {
-        content: `${step.keyword} ${step.text}`,
+        content: `${step.keyword} ${step.text}\n${transformTable(step.table)}`,
       };
     });
     await client.addCase(addedSection.id, testCase);
   }
+}
+
+export function transformTable({ rows, titles }: GherkinTable) {
+  const headers = '|||' + titles.map((header) => `: ${header}`).join('|') + '|';
+  const rowRext = rows.map((row) => '||' + row.join('|') + '|').join('\n');
+  return `${headers}\n${rowRext}`;
 }

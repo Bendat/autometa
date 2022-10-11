@@ -69,9 +69,12 @@ export abstract class PageObject {
   };
 
   /**
-   *
+   * Creates a string of the component hierarchy of this component, listing
+   * the ancestor components of this one.
+   * 
    * @returns
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   breadcrumbs = (_?: string, __ = true) => {
     return `${this.constructor.name}[${this.pomName ?? '$root'}]`;
   };

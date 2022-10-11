@@ -1,3 +1,5 @@
+import { constructor } from 'tsyringe/dist/typings/types';
+import { Story } from '.';
 import { Community, Thenable, ThenMethod, User } from '../performers';
 import { ContextHandler, WindowContext } from '../subplot';
 
@@ -29,10 +31,10 @@ export abstract class Plans implements Thenable {
     | ProcedureOf<Plans, Plans>
     | ComposedOf<Plans, Plans>
     | ThenMethod
-    | (<TPlans extends Plans, TUser extends User<TPlans>>(
+    | (<TPlans extends Plans>(
         context: WindowContext,
-        user: TPlans,
-        handler: ContextHandler
+        plans: TPlans,
+        switcher: ContextHandler
       ) => this);
 
   then = (_: (value: any) => any): Promise<never> => {
@@ -40,10 +42,10 @@ export abstract class Plans implements Thenable {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  trigger = <TPlans extends Plans, TUser extends User<TPlans>>(
+  trigger = <TPlans extends Plans>(
     context: WindowContext,
-    user: TPlans,
-    handler: ContextHandler
+    plans: TPlans,
+    switcher: ContextHandler
   ): this => {
     throw new Error('Method not implemented.');
   };

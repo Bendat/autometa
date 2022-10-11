@@ -1,8 +1,5 @@
 import { By } from 'selenium-webdriver';
-import { Component } from '../meta-types/component';
 import { Until } from '../until/until';
-import { ConstructionOptions, WaitOptions } from '../types';
-import { constructor } from './injectables';
 export const COMPONENT_META_KEY = 'properties:decorated:component';
 export const COLLECTION_META_KEY = 'properties:decorated:collections';
 
@@ -28,7 +25,7 @@ export function component(
   until?: Until,
   waitTimeout?: number
 ): PropertyDecorator {
-  return (target: any, key): void => {
+  return (target: unknown, key: string | symbol): void => {
     const existing = Reflect.getMetadata(COMPONENT_META_KEY, target);
     const appended = {
       ...existing,

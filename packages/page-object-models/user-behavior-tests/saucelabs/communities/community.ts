@@ -7,16 +7,17 @@ import {
   Community,
   plans,
 } from '@autometa/behaviors';
-import { JohnnyLoginPlans } from '../plans/user-plans';
+import { LoginPlans } from '../plans/user-plans';
 
 @driver(new Builder().forBrowser(Browser.CHROME))
 export class Users extends Community {
   @role('Standard User')
   @browses('https://www.saucedemo.com/')
-  @plans(JohnnyLoginPlans)
-  Johnny: User<JohnnyLoginPlans>;
+  @plans(LoginPlans)
+  Johnny: User<LoginPlans>;
 
   @role('Locked User')
   @browses('https://google.com')
-  Jenny: User;
+  @plans(LoginPlans)
+  Jenny: User<LoginPlans>;
 }

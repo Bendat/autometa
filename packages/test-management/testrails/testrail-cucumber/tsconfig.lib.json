@@ -7,5 +7,5 @@
     "types": ["node"]
   },
   "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["**/*.ts", "src/lib/cli.ts", "../../../utils/shared-utilities/src/lib/cucumber/parsing/gherkin-objects.ts"]
+  "include": ["**/*.ts", "src/lib/cli.ts"]
 }

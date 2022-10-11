@@ -197,11 +197,17 @@ export abstract class Component extends PageObject {
       return this._logger;
     }
     return {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       info: (..._: unknown[]) => undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       log: (..._: unknown[]) => undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       debug: (..._: unknown[]) => undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       error: (..._: unknown[]) => undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       warn: (..._: unknown[]) => undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       trace: (..._: unknown[]) => undefined,
     };
   }

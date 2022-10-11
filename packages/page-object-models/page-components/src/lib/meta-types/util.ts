@@ -15,7 +15,7 @@ import { InjectionContainer } from '../injection.ts';
 import { Collection, InjectedCollection } from '../components';
 import { CollectionDecoratorAdditionalConfig } from '../decorators/collection';
 type ComponentMetaData = ConstructionOptions<Component>;
-const logger = console;
+
 export function applyComponentDecorators(target: PageObject) {
   const existing: Record<string, ComponentMetaData> = Reflect.getMetadata(
     COMPONENT_META_KEY,

@@ -8,6 +8,15 @@ export interface TimedAssertionFn {
 }
 class AssertionError extends Error {}
 
+/**
+ * 
+ * @param value Asserts that the result of an observations is the provided value, both in type and underlying value.
+ * Example:
+ * ```
+ * await User.see(SomeParagraph, Is('lorem ipsum'))
+ * ```
+ * @returns 
+ */
 export function Is<T>(value: T): AssertionFn {
   return async function Is<K>(comparedTo: K | T) {
     expect(await comparedTo).toBe(value);

@@ -11,6 +11,15 @@ import {
   SwitchesTo,
   ClosesTo,
   Return,
+  Plans,
+  Observation,
+  Observe,
+  observation,
+  StepOf,
+  WindowContext,
+  ContextHandler,
+  Switcher,
+  Story,
 } from '@autometa/behaviors';
 import { Users } from '../communities/community';
 import { LoginAs } from '../behaviours/actions/homepage-actions';
@@ -20,36 +29,41 @@ import {
   OpenMenu,
 } from '../behaviours/actions/product-page-actions';
 import { credentials } from '../communities/credentials';
-import { SauceDemo } from '../page-objects/pages/homepage';
+import { SauceDemoPage } from '../page-objects/pages/homepage';
 import { LoginErrorMessage } from '../behaviours/observations/homepage-observers';
 import { LoginError } from '../behaviours/observations/error-messages';
-import { JennyGooglePlans, JohnnyLoginPlans } from '../plans/user-plans';
+import { LoginPlans } from '../plans/user-plans';
+import { WindowHandle } from '@autometa/page-components';
+import { constructor } from 'tsyringe/dist/typings/types';
 
+
+const obs = Observe(SauceDemoPage, () => console.log('foo'));
+class FakePlans extends Plans {
+  @observation(obs, Is(undefined))
+  toObserve: StepOf<FakePlans>;
+}
 jest.setTimeout(1000000);
 describe('Login Tests', () => {
-  let Johnny: User<JohnnyLoginPlans>;
-  let Jenny: User<JennyGooglePlans>;
-  beforeEach(async () => {
-    ({ Johnny, Jenny } = await Community.of(Users).following('Johnny'));
-  });
+  let Johnny: User<LoginPlans>;
+  let Jenny: User<LoginPlans>;
+  beforeEach(
+    async () =>
+      ({ Johnny, Jenny } = await Community.of(Users).following('Johnny'))
+  );
   afterEach(async () => Johnny.finish());
 
   it('Johnny also run enny', async () => {
     await Johnny.will(LoginAs(credentials.Johnny))
-      .see(SauceDemo, HasTitle('Swag Labs'))
+      .see(SauceDemoPage, HasTitle('Swag Labs'))
       .meanwhile(Jenny, Tab('google', New), Which(SwitchesTo, 'initial'))
-      .see(SauceDemo, HasTitle('Swag Labs'))
-      .meanwhile(
-        Jenny,
-        Tab('google', Return),
-        Which(ClosesTo, 'initial')
-      );
+      .see(SauceDemoPage, HasTitle('Swag Labs'))
+      .meanwhile(Jenny, Tab('google', Return), Which(ClosesTo, 'initial'));
 
     await new Promise((r) => setTimeout(r, 10000));
   });
   it('Johnny Should Successfully Log In as a Standard User', async () => {
     await Johnny.will(LoginAs(credentials.Johnny))
-      .see(SauceDemo, HasTitle('Swag Labs'))
+      .see(SauceDemoPage, HasTitle('Swag Labs'))
       .will(AddFirstItemToBasket, OpenMenu, Logout);
     await new Promise((r) => setTimeout(r, 10000));
   });
@@ -75,17 +89,17 @@ describe('Login Tests', () => {
     );
     Johnny.plans
       .trigger(
-        Tab('', New),
-        Jenny.plans
-          .toSearchForPuppies()
-          .toSearchForPuppies()
-          .toSearchForPuppies()
-          .toSearchForPuppies()
-          .toSearchForPuppies(),
-        Which(SwitchesTo, 'initial')
+        JennyLoginStory,
+        Jenny.plans.toLoginWithCredentials()
       )
       .toLoginWithCredentials()
-      .toSeeTitle();
+      .toSeeTitle()
+      .trigger(
+        Tab('jennies', Return),
+        Jenny.plans.toLogout(),
+        Which(ClosesTo, 'initial')
+      )
+      .toLogout();
     // const John: { plans: JohnnyPlans } = (Johnny as any).plans as JohnnyPlans;
     // await John.plans
     //   .toLoginSuccessfully()
@@ -94,8 +108,25 @@ describe('Login Tests', () => {
   });
 });
 
+@beginsWith(Tab('google', New))
+class AdministratorStory extends Story<FakePlans> {}
+
+@beginsWith(AdministratorStory)
+@endsThen(SwitchesTo, 'google')
+class JennyLoginStory extends Story<FakePlans> {
+  // @perform()
+  // toLogin: (plans: LoginPlans) => LoginPlans;
+
+  @perform()
+  toLogout = () => this.plans.toObserve();
+}
+
+@continuesFrom(JennyLoginStory)
+@endsThen(ClosesTo, 'initial')
+class JennyFinalStory {}
+
 describe('Plans', () => {
-  let Johnny: User<JohnnyLoginPlans>;
+  let Johnny: User<LoginPlans>;
   let Jenny: User<NoPlans>;
   beforeEach(
     async () =>
@@ -111,10 +142,22 @@ describe('Plans', () => {
     //   }, Tab('inbox', 'my title');
   });
 });
-
+class Goo {
+  j = 2;
+  k = ['fpp'];
+}
+class Foo extends Goo {
+  a = 1;
+  n = 'asda';
+  depo = true;
+}
 test('metadata', () => {
-  const s1 = {};
-  const s2 = {};
+  const foo = { ...new Foo() };
+  console.log(foo);
+  for (const f of Object.keys(foo)) {
+    console.log(f);
+    console.log(foo[f]);
+  }
   // Reflect.defineProperty(s1, 'mykey', {user: 'ben'})
   // Reflect.defineProperty(s2, 'mykey', 'cat')
   // console.log(Reflect.getOwnPropertyDescriptor(s1, 'mykey'))
