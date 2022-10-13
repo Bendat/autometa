@@ -582,7 +582,6 @@ export abstract class Component extends PageObject {
     element: WebElement,
     prefix: string
   ) => {
-    // throw new Error('delete this')
     try {
       return action(element);
     } catch (err) {

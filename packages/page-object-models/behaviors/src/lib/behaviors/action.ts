@@ -22,3 +22,9 @@ export function ActionOn<T extends PageObject, K extends PageObject>(
 ): Action<T, K> {
   return new Action(on, action);
 }
+
+export const Click = <T extends { click: () => Promise<void> }>({
+  click,
+}: T) => click();
+export const Text = <T extends { text: () => Promise<void> }>({ text }: T) =>
+  text;

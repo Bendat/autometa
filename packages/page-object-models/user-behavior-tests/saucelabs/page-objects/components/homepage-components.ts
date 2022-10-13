@@ -1,5 +1,11 @@
-import { Button, Component, component, Heading3, TextInput } from '@autometa/page-components';
-import { By,} from 'selenium-webdriver';
+import {
+  Button,
+  Component,
+  component,
+  Heading3,
+  TextInput,
+} from '@autometa/page-components';
+import { By } from 'selenium-webdriver';
 
 export class LoginBox extends Component {
   @component(By.id('user-name'))

@@ -4,6 +4,7 @@ import {
   ICaseImpl,
   INewSectionImpl,
   ISection,
+  INewSuiteImpl,
 } from 'testrail-integration';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -26,25 +27,29 @@ function parseFile(path: string) {
 export async function addFeatureToSuite(
   path: string,
   projectId: number,
-  suiteId: number,
+  suiteId: number | undefined,
   clientOptions: { username: string; password: string; url: string }
 ) {
   const client = new TestRailClient(clientOptions);
 
   const {
-    feature: { title, scenarios, outlines, backgrounds, rules },
+    feature: { title, scenarios, outlines, backgrounds, rules, description },
   } = parseFile(path);
 
   const section = new INewSectionImpl();
   section.suite_id = suiteId;
   section.name = title;
-
+  section.description = description;
+  if (!suiteId) {
+    const suite = new INewSuiteImpl();
+    (suite.name = title), (suite.description = description);
+    section.suite_id = (await client.addSuite(projectId, suite)).id;
+  }
   const addedSection = await client.addSection(projectId, section);
   await uploadedScenariosAsCases(scenarios, backgrounds, client, addedSection);
   await uploadOutlinesAsCases(outlines, backgrounds, client, addedSection);
   await uploadRulesAsSections(
     rules,
-    suiteId,
     addedSection,
     client,
     projectId,
@@ -54,18 +59,24 @@ export async function addFeatureToSuite(
 
 async function uploadRulesAsSections(
   rules: GherkinRule[],
-  suiteId: number,
   addedSection: ISection,
   client: TestRailClient,
   projectId: number,
   backgrounds: GherkinBackground[]
 ) {
   for (const rule of [...rules]) {
-    const { scenarios, outlines, backgrounds: ruleBackgrounds, title } = rule;
+    const {
+      scenarios,
+      outlines,
+      backgrounds: ruleBackgrounds,
+      title,
+      description,
+    } = rule;
     const ruleSection = new INewSectionImpl();
-    ruleSection.suite_id = suiteId;
+    ruleSection.suite_id = addedSection.suite_id;
     ruleSection.name = title;
     ruleSection.parent_id = addedSection.id;
+    ruleSection.description = description;
 
     const addedRuleSection = await client.addSection(projectId, ruleSection);
     const bgs = [...backgrounds, ...ruleBackgrounds];
@@ -87,6 +98,7 @@ async function uploadOutlinesAsCases(
       ...outline.steps,
     ];
     testCase.title = outline.title;
+    testCase.custom_description = outline.description;
     testCase.custom_steps_separated = steps.map((step) => {
       return {
         content: `${step.keyword} ${step.text}`,
@@ -107,8 +119,8 @@ async function uploadedScenariosAsCases(
     const steps = [...bgs, ...scenario.steps];
     const testCase = new ICaseImpl();
     testCase.title = scenario.title;
+    testCase.custom_test_case_description = scenario.description;
     testCase.custom_steps_separated = steps.map((step) => {
-      console.log(step.table + ' table')
       return {
         content: `${step.keyword} ${step.text}\n${transformTable(step.table)}`,
       };
@@ -118,7 +130,10 @@ async function uploadedScenariosAsCases(
 }
 
 export function transformTable({ rows, titles }: GherkinTable) {
-  const headers = '|||' + titles.map((header) => `: ${header}`).join('|') + '|';
-  const rowRext = rows.map((row) => '||' + row.join('|') + '|').join('\n');
+  if (!titles) {
+    return '';
+  }
+  const headers = '|||' + titles.map((header) => `: ${header}`).join('|');
+  const rowRext = rows.map((row) => '||' + row.join('|')).join('\n');
   return `${headers}\n${rowRext}`;
 }

@@ -1,5 +1,6 @@
 import {
   Component,
+  PageObject,
   UntilCondition,
   WebPage,
 } from '@autometa/page-components';
@@ -21,7 +22,7 @@ export function Hours(count: number) {
 
 export abstract class Thought {}
 
-export class ThoughtAbout<T extends WebPage, K> extends Thought {
+export class ThoughtAbout<T extends PageObject, K> extends Thought {
   constructor(
     public readonly object: Observation<T, K | undefined>,
     public readonly until: UntilCondition,

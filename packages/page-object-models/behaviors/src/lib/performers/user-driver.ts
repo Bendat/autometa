@@ -5,6 +5,7 @@ import {
   Browser,
   PageObject,
 } from '@autometa/page-components';
+import { performance } from 'perf_hooks';
 import { Component } from 'react';
 import { constructor } from 'tsyringe/dist/typings/types';
 import { URL } from 'url';
@@ -30,12 +31,12 @@ import {
 import { ThoughtFn, ActionFn, ObserverFn } from './types';
 import { User } from './user';
 
-interface Memory{
-  observation: Observation<PageObject, unknown>
-  value: unknown
+interface Memory {
+  observation: Observation<PageObject, unknown>;
+  value: unknown;
 }
 /**
- * Primary implementation of the {@see User} interface. 
+ * Primary implementation of the {@see User} interface.
  */
 export class UserDriver<T extends Plans = NoPlans> {
   private behaviors: QueuedBehavior[] = [];
@@ -113,7 +114,7 @@ export class UserDriver<T extends Plans = NoPlans> {
     fn(...actions);
     return this as unknown as UserDriver & RunningUser<ActionFn>;
   };
-  #memories: {[key: string]: Memory} = {}
+  #memories: { [key: string]: Memory } = {};
   // remember =  <T extends WebPage, K>(
   //   observer: constructor<T> | Observation<T, K>,
   //   as: string
@@ -210,28 +211,36 @@ export class UserDriver<T extends Plans = NoPlans> {
   };
 
   private thinkingAbout = (condition: Thought) => {
+    let fn: () => Promise<unknown>;
     if (condition instanceof ThoughtAbout) {
       const {
         object: { type, selector },
         until,
         args,
-      } = condition as ThoughtAbout<WebPage, Component>;
-      const performance = async () => {
-        // const element = await condition.select(this.site);
-        //   const page = this.site.switch(type);
-        //   const component: Component = await selector(page);
-        //   await page.driver.wait(
-        //     until.extract(
-        //       component.element,
-        //       null as unknown as Locator,
-        //       args
-        //     ) as WebElementCondition,
-        //     condition.duration.timeUnit(condition.duration.time)
-        //   );
-        // };
-        // this.behaviors.push(new ThoughtBehavior(type, condition, performance));
+      } = condition as ThoughtAbout<PageObject, unknown>;
+      fn = async () => {
+        const element = await condition.select(this.site);
+        const page = this.site.switch(type);
+        const component: Component = await selector(page);
+        await page.driver.wait(
+          until.extract(
+            component.element,
+            null as unknown as Locator,
+            args
+          ) as WebElementCondition,
+          condition.duration.timeUnit(condition.duration.time)
+        );
       };
+      this.behaviors.push(new ThoughtBehavior(type, condition, fn));
     }
+    // if (condition instanceof ThoughtFor) {
+    //   const { milliseconds } = condition as ThoughtFor;
+    //   fn = () => new Promise((resolve) => setTimeout(resolve, milliseconds));
+    // }
+    // this['and'] = fn;
+    // this['and']['will'] = this.will;
+    // this['and']['see'] = this.see;
+    // return this;
   };
 
   private thinkingFor = (condition: Thought) => {

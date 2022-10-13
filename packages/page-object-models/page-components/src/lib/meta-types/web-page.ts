@@ -4,6 +4,9 @@ import {
   titleContains,
   titleIs,
   titleMatches,
+  urlContains,
+  urlIs,
+  urlMatches,
 } from 'selenium-webdriver/lib/until';
 import { EventEmitter } from 'stream';
 import { constructor } from 'tsyringe/dist/typings/types';
@@ -28,7 +31,15 @@ export abstract class WebPage extends PageObject {
   waitForTitleMatches = (title: RegExp, timeout = 1500) => {
     return this.driver.wait(titleMatches(title), timeout);
   };
-
+  waitForURLIs = (title: string, timeout = 1500) => {
+    return this.driver.wait(urlIs(title), timeout);
+  };
+  waitForURLMatches = (title: RegExp, timeout = 1500) => {
+    return this.driver.wait(urlMatches(title), timeout);
+  };
+  waitForURLContains= (title: string, timeout = 1500) => {
+    return this.driver.wait(urlContains(title), timeout);
+  };
   /**
    * Constructs the Page Object objects described by {@see type}
    * and all of it's dependencies recursively. Once resolved,

@@ -10,6 +10,7 @@ export class GherkinTest {
 export class GherkinFeature {
   constructor(
     public readonly title: string,
+    public readonly description: string | undefined,
     public readonly backgrounds: GherkinBackground[],
     public readonly rules: GherkinRule[],
     public readonly scenarios: GherkinScenario[],
@@ -28,6 +29,7 @@ export class GherkinBackground {
 export class GherkinRule {
   public constructor(
     public readonly title: string,
+    public readonly description: string | undefined,
     public readonly backgrounds: GherkinBackground[],
     public readonly scenarios: GherkinScenario[],
     public readonly outlines: GherkinScenarioOutline[],
@@ -38,6 +40,7 @@ export class GherkinRule {
 export class GherkinScenario {
   public constructor(
     public readonly title: string | undefined,
+    public readonly description: string | undefined,
     public readonly steps: GherkinSteps,
     public readonly rule: string | undefined,
     public readonly tags: string[]
@@ -47,6 +50,7 @@ export class GherkinScenario {
 export class GherkinScenarioOutline {
   constructor(
     public title: string | undefined,
+    public readonly description: string | undefined,
     public steps: GherkinStepBlueprints,
     public examples: GherkinExample[],
     public scenarios: GherkinScenario[],

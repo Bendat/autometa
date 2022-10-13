@@ -9,13 +9,13 @@ export interface TimedAssertionFn {
 class AssertionError extends Error {}
 
 /**
- * 
+ *
  * @param value Asserts that the result of an observations is the provided value, both in type and underlying value.
  * Example:
  * ```
  * await User.see(SomeParagraph, Is('lorem ipsum'))
  * ```
- * @returns 
+ * @returns
  */
 export function Is<T>(value: T): AssertionFn {
   return async function Is<K>(comparedTo: K | T) {
@@ -66,6 +66,45 @@ export function HasTitle(
 ): AssertionFn {
   return async function HasTitle(page: WebPage) {
     await page.waitForTitleIs(title, within.milliseconds);
-    expect(await page.title).toBe(title);
+  };
+}
+export function TitleContains(
+  title: string,
+  within: ThoughtFor = Within(2, Seconds)
+): AssertionFn {
+  return async function TitleContains(page: WebPage) {
+    await page.waitForTitleContains(title, within.milliseconds);
+  };
+}
+export function TitleMatches(
+  title: RegExp,
+  within: ThoughtFor = Within(2, Seconds)
+): AssertionFn {
+  return async function TitleMatches(page: WebPage) {
+    await page.waitForTitleMatches(title, within.milliseconds);
+  };
+}
+export function HasURL(
+  title: string,
+  within: ThoughtFor = Within(2, Seconds)
+): AssertionFn {
+  return async function HasURL(page: WebPage) {
+    await page.waitForURLIs(title, within.milliseconds);
+  };
+}
+export function URLContains(
+  title: string,
+  within: ThoughtFor = Within(2, Seconds)
+): AssertionFn {
+  return async function URLContains(page: WebPage) {
+    await page.waitForURLContains(title, within.milliseconds);
+  };
+}
+export function URLMatches(
+  title: RegExp,
+  within: ThoughtFor = Within(2, Seconds)
+): AssertionFn {
+  return async function URLMatches(page: WebPage) {
+    await page.waitForURLMatches(title, within.milliseconds);
   };
 }

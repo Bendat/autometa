@@ -60,7 +60,10 @@ export class Until {
     elementLocated,
     'isLocated'
   );
-
+    /**
+     * ERROR: BUG
+     * This should be a function which accepts text
+     */
   static readonly containsText: UntilCondition = new UntilElement(
     elementTextContains,
     'containsText'

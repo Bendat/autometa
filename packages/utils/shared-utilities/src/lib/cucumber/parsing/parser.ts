@@ -42,7 +42,7 @@ function parseGherkinTest(doc: GherkinDocument): GherkinTest {
   if (!feature) {
     throw new Error('No `feature` defined in gherkin document');
   }
-  const { language, name, tags } = feature;
+  const { language, name, tags, description } = feature;
   const backgrounds: GherkinBackground[] = parseGherkinBackgrounds(feature);
   const scenarios: GherkinScenario[] = parseGherkinScenarios(feature);
   const outlines: GherkinScenarioOutline[] =
@@ -53,6 +53,7 @@ function parseGherkinTest(doc: GherkinDocument): GherkinTest {
     language,
     feature: {
       title: name,
+      description: description.trimStart(),
       backgrounds,
       scenarios,
       outlines,
@@ -74,13 +75,14 @@ function parseGherkinRules({
     .filter(notEmpty)
     .filter(isRule)
     .map((rule) => {
-      const { name, tags } = rule;
+      const { name, tags, description } = rule;
       const backgrounds: GherkinBackground[] = parseGherkinBackgrounds(rule);
       const scenarios: GherkinScenario[] = parseGherkinScenarios(rule);
       const outlines: GherkinScenarioOutline[] =
         parseGherkinScenarioOutlines(rule);
       return {
         title: name,
+        description: description.trimStart(),
         backgrounds,
         scenarios,
         outlines,
@@ -109,8 +111,9 @@ function parseGherkinScenarios({ children, tags }: Feature | Rule) {
     .map(({ scenario }) => scenario)
     .filter(notEmpty)
     .filter(isScenario)
-    .map<GherkinScenario>(({ name, steps, tags: scenarioTags }) => ({
+    .map(({ name, steps, tags: scenarioTags, description }) => ({
       title: name,
+      description: description.trimStart(),
       steps: parseSteps([...steps]),
       rule: undefined,
       tags: [...tags, ...scenarioTags].map((it) => it.name),
@@ -125,15 +128,16 @@ function parseGherkinScenarioOutlines({
     .map(({ scenario }) => scenario)
     .filter(notEmpty)
     .filter(isScenarioOutline)
-    .map<GherkinScenarioOutline>(({ name, steps, examples, tags }) => {
+    .map<GherkinScenarioOutline>(({ name, steps, examples, tags, description }) => {
       const allTags = [...featureTags, ...tags].map((it) => it.name);
-      return makeScenarioOutline(steps, examples, name, allTags);
+      return makeScenarioOutline(steps, examples, name, description, allTags);
     });
 }
 
 function makeScenarioOutline(
   steps: readonly Step[],
   examples: readonly Examples[],
+  description: string,
   name: string,
   tags: string[]
 ) {
@@ -141,12 +145,14 @@ function makeScenarioOutline(
   const parsedExamples = parseExamples([...examples]);
   const scenarios = parseOutlineScenarios(
     name,
+    description,
     parsedSteps,
     parsedExamples,
     tags
   );
   return new GherkinScenarioOutline(
     name,
+    description,
     parsedSteps,
     parsedExamples,
     scenarios,
@@ -156,6 +162,7 @@ function makeScenarioOutline(
 
 function parseOutlineScenarios(
   title: string,
+  description: string,
   outlineSteps: GherkinSteps,
   examples: GherkinExample[],
   tags: string[]
@@ -165,6 +172,7 @@ function parseOutlineScenarios(
     for (const row of values) {
       makeScenarioForExample(
         title,
+        description,
         scenarios,
         outlineSteps,
         headers,
@@ -178,6 +186,7 @@ function parseOutlineScenarios(
 
 function makeScenarioForExample(
   title: string,
+  description: string,
   scenarios: GherkinScenario[],
   outlineSteps: GherkinSteps,
   headers: string[],
@@ -186,7 +195,7 @@ function makeScenarioForExample(
 ) {
   const steps: GherkinStep[] = [];
 
-  const scenario = new GherkinScenario(title, steps, undefined, tags);
+  const scenario = new GherkinScenario(title, description,steps, undefined, tags);
   scenarios.push(scenario);
 
   for (const { keyword, text, table } of outlineSteps) {

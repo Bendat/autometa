@@ -1,7 +1,22 @@
 import { ContextHandler } from './context-handler';
 import { Switcher } from './switcher';
 import { WindowContext } from './window-context';
-
+class Tab2 extends WindowContext {
+  constructor(
+    public readonly name: string,
+    public readonly handler: ContextHandler
+  ) {
+    super('tab', name, handler);
+  }
+}
+class Window2 extends WindowContext {
+  constructor(
+    public readonly name: string,
+    public readonly handler: ContextHandler
+  ) {
+    super('window', name, handler);
+  }
+}
 export const Tab = (name: string, handler: ContextHandler) =>
   new WindowContext('tab', name, handler);
 
@@ -22,10 +37,12 @@ export const Which = (then: Switcher, name: string) =>
 
 export const New = new ContextHandler(
   async (type, browser, user, windowName) => {
-    if(browser.windows[windowName]){
-      throw new Error(`Window or tab with name ${windowName} already exists, cannot create again.`)
+    if (browser.windows[windowName]) {
+      throw new Error(
+        `Window or tab with name ${windowName} already exists, cannot create again.`
+      );
     }
-    return  browser.window.open(
+    return browser.window.open(
       windowName,
       type as 'tab' | 'window',
       user.url,
@@ -34,7 +51,6 @@ export const New = new ContextHandler(
   }
 );
 
-export const Return = new ContextHandler(
-   (_, browser, __, windowName) =>
-    browser.window.switchTo.named(windowName)
+export const Return = new ContextHandler((_, browser, __, windowName) =>
+  browser.window.switchTo.named(windowName)
 );

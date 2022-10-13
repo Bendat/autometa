@@ -1,26 +1,35 @@
+#! node
 import storage from 'node-persist';
 import path from 'path';
 import { cwd } from 'process';
 import './testrail';
 import { prompt } from 'enquirer';
 import { addFeatureToSuite } from './testrail';
-storage.init();
+import * as os from 'os';
 
+const tempDir = path.join(os.tmpdir(), 'testrail-cucumber');
+
+const store = storage.create({ dir: tempDir });
+store.init();
 type dict<T> = Record<string, T>;
+let loadedFeaturePath: string | undefined = undefined;
 async function run() {
-  const store = storage.defaultInstance;
-
   if (process.argv.includes('--clearAll')) {
     await store.clear();
   }
-  
+  if (process.argv[2]?.endsWith('.feature')) {
+    loadedFeaturePath = process.argv[2];
+  }
+
   const url = await urlPrompt(store);
   const username = await usernamePrompt(store);
   const password = await passwordPrompt(store);
-  const featurePath = await pathPrompt();
+  let featurePath = await pathPrompt();
   const projectId = await projectIdPrompt();
   const suiteId = await suiteIdPrompt();
-
+  if (!path.isAbsolute(featurePath)) {
+    featurePath = path.resolve(process.cwd(), featurePath);
+  }
   const options = {
     username,
     password,
@@ -32,13 +41,17 @@ async function run() {
   if (path.isAbsolute(uri)) {
     uri = path.resolve(cwd(), uri);
   }
-  await addFeatureToSuite(uri, parseInt(projectId), parseInt(suiteId), options);
 
-  console.log('done');
+  await addFeatureToSuite(uri, projectId, parseInt(suiteId), options);
+  const again = await doAnotherPrompt();
+  if (again) {
+    await run();
+  } else {
+    console.log('done');
+  }
 }
 
 run();
-
 
 async function suiteIdPrompt() {
   return (
@@ -46,23 +59,33 @@ async function suiteIdPrompt() {
       {
         type: 'input',
         name: 'suiteId',
-        message: 'SuiteId',
+        message: 'SuiteId (leave empty to create new)',
       },
     ])
   )['suiteId'];
 }
-
+let projectId: number | undefined = undefined;
 async function projectIdPrompt() {
-  return (
+  if (projectId) {
+    return projectId;
+  }
+  const givenId = (
     (await prompt({
       type: 'input',
       name: 'projectId',
       message: 'ProjectId',
     })) as dict<string>
   )['projectId'];
+  projectId = parseInt(givenId);
+  return projectId;
 }
 
 async function pathPrompt() {
+  if (loadedFeaturePath) {
+    const temp = loadedFeaturePath;
+    loadedFeaturePath = undefined;
+    return temp;
+  }
   return (
     (await prompt({
       type: 'input',
@@ -121,4 +144,16 @@ async function passwordPrompt(store: storage.LocalStorage) {
   }
   const password = await store.getItem(passwordKey);
   return password;
+}
+
+async function doAnotherPrompt() {
+  return (
+    await prompt([
+      {
+        type: 'confirm',
+        name: 'doAnother',
+        message: 'Do Another?',
+      },
+    ])
+  )['doAnother'];
 }

@@ -11,7 +11,13 @@ export interface RunningUser<TContext extends ActionFn | ObserverFn | ThoughtFn>
 }
 export class QueuedBehavior {
   constructor(
-    public behavior: 'sees' | 'does' | 'thought' | 'loads' | 'subplot' | 'memory',
+    public behavior:
+      | 'sees'
+      | 'does'
+      | 'thought'
+      | 'loads'
+      | 'subplot'
+      | 'memory',
     public readonly performance: Performance
   ) {}
 }
@@ -35,9 +41,12 @@ export class ActionBehavior extends QueuedBehavior {
   }
 }
 
-export class ThoughtBehavior<T extends WebPage> extends QueuedBehavior {
+export class ThoughtBehavior<T extends PageObject> extends QueuedBehavior {
   constructor(
-    public readonly page: constructor<T> | undefined,
+    public readonly page:
+      | constructor<T>
+      | Observation<T, unknown>
+      | undefined,
     public readonly thought: Thought,
     performance: Performance
   ) {

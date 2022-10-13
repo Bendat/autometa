@@ -1,4 +1,5 @@
 import { PageObject, WebPage, Website } from '@autometa/page-components';
+import { Component } from 'react';
 import { constructor } from 'tsyringe/dist/typings/types';
 
 export class Observation<T extends PageObject, K> {
@@ -10,9 +11,9 @@ export class Observation<T extends PageObject, K> {
   async select(site: Website) {
     const type = this.type;
     if (type instanceof Observation) {
-      const innerType: constructor<PageObject> = await type.select(
+      const innerType: constructor<PageObject> = (await type.select(
         site
-      ) as unknown as constructor<WebPage>;
+      )) as unknown as constructor<WebPage>;
       if (innerType instanceof PageObject) {
         return this.selector(innerType as any);
       }
@@ -27,15 +28,7 @@ export class Observation<T extends PageObject, K> {
     const selected = this.selector(page as any);
     return selected;
   }
-  
-  sight(
-    site: Website,
-    selector: (item: unknown) => K | Promise<K>
-  ): unknown | Promise<unknown> {
-    return selector(this.select(site));
-  }
 }
-
 
 /** todo allow nested/composed observers */
 export function Observe<T extends PageObject, K>(
@@ -44,3 +37,4 @@ export function Observe<T extends PageObject, K>(
 ): Observation<T, K> {
   return new Observation(type, selector);
 }
+

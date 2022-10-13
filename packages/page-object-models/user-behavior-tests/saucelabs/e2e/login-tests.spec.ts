@@ -12,14 +12,9 @@ import {
   ClosesTo,
   Return,
   Plans,
-  Observation,
   Observe,
   observation,
   StepOf,
-  WindowContext,
-  ContextHandler,
-  Switcher,
-  Story,
 } from '@autometa/behaviors';
 import { Users } from '../communities/community';
 import { LoginAs } from '../behaviours/actions/homepage-actions';
@@ -32,10 +27,7 @@ import { credentials } from '../communities/credentials';
 import { SauceDemoPage } from '../page-objects/pages/homepage';
 import { LoginErrorMessage } from '../behaviours/observations/homepage-observers';
 import { LoginError } from '../behaviours/observations/error-messages';
-import { LoginPlans } from '../plans/user-plans';
-import { WindowHandle } from '@autometa/page-components';
-import { constructor } from 'tsyringe/dist/typings/types';
-
+import { LoginPlans, SauceDemoPlans } from '../plans/user-plans';
 
 const obs = Observe(SauceDemoPage, () => console.log('foo'));
 class FakePlans extends Plans {
@@ -44,8 +36,8 @@ class FakePlans extends Plans {
 }
 jest.setTimeout(1000000);
 describe('Login Tests', () => {
-  let Johnny: User<LoginPlans>;
-  let Jenny: User<LoginPlans>;
+  let Johnny: User<SauceDemoPlans>;
+  let Jenny: User<SauceDemoPlans>;
   beforeEach(
     async () =>
       ({ Johnny, Jenny } = await Community.of(Users).following('Johnny'))
@@ -55,7 +47,9 @@ describe('Login Tests', () => {
   it('Johnny also run enny', async () => {
     await Johnny.will(LoginAs(credentials.Johnny))
       .see(SauceDemoPage, HasTitle('Swag Labs'))
-      .meanwhile(Jenny, Tab('google', New), Which(SwitchesTo, 'initial'))
+      .meanwhile(Jenny.will().and())
+      .on(New, Tab, 'google')
+      .which(SwitchesTo, 'initial')
       .see(SauceDemoPage, HasTitle('Swag Labs'))
       .meanwhile(Jenny, Tab('google', Return), Which(ClosesTo, 'initial'));
 
@@ -69,7 +63,8 @@ describe('Login Tests', () => {
   });
 
   it('Johnny Should Cannot Log In Without a Username', async () => {
-    await Johnny.will(LoginAs(credentials.NoUsername)).and.see(
+    await Johnny.will(LoginAs(credentials.NoUsername))
+    .and.see(
       LoginErrorMessage,
       Is(LoginError.NoUsername)
     );
@@ -88,15 +83,12 @@ describe('Login Tests', () => {
       Is(LoginError.NoMatch)
     );
     Johnny.plans
-      .trigger(
-        JennyLoginStory,
-        Jenny.plans.toLoginWithCredentials()
-      )
+
       .toLoginWithCredentials()
       .toSeeTitle()
       .trigger(
         Tab('jennies', Return),
-        Jenny.plans.toLogout(),
+        Jenny.plans.toLoginWithCredentials(),
         Which(ClosesTo, 'initial')
       )
       .toLogout();
@@ -107,23 +99,6 @@ describe('Login Tests', () => {
     //   .toLoginSuccessfully();
   });
 });
-
-@beginsWith(Tab('google', New))
-class AdministratorStory extends Story<FakePlans> {}
-
-@beginsWith(AdministratorStory)
-@endsThen(SwitchesTo, 'google')
-class JennyLoginStory extends Story<FakePlans> {
-  // @perform()
-  // toLogin: (plans: LoginPlans) => LoginPlans;
-
-  @perform()
-  toLogout = () => this.plans.toObserve();
-}
-
-@continuesFrom(JennyLoginStory)
-@endsThen(ClosesTo, 'initial')
-class JennyFinalStory {}
 
 describe('Plans', () => {
   let Johnny: User<LoginPlans>;
@@ -142,79 +117,3 @@ describe('Plans', () => {
     //   }, Tab('inbox', 'my title');
   });
 });
-class Goo {
-  j = 2;
-  k = ['fpp'];
-}
-class Foo extends Goo {
-  a = 1;
-  n = 'asda';
-  depo = true;
-}
-test('metadata', () => {
-  const foo = { ...new Foo() };
-  console.log(foo);
-  for (const f of Object.keys(foo)) {
-    console.log(f);
-    console.log(foo[f]);
-  }
-  // Reflect.defineProperty(s1, 'mykey', {user: 'ben'})
-  // Reflect.defineProperty(s2, 'mykey', 'cat')
-  // console.log(Reflect.getOwnPropertyDescriptor(s1, 'mykey'))
-  // console.log(Reflect.getOwnPropertyDescriptor(s2, 'mykey'))
-});
-// abstract class Plans<T extends Plans<T>> {
-//   [planName: string]: StepOf<T> | Plans<T> | Plans<any>;
-//   get and() {
-//     return this;
-//   }
-// }
-
-// abstract class Foo {}
-// class JohnnySubPlans extends Foo {
-//   @action(LoginAs(credentials.Johnny))
-//   focaccia: StepOf<JohnnySubPlans>;
-// }
-// class JohnnyLoginPlans extends Foo {
-//   @strategy()
-//   subplot: Procedure<JohnnySubPlans, JohnnyLoginPlans>;
-//   @action(LoginAs(credentials.Johnny))
-//   toProvideHisCredentials: StepOf<JohnnyLoginPlans>;
-//   @action(LoginAs(credentials.Johnny))
-//   toFailWithoutPassword: StepOf<JohnnyLoginPlans>;
-//   toFailWithoutUsername: StepOf<JohnnyLoginPlans>;
-// }
-
-// class JohnnyPlans implements Foo {
-//   @action(LoginAs(credentials.Johnny))
-//   toLoginSuccessfully: StepOf<JohnnyPlans>;
-
-//   @observation(Page, HasTitle(''))
-//   @observation(LoginBox, Is(''))
-//   toConfirmHeLoggedIn: StepOf<JohnnyPlans>;
-// }
-
-// // const johnnyPlans = new JohnnyPlans();
-// Johnny.plans
-//   .toLoginSuccessfully()
-//   .toLogin(async (has) => {
-//     await has.toFailWithoutPassword().toJogOn((Ciaran) => Ciaran.toJogOn());
-//   })
-//   .withLogin.toFailWithoutPassword()
-//   .recompose.andAgain.toConfirmHeLoggedIn()
-//   .trigger(async ({ Jenny }) => {
-//     await Jenny.plans
-//       .toLogin(AdminAccount(credentials.Jenny))
-//       .toVerifyBooking();
-//   }, Switches, Tab)
-//   .withLogin.toProvideHisCredentials()
-//   .subplot.focaccia()
-//   .trigger(async ({ Jenny }) => {
-//     await Jenny.plans
-//       .toCancelBooking();
-//   }, Closes, Tab)
-//   .will(Logout)
-
-// allow only one level of nesting?
-// alternatiely provide callback model?
-// maybe rename subplot, make "trigger" a subplot (other users story)

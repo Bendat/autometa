@@ -58,7 +58,6 @@ export class ComponentProxyWebElement implements WebElement {
       }
       throw err;
     }
-    //TypeError: Cannot read properties of undefined
     if (!this.#innerElementUnsafe) {
       throw new Error(
         "Lazy Element attempted to access it's inner WebElement without assigning it"

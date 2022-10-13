@@ -15,6 +15,8 @@ export class GlobalRun {
       run.execute(describe, it);
     });
   }
+
+  
 }
 // import {
 //   GherkinBackground,

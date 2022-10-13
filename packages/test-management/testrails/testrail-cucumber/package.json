@@ -1,10 +1,10 @@
 {
   "name": "@autometa/testrail-cucumber",
-  "version": "0.0.1",
+  "version": "0.0.4",
   
   "bin": { "testrail-cucumber": "src/lib/cli.js" },
   "dependencies": {
-    "@autometa/shared-utilities": "0.0.2",
+    "@autometa/shared-utilities": "0.0.3",
     "dotenv": "^16.0.2",
     "enquirer": "^2.3.6",
     "inquirer": "^9.1.2",

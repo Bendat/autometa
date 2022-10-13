@@ -1,4 +1,5 @@
-import getCallerFiles from 'callsites'
+import { getCallerFiles } from "./caller-site";
+
 export function getCallerFromIndex(index: number) {
     const files = getCallerFiles();
     if (index < 0 || index >= files.length) {

@@ -16,7 +16,7 @@ interface Searcher {
  */
 export abstract class PageObject {
   protected _eventEmitter!: EventEmitter;
-  get events() {
+  protected get events() {
     return this._eventEmitter;
   }
   protected _pomName!: string;
@@ -25,13 +25,9 @@ export abstract class PageObject {
   /**
    * Reference to the WebDriver powering this PageObject
    */
-  get driver() {
+  protected get driver() {
     return this._driver;
   }
-  protected set driver(value: WebDriver) {
-    this._driver = value;
-  }
-
   /**
    * Returns the name of this Component in the Page Object Model.
    * This will be the name of the property associated with this

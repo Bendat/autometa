@@ -1,20 +1,9 @@
-import {
-  Button,
-  Collection,
-  collection,
-  component,
-  WebPage,
-} from '@autometa/page-components';
+import { Collection, collection, component } from '@autometa/page-components';
 import { By } from 'selenium-webdriver';
-import { HamburgerMenu } from '../components/hamburger-menu-component';
 import { InventoryItem, ShoppingCart } from '../components/products-components';
+import { StandardPage } from './standard-page';
 
-export class ProductsPage extends WebPage {
-  @component(By.id('react-burger-menu-btn'))
-  hamburgerButton: Button;
-  @component(By.className('bm-menu'))
-  hamburgerMenu: HamburgerMenu;
-
+export class ProductsPage extends StandardPage {
   @component(By.className('shopping_cart_link'))
   cart: ShoppingCart;
 

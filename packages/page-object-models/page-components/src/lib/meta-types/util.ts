@@ -1,4 +1,4 @@
-import { By, WebElement } from 'selenium-webdriver';
+import { By, WebDriver, WebElement } from 'selenium-webdriver';
 import { Component } from './component';
 import {
   COLLECTION_META_KEY,
@@ -14,6 +14,7 @@ import { constructor } from 'tsyringe/dist/typings/types';
 import { InjectionContainer } from '../injection.ts';
 import { Collection, InjectedCollection } from '../components';
 import { CollectionDecoratorAdditionalConfig } from '../decorators/collection';
+import { EventEmitter } from 'stream';
 type ComponentMetaData = ConstructionOptions<Component>;
 
 export function applyComponentDecorators(target: PageObject) {
@@ -226,13 +227,13 @@ export function assignWaitObject(
 export function assignDriver(instance: PageObject, target: PageObject) {
   Reflect.deleteProperty(instance, '_driver');
   Reflect.defineProperty(instance, '_driver', {
-    get: () => target.driver,
+    get: () => (target as unknown as { driver: WebDriver }).driver,
   });
 
   if (instance instanceof Component) {
     Reflect.deleteProperty(instance.element, '#driver');
     Reflect.defineProperty(instance.element, '#driver', {
-      get: () => target.driver,
+      get: () => (target as unknown as { driver: WebDriver }).driver,
     });
   }
 }
@@ -245,7 +246,7 @@ export function assignSearcher(instance: PageObject, target: PageObject) {
     });
   } else {
     Reflect.defineProperty(instance, '_searcher', {
-      get: () => target.driver,
+      get: () => (target as unknown as { driver: WebDriver }).driver,
     });
   }
 }
@@ -256,12 +257,15 @@ export function assignParent(instance: PageObject, target: PageObject) {
   });
   Reflect.deleteProperty(instance, '_eventEmitter');
   Reflect.defineProperty(instance, '_eventEmitter', {
-    get: () => target.events,
+    get: () => (target as unknown as { events: EventEmitter }).events,
   });
   if (instance instanceof Component) {
-    instance.events.on('ForceRefreshAll', () => {
-      instance.element.markStale();
-    });
+    (instance as unknown as { events: EventEmitter }).events.on(
+      'ForceRefreshAll',
+      () => {
+        instance.element.markStale();
+      }
+    );
   }
 }
 
