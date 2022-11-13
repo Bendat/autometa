@@ -4,7 +4,10 @@ import {
 } from '@cucumber/cucumber-expressions';
 import { DependencyContainer, InjectionToken } from 'tsyringe';
 import { globalCache } from '../step-definition-builders/global-steps/global-step-cache';
-import { DecoratedStepBlueprint, StepMetaDataKey } from '../step-definition-builders/global-steps/meta-types';
+import {
+  DecoratedStepBlueprint,
+  StepMetaDataKey,
+} from '../step-definition-builders/global-steps/meta-types';
 import { PreparedStepCallback, PreparedStepGroup, StepData } from '../types';
 
 export type ExpressionMatch = {
@@ -62,10 +65,10 @@ export function findMatchingGlobalTargetExpression(
   const targets = globalCache.Targets;
   const instanceSteps: StepData[] = [];
   for (const target of targets) {
-    if(!container.isRegistered(target)){
-    container.register(target, target.constructor)
+    if (!container.isRegistered(target)) {
+      container.register(target, target.constructor);
     }
-    
+
     const instance = container.resolve(
       target as unknown as InjectionToken<unknown>
     );
@@ -80,6 +83,7 @@ export function findMatchingGlobalTargetExpression(
       instanceSteps.push(new StepData(stepText, null, action, false));
     }
   }
+  
   for (const step of instanceSteps) {
     const cucumberExpression = new CucumberExpression(
       step.text,

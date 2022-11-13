@@ -1,18 +1,22 @@
 // import { given, then, when } from '@autometa/cucumber';
 import { given, then, when } from '@autometa/cucumber';
+import { Store, World } from '@autometa/store';
 import { injectable } from 'tsyringe';
 
 
 @injectable()
 export default class MyStepsClass {
+  constructor(public world: World){}
   @given('a registered user')
   givenARegisteredUser = () => {
+    this.world.x = 5
     console.log('given a registered user');
   };
 
   @when("they enter their username '{word}'")
   whenEnterUsername = (username: string) => {
     console.log('when username ' + username);
+    console.log('x ' + this.world.x);
   };
 
   @when("they enter their password '{word}'")

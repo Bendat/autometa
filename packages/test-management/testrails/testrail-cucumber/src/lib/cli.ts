@@ -4,6 +4,7 @@ import { cwd } from 'process';
 import './testrail';
 import { prompt } from 'enquirer';
 import { addFeatureToSuite } from './testrail';
+import { Given } from '@autometa/cucumber';
 storage.init();
 
 type dict<T> = Record<string, T>;
@@ -122,3 +123,7 @@ async function passwordPrompt(store: storage.LocalStorage) {
   const password = await store.getItem(passwordKey);
   return password;
 }
+
+Given("'{word}' '{word}' has searched for hostels in '{word}'", (role, name, location)=>{
+  
+})
