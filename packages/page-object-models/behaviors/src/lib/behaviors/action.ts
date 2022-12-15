@@ -17,14 +17,15 @@ export class Action<T extends PageObject, K extends PageObject> {
 }
 
 export function ActionOn<T extends PageObject, K extends PageObject>(
-  on: constructor<T> | Observation<T, K>,
+  subject: constructor<T> | Observation<T, K>,
   action: (page: K) => unknown | Promise<unknown>
 ): Action<T, K> {
-  return new Action(on, action);
+  return new Action(subject, action);
 }
 
 export const Click = <T extends { click: () => Promise<void> }>({
   click,
 }: T) => click();
+
 export const Text = <T extends { text: () => Promise<void> }>({ text }: T) =>
   text;

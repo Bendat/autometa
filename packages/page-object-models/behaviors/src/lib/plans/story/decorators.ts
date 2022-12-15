@@ -1,13 +1,13 @@
 import { constructor } from 'tsyringe/dist/typings/types';
-import { WindowContext, Switcher, Which } from '../../subplot';
+import { WindowStartContext, Switcher, Which } from '../../subplot';
 import { Story } from './story';
 
 export function beginsWith<T extends Story>(
   story: constructor<T>
 ): ClassDecorator;
-export function beginsWith(context: WindowContext): ClassDecorator;
+export function beginsWith(context: WindowStartContext): ClassDecorator;
 export function beginsWith<T extends Story | undefined = undefined>(
-  context: WindowContext | constructor<T>
+  context: WindowStartContext | constructor<T>
 ): ClassDecorator {
   return (target) => {
     Reflect.defineMetadata('metadata:beginsWith', context, target.constructor);

@@ -3,10 +3,9 @@ import {
   Site,
   WebPage,
   Browser,
+  Component,
   PageObject,
 } from '@autometa/page-components';
-import { performance } from 'perf_hooks';
-import { Component } from 'react';
 import { constructor } from 'tsyringe/dist/typings/types';
 import { URL } from 'url';
 import {
@@ -19,7 +18,7 @@ import {
   ThoughtFor,
 } from '../behaviors';
 import { Plans, NoPlans, constructPlans } from '../plans';
-import { WindowContext, ContextHandler } from '../subplot';
+import { WindowStartContext, WindowTypeContext } from '../subplot';
 import {
   QueuedBehavior,
   SubPlot,
@@ -64,8 +63,8 @@ export class UserDriver<T extends Plans = NoPlans> {
    */
   meanwhile = <K extends User>(
     user: K | (() => K),
-    { handler, name, type }: WindowContext,
-    then: ContextHandler
+    { handler, name, type }: WindowStartContext,
+    then: WindowTypeContext
   ) => {
     //handle window switches
     this.behaviors.push(
@@ -198,6 +197,7 @@ export class UserDriver<T extends Plans = NoPlans> {
       | null
   ): Promise<unknown | never> => {
     if (onFulfilled) {
+      
       return await onFulfilled(this.run());
     }
     return await Promise.resolve(undefined);

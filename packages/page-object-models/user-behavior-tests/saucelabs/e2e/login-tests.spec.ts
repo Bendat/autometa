@@ -4,7 +4,7 @@ import {
   Is,
   Tab,
   User,
-  Community,
+  FocusGroup,
   NoPlans,
   Which,
   New,
@@ -28,30 +28,42 @@ import { SauceDemoPage } from '../page-objects/pages/homepage';
 import { LoginErrorMessage } from '../behaviours/observations/homepage-observers';
 import { LoginError } from '../behaviours/observations/error-messages';
 import { LoginPlans, SauceDemoPlans } from '../plans/user-plans';
-
+//https://stackoverflow.com/questions/30689817/es6-call-class-constructor-without-new-keyword
 const obs = Observe(SauceDemoPage, () => console.log('foo'));
 class FakePlans extends Plans {
   @observation(obs, Is(undefined))
   toObserve: StepOf<FakePlans>;
 }
 jest.setTimeout(1000000);
+
 describe('Login Tests', () => {
+const focusGroup = FocusGroup.of(Users)
+
   let Johnny: User<SauceDemoPlans>;
   let Jenny: User<SauceDemoPlans>;
+  let Conclude: ()=>Promise<void>;
   beforeEach(
     async () =>
-      ({ Johnny, Jenny } = await Community.of(Users).following('Johnny'))
+      ({Johnny}  = await focusGroup.begin()
   );
-  afterEach(async () => Johnny.finish());
+  afterEach(async () => focusGroup.conclude());
+  afterEach(async () => Conclude());
 
   it('Johnny also run enny', async () => {
-    await Johnny.will(LoginAs(credentials.Johnny))
+    await Johnny
+      .will(LoginAs(credentials.Johnny))
       .see(SauceDemoPage, HasTitle('Swag Labs'))
-      .meanwhile(Jenny.will().and())
-      .on(New, Tab, 'google')
-      .which(SwitchesTo, 'initial')
       .see(SauceDemoPage, HasTitle('Swag Labs'))
-      .meanwhile(Jenny, Tab('google', Return), Which(ClosesTo, 'initial'));
+
+
+      // .meanwhile(
+      //   (on)=> on(Tab, 'jennies', SwitchesTo, 'initial'),
+      //   ({Jenny})=>Jenny.will(LoginAs(credentials.Johnny))
+      // )
+      // .on(Tab, 'jennies', SwitchesTo, 'initial')
+      // .on(Idle, Tab, 'jennies', ClosesTo, 'initial')
+      // .on(New, Tab, 'jennies', SwitchesTo, 'initial')
+      // .meanwhile(Jenny, Tab('google', Return), Which(ClosesTo, 'initial'));
 
     await new Promise((r) => setTimeout(r, 10000));
   });
@@ -62,15 +74,14 @@ describe('Login Tests', () => {
     await new Promise((r) => setTimeout(r, 10000));
   });
 
-  it('Johnny Should Cannot Log In Without a Username', async () => {
-    await Johnny.will(LoginAs(credentials.NoUsername))
-    .and.see(
+  it('Johnny Cannot Log In Without a Username', async () => {
+    await Johnny.will(LoginAs(credentials.NoUsername)).and.see(
       LoginErrorMessage,
       Is(LoginError.NoUsername)
     );
   });
 
-  it('Johnny Should Cannot Log In Without a Password', async () => {
+  it('Johnny Cannot Log In Without a Password', async () => {
     await Johnny.will(LoginAs(credentials.NoUsername)).and.see(
       LoginErrorMessage,
       Is(LoginError.NoUsername)
@@ -105,7 +116,7 @@ describe('Plans', () => {
   let Jenny: User<NoPlans>;
   beforeEach(
     async () =>
-      ({ Johnny, Jenny } = await Community.of(Users).following('Johnny'))
+      ({ Johnny, Jenny } = await FocusGroup.of(Users).following('Johnny'))
   );
   afterEach(async () => Johnny.finish());
   test('plans', async () => {

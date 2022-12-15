@@ -1,9 +1,9 @@
-import { ContextHandler } from "./context-handler";
+import { WindowTypeContext } from "./context-handler";
 
-export class WindowContext {
+export class WindowStartContext {
   constructor(
     public readonly type: 'tab' | 'window',
     public readonly name: string,
-    public readonly handler: ContextHandler
+    public readonly handler: WindowTypeContext
   ) {}
 }

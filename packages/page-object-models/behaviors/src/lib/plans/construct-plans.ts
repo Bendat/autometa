@@ -1,6 +1,6 @@
 import { constructor } from 'tsyringe/dist/typings/types';
 import { User } from '../performers';
-import { ContextHandler, WindowContext } from '../subplot';
+import { WindowTypeContext, WindowStartContext } from '../subplot';
 import {
   ActionMetadata,
   ObservationMetadata,
@@ -28,9 +28,9 @@ export function constructPlans<T extends Plans>(
   for (const key of keys) {
     const behaviors = metadata.steps.filter((it) => it.key === key);
     instance.trigger = (
-      context: WindowContext,
+      context: WindowStartContext,
       plans: Plans,
-      handler: ContextHandler
+      handler: WindowTypeContext
     ) => {
       user.meanwhile(
         async () => {

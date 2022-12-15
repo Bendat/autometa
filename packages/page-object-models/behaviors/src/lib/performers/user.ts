@@ -6,7 +6,7 @@ import {
   Thenable,
 } from '.';
 import { NoPlans, Plans } from '../plans';
-import { ContextHandler, WindowContext } from '../subplot';
+import { WindowTypeContext, WindowStartContext } from '../subplot';
 
 export interface User<T extends Plans = NoPlans> extends Thenable<User<T>> {
  /**
@@ -77,8 +77,8 @@ export interface User<T extends Plans = NoPlans> extends Thenable<User<T>> {
    */
   meanwhile: <K extends User>(
     user: K | (() => K) | (() => Promise<K>),
-    context: WindowContext,
-    then: ContextHandler
+    context: WindowStartContext,
+    then: WindowTypeContext
   ) => User;
 
   /**

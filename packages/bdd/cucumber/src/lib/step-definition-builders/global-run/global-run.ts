@@ -4,6 +4,7 @@ import TestTrackingEvents from '../../tracking/test-tracker';
 import { readFeature } from '../../utils';
 import { TopLevelRun } from '../top-level-run';
 
+
 export class GlobalRun {
   assembleFeature(pathToFeature: string) {
     const gf = readFeature(pathToFeature, getCallerFromIndex(2));

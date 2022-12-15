@@ -1,7 +1,7 @@
 import { constructor } from 'tsyringe/dist/typings/types';
 import { Story } from '.';
-import { Community, Thenable, ThenMethod, User } from '../performers';
-import { ContextHandler, WindowContext } from '../subplot';
+import { FocusGroup, Thenable, ThenMethod, User } from '../performers';
+import { WindowTypeContext, WindowStartContext } from '../subplot';
 
 type SchemeEvents<T extends Plans, K extends Plans> = {
   [J in keyof K]: K[J] extends StepOf<K> ? StepOf<K & Recomposable<T>> : K[J];
@@ -32,9 +32,9 @@ export abstract class Plans implements Thenable {
     | ComposedOf<Plans, Plans>
     | ThenMethod
     | (<TPlans extends Plans>(
-        context: WindowContext,
+        context: WindowStartContext,
         plans: TPlans,
-        switcher: ContextHandler
+        switcher: WindowTypeContext
       ) => this);
 
   then = (_: (value: any) => any): Promise<never> => {
@@ -43,9 +43,9 @@ export abstract class Plans implements Thenable {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   trigger = <TPlans extends Plans>(
-    context: WindowContext,
+    context: WindowStartContext,
     plans: TPlans,
-    switcher: ContextHandler
+    switcher: WindowTypeContext
   ): this => {
     throw new Error('Method not implemented.');
   };

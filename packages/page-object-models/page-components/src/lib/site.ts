@@ -25,8 +25,8 @@ export class Browser {
   #currentHandle: string;
   #lastHandle: string;
 
-  get lastHandle(){
-    return this.#lastHandle
+  get lastHandle() {
+    return this.#lastHandle;
   }
   get window() {
     return {
@@ -59,15 +59,14 @@ export class Browser {
           await this.driver.switchTo().window(window);
           this.#lastHandle = this.#currentHandle;
           this.#currentHandle = window;
-          return window
+          return window;
         },
         handle: async (handle: string) => {
           await this.driver.switchTo().window(handle);
           this.#lastHandle = handle;
           this.#lastHandle = this.#currentHandle;
           this.#currentHandle = handle;
-          return handle
-
+          return handle;
         },
         next: async (cacheName?: string, owner?: unknown) => {
           const handles: string[] = await this.driver.getAllWindowHandles();
@@ -349,10 +348,10 @@ export class Website {
    * Quit the WebDriver.
    */
   leave = async () => {
-    if (!this.#driver) {
+    if (this.#driver) {
       throw new Error('Trying to quit an initialized WebDriver');
+      await this.#driver?.quit();
     }
-    await this.#driver?.quit();
     this.#driver = undefined;
   };
 }

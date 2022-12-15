@@ -1,24 +1,29 @@
-import { Browser } from "@autometa/page-components";
-import { URL } from "url";
-import { User, UserDriver } from "..";
+import { Browser } from '@autometa/page-components';
+import { URL } from 'url';
+import { User, UserDriver } from '..';
 
-export class ContextHandler {
+export abstract class WindowTypeContext {
   constructor(
-    private windowHandle: (
-      type: 'tab' | 'window' | 'either',
-      driver: Browser,
-      user: UserDriver,
-      windowName: string,
-      url?: string | URL
-    ) => Promise<string>
+    private type: 'tab' | 'window' | 'either',
+    private browser: Browser,
+    private user: UserDriver,
+    private windowName: string,
+    private url?: string | URL
   ) {}
+  // constructor(
+  //   // private windowHandle: (
+  //   //   type: 'tab' | 'window' | 'either',
+  //   //   browser: Browser,
+  //   //   user: UserDriver,
+  //   //   windowName: string,
+  //   //   url?: string | URL
+  //   // ) => Promise<string>
+  // ) {}
   execute(
-    user: UserDriver | User,
-    driver: Browser,
-    windowName: string,
-    type: 'tab' | 'window' | 'either'
   ) {
-    return this.windowHandle(type, driver, user as UserDriver, windowName);
+    return this.windowHandle( );
   }
-}
 
+  abstract windowHandle(
+  ): Promise<string>;
+}

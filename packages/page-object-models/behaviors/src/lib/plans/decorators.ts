@@ -8,7 +8,7 @@ import {
   ThoughtAbout,
   ThoughtFor,
 } from '../behaviors';
-import { Switcher, WindowContext } from '../subplot';
+import { Switcher, WindowStartContext } from '../subplot';
 import { Plans } from './plans';
 export class ActionMetadata {
   readonly userAction = 'will';
@@ -126,7 +126,7 @@ export function thought(condition: Thought, reason: string): PropertyDecorator {
 }
 
 export function toStartAsSubplot(
-  windowType: WindowContext
+  windowType: WindowStartContext
 ): ClassDecorator {
   return (target): void => {
     // withMetaStructure(target, (structure) =>

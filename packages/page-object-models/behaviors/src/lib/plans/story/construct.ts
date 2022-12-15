@@ -1,7 +1,7 @@
 import { constructor } from 'tsyringe/dist/typings/types';
 import { Story } from '.';
 import { Plans } from '..';
-import { WindowContext } from '../../subplot';
+import { WindowStartContext } from '../../subplot';
 
 export function construct(target: constructor<Story>) {
   const beginsWith = Reflect.getMetadata('metadata:beginsWith', target);
@@ -15,12 +15,12 @@ export function construct(target: constructor<Story>) {
 
 function getContext(
   story: string,
-  current: WindowContext | constructor<Story>
-): WindowContext {
+  current: WindowStartContext | constructor<Story>
+): WindowStartContext {
   if (!current) {
     throw new Error(`No setup configured for Story ${story} `);
   }
-  if (current instanceof WindowContext) {
+  if (current instanceof WindowStartContext) {
     return current;
   }
   return getContext(current.name, current);
