@@ -1,0 +1,12 @@
+{
+  "name": "@autometa/page-components-playwright",
+  "version": "0.0.1",
+  "devDependencies": {
+    "@playwright/test": "^1.29.2"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@autometa/shared-utilities": "workspace:^0.0.3",
+    "reflect-metadata": "^0.1.13"
+  }
+}

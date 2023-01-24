@@ -171,6 +171,18 @@ importers:
       chai: 4.3.7
       selenium-webdriver: 4.7.1
 
+  packages/page-object-models/behaviors-integration-tests:
+    specifiers:
+      '@autometa/behaviors': workspace:^
+      '@autometa/page-components': workspace:^
+      geckodriver: ^3.2.0
+      reflect-metadata: ^0.1.13
+    dependencies:
+      '@autometa/behaviors': link:../behaviors
+      '@autometa/page-components': link:../page-components
+      geckodriver: 3.2.0
+      reflect-metadata: 0.1.13
+
   packages/page-object-models/page-components:
     specifiers:
       '@types/jest': ^29.0.2
@@ -211,17 +223,16 @@ importers:
     devDependencies:
       '@types/request': 2.48.8
 
-  packages/page-object-models/behaviors-integration-tests:
+  packages/page-object-models/page-components-playwright:
     specifiers:
-      '@autometa/behaviors': workspace:^
-      '@autometa/page-components': workspace:^
-      geckodriver: ^3.2.0
+      '@autometa/shared-utilities': workspace:^0.0.3
+      '@playwright/test': ^1.29.2
       reflect-metadata: ^0.1.13
     dependencies:
-      '@autometa/behaviors': link:../behaviors
-      '@autometa/page-components': link:../page-components
-      geckodriver: 3.2.0
+      '@autometa/shared-utilities': link:../../utils/shared-utilities
       reflect-metadata: 0.1.13
+    devDependencies:
+      '@playwright/test': 1.29.2
 
   packages/test-management/testrails/testrail-cucumber:
     specifiers:
@@ -3681,6 +3692,15 @@ packages:
     dependencies:
       esquery: 1.4.0
       typescript: 4.7.4
+    dev: true
+
+  /@playwright/test/1.29.2:
+    resolution: {integrity: sha512-+3/GPwOgcoF0xLz/opTnahel1/y42PdcgZ4hs+BZGIUjtmEFSXGg+nFoaH3NSmuc7a6GSFwXDJ5L7VXpqzigNg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dependencies:
+      '@types/node': 18.11.18
+      playwright-core: 1.29.2
     dev: true
 
   /@polka/url/1.0.0-next.21:
@@ -10636,6 +10656,12 @@ packages:
     dependencies:
       find-up: 3.0.0
     dev: false
+
+  /playwright-core/1.29.2:
+    resolution: {integrity: sha512-94QXm4PMgFoHAhlCuoWyaBYKb92yOcGVHdQLoxQ7Wjlc7Flg4aC/jbFW7xMR52OfXMVkWicue4WXE7QEegbIRA==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
 
   /portfinder/1.0.32:
     resolution: {integrity: sha512-on2ZJVVDXRADWE6jnQaX0ioEylzgBpQk8r55NE4wjXW1ZxO+BgDlY6DXwj20i0V8eB4SenDQ00WEaxfiIQPcxg==}

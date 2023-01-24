@@ -3,6 +3,7 @@
   "version": 2,
   "projects": {
     "behaviors": "packages/page-object-models/behaviors",
+    "behaviors-integration-tests": "packages/page-object-models/behaviors-integration-tests",
     "cucumber": "packages/bdd/cucumber",
     "cucumber-integration-tests": "packages/bdd/cucumber-integration-tests",
     "dependency-injection": "packages/utils/dependency-injection",
@@ -11,9 +12,9 @@
     "logging": "packages/libs/logging",
     "page-components": "packages/page-object-models/page-components",
     "page-components-integration-tests": "packages/page-object-models/page-components-integration-tests",
+    "page-components-playwright": "packages/page-object-models/page-components-playwright",
     "shared-utilities": "packages/utils/shared-utilities",
     "store": "packages/utils/store",
-    "testrail-cucumber": "packages/test-management/testrails/testrail-cucumber",
-    "behaviors-integration-tests": "packages/page-object-models/behaviors-integration-tests"
+    "testrail-cucumber": "packages/test-management/testrails/testrail-cucumber"
   }
 }

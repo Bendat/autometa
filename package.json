@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "license": "MIT",
   "scripts": {
+    "library:new": "nx g @nrwl/node:library --buildable --publishable"
   },
   "private": true,
   "devDependencies": {

@@ -1,0 +1,41 @@
+{
+  "name": "page-components-playwright",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/page-object-models/page-components-playwright/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/page-object-models/page-components-playwright",
+        "tsConfig": "packages/page-object-models/page-components-playwright/tsconfig.lib.json",
+        "packageJson": "packages/page-object-models/page-components-playwright/package.json",
+        "main": "packages/page-object-models/page-components-playwright/src/index.ts",
+        "assets": [
+          "packages/page-object-models/page-components-playwright/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/page-object-models/page-components-playwright/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "coverage/packages/page-object-models/page-components-playwright"
+      ],
+      "options": {
+        "jestConfig": "packages/page-object-models/page-components-playwright/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

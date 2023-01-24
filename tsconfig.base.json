@@ -42,6 +42,9 @@
       "@autometa/behaviors": [
         "packages/page-object-models/behaviors/src/index.ts"
       ],
+      "@autometa/behaviors-integration-tests": [
+        "packages/page-object-models/behaviors-integration-tests/src/index.ts"
+      ],
       "@autometa/cucumber": ["packages/bdd/cucumber/src/index.ts"],
       "@autometa/cucumber-integration-tests": [
         "packages/bdd/cucumber-integration-tests/src/index.ts"
@@ -57,15 +60,18 @@
       "@autometa/page-components-integration-tests": [
         "packages/page-object-models/page-components-integration-tests/src/index.ts"
       ],
+      "@autometa/page-components-playwright": [
+        "packages/page-object-models/page-components-playwright/src/index.ts"
+      ],
+      "@autometa/page-object-models/page-components-playwright": [
+        "packages/page-object-models/page-components-playwright/src/index.ts"
+      ],
       "@autometa/shared-utilities": [
         "packages/utils/shared-utilities/src/index.ts"
       ],
       "@autometa/store": ["packages/utils/store/src/index.ts"],
       "@autometa/test-rail-cucumber": [
         "packages/test-management/testrails/testrail-cucumber/src/index.ts"
-      ],
-      "@autometa/behaviors-integration-tests": [
-        "packages/page-object-models/behaviors-integration-tests/src/index.ts"
       ],
       "@autometa/user-behaviors": [
         "packages/page-object-models/user-behavior/src/index.ts"
