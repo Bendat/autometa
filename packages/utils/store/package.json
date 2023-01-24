@@ -1,0 +1,7 @@
+{
+  "name": "@autometa/store",
+  "version": "0.0.1",
+  "dependencies": {
+    "reflect-metadata": "^0.1.13"
+  }
+}

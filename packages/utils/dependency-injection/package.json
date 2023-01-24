@@ -1,0 +1,8 @@
+{
+  "name": "@autometa/dependency-injection",
+  "version": "0.0.1",
+  "dependencies": {
+    "@autometa/shared-utilities": "workspace:^",
+    "@autometa/store": "workspace:^"
+  }
+}
