@@ -1,0 +1,21 @@
+{
+  "name": "@autometa/testrail-cucumber",
+  "version": "0.0.5",
+  "bin": {
+    "testrail-cucumber": "src/lib/cli.js"
+  },
+  "dependencies": {
+    "@autometa/shared-utilities": "0.0.3",
+    "dotenv": "^16.0.2",
+    "enquirer": "^2.3.6",
+    "inquirer": "^9.1.2",
+    "inquirer-fuzzy-path": "^2.3.0",
+    "node-persist": "^3.1.0",
+    "testrail-integration": "^0.2.5"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.1",
+    "@types/inquirer-fuzzy-path": "^2.3.5",
+    "@types/node-persist": "^3.1.3"
+  }
+}

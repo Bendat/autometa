@@ -1,0 +1,94 @@
+<head>
+  <style>
+    body {
+      font-size: 13 px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: hsl(210, 46%, 95%);
+    }
+
+    .grid {
+      display: grid;
+      max-width: 100%;
+      max-height: 100%;
+      grid-template-columns: repeat(2, 500px);
+      column-gap: 15px;
+      row-gap: 15px;
+    }
+
+    .grid-item {
+      width: 100%;
+      height: 100%;
+      display: block;
+      /* margin: auto; */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid">
+    <div class="grid-item">
+      <h1>Simple Types</h1>
+      <p>this is a paragraph</p>
+      <p>this is a paragraph <span>with a span</span></p>
+      <ul>
+        <li>ul item 1</li>
+        <li>ul item 2</li>
+      </ul>
+      <ol>
+        <li>ol item 1</li>
+        <li>ol item 2</li>
+      </ol>
+
+      <button onclick="func()" id="my-btn">Click Me</button>
+    </div>
+    <div class="grid-item">
+      <h2>Compound Types</h2>
+      <select>
+        <option>first</option>
+        <option>second</option>
+        <option>third</option>
+        <option>fourth</option>
+      </select>
+    </div>
+    <div class="grid-item">
+      <h2>Container</h2>
+      <article>
+        <header>
+          <h3>this is an article</h3>
+          <p>isn't that just neat</p>
+        </header>
+        <p>This is my article</p>
+        <a href="./"><em>Learn More</em></a>
+      </article>
+    </div>
+    <div class="grid-item">
+      <h2>Forms & Input</h2>
+      <textarea></textarea>
+      <label>my input</label>
+      <input type="text" />
+      <fieldset>
+        <legend>checkboxes</legend>
+        <label>has Foo's</label>
+        <input type="checkbox" name="cb" value="hasFoos" />
+        <label>has Bars's</label>
+        <input type="checkbox" name="cb" value="hasBars" />
+      </fieldset>
+      <fieldset>
+        <legend>radio buttons</legend>
+        <label>has Baz's</label>
+        <input type="radio" name="rb" value="hasBaz" />
+        <label>has Buzz's</label>
+        <input type="radio" name="rb" value="hasBuzzs" />
+      </fieldset>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    function func() {
+      document.getElementById('my-btn').textContent = "Hark! I've been clicked";
+    }
+  </script>
+</body>

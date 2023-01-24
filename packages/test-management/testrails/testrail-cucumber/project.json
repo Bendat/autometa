@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/test-management/testrails/testrail-cucumber/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/test-management/testrails/testrail-cucumber/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "coverage/packages/test-management/testrails/testrail-cucumber"
+      ],
+      "options": {
+        "jestConfig": "packages/test-management/testrails/testrail-cucumber/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/test-management/testrails/testrail-cucumber",
+        "tsConfig": "packages/test-management/testrails/testrail-cucumber/tsconfig.lib.json",
+        "packageJson": "packages/test-management/testrails/testrail-cucumber/package.json",
+        "main": "packages/test-management/testrails/testrail-cucumber/src/index.ts",
+        "assets": ["packages/test-management/testrails/testrail-cucumber/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

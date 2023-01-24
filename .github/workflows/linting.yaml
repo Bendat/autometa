@@ -1,0 +1,20 @@
+name: Lint Code
+
+on:
+ pull_request:
+  type: [opened, reopened, syncyronized, edited]
+
+jobs:
+  run_unit_tests:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm add -g pnpm
+      - run: npm add -g nx
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: nx run-many --target=lint --all=true --max-warnings=0
