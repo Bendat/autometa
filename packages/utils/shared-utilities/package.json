@@ -1,8 +1,0 @@
-{
-  "name": "@autometa/shared-utilities",
-  "version": "0.0.3",
-  "dependencies": {
-    "@cucumber/gherkin": "^24.0.0",
-    "@cucumber/messages": "^19.1.3"
-  }
-}
