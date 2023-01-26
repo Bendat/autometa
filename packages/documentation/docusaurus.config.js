@@ -22,9 +22,11 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          path: 'docs',
+          sidebarPath: './sidebars.js',
+          
           // Please change this to your repo.
-          editUrl: 'https://github.com/Bendat/autometa',
+          // editUrl: 'https://github.com/Bendat/autometa',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -45,9 +47,21 @@ const config = {
           {
             type: 'doc',
             docId: 'intro',
-            position: 'left',
-            label: 'Tutorial',
+            label: 'Introduction'
           },
+          {
+            type: 'docSidebar',
+            label: 'Playwright',
+            sidebarId: 'playwright',
+               activeBaseRegex: `/docs/playwright/`
+          }
+          // {
+          //   type:'docSidebar',    // ./docs/Intro.md
+          //   label: 'Cucumber',
+          //   sidebarId: 'cucumber',
+          //   position: 'left',
+          //   activeBaseRegex: `/docs/cucumber/`,
+          // },
         ],
       },
       footer: {
