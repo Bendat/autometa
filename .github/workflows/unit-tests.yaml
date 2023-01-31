@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: npm i -g pnpm
-      - run: npm add -g nx
+      - run: npm add -g turbo
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'pnpm'
+          cache: "pnpm"
       - run: pnpm install
-      - run: nx run-many --target=test --exclude=page-components-integration-tests,behaviors-integration-tests
+      - run: turbo test --filter=*integration*

@@ -1,0 +1,17 @@
+{
+  "extends": "../../packages/tsconfig/base.json",
+  "compilerOptions": {
+    "paths": {
+      "@gherkin/*": ["src/gherkin/*"],
+      "@gherkin": ["src/gherkin"],
+      "@scopes/*": ["src/test-scopes/*"],
+      "@scopes": ["src/test-scopes"],
+      "@typing/*": ["src/type-extensions/*"],
+      "@typing": ["src/type-extensions/index.ts"],
+      "@fs/*": ["src/filesystem/*"],
+      "@fs": ["src/filesystem"],
+      "@config/*": ["src/config/*"],
+      "@config": ["src/config"]
+    }
+  }
+}

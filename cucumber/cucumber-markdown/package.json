@@ -1,0 +1,58 @@
+{
+  "name": "@autometa/cucumber-markdown",
+  "version": "0.0.1",
+  "description": "Convert Cucumber .feature files into markdown",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "bin": {
+    "cucumber-markdown": "dist/cjs/cli.js"
+  },
+  "scripts": {
+    "test": "vitest",
+    "test:jest": "vitest",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "postbuild": "tsc-alias -p ./tsconfig.cjs.json && tsc-alias -p ./tsconfig.json",
+    "build:libs": "tsc -p tsconfig.json & tsc -p tsconfig.cjs.json",
+    "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
+    "build": "pnpm build:code && pnpm postbuild"
+  },
+  "keywords": [
+    "cucumber",
+    "markdown",
+    "cucumber markdown converter",
+    "cucumber to markdown",
+    "documentation",
+    "gherkin",
+    "gherkin markdown",
+    "feature files"
+  ],
+  "homepage": "http://github.com/bendat/autometa",
+  "author": "Ben Aherne",
+  "license": "ISC",
+  "exports": {
+    "import": "./dist/mjs/index.js",
+    "require": "./dist/cjs/index.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.1",
+    "@types/node": "^18.11.18",
+    "node": "^19.6.0",
+    "rimraf": "^4.1.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5",
+    "vitest": "^0.28.5"
+  },
+  "dependencies": {
+    "@cucumber/gherkin": "^26.0.3",
+    "@cucumber/messages": "^21.0.1",
+    "cd": "^0.3.3",
+    "commander": "^10.0.0",
+    "glob": "^8.1.0",
+    "prettier": "^2.8.3",
+    "xss": "^1.0.14"
+  }
+}

@@ -1,0 +1,105 @@
+# Getting Started
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+## Installation
+
+<Tabs>
+  <TabItem value="npm" label="NPM">
+
+```sh
+npm i -D @autometa/page-components-playwright
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="YARN">
+
+```sh
+yarn add -D @autometa/page-components-playwright
+```
+
+  </TabItem>
+    <TabItem value="pnpm" label="PNPM">
+
+```sh
+pnpm i -D @autometa/page-components-playwright
+```
+
+  </TabItem>
+</Tabs>
+
+## Quickstart
+
+<Tabs>
+  <TabItem value='pagecomponents' label='Page Components'>
+
+```ts title='Define a Root Page Component'
+export class Homepage extends PageComponent {
+  @ByTestId("login-button")
+  loginButton: PageComponent;
+  @ByLocator("login-form")
+  loginForm: LoginForm;
+  @ByPlaceholder('Search For Widgets Now!')
+  searchBar: PageComponent
+}
+```
+
+```ts title='Define Child Components'
+export class LoginForm extends PageComponent {}
+```
+
+  </TabItem>
+</Tabs>
+
+# Page Components
+
+Page Components are an alternative interpretation of the popular 'Page Object Model' pattern for UI Automation. They aim to provide
+a declarative model of defining the 'shape' of a Website or app in a
+composable and reusable fashion.
+
+There are two flavors of the Page Component Model for Playwright:
+
+- Page Components
+- Semantic Components
+
+Page Components match the Playwright `Locator` interface. Semantic Components also resemble the `Locator` interface, however by default,
+with some exceptions, all Playwright actions, like `click`, `press`, `evaluate`, `type` or `fill` are hidden and treated as `protected` methods
+of the `SemanticComponent` class and must be explicitely exposed publically by subclasses, discussed later. Both flavors can be mixed to achieve desired results.
+
+:::caution
+This package depends on expiremental decorators and experimental metadata.
+Typescript 5 decorators are not currently supported.
+
+As Playwright does not support experimental decorators, tests must be
+built before execution. See [Building Playwright Tests](https://playwright.dev/docs/test-typescript#manually-compile-tests-with-typescript)
+:::
+
+```ts title='Example Page Object'
+
+```
+
+## Page Object Model
+
+In the Page Object Model, the _Page Object_ stores locator references
+to HTML Elements (or other Web Elements) to any descendant relevant dom element.
+
+For the TodoMvc app, we might define our Page Object Model as so
+_Target_: [TodoMVC](https://demo.playwright.dev/todomvc)
+
+```ts title='Example Page Object Model'
+export class TodoPage {
+  todoTitles: Locator;
+  newTodoBar: Locator;
+  markComplete: Locator;
+  todoCount: Locator;
+  items: Locator;
+  constructor(page: Page) {
+    this.todoTitles = page.getByTestId("todo-title");
+    this.newTodoBar = page.getByPlaceholder("What needs to be done");
+    this.markComplete = page.getByLabel("What needs to be done?");
+    this.todoCount = page.getByTestId("todo-count");
+    this.items = page.getByTestId("todo-item");
+  }
+}
+```
