@@ -17,14 +17,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'pnpm'
+          cache: "pnpm"
       - run: pnpm install --no-frozen-lockfile
       - name: Install NX
         run: npm i -g nx
       - name: Install dependencies
         run: pnpm install
       - name: Build website
-        run: nx build documentation
+        run: pnpm build --filter @autometa/documentation
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
