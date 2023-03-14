@@ -204,29 +204,6 @@ importers:
       tsc-alias: 1.8.2
       typescript: 4.9.5
 
-  documentation/docusaurus:
-    specifiers:
-      '@docusaurus/core': 2.3.1
-      '@docusaurus/module-type-aliases': 2.3.1
-      '@mdx-js/react': ^1.6.22
-      '@tsconfig/docusaurus': ^1.0.5
-      clsx: ^1.2.1
-      prism-react-renderer: ^1.3.5
-      react: ^17.0.2
-      react-dom: ^17.0.2
-      typescript: ^4.7.4
-    dependencies:
-      '@docusaurus/core': 2.3.1_jgxnvbe4faw3ohf4h6p42qq6oy
-      '@mdx-js/react': 1.6.22_react@17.0.2
-      clsx: 1.2.1
-      prism-react-renderer: 1.3.5_react@17.0.2
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-    devDependencies:
-      '@docusaurus/module-type-aliases': 2.3.1_sfoxds7t5ydpegc3knd667wn6m
-      '@tsconfig/docusaurus': 1.0.7
-      typescript: 4.9.5
-
   documentation/website:
     specifiers:
       '@docusaurus/core': 2.3.1
@@ -2184,106 +2161,6 @@ packages:
       - '@algolia/client-search'
     dev: false
 
-  /@docusaurus/core/2.3.1_jgxnvbe4faw3ohf4h6p42qq6oy:
-    resolution: {integrity: sha512-0Jd4jtizqnRAr7svWaBbbrCCN8mzBNd2xFLoT/IM7bGfFie5y58oz97KzXliwiLY3zWjqMXjQcuP1a5VgCv2JA==}
-    engines: {node: '>=16.14'}
-    hasBin: true
-    peerDependencies:
-      react: ^16.8.4 || ^17.0.0
-      react-dom: ^16.8.4 || ^17.0.0
-    dependencies:
-      '@babel/core': 7.20.12
-      '@babel/generator': 7.21.3
-      '@babel/plugin-syntax-dynamic-import': 7.8.3_@babel+core@7.20.12
-      '@babel/plugin-transform-runtime': 7.21.0_@babel+core@7.20.12
-      '@babel/preset-env': 7.20.2_@babel+core@7.20.12
-      '@babel/preset-react': 7.18.6_@babel+core@7.20.12
-      '@babel/preset-typescript': 7.21.0_@babel+core@7.20.12
-      '@babel/runtime': 7.20.13
-      '@babel/runtime-corejs3': 7.21.0
-      '@babel/traverse': 7.21.3
-      '@docusaurus/cssnano-preset': 2.3.1
-      '@docusaurus/logger': 2.3.1
-      '@docusaurus/mdx-loader': 2.3.1_sfoxds7t5ydpegc3knd667wn6m
-      '@docusaurus/react-loadable': 5.5.2_react@17.0.2
-      '@docusaurus/utils': 2.3.1
-      '@docusaurus/utils-common': 2.3.1
-      '@docusaurus/utils-validation': 2.3.1
-      '@slorber/static-site-generator-webpack-plugin': 4.0.7
-      '@svgr/webpack': 6.5.1
-      autoprefixer: 10.4.14_postcss@8.4.21
-      babel-loader: 8.3.0_vbwv3zr3kwaf4v2iytwakh6feu
-      babel-plugin-dynamic-import-node: 2.3.3
-      boxen: 6.2.1
-      chalk: 4.1.2
-      chokidar: 3.5.3
-      clean-css: 5.3.2
-      cli-table3: 0.6.3
-      combine-promises: 1.1.0
-      commander: 5.1.0
-      copy-webpack-plugin: 11.0.0_webpack@5.76.1
-      core-js: 3.29.1
-      css-loader: 6.7.3_webpack@5.76.1
-      css-minimizer-webpack-plugin: 4.2.2_jui7xbldqhlhmpvbgeew7cxn7a
-      cssnano: 5.1.15_postcss@8.4.21
-      del: 6.1.1
-      detect-port: 1.5.1
-      escape-html: 1.0.3
-      eta: 2.0.1
-      file-loader: 6.2.0_webpack@5.76.1
-      fs-extra: 10.1.0
-      html-minifier-terser: 6.1.0
-      html-tags: 3.2.0
-      html-webpack-plugin: 5.5.0_webpack@5.76.1
-      import-fresh: 3.3.0
-      leven: 3.1.0
-      lodash: 4.17.21
-      mini-css-extract-plugin: 2.7.3_webpack@5.76.1
-      postcss: 8.4.21
-      postcss-loader: 7.0.2_mquw4qchulb5tpkmg3p2j6qala
-      prompts: 2.4.2
-      react: 17.0.2
-      react-dev-utils: 12.0.1_cbz6r35m2it77sxuzifyafc6zi
-      react-dom: 17.0.2_react@17.0.2
-      react-helmet-async: 1.3.0_sfoxds7t5ydpegc3knd667wn6m
-      react-loadable: /@docusaurus/react-loadable/5.5.2_react@17.0.2
-      react-loadable-ssr-addon-v5-slorber: 1.0.1_kte62yy3u74qnv27ecsyliqvom
-      react-router: 5.3.4_react@17.0.2
-      react-router-config: 5.1.1_2dl5roaqnyqqppnjni7uetnb3a
-      react-router-dom: 5.3.4_react@17.0.2
-      rtl-detect: 1.0.4
-      semver: 7.3.8
-      serve-handler: 6.1.5
-      shelljs: 0.8.5
-      terser-webpack-plugin: 5.3.7_webpack@5.76.1
-      tslib: 2.5.0
-      update-notifier: 5.1.0
-      url-loader: 4.1.1_eet6kv3yv7cvpox6iemkekejzy
-      wait-on: 6.0.1
-      webpack: 5.76.1
-      webpack-bundle-analyzer: 4.8.0
-      webpack-dev-server: 4.12.0_webpack@5.76.1
-      webpack-merge: 5.8.0
-      webpackbar: 5.0.2_webpack@5.76.1
-    transitivePeerDependencies:
-      - '@docusaurus/types'
-      - '@parcel/css'
-      - '@swc/core'
-      - '@swc/css'
-      - bufferutil
-      - csso
-      - debug
-      - esbuild
-      - eslint
-      - lightningcss
-      - supports-color
-      - typescript
-      - uglify-js
-      - utf-8-validate
-      - vue-template-compiler
-      - webpack-cli
-    dev: false
-
   /@docusaurus/core/2.3.1_nucoingj6jnpt355a2yzaplk5e:
     resolution: {integrity: sha512-0Jd4jtizqnRAr7svWaBbbrCCN8mzBNd2xFLoT/IM7bGfFie5y58oz97KzXliwiLY3zWjqMXjQcuP1a5VgCv2JA==}
     engines: {node: '>=16.14'}
@@ -4054,10 +3931,6 @@ packages:
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
     dev: false
-
-  /@tsconfig/docusaurus/1.0.7:
-    resolution: {integrity: sha512-ffTXxGIP/IRMCjuzHd6M4/HdIrw1bMfC7Bv8hMkTadnePkpe0lG0oDSdbRpSDZb2rQMAgpbWiR10BvxvNYwYrg==}
-    dev: true
 
   /@tsconfig/node10/1.0.9:
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
@@ -7254,37 +7127,6 @@ packages:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
     dependencies:
       is-callable: 1.2.7
-
-  /fork-ts-checker-webpack-plugin/6.5.3_cbz6r35m2it77sxuzifyafc6zi:
-    resolution: {integrity: sha512-SbH/l9ikmMWycd5puHJKTkZJKddF4iRLyW3DeZ08HTI7NGyLS38MXd/KGgeWumQO7YNQbW2u/NtPT2YowbPaGQ==}
-    engines: {node: '>=10', yarn: '>=1.0.0'}
-    peerDependencies:
-      eslint: '>= 6'
-      typescript: '>= 2.7'
-      vue-template-compiler: '*'
-      webpack: '>= 4'
-    peerDependenciesMeta:
-      eslint:
-        optional: true
-      vue-template-compiler:
-        optional: true
-    dependencies:
-      '@babel/code-frame': 7.18.6
-      '@types/json-schema': 7.0.11
-      chalk: 4.1.2
-      chokidar: 3.5.3
-      cosmiconfig: 6.0.0
-      deepmerge: 4.3.0
-      fs-extra: 9.1.0
-      glob: 7.2.3
-      memfs: 3.4.13
-      minimatch: 3.1.2
-      schema-utils: 2.7.0
-      semver: 7.3.8
-      tapable: 1.1.3
-      typescript: 4.9.5
-      webpack: 5.76.1
-    dev: false
 
   /fork-ts-checker-webpack-plugin/6.5.3_webpack@5.76.1:
     resolution: {integrity: sha512-SbH/l9ikmMWycd5puHJKTkZJKddF4iRLyW3DeZ08HTI7NGyLS38MXd/KGgeWumQO7YNQbW2u/NtPT2YowbPaGQ==}
@@ -10629,48 +10471,6 @@ packages:
       lodash.curry: 4.1.1
       lodash.flow: 3.5.0
       pure-color: 1.3.0
-    dev: false
-
-  /react-dev-utils/12.0.1_cbz6r35m2it77sxuzifyafc6zi:
-    resolution: {integrity: sha512-84Ivxmr17KjUupyqzFode6xKhjwuEJDROWKJy/BthkL7Wn6NJ8h4WE6k/exAv6ImS+0oZLRRW5j/aINMHyeGeQ==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      typescript: '>=2.7'
-      webpack: '>=4'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@babel/code-frame': 7.18.6
-      address: 1.2.2
-      browserslist: 4.21.5
-      chalk: 4.1.2
-      cross-spawn: 7.0.3
-      detect-port-alt: 1.1.6
-      escape-string-regexp: 4.0.0
-      filesize: 8.0.7
-      find-up: 5.0.0
-      fork-ts-checker-webpack-plugin: 6.5.3_cbz6r35m2it77sxuzifyafc6zi
-      global-modules: 2.0.0
-      globby: 11.1.0
-      gzip-size: 6.0.0
-      immer: 9.0.19
-      is-root: 2.1.0
-      loader-utils: 3.2.1
-      open: 8.4.2
-      pkg-up: 3.1.0
-      prompts: 2.4.2
-      react-error-overlay: 6.0.11
-      recursive-readdir: 2.2.3
-      shell-quote: 1.8.0
-      strip-ansi: 6.0.1
-      text-table: 0.2.0
-      typescript: 4.9.5
-      webpack: 5.76.1
-    transitivePeerDependencies:
-      - eslint
-      - supports-color
-      - vue-template-compiler
     dev: false
 
   /react-dev-utils/12.0.1_webpack@5.76.1:

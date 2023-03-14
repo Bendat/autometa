@@ -6,6 +6,7 @@
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
     "build": "turbo run build",
+    "build:docs": "turbo run build:docs",
     "test": "turbo run test --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "dev": "turbo run dev --parallel",
