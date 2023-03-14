@@ -18,9 +18,8 @@ jobs:
         with:
           node-version: 18
           cache: "pnpm"
-      - run: pnpm install --no-frozen-lockfile
-      - name: Install NX
-        run: npm i -g nx
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
       - name: Install dependencies
         run: pnpm install
       - name: Build website
