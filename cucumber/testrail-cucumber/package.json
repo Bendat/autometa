@@ -15,7 +15,6 @@
     "build": "pnpm build:code && pnpm postbuild"
   },
   "dependencies": {
-    "@autometa/dto-builder": "^0.0.2",
     "@autometa/shared-utilities": "0.0.3",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",

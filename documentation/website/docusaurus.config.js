@@ -11,7 +11,7 @@ const config = {
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://your-docusaurus-test-site.com",
+  url: "https://bendat.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/autometa/",
@@ -70,17 +70,6 @@ const config = {
           src: "img/logo.svg",
         },
         items: [
-          // {
-          //   type: "doc",
-          //   docId: "intro",
-          //   position: "left",
-          //   label: "Introduction",
-          // },
-          // {
-          //   type: "doc",
-          //   docId: "playwright/intro",
-          //   label: "Playwright",
-          // },
           {
             position: "left",
             label: "Cucumber",
@@ -97,11 +86,6 @@ const config = {
               },
             ],
           },
-          // {
-          //   type: "doc",
-          //   docId: "selenium/intro",
-          //   label: "Selenium",
-          // },
           {
             position: "left",
             label: "Libraries",
@@ -130,6 +114,23 @@ const config = {
               {
                 label: "Tutorial",
                 to: "/docs/intro",
+              },
+            ],
+          },
+          {
+            title: "Community",
+            items: [
+              {
+                label: "Stack Overflow",
+                href: "https://stackoverflow.com/questions/tagged/docusaurus",
+              },
+              {
+                label: "Discord",
+                href: "https://discordapp.com/invite/docusaurus",
+              },
+              {
+                label: "Twitter",
+                href: "https://twitter.com/docusaurus",
               },
             ],
           },
