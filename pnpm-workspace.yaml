@@ -1,4 +1,12 @@
-# pnpm-workspace.yaml
 packages:
-  # all packages in subdirs of packages/ and components/
-  - 'packages/**/*'
+  - "packages/*"
+  - "internal/*"
+  - "cucumber/*"
+  - "libraries/*"
+  - "documentation/*"
+
+  # - "playwright/*"
+
+  # - "selenium/*"
+  # - "cucumber/*"
+  # - "libraries/*"

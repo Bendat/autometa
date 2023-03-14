@@ -1,0 +1,72 @@
+---
+sidebar_position: 6
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Fixtures
+
+Fixtures in Autometa are classes decorated with `@Fixture`. Fixtures
+can be defined in the [`App`]('./app'), where they will be automatically
+injected for each running scenario.
+
+Fixtures can also reference each other in their constructors, which
+will also be injected.
+
+Assume we have two fixtures, `HttpClient`, and `MyApiClient`, where
+HTTPClient handles basic HTTP calls and MyApiClient is a wrapper
+over HTTPClient that defines the API Services endpoints.
+
+<Tabs>
+
+  <TabItem value="http" label="HTTPClient">
+
+```ts
+export class HTTPClient {
+  async get(url: string, queryString: unknown) {}
+  async post(url: string, body: unknown) {}
+  async put(url: string, body: unknown) {}
+  async del(url: string, body: unknown) {}
+}
+```
+
+  </TabItem>
+
+  <TabItem value="api" label="MyApiClient">
+
+```ts
+export class MyApiClient {
+  constructor(readonly http: HTTPClient) {}
+
+  async getWidget() {}
+  async createWidget() {}
+  async updateWidget() {}
+}
+```
+
+  </TabItem>
+
+  <TabItem value="app" label="MyApp">
+
+```ts
+export class MyApp {
+  constructor(readonly world: World, readonly api: MyApiClient) {}
+}
+```
+
+  </TabItem>
+
+  <TabItem value="test" label='Steps'>
+
+```ts
+import { When } from "@autometa/cucumber-runner";
+
+When("they get a widget", ({ world, api }: App) => {
+  world.getWidgetResponse = api.getWidget();
+});
+```
+
+  </TabItem>
+
+</Tabs>

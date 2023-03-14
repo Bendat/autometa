@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["env", "CUCUMBER_FILTER_TAGS"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["lint", "test", "^build"],
+      "inputs": ["**/*.ts"],
+      "outputs": ["dist/**"]
+    },
+    "integrate": {
+      "dependsOn": ["^build"]
+    },
+    "test": {},
+    "lint": {
+      "inputs": ["**/*.ts"]
+    },
+    "dev": {
+      "cache": false
+    }
+  }
+}

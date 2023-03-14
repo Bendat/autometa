@@ -1,5 +1,0 @@
-node libs: yarn add @nrwl/node --dev -W
-actual library: nx g @nrwl/node:library page-object-models/< MY LIBRARY >
-publishable:  nx g @nrwl/node:library foo --publishable --importPath="@autometa/foo" --tags="scope:public,type:util,target:all"
-move: nx g move --project booking-some-library shared/some-library
-yarn add -D tsconfig-paths

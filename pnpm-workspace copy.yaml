@@ -1,0 +1,9 @@
+packages:
+  - "packages/*"
+  - "internal/*"
+  - "cucumber/*"
+  # - "playwright/*"
+  # - "documentation/*"
+  # - "selenium/*"
+  # - "cucumber/*"
+  # - "libraries/*"

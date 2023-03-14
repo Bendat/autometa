@@ -1,0 +1,57 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Getting Started
+
+Autometa Cucumber-Markdown can convert your Cucumber `.feature` files
+to beautiful markdown for your documentation sites like Vercel or Docusuaurus.
+
+## Installation and Use
+
+**As a global command**
+
+<Tabs>
+  <TabItem value="npm" label="NPM">
+
+```sh
+npm i -D @autometa/dto-builder
+
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="YARN">
+
+```sh
+yarn add -D @autometa/dto-builder
+
+```
+
+  </TabItem>
+  
+    <TabItem value="pnpm" label="PNPM">
+
+```sh
+pnpm i -D @autometa/dto-builder
+
+```
+
+  </TabItem>
+
+</Tabs>
+
+### Use
+
+```sh
+$ cucumber-markdown ./inputDir ./outputDir
+```
+
+Options:
+```sh
+  -v, --verbose <boolean>    If true, logs show files being read and written
+                             (default: false)
+  -f, --flatten <boolean>    If true, flattens output directory structure to a
+                             depth of 1 (default: false)
+  -o, --overwrite <boolean>  If true, overwrites existing markdown files (default:
+                             true)
+  -h, --help                 display help for command
+```
