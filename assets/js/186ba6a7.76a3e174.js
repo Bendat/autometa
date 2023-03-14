@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_autometa_documentation=self.webpackChunk_autometa_documentation||[]).push([[5784],{1421:t=>{t.exports=JSON.parse('{"permalink":"/autometa/blog/tags/docusaurus","page":1,"postsPerPage":10,"totalPages":1,"totalCount":4,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

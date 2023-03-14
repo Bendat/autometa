@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_autometa_documentation=self.webpackChunk_autometa_documentation||[]).push([[2766],{2172:a=>{a.exports=JSON.parse('{"label":"docusaurus","permalink":"/autometa/blog/tags/docusaurus","allTagsPath":"/autometa/blog/tags","count":4}')}}]);
