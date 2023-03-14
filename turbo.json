@@ -7,6 +7,7 @@
       "inputs": ["**/*.ts"],
       "outputs": ["dist/**"]
     },
+    "build:docs": {},
     "integrate": {
       "dependsOn": ["^build"]
     },
