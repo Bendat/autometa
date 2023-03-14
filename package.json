@@ -5,7 +5,7 @@
   "scripts": {
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
-    "build": "turbo run build --filter='!@autometa/documentation'",
+    "build": "turbo run build",
     "test": "turbo run test --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "dev": "turbo run dev --parallel",
