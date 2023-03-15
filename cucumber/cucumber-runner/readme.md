@@ -1,0 +1,175 @@
+# Introduction
+
+Autometa Cucumber Runner is a wrapper for multiple established
+test runners like [jest](https://jestjs.io/) and [vitest](https://vitest.dev/) that enables support for testing `.feature` files.
+
+[Full Documentation](https://bendat.github.io/autometa/docs/cucumber/test_runner/intro)
+
+## Features
+
+- Utilize you or your teams favorite testing framework with Cucumber
+- Steps are defined globally and scenarios are self assembling
+- Steps can be overridden for specific features or scenarios with edge behavior
+- Per-Scenario dependency injection of tester-defined classes.
+- Cucumber expressions
+- Extensive handling of data tables
+- CommonJs and ESM compatible
+
+## Install
+```sh title=NPM
+npm add -D @autometa/cucumber-runner
+```
+```sh title=Yarn
+yarn add -D @autometa/cucumber-runner
+```
+```sh title=PNPM
+pnpm add -D @autometa/cucumber-runner
+```
+## Quick Start
+
+### Configure
+
+To begin, add `*.feature.ts` as a test file pattern to your
+test library config if needed. Also, add `autometa.config.ts`
+to the setup files option
+
+
+```js title='vitest.config.js'
+import { defineConfig } from 'vitest/config'
+
+defineConfig({
+  ...
+  setupFiles: ['autometa.config.ts']
+  include: ['**/*.{test,spec,feature}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']
+  ...
+})
+
+```
+
+
+```js title='jest.config.js'
+export default {
+  ...
+  setupFilesAfterEnv: ['autometa.config.ts']
+  testMatch: ['**/?(*.)+(spec|test|feature).[jt]s?(x)']
+  ...
+}
+```
+
+Next, create the `autometa.config.ts`. To use globally available
+step files, add a `globals` option, and provide the test functions
+of your test framework. It's also a good idea to import `reflect-metadata`
+from this file. `reflect-metadata` is a required dependency of this library.
+
+
+```ts title=vitest
+import "reflect-metadata";
+import { defineConfig } from "@autometa/cucumber-runner";
+import { describe, test, beforeEach, beforeAll, afterEach, afterAll } from "vitest";
+
+defineConfig({
+  globals: "globals",
+  runner: {
+    name: "vitest",
+    describe,
+    test,
+    beforeEach,
+    beforeAll,
+    afterEach,
+    afterAll,
+  },
+});
+```
+
+```ts title=jest
+import "reflect-metadata";
+import { defineConfig } from "@autometa/cucumber-runner";
+
+defineConfig({
+  globals: "globals",
+  runner: {
+    name: "jest",
+    describe,
+    test,
+    beforeEach,
+    beforeAll,
+    afterEach,
+    afterAll,
+  },
+});
+```
+
+### Use
+
+
+```gherkin title='<project-root>/features/my-feature.feature'
+Feature: A User Can Log In
+  Background: Set up a new User
+    Given a new registered User
+      | username | name | age | password |
+      | johnny5  | John | 45  | paS5091! |
+
+  Scenario: A User logs in with valid credentials
+    When they log in
+     | username | password |
+     | johnny5  | paS5091! |
+    Then they see their profile
+
+  Scenario: A User logs in with a bad password
+      When they log in
+     | username | password |
+     | johnny5  | oops     |
+    Then they are informed their password is incorrect
+```
+
+```ts title='<project-root>/tests/my-feature.feature.ts'
+import { Given, When, Then, Feature, Before, Scenario } from "@autometa/cucumber-runner";
+import { App } from "../src/app";
+
+Before("Launch browser", async ({ world, myDriver }) => {
+  world.page = await myDriver.start(process.env.API_URL);
+});
+
+Given("a new registered User", async (data: HTable, { world, httpClient }: App) => {
+  const userDetails = data.json(0);
+  await httpClient.createUser(userDetails);
+});
+
+When("they log in", async (userDetails: HTable, { world: { page } }: App) => {
+  const { username, password } = userDetails.json(0);
+  await page.logUserIn(username, password);
+});
+
+Then("they see their profile", async ({ world: { page } }: App) => {
+  await page.verifyProfileOpen();
+});
+
+Then(
+  "they are informed their {word} is incorrect",
+  async (field: string, { world: { page } }: App) => {
+    await page.verifyBadLoginField(field);
+  }
+);
+
+Feature("../features/my-feature.feature");
+
+// override Steps
+
+Feature(() => {
+  Given("a new registered User", async (data: HTable, { world: { page } }: App) => {
+    const userDetails = data.json(0);
+    await page.gotoRegistration();
+    await page.registerWith(userDetails);
+  });
+
+  Scenario("A User logs in with a bad password", () => {
+    Then("they are informed their password is incorrect", async ({ world: { page } }: App) => {
+      await page.verifyBadPassword();
+    });
+  });
+}, "../features/my-feature.feature");
+
+// load multiple feature files
+
+Feature("../features/my-feature.feature", "../features/my-other-feature.feature");
+```
