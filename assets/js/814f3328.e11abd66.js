@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_autometa_documentation=self.webpackChunk_autometa_documentation||[]).push([[2535],{5641:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Hello World","permalink":"/autometa/blog/2023/03/14/Hello-World"}]}')}}]);

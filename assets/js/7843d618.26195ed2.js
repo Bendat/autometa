@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_autometa_documentation=self.webpackChunk_autometa_documentation||[]).push([[5285],{5349:t=>{t.exports=JSON.parse('{"permalink":"/autometa/blog/tags/facebook","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

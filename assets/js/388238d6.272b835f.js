@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_autometa_documentation=self.webpackChunk_autometa_documentation||[]).push([[2804],{1737:a=>{a.exports=JSON.parse('{"label":"hola","permalink":"/autometa/blog/tags/hola","allTagsPath":"/autometa/blog/tags","count":1}')}}]);
