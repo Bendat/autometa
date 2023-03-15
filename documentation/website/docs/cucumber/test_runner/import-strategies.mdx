@@ -1,0 +1,83 @@
+# Referencing Feature files
+
+The `Feature` function takes a filepath to the gherkin `feature` file it tests. There are mulitiple strategies to identify a feature file.
+
+## Project Relative
+
+If no prefix is attached to a file path, it will be found
+relative to the project root:
+
+```ts
+/**
+ * This option will resolve to `/path/to/project-root/features/my-feature.feature
+ */
+Feature("features/my-feature.feature");
+```
+
+## Absolute
+
+If your feature files have an absolute path it will be used as is.
+
+```ts
+Feature("/user/ci/features/my-feature.feature");
+```
+
+## Relative
+
+If your path starts with `./` or `../` it will be treated as a relative path. It wil be relative to the _file_
+executing it.
+
+```ts
+/**
+ * assuming this is in `<root>/e2e/
+ *
+ * The first option will resolve to `/path/to/project-root/e2e/my-feature.featre
+ * And the second option will resolve to `/path/to/project-root/features/my-feature.featre
+ */
+Feature("./my-feature.feature");
+Feature("../features/my-feature.feature");
+```
+
+## Features root
+
+You can define a `featuresRoot` in `defineConfig`. That value must be a directory path string. If it is set,
+featues in that file can be accessed from anywhere in the project by using a filepath relative to that root.
+To actually indicate the path starts at the feature root, prepend it with `^/`. When
+this pattern is detetected, the path will be resolved as if it were relative, but it is relative to `<root>/<featuresRoot>`.
+
+Assuming the feature root is `features`:
+
+```ts
+/**
+ * This option will resolve to `/path/to/project-root/features/my-feature.featre
+ */
+Feature("^/my-feature.feature");
+```
+
+## Home directory
+
+A path starting with a tilde and slash (`~/`) will be treated as an
+relative path starting at the users home directory.
+
+## Directories & Globs
+
+It's possible for a `Feature` function to exeute more than one `.feature` file. This can
+be done by passing a directory, which will be walked for all feature files and will then be executed.
+
+Alternatively this can be done by passing a file glob. This will behave the same as a directory but
+will only execute `.feature` files which match a pattern
+
+```ts
+// by dir
+Feature("../features");
+//by glob
+Feature("../features/user-*.feature");
+// or broader glob
+Feature("**/*.feature");
+```
+
+:::caution
+If executing multiple feature files or entire directories, please note
+you may lose the benefits of frameworks like jest or vitest where they can parallelize
+different files.
+:::

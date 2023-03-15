@@ -56,7 +56,8 @@ import "reflect-metadata";
 import { defineConfig } from "@autometa/cucumber-runner";
 
 defineConfig({
-  globals: "globals",
+globals: "globals"
+
 });
 ```
 
@@ -103,7 +104,18 @@ executing the `Feature` function from `@autometa/cucumber-runner`, will automati
 assemble their scenarios, rules and scenario outlines using these steps
 
 ```ts title='globals/user.steps'
+import { Given } from "@autometa/cucumber-runner";
+
 Given("a user logs in", () => {});
+```
+
+Then, assuming all relevant steps are defined globally, we can execute our
+feature by simply referencing the file.
+
+```ts
+import { Feature } from "@autometa/cucumber-runner";
+
+Feature("./my-feature.feature");
 ```
 
 ## Importing Global Steps manually
@@ -123,7 +135,13 @@ Given("a user performs obscure action", () => {});
 
 ```ts title='test/my-feature.test'
 import '../domain-b/user.steps'
-import { Given, When, Then, Feature, Scenario } = '@autometa/cucumber-runner';
+import {
+  Given,
+  When,
+  Then,
+  Feature,
+  Scenario
+} from "@autometa/cucumber-runner";
 
 Feature('./my-feature.feature')
 ```

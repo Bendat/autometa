@@ -13,7 +13,8 @@ the very first line of `autometa.config.ts`
 
 ```ts title='autometa.config.ts'
 import 'reflect-metadata'
-....
+...
+
 ```
 
 :::
@@ -27,7 +28,8 @@ Once configured, the app will be instantiated with a new context
 for every scenario run. It contains user defined data and will
 be passed to every step callback when executed. It will always be
 the last argument passed to the callback. If there are no variables,
-docstrings or data tables it will be the only parameter.
+docstrings or data tables it will be the only argument.
+
 
 ```ts title='src/my-app.ts'
 import { Fixture, Persistent } from "@autometa/cucumber-runner";
@@ -144,6 +146,7 @@ When("an action step", async ({ world }: App) => {
 });
 
 Then("a validation step", ({ world }: App) => {
-  expect(world.userCount).toEqual(world.userCount);
+expect(world.userCount).toEqual(3);
+
 });
 ```
