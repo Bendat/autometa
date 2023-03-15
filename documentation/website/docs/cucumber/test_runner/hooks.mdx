@@ -19,7 +19,8 @@ by the `Scenario` that triggered them.
 import { Setup, Before, After, Teardown } from "@autometa/cucumber-runner";
 
 Setup(() => console.log("setting up"));
-// optional description (applies to all hooks)
+
+// optional description (availabbe to all hooks)
 Setup("Set up the foo data", () => console.log("setting up"));
 
 Before(async ({ apiClient }: App) => {
