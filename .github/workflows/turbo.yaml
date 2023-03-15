@@ -1,4 +1,4 @@
-name: CI
+name: Merge Workflow
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
     types: [opened, synchronize]
 
 jobs:
-
   build:
     name: Build and Test
     timeout-minutes: 15
