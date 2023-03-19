@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.2.0
+
+### Minor Changes
+
+- 4049400: Added 'Subscribers' to listen to test events
+
 ## 0.1.1
 
 ### Patch Changes

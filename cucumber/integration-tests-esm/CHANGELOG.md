@@ -1,5 +1,16 @@
 # integration-tests-esm
 
+## 0.2.0
+
+### Minor Changes
+
+- 4049400: Added 'Subscribers' to listen to test events
+
+### Patch Changes
+
+- Updated dependencies [4049400]
+  - @autometa/cucumber-runner@0.2.0
+
 ## 0.1.1
 
 ### Patch Changes
