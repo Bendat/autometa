@@ -9,7 +9,9 @@ export abstract class Scope {
   readonly hooks = new HookCache();
   abstract readonly action: () => void;
   abstract canAttach<T extends Scope>(childScope: T): boolean;
-
+  protected get canAttachHook(): boolean {
+    return true;
+  }
   run = () => {
     const result = this.action() as unknown as void | Promise<void>;
     if (this.synchronous && result instanceof Promise) {
@@ -29,6 +31,11 @@ export abstract class Scope {
   }
 
   attachHook<T extends Hook>(hook: T): void {
+    if (!this.canAttachHook) {
+      throw new Error(
+        `Cannot attach hooks to ${this.constructor.name}. Only 'Feature', 'Rule', 'ScenarioOutline' and global scops can have hooks`
+      );
+    }
     if (this.openChild) {
       return this.openChild.attachHook(hook);
     }
@@ -36,6 +43,8 @@ export abstract class Scope {
   }
 
   toString = () => {
-    return `[${this.constructor.name}(${this.idString()}) { [${this.openChild}], [${this.closedScopes}] }]`;
+    return `[${this.constructor.name}(${this.idString()}) { [${this.openChild}], [${
+      this.closedScopes
+    }] }]`;
   };
 }

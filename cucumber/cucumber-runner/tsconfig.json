@@ -3,10 +3,16 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ES2020",
+    "moduleResolution": "node",
     "outDir": "dist/esm",
     "declarationDir": "dist/types"
   },
-  "files": ["index.ts"],
+  "files": [
+    "index.ts",
+    "src/config/autometa-config.ts",
+    "src/config/config-schema.ts",
+    "./src/executor/OnFailure.ts"
+  ],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.js"]
 }

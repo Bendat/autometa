@@ -12,6 +12,10 @@ export class ScenarioScope extends Scope {
   ) {
     super();
   }
+  protected get canAttachHook(): boolean {
+    return false;
+  }
+
   idString = () => this.title;
 
   canAttach<T extends Scope>(childScope: T): boolean {

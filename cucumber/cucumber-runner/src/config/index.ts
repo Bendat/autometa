@@ -1,2 +1,2 @@
-export { AutometaConfig } from "./config-manager";
+export { AutometaConfig } from "./autometa-config";
 export { defineConfig } from "./define-config";

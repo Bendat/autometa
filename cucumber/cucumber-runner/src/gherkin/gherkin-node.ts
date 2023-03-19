@@ -1,11 +1,10 @@
 import { Tag } from "@cucumber/messages";
-import { TestFunctions } from "./test-functions";
 import { Modifiers, FrameworkTestCall, TestGroup } from "./types";
 import parse from "@cucumber/tag-expressions";
 import { Config } from "@config/config-manager";
 export abstract class GherkinNode {
   abstract tags: string[];
-  abstract test(testFunctions: TestFunctions, app?: () => unknown, ...args: unknown[]): void;
+  abstract get modifier(): Modifiers | undefined;
 
   protected takeTags(tags: Tag[], ...inherited: string[]) {
     this.tags = this.tags.concat(...inherited, ...tags.map((it) => it.name));

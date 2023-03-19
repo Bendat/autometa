@@ -72,8 +72,6 @@ Feature(() => {
       (table: ListTable) => {
         expect(table.get(0)).toEqual(["alien", "Ridley Scott"]);
         expect(table.get(0, 0)).toEqual("alien");
-
-        console.log(table);
       },
       ListTable
     );

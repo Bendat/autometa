@@ -8,14 +8,13 @@ import { StepScope } from "./step-scope";
 import { StepAction, StepText } from "./types";
 import { getFeatureFile, getRealPath } from "../filesystem/filesystem";
 import { TeardownHook, AfterHook, SetupHook, BeforeHook } from "./hook";
-import { Config } from "@config/config-manager";
 import { glob } from "glob";
 import getCallerFile from "get-caller-file";
-export const globalScope = new GlobalScope();
 import fs from "fs";
 import fsPath from "path";
 import { TableType } from "@gherkin/datatables/table-type";
 import { Modifiers } from "@gherkin/types";
+export const globalScope = new GlobalScope();
 interface IFeature {
   /**
    * Executes a .feature file or multiple .feature files.
@@ -93,7 +92,7 @@ export const runFeature = (
       const feature = new GherkinFeature(ast, globalScope.getStepCache());
 
       feature.build(scope);
-      feature.test(Config.get("runner"), {}, globalScope.hooks);
+      feature.test();
     });
   });
 };
@@ -647,5 +646,10 @@ export function Options() {
 }
 
 export function Pass() {
+  // do nothing
+}
+
+export function Pending() {
+  throw new Error('Pending not implemented yet')
   // do nothing
 }
