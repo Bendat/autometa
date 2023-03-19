@@ -16,15 +16,19 @@ test runners like [jest](https://jestjs.io/) and [vitest](https://vitest.dev/) t
 - CommonJs and ESM compatible
 
 ## Install
+
 ```sh title=NPM
 npm add -D @autometa/cucumber-runner
 ```
+
 ```sh title=Yarn
 yarn add -D @autometa/cucumber-runner
 ```
+
 ```sh title=PNPM
 pnpm add -D @autometa/cucumber-runner
 ```
+
 ## Quick Start
 
 ### Configure
@@ -32,7 +36,6 @@ pnpm add -D @autometa/cucumber-runner
 To begin, add `*.feature.ts` as a test file pattern to your
 test library config if needed. Also, add `autometa.config.ts`
 to the setup files option
-
 
 ```js title='vitest.config.js'
 import { defineConfig } from 'vitest/config'
@@ -45,7 +48,6 @@ defineConfig({
 })
 
 ```
-
 
 ```js title='jest.config.js'
 export default {
@@ -60,7 +62,6 @@ Next, create the `autometa.config.ts`. To use globally available
 step files, add a `globals` option, and provide the test functions
 of your test framework. It's also a good idea to import `reflect-metadata`
 from this file. `reflect-metadata` is a required dependency of this library.
-
 
 ```ts title=vitest
 import "reflect-metadata";
@@ -100,7 +101,6 @@ defineConfig({
 ```
 
 ### Use
-
 
 ```gherkin title='<project-root>/features/my-feature.feature'
 Feature: A User Can Log In

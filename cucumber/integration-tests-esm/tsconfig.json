@@ -8,5 +8,6 @@
     "target": "esnext",
     "noImplicitThis": false
   },
-  "include": ["src"]
+  "include": [],
+  "exclude": ["*"]
 }

@@ -41,7 +41,6 @@ export class ListTable implements IListTable {
     }
     if (columnIndex != undefined && columnIndex != null) {
       const cell = row.at(columnIndex);
-      console.log(cell);
       if (!cell) {
         throw new Error(`No table cell found at index ${rowIndex}, ${columnIndex}`);
       }

@@ -5,10 +5,13 @@ import { GherkinNode } from "./gherkin-node";
 import { GherkinScenario } from "./gherkin-scenario";
 import { Examples } from "./parser.types";
 import { StepCache } from "./step-cache";
-import { TestFunctions } from "./test-functions";
+import { Modifiers } from "./types";
 
 export class GherkinExamples extends GherkinNode {
-  tags: string[] = [];
+  get modifier(): Modifiers | undefined {
+    throw new Error("Method not implemented.");
+  }
+  readonly tags: string[] = [];
 
   readonly headers: string[];
   readonly rows: TableValue[][];
@@ -36,20 +39,5 @@ export class GherkinExamples extends GherkinNode {
   }
   get length() {
     return this.rows.length;
-  }
-
-  test(testFunctions: TestFunctions, app?: (() => unknown) | undefined, group?: boolean): void {
-    if (group) {
-      const groupFn = this.tagFilter(testFunctions.describe);
-      groupFn(`Example: ${this.message.name}`, () => {
-        for (const scenario of this.scenarios) {
-          scenario.test(testFunctions, app);
-        }
-      });
-      return;
-    }
-    for (const scenario of this.scenarios) {
-      scenario.test(testFunctions, app);
-    }
   }
 }

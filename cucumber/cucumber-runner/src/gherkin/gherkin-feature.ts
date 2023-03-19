@@ -7,27 +7,38 @@ import { Feature } from "./parser.types";
 import { HookCache, StepCache } from "./step-cache";
 import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
-import { TestFunctions } from "./test-functions";
-import { getApp } from "../di/get-app";
-import { executeHooks } from "@scopes/hooks";
 import { Scope } from "@scopes/scope";
 import { Modifiers } from "./types";
+import { TestExecutor } from "src/executor/test-executor";
 
 export class GherkinFeature extends GherkinNode {
   tags: string[] = [];
   childer: Array<GherkinScenario | GherkinScenarioOutline | GherkinRule> = [];
   hooks: HookCache;
   #modifier?: Modifiers;
+  #path?: string;
+  readonly title: string;
   constructor(readonly message: Feature, readonly stepCache: StepCache) {
     super();
+    this.title = message.name;
     this.takeTags([...message.tags]);
     this.#buildChildren(message);
   }
-
+  get path(): string {
+    if (!this.#path) {
+      throw new Error(`Cannot access feature path before it has been built`);
+    }
+    return this.#path as string;
+  }
+  get modifier() {
+    return this.#modifier;
+  }
   build(feature: FeatureScope) {
+    this.#path = feature.path;
     this.#modifier = feature.modifiers;
     this.buildFromScope(feature);
   }
+
   private buildFromScope(feature: FeatureScope) {
     this.hooks = feature.hooks;
     feature.closedScopes.forEach((scope) => {
@@ -35,42 +46,9 @@ export class GherkinFeature extends GherkinNode {
     });
   }
 
-  test(testFunctions: TestFunctions, _app: unknown, globalHooks: HookCache): void {
-    const groupFn = this.tagFilter(testFunctions.describe, this.#modifier);
-    groupFn(`Feature: ${this.message.name}`, () => {
-      let app: unknown;
-      testFunctions.beforeEach(async () => {
-        app = getApp();
-      });
-      this.loadHooks(testFunctions, globalHooks, app);
-      for (const child of this.childer) {
-        child.test(testFunctions, () => app);
-      }
-    });
-  }
-
-  private loadHooks(testFunctions: TestFunctions, globalHooks: HookCache, app: unknown) {
-    if (!this.hooks) {
-      return;
-    }
-    testFunctions.beforeAll(async (...args) => {
-      await executeHooks(globalHooks.setup, ...args);
-      await executeHooks(this.hooks.setup, ...args);
-    });
-    testFunctions.beforeEach(async (...args) => {
-      await executeHooks(globalHooks.before, app, ...args);
-      await executeHooks(this.hooks.before, app, ...args);
-    });
-
-    testFunctions.afterEach(async (...args) => {
-      await executeHooks(globalHooks.after, app, ...args);
-      await executeHooks(this.hooks.after, app, ...args);
-    });
-
-    testFunctions.afterAll(async (...args) => {
-      await executeHooks(globalHooks.teardown, ...args);
-      await executeHooks(this.hooks.setup, ...args);
-    });
+  test(): void {
+    const executor = new TestExecutor(this);
+    executor.execute();
   }
 
   #handleChildScope(scope: Scope) {

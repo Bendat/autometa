@@ -7,6 +7,7 @@ import {
   afterAll,
   afterEach,
 } from "@jest/globals";
+import { Subscriber } from "./src/subscriber";
 
 defineConfig({
   globalsRoot: "globals",
@@ -20,5 +21,5 @@ defineConfig({
     afterAll,
     afterEach,
   },
+  // subscribers: [Subscriber],
 });
-

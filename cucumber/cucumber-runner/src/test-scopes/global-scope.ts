@@ -1,7 +1,5 @@
 import { HookCache, StepCache } from "@gherkin/step-cache";
-import { TestFunctions } from "@gherkin/test-functions";
 import { FeatureScope } from "./feature-scope";
-import { executeHooks } from "./hooks";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 
@@ -39,21 +37,6 @@ export class GlobalScope extends Scope {
     });
     this.isBuilt = true;
     return this.stepCache;
-  };
 
-  runHooks = (testFunctions: TestFunctions, app: () => unknown) => {
-    testFunctions.beforeAll(async (...args: unknown[]) => {
-      await executeHooks(this.hooks.setup, ...args);
-    });
-    testFunctions.beforeEach(async (...args: unknown[]) => {
-      await executeHooks(this.hooks.before, app(), ...args);
-    });
-
-    testFunctions.afterEach(async (...args: unknown[]) => {
-      await executeHooks(this.hooks.after, app(), ...args);
-    });
-    testFunctions.afterAll(async (...args: unknown[]) => {
-      await executeHooks(this.hooks.setup, ...args);
-    });
   };
 }

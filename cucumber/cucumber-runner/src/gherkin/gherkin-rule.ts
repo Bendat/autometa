@@ -3,11 +3,9 @@ import { RuleScope } from "../test-scopes/feature-scope";
 import { ScenarioScope } from "../test-scopes/scenario-scope";
 import { StepScope } from "../test-scopes/step-scope";
 import { HookCache, StepCache } from "./step-cache";
-import { TestFunctions } from "./test-functions";
 import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
 import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinNode } from "./gherkin-node";
-import { executeHooks } from "@scopes/hooks";
 import { Modifiers } from "./types";
 
 export class GherkinRule extends GherkinNode {
@@ -21,38 +19,16 @@ export class GherkinRule extends GherkinNode {
 
     this.#buildChildren(message);
   }
+  get modifier(): Modifiers | undefined {
+    return this.#modifier;
+  }
+
+  get title() {
+    return this.message.name ?? "";
+  }
 
   build(rule: RuleScope) {
     this.#buildFromScope(rule);
-  }
-
-  test(testFunctions: TestFunctions, app: () => unknown): void {
-    const groupFn = this.tagFilter(testFunctions.describe, this.#modifier);
-    groupFn(`Rule: ${this.message.name}`, () => {
-      this.loadHooks(testFunctions, app);
-      for (const child of this.childer) {
-        child.test(testFunctions, app);
-      }
-    });
-  }
-
-  private loadHooks(testFunctions: TestFunctions, app: () => unknown) {
-    if (!this.hooks) {
-      return;
-    }
-    testFunctions.beforeAll(async (...args) => {
-      await executeHooks(this.hooks.setup, ...args);
-    });
-    testFunctions.beforeEach(async (...args) => {
-      await executeHooks(this.hooks.before, app(), ...args);
-    });
-
-    testFunctions.afterEach(async (...args) => {
-      await executeHooks(this.hooks.after, app(), ...args);
-    });
-    testFunctions.afterAll(async (...args) => {
-      await executeHooks(this.hooks.setup, ...args);
-    });
   }
 
   #buildFromScope(rule: RuleScope) {

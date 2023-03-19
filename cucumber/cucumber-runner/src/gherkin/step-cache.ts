@@ -43,10 +43,10 @@ export class HookCache {
     }
   };
 
-  get before() {
-    // if (this.parent) {
-    //   return [...this.parent.#beforeEach, ...this.#beforeEach];
-    // }
+  get before(): BeforeHook[] {
+    if (this.parent) {
+      return [...this.parent.before, ...this.#beforeEach];
+    }
     return [...this.#beforeEach];
   }
 
@@ -54,9 +54,9 @@ export class HookCache {
     return [...this.#beforeAll];
   }
 
-  get after() {
+  get after(): AfterHook[] {
     if (this.parent) {
-      return [...this.parent.#afterEach, ...this.#afterEach];
+      return [...this.parent.after, ...this.#afterEach];
     }
     return [...this.#afterEach];
   }

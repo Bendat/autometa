@@ -1,4 +1,11 @@
-import { Feature, Given, Pass, Then, When } from "@autometa/cucumber-runner";
+import {
+  Feature,
+  Given,
+  Pass,
+  Then,
+  When,
+  Pending,
+} from "@autometa/cucumber-runner";
 
 Feature(() => {
   Given("a setup step", Pass);

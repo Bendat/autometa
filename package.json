@@ -10,7 +10,7 @@
     "test": "turbo run test --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint --filter='!@autometa/documentation'",
+    "lint": "turbo run lint --filter='!@autometa/documentation' -- --max-warnings=0",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "npm run build",
     "release": "turbo run build lint test && changeset version && changeset publish",
