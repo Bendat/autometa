@@ -10,7 +10,7 @@ Feature(() => {
     expect(age).toBe(ages.shift());
     expect(thing).toBe(things.shift());
   });
-  Given("a {word} {word}", (color, animal) => {
+  Given("a {word} colored {word}", (color, animal) => {
     expect(color).toEqual(colors.shift());
     expect(animal).toEqual(animals.shift());
   });

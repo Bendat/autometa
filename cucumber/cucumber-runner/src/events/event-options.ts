@@ -1,6 +1,8 @@
 import { CucumberExpression, RegularExpression } from "@cucumber/cucumber-expressions";
+import { TableValue } from "@gherkin/datatables/table-value";
 import { GherkinExamples } from "@gherkin/gherkin-examples";
-import { StatusType } from "./test-status";
+import { Modifiers } from "@gherkin/types";
+import { Status } from "allure-js-commons";
 
 export interface StartFeatureOpts {
   title: string;
@@ -11,8 +13,8 @@ export interface StartFeatureOpts {
 
 export interface EndFeatureOpts {
   title: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 
 export interface StartRuleOpts {
@@ -23,8 +25,8 @@ export interface StartRuleOpts {
 
 export interface EndRuleOpts {
   title: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 
 export interface StartScenarioOutlineOpts {
@@ -32,35 +34,40 @@ export interface StartScenarioOutlineOpts {
   tags: string[];
   examples: GherkinExamples[];
   modifier?: string;
+  uuid?: string;
 }
 
 export interface EndScenarioOutlineOpts {
   title: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 export interface StartScenarioOpts {
   title: string;
   tags: string[];
   args: unknown[];
   modifier?: string;
+  examples?: { readonly key: string; readonly value: TableValue }[];
 }
 
 export interface EndScenarioOpts {
   title: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 export interface StartScenarioOpts {
   title: string;
+  description: string;
   tags: string[];
   args: unknown[];
+  uuid: string;
 }
 
 export interface EndScenarioOpts {
   title: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
+  modifier?: Modifiers;
 }
 export interface StartStepOpts {
   keyword: string;
@@ -70,8 +77,8 @@ export interface StartStepOpts {
 
 export interface EndStepOpts {
   text: CucumberExpression | RegularExpression;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error | unknown;
 }
 export interface StartBeforeOpts {
   description?: string;
@@ -80,8 +87,8 @@ export interface StartBeforeOpts {
 
 export interface EndBeforeOpts {
   description?: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 export interface StartAfterOpts {
   description?: string;
@@ -90,8 +97,8 @@ export interface StartAfterOpts {
 
 export interface EndAfterOpts {
   description?: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 export interface StartSetupOpts {
   description?: string;
@@ -100,8 +107,8 @@ export interface StartSetupOpts {
 
 export interface EndSetupOpts {
   description?: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }
 
 export interface StartTeardownOpts {
@@ -111,6 +118,6 @@ export interface StartTeardownOpts {
 
 export interface EndTeardownOpts {
   description?: string;
-  status: StatusType;
-  errors?: (Error | string | unknown)[];
+  status: Status;
+  error?: Error;
 }

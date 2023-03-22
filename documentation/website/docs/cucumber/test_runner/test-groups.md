@@ -2,7 +2,7 @@
 sidebar_position: 6
 ---
 
-# Test Groups
+# Test Scopes
 
 While Autometa can be run entirely with Global steps, it may be desireable
 to provide specific implementations for some scenarios. For example, step texts

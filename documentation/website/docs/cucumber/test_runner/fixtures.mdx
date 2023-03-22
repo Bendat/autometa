@@ -23,6 +23,8 @@ over HTTPClient that defines the API Services endpoints.
   <TabItem value="http" label="HTTPClient">
 
 ```ts
+import { Fixture } from "@autometa/cucumber-runner";
+@Fixture
 export class HTTPClient {
   async get(url: string, queryString: unknown) {}
   async post(url: string, body: unknown) {}
@@ -36,10 +38,17 @@ export class HTTPClient {
   <TabItem value="api" label="MyApiClient">
 
 ```ts
+import { Fixture } from "@autometa/cucumber-runner";
+@Fixture
 export class MyApiClient {
-  constructor(readonly http: HTTPClient) {}
+  url: string;
+  constructor(readonly http: HTTPClient) {
+    this.url = process.env.API_URL;
+  }
 
-  async getWidget() {}
+  getWidget(id: string) {
+    return this.http.get(`${this.url}/widget/${id}`);
+  }
   async createWidget() {}
   async updateWidget() {}
 }
@@ -50,6 +59,9 @@ export class MyApiClient {
   <TabItem value="app" label="MyApp">
 
 ```ts
+import { Fixture, Persistent } from "@autometa/cucumber-runner";
+@Fixture
+@Persistent
 export class MyApp {
   constructor(readonly world: World, readonly api: MyApiClient) {}
 }
@@ -62,8 +74,8 @@ export class MyApp {
 ```ts
 import { When } from "@autometa/cucumber-runner";
 
-When("they get a widget", ({ world, api }: App) => {
-  world.getWidgetResponse = api.getWidget();
+When("they get a widget", async ({ world, api }: App) => {
+  world.getWidgetResponse = await api.getWidget();
 });
 ```
 

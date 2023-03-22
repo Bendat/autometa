@@ -1,4 +1,4 @@
-import { defineConfig } from "@autometa/cucumber-runner";
+import { defineConfig, AllureSubscriber } from "@autometa/cucumber-runner";
 import {
   test,
   describe,
@@ -7,9 +7,10 @@ import {
   afterAll,
   afterEach,
 } from "@jest/globals";
-import { Subscriber } from "./src/subscriber";
+import { App } from "./app";
 
 defineConfig({
+  app: App,
   globalsRoot: "globals",
   featuresRoot: "test",
   runner: {
@@ -21,5 +22,5 @@ defineConfig({
     afterAll,
     afterEach,
   },
-  // subscribers: [Subscriber],
+  subscribers: [AllureSubscriber],
 });

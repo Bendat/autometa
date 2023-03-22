@@ -27,6 +27,7 @@ export class TestEventEmitter {
   feature = new TestEmitter<StartFeatureOpts, EndFeatureOpts>("Feature");
   rule = new TestEmitter<StartRuleOpts, EndRuleOpts>("Rule");
   scenario = new TestEmitter<StartScenarioOpts, EndScenarioOpts>("Scenario");
+  scenarioWrapper = new TestEmitter<never, never>("Scenario Wrapper");
   setup = new TestEmitter<StartSetupOpts, EndSetupOpts>("Setup");
   teardown = new TestEmitter<StartTeardownOpts, EndTeardownOpts>("Teardown");
   before = new TestEmitter<StartBeforeOpts, EndBeforeOpts>("Before");
@@ -52,6 +53,8 @@ export class TestEventEmitter {
     onAfterEnd,
     onTeardownStart,
     onTeardownEnd,
+    onPreScenarioStart,
+    onPostScenarioEnd,
   }: EventSubscriber) => {
     this.feature.load(onFeatureStart, onFeatureEnd);
     this.rule.load(onRuleStart, onRuleEnd);
@@ -62,6 +65,7 @@ export class TestEventEmitter {
     this.after.load(onAfterStart, onAfterEnd);
     this.setup.load(onSetupStart, onSetupEnd);
     this.teardown.load(onTeardownStart, onTeardownEnd);
+    this.scenarioWrapper.load(onPreScenarioStart, onPostScenarioEnd);
   };
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

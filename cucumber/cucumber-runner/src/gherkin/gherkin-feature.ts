@@ -1,4 +1,5 @@
-import { FeatureScope, RuleScope } from "../test-scopes/feature-scope";
+import { FeatureScope } from "../test-scopes/feature-scope";
+import { RuleScope } from "../test-scopes/rule-scope";
 import { ScenarioScope } from "../test-scopes/scenario-scope";
 import { StepScope } from "../test-scopes/step-scope";
 import { GherkinRule } from "./gherkin-rule";
@@ -10,7 +11,8 @@ import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
 import { Scope } from "@scopes/scope";
 import { Modifiers } from "./types";
 import { TestExecutor } from "src/executor/test-executor";
-
+import crypto from "crypto";
+import { Background } from "@cucumber/messages";
 export class GherkinFeature extends GherkinNode {
   tags: string[] = [];
   childer: Array<GherkinScenario | GherkinScenarioOutline | GherkinRule> = [];
@@ -23,6 +25,9 @@ export class GherkinFeature extends GherkinNode {
     this.title = message.name;
     this.takeTags([...message.tags]);
     this.#buildChildren(message);
+  }
+  get id() {
+    return crypto.createHash("md5").update(this.message.name).digest("hex");
   }
   get path(): string {
     if (!this.#path) {
@@ -63,7 +68,10 @@ export class GherkinFeature extends GherkinNode {
   }
 
   #loadRuleScope(scope: RuleScope) {
-    const matching = this.childer.find((it) => it.message.name === scope.title) as GherkinRule;
+    const matching = this.childer
+      .filter((it) => it instanceof GherkinRule)
+      .map((it) => it as GherkinRule)
+      .find((it) => it.message.rule.name === scope.title);
     if (matching) {
       matching.build(scope);
     } else {
@@ -72,7 +80,10 @@ export class GherkinFeature extends GherkinNode {
   }
 
   #loadScenarioScope(scope: ScenarioScope) {
-    const matching = this.childer.find((it) => it.message.name === scope.title) as GherkinScenario;
+    const matching = this.childer
+      .filter((it) => !(it instanceof GherkinRule))
+      .map((it) => it as GherkinScenario | GherkinScenarioOutline)
+      .find((it) => it.message.scenario.name === scope.title) as GherkinScenario;
     if (matching) {
       matching.build(scope);
     } else {
@@ -86,20 +97,35 @@ export class GherkinFeature extends GherkinNode {
   }
 
   #buildChildren(message: Feature) {
-    for (const child of message.children) {
-      if (child.scenario) {
-        if (child.scenario.examples.length === 0) {
+    const background = message.children.find((it) => it.background) as Background;
+    for (const { scenario, rule } of message.children) {
+      if (scenario) {
+        if (scenario.examples.length === 0) {
           this.childer.push(
-            new GherkinScenario(child.scenario, new StepCache(this.stepCache), this.tags)
+            new GherkinScenario(
+              { scenario, backgrounds: [background] },
+              new StepCache(this.stepCache),
+              this.tags
+            )
           );
         } else {
           this.childer.push(
-            new GherkinScenarioOutline(child.scenario, new StepCache(this.stepCache), this.tags)
+            new GherkinScenarioOutline(
+              { scenario, backgrounds: [background] },
+              new StepCache(this.stepCache),
+              this.tags
+            )
           );
         }
       }
-      if (child.rule) {
-        this.childer.push(new GherkinRule(child.rule, new StepCache(this.stepCache), this.tags));
+      if (rule) {
+        this.childer.push(
+          new GherkinRule(
+            { rule, backgrounds: [background] },
+            new StepCache(this.stepCache),
+            this.tags
+          )
+        );
       }
     }
   }

@@ -1,9 +1,10 @@
 import { DataTable } from "@cucumber/messages";
+import { ParsedDataTable } from "./datatable";
 import { TableValue } from "./table-value";
 import { transformTableValue } from "./transform-table-value";
 export type CompiledDataTable = TableValue[][];
 
-export type TableType<T> = {
+export type TableType<T extends ParsedDataTable> = {
   new (table: CompiledDataTable): T;
 };
 

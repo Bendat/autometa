@@ -12,13 +12,13 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
 
   onStart = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onStart${this.name}`, action);
+      this.on(`onStart${this.name}`, tryWrapper(this.name, action));
     }
   };
 
   onEnd = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onEnd${this.name}`, action);
+      this.on(`onEnd${this.name}`, tryWrapper(this.name, action));
     }
   };
 
@@ -29,5 +29,20 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
   load = (onStart?: Cb, onEnd?: Cb) => {
     this.onStart(onStart);
     this.onEnd(onEnd);
+  };
+}
+
+function tryWrapper(name: string, action: (...args: unknown[]) => void) {
+  return (...args: unknown[]) => {
+    try {
+      const result = action(...args);
+      if ((result as unknown) instanceof Promise) {
+        throw new Error(
+          `A Subscriber action cannot be async or return a promise. Executing ${name}`
+        );
+      }
+    } catch (e) {
+      console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
+    }
   };
 }

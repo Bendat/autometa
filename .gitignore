@@ -40,3 +40,5 @@ tests-out/
 
 .npmrc
 **/*/.npmrc
+.allure
+.allure-reports

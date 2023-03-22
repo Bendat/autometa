@@ -1,3 +1,3 @@
 Feature: Retrieved via Feature Root
-    Scenario: Who Cares
+    Scenario: Asterisk step
         * not me

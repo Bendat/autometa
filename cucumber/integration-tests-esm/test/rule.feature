@@ -2,10 +2,10 @@ Feature: My Feature with a Rule
 
   Rule: This is my rule
 
-    Scenario: A Scenario
+    Scenario: A Rule Scenario
       Given a test
 
-    Scenario Outline: 
+    Scenario Outline: an outline
       Given <number> chickens
 
       Examples: 
@@ -15,5 +15,5 @@ Feature: My Feature with a Rule
 
   Rule: Yet Another Rule
 
-    Scenario: A Scenario
+    Scenario: Another Rule Scenario
       Given a test

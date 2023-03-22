@@ -1,3 +1,4 @@
+import { ParsedDataTable } from "./datatable";
 import { CompiledDataTable } from "./table-type";
 import { TableValue } from "./table-value";
 type HeaderMapping = { [key: string]: number };
@@ -50,17 +51,18 @@ interface IMTable {
  *
  * A cell can be accessed by its vertical and horizontal headers.
  */
-export class MTable implements IMTable {
+export class MTable extends ParsedDataTable implements IMTable {
   private readonly vheaders: string[];
   private readonly vheaderMappings: HeaderMapping = {};
   private readonly hheaderMappings: HeaderMapping = {};
   private readonly hheaders: string[];
   private readonly rows: TableValue[][];
-  constructor(table: CompiledDataTable) {
-    this.vheaders = table.slice(1, table.length).map(([title]) => title as string);
-    const row = table.at(0) ?? [];
+  constructor(protected raw: CompiledDataTable) {
+    super();
+    this.vheaders = raw.slice(1, raw.length).map(([title]) => title as string);
+    const row = raw.at(0) ?? [];
     this.hheaders = row.slice(1, row.length).map((it) => it as string) ?? [];
-    this.rows = table.slice(1, table.length).map((row) => row.slice(1, row.length));
+    this.rows = raw.slice(1, raw.length).map((row) => row.slice(1, row.length));
     const mapHeaders = (collection: HeaderMapping) => (header: string, idx: number) => {
       collection[header] = idx;
     };

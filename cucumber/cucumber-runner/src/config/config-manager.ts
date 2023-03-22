@@ -1,4 +1,4 @@
-import { HTable } from "@gherkin/datatables/table";
+import { HTable } from "@gherkin/datatables/htable";
 import _ from "lodash";
 import j from "joi";
 import { DefaultApp } from "./default-app";
