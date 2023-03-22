@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.2.1
+
+### Patch Changes
+
+- 914a820: Updated readme.md
+
 ## 0.2.0
 
 ### Minor Changes
