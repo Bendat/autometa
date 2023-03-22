@@ -12,15 +12,15 @@ like [reflect-metadata](https://www.npmjs.com/package/reflect-metadata)
 ## Installation
 
 ```sh title=npm
-    npm i -D @autometa/cucumber-runner
+    npm i -D @autometa/dto-builder
 ```
 
 ```sh title=yarn
-    yarn add -D @autometa/cucumber-runner
+    yarn add -D @autometa/dto-builder
 ```
 
 ```sh title=pnpm
-    pnpm add -D @autometa/cucumber-runner
+    pnpm add -D @autometa/dto-builder
 ```
 
 ## Use
