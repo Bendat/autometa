@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.1
+
+### Patch Changes
+
+- 189b878: Removed console log from test execution
+
 ## 0.3.0
 
 ### Minor Changes
