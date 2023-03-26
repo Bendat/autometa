@@ -1,5 +1,18 @@
 # integration-tests-esm
 
+## 0.3.0
+
+### Minor Changes
+
+- 754baeb: Added Allure Report integration
+
+  Backgrounds now work
+
+### Patch Changes
+
+- Updated dependencies [754baeb]
+  - @autometa/cucumber-runner@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
