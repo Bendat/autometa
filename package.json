@@ -5,9 +5,10 @@
   "scripts": {
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
-    "build": "turbo run build --filter !*integration*",
+    "build": "turbo run build",
+    "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
-    "test": "turbo run test --filter='!@autometa/documentation' --filter !*integration*",
+    "test": "turbo run test --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
