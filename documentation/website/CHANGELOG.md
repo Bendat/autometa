@@ -1,5 +1,13 @@
 # @autometa/documentation
 
+## 0.3.0
+
+### Minor Changes
+
+- 754baeb: Added Allure Report integration
+
+  Backgrounds now work
+
 ## 0.2.0
 
 ### Minor Changes
