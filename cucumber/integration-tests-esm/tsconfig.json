@@ -3,11 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "outDir": "dist/esm",
     "target": "esnext",
     "noImplicitThis": false
   },
-  "include": [],
-  "exclude": ["*"]
+  "include": ["src/**/*", "globals"],
+  "exclude": ["test"]
 }

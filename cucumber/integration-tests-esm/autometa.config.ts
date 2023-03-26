@@ -7,7 +7,7 @@ import {
   afterAll,
   afterEach,
 } from "@jest/globals";
-import { App } from "./app";
+import { App } from "./src/app";
 
 defineConfig({
   app: App,
