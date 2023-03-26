@@ -173,7 +173,6 @@ export class TestExecutor {
   }
 }
 async function runBackgrounds(scenario: GherkinScenario, app: unknown) {
-  console.log(scenario.message.backgrounds);
   for (const background of scenario.message.backgrounds ?? []) {
     if (!background) {
       continue;

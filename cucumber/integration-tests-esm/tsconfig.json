@@ -8,6 +8,6 @@
     "target": "esnext",
     "noImplicitThis": false
   },
-  "include": ["src/**/*", "globals", "test"]
-  // "exclude": ["*"]
+  "include": ["src/**/*", "globals"],
+  "exclude": ["test"]
 }
