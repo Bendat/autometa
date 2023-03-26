@@ -2,6 +2,7 @@ import { CucumberExpression, RegularExpression, Argument } from "@cucumber/cucum
 import { TeardownHook, AfterHook, SetupHook, BeforeHook, Hook } from "@scopes/hook";
 import type { ArrayElement } from "@typing/array-element";
 import { StepAction } from "src/test-scopes/types";
+import { ParsedDataTable } from "./datatables/datatable";
 import { TableType } from "./datatables/table-type";
 import { CucumberParameters } from "./parameters";
 
@@ -14,7 +15,7 @@ export class StoredStep {
     readonly keyword: string,
     readonly text: CucumberExpression | RegularExpression,
     readonly action: StepAction,
-    readonly tableType?: TableType<unknown>
+    readonly tableType?: TableType<ParsedDataTable>
   ) {}
 
   matches = (text: string) => {
@@ -24,20 +25,20 @@ export class StoredStep {
   execute = (...args: unknown[]): void | Promise<void> => this.action(...args);
 }
 export class HookCache {
-  #beforeEach: BeforeHook[] = [];
-  #beforeAll: BeforeHook[] = [];
-  #afterEach: BeforeHook[] = [];
-  #afterAll: BeforeHook[] = [];
+  private beforeEach: BeforeHook[] = [];
+  private beforeAll: BeforeHook[] = [];
+  private afterEach: BeforeHook[] = [];
+  private afterAll: BeforeHook[] = [];
   constructor(readonly parent?: HookCache) {}
   addHook = (hook: Hook) => {
     if (hook instanceof BeforeHook) {
-      this.#beforeEach.push(hook);
+      this.beforeEach.push(hook);
     } else if (hook instanceof SetupHook) {
-      this.#beforeAll.push(hook);
+      this.beforeAll.push(hook);
     } else if (hook instanceof AfterHook) {
-      this.#afterEach.push(hook);
+      this.afterEach.push(hook);
     } else if (hook instanceof TeardownHook) {
-      this.#afterAll.push(hook);
+      this.afterAll.push(hook);
     } else {
       throw new Error("unrecognized hook " + hook);
     }
@@ -45,24 +46,24 @@ export class HookCache {
 
   get before(): BeforeHook[] {
     if (this.parent) {
-      return [...this.parent.before, ...this.#beforeEach];
+      return [...this.parent.before, ...this.beforeEach];
     }
-    return [...this.#beforeEach];
+    return [...this.beforeEach];
   }
 
   get setup() {
-    return [...this.#beforeAll];
+    return [...this.beforeAll];
   }
 
   get after(): AfterHook[] {
     if (this.parent) {
-      return [...this.parent.after, ...this.#afterEach];
+      return [...this.parent.after, ...this.afterEach];
     }
-    return [...this.#afterEach];
+    return [...this.afterEach];
   }
 
   get teardown() {
-    return [...this.#afterAll];
+    return [...this.afterAll];
   }
 }
 export class StepCache {
@@ -84,7 +85,7 @@ export class StepCache {
     keyword: string,
     text: string | RegExp,
     action: StepAction,
-    tableType?: TableType<unknown>
+    tableType?: TableType<ParsedDataTable>
   ) => {
     const textStr = text instanceof RegExp ? text.source : text;
     if (this.keySet.get(keywordType)?.has(textStr)) {

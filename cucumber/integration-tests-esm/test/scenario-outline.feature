@@ -1,5 +1,7 @@
 Feature: Scenario Outlines
     Scenario Outline: Basic Scenario Outline
+        This is my scenario documentation
+
         Given a <age> year old <thing>
 
         Examples: Common Animals
@@ -10,7 +12,7 @@ Feature: Scenario Outlines
 
 
     Scenario Outline: Multiple Examples
-        Given a <color> <animal>
+        Given a <color> colored <animal>
 
         Examples: Common Animals
             | color | animal |

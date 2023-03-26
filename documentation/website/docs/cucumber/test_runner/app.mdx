@@ -30,7 +30,6 @@ be passed to every step callback when executed. It will always be
 the last argument passed to the callback. If there are no variables,
 docstrings or data tables it will be the only argument.
 
-
 ```ts title='src/my-app.ts'
 import { Fixture, Persistent } from "@autometa/cucumber-runner";
 
@@ -130,7 +129,7 @@ export class MyApp {
 }
 ```
 
-And that's it. MyApp and World are now availble in tests.
+And that's it. MyApp and World are now available in tests.
 
 ```ts
 Given("a setup step", ({ world }: App) => {
@@ -141,12 +140,11 @@ Given("a setup step", ({ world }: App) => {
 
 When("an action step", async ({ world }: App) => {
   world.userCount = await fetch({
-    body: world.myRequest,
+    body: world.myRequest
   });
 });
 
 Then("a validation step", ({ world }: App) => {
-expect(world.userCount).toEqual(3);
-
+  expect(world.userCount).toEqual(3);
 });
 ```

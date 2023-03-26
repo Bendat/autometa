@@ -1,3 +1,4 @@
+import { ParsedDataTable } from "@gherkin/datatables/datatable";
 import { TableType } from "@gherkin/datatables/table-type";
 import { TestFunctions } from "@gherkin/test-functions";
 import { Class } from "@typing/class";
@@ -110,7 +111,7 @@ export interface AutometaConfig {
      * and subsequent rows as columns of those
      * titles.
      */
-    default?: TableType<unknown>;
+    default?: TableType<ParsedDataTable>;
   };
   /**
    * Sets the Test Runner functions to use
@@ -175,14 +176,14 @@ export interface AutometaConfig {
 
   /**
    * List of Class prototypes which partially implement
-   * the `TestSubscriber` interface. 
-   * 
-   * These will be sent events at various parts of 
+   * the `TestSubscriber` interface.
+   *
+   * These will be sent events at various parts of
    * test execution, such as steps, scenarios and features.
-   * 
+   *
    * They are passed information about the test, group or hook
    * about to be executed, or details about the result of the test,
-   * group or hook 
+   * group or hook
    */
   subscribers?: Class<EventSubscriber>[];
 }

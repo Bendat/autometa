@@ -1,3 +1,4 @@
+import { ParsedDataTable } from "./datatable";
 import { CompiledDataTable } from "./table-type";
 import { TableValue } from "./table-value";
 interface IListTable {
@@ -28,10 +29,11 @@ interface IListTable {
  * ```
  *
  */
-export class ListTable implements IListTable {
+export class ListTable extends ParsedDataTable implements IListTable {
   readonly rows: readonly TableValue[][];
-  constructor(table: CompiledDataTable) {
-    this.rows = table;
+  constructor(protected raw: CompiledDataTable) {
+    super();
+    this.rows = raw;
   }
 
   get = (rowIndex: number, columnIndex?: number) => {

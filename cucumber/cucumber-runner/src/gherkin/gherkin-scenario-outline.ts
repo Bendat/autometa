@@ -1,9 +1,8 @@
 import { ScenarioOutlineScope } from "../test-scopes/scenario-outline-scope";
 import { StepScope } from "../test-scopes/step-scope";
 import { GherkinNode } from "./gherkin-node";
-import { Scenario } from "./parser.types";
 import { HookCache, StepCache } from "./step-cache";
-import { GherkinScenario } from "./gherkin-scenario";
+import { GherkinScenario, ScenarioMessage } from "./gherkin-scenario";
 import { GherkinExamples } from "./gherkin-examples";
 import { GherkinStep } from "./gherkin-steps";
 import { Modifiers } from "./types";
@@ -15,27 +14,53 @@ export class GherkinScenarioOutline extends GherkinNode {
   readonly examples: GherkinExamples[] = [];
   readonly scenarios: GherkinScenario[] = [];
   #modifier: Modifiers | undefined;
-  constructor(readonly message: Scenario, readonly stepCache: StepCache, inheritedTags: string[]) {
+  constructor(
+    readonly message: ScenarioMessage,
+    readonly stepCache: StepCache,
+    inheritedTags: string[]
+  ) {
     super();
-    this.takeTags([...message.tags], ...inheritedTags);
+    this.takeTags([...message.scenario.tags], ...inheritedTags);
 
-    if (message.examples) {
-      for (const example of message.examples) {
-        this.examples.push(new GherkinExamples(example, message, this.tags, this.stepCache));
+    if (message.scenario.examples) {
+      for (const examples of message.scenario.examples) {
+        this.examples.push(
+          new GherkinExamples(
+            { examples, backgrounds: this.message.backgrounds ?? [] },
+            message.scenario,
+            this.tags,
+            this.stepCache
+          )
+        );
       }
     }
-    for (const example of this.examples) {
-      for (const row of example.rows) {
+    for (let exampleIdx = 0; exampleIdx < this.examples.length; exampleIdx++) {
+      const example = this.examples[exampleIdx];
+      for (let rowId = 0; rowId < example.rows.length; rowId++) {
+        const row = example.rows[rowId];
         const scenarioExample = row.map((it, idx) => ({
           key: example.headers[idx],
           value: it,
         }));
-        this.scenarios.push(new GherkinScenario(message, stepCache, this.tags, scenarioExample));
+        this.scenarios.push(
+          new GherkinScenario(
+            message,
+            stepCache,
+            this.tags,
+            scenarioExample,
+            Number(
+              `${String(exampleIdx).padStart(4, String(exampleIdx))}${String(rowId).padStart(
+                4,
+                String(rowId)
+              )}`
+            )
+          )
+        );
       }
     }
   }
   get title() {
-    return this.message.name;
+    return this.message.scenario.name;
   }
   get modifier(): Modifiers | undefined {
     return this.#modifier;

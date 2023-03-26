@@ -7,12 +7,7 @@
     "outDir": "dist/esm",
     "declarationDir": "dist/types"
   },
-  "files": [
-    "index.ts",
-    "src/config/autometa-config.ts",
-    "src/config/config-schema.ts",
-    "./src/executor/OnFailure.ts"
-  ],
+  "files": ["index.ts", "allure.ts", "src/test-scopes/rule-scope.ts"],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.js"]
 }

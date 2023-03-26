@@ -2,15 +2,17 @@ import { ScenarioAction } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { Modifiers } from "@gherkin/types";
+import { HookCache } from "@gherkin/step-cache";
 
 export class ScenarioScope extends Scope {
   synchronous = false;
   constructor(
     public readonly title: string,
     public readonly action: ScenarioAction,
+    parentHooks: HookCache,
     public readonly modifiers?: Modifiers
   ) {
-    super();
+    super(new HookCache(parentHooks));
   }
   protected get canAttachHook(): boolean {
     return false;

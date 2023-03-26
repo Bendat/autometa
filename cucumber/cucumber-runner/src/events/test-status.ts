@@ -1,8 +1,8 @@
-export const Status = {
-  FAILED: "FAILED",
-  BROKEN: "BROKEN",
-  PASSED: "PASSED",
-  SKIPPED: "SKIPPED",
-} as const;
+// export const Status = {
+//   FAILED: "FAILED",
+//   BROKEN: "BROKEN",
+//   PASSED: "PASSED",
+//   SKIPPED: "SKIPPED",
+// } as const;
 
-export type StatusType = keyof typeof Status;
+// export type StatusType = keyof typeof Status;

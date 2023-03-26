@@ -9,20 +9,28 @@ import { StoredStep } from "@gherkin/step-cache";
 import { TestFunctions } from "@gherkin/test-functions";
 import { FrameworkTestCall, Modifiers, TestGroup } from "@gherkin/types";
 import { events } from "@scopes/events";
-import { AfterHook, BeforeHook } from "@scopes/hook";
-import { executeSetupHooks } from "@scopes/hooks";
+import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "@scopes/hook";
 import { Class } from "@typing/class";
 import { getApp } from "src/di/get-app";
-import { EventSubscriber } from "src/events";
-import { Status } from "src/events/test-status";
+import { DependencyInstanceProvider, ProviderSubscriber } from "src/events";
 import { GherkinFeature } from "../gherkin/gherkin-feature";
 import { OnFailure } from "./OnFailure";
+import { Status } from "allure-js-commons";
+import { ParsedDataTable } from "@gherkin/datatables/datatable";
+import { globalScope } from "@scopes/globals";
 export class TestExecutor {
-  subscribers: EventSubscriber[];
+  subscribers: ProviderSubscriber[];
+  #instanceDependencies: DependencyInstanceProvider[];
   constructor(private feature: GherkinFeature) {
-    const prototypes = Config.get<Class<EventSubscriber>[]>("subscribers");
+    const prototypes = Config.get<Class<ProviderSubscriber>[]>("subscribers");
     this.subscribers = prototypes?.map((it) => new it());
     this.subscribers?.forEach((it) => events.load(it));
+    // throw new Error(JSON.stringify(this.subscribers, null, 2));
+    this.#instanceDependencies = this.subscribers
+      .filter((sub) => sub.fixtures)
+      .flatMap<DependencyInstanceProvider>(
+        (sub) => sub.fixtures.instances as DependencyInstanceProvider[]
+      );
   }
   execute() {
     const { beforeAll, afterAll, describe } = Config.get<TestFunctions>("runner");
@@ -32,15 +40,15 @@ export class TestExecutor {
     function failFeature() {
       failed = true;
     }
-    afterAll(() => {
-      failed = true;
-    });
-    beforeAll(async (...args) => {
+
+    beforeAll(async () => {
       events.feature.emitStart({ title, path, tags, modifier });
-      await executeSetupHooks(this.feature.hooks?.setup, events.setup, ...args);
+      const setup = [...globalScope.hooks?.setup, ...this.feature.hooks?.setup];
+      await runSetupHooks(setup, events.setup, failFeature);
     });
-    afterAll(async (...args) => {
-      await executeSetupHooks(this.feature.hooks?.teardown, events.teardown, ...args);
+    afterAll(async () => {
+      const teardown = [...globalScope.hooks?.teardown, ...this.feature.hooks?.teardown];
+      await runTeardownHooks(teardown, failFeature);
     });
     afterAll(() => {
       events.feature.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
@@ -67,34 +75,34 @@ export class TestExecutor {
     });
   }
 
-  private runRule(child: GherkinRule, onFailure: OnFailure) {
+  private runRule(rule: GherkinRule, onFailure: OnFailure) {
     const { beforeAll, afterAll, describe } = Config.get<TestFunctions>("runner");
 
-    const ruleGroup = tagFilter(child.tags, describe, child.modifier);
-    ruleGroup(`Rule ${child.message.name}`, () => {
-      const { title, modifier, tags } = child;
+    const ruleGroup = tagFilter(rule.tags, describe, rule.modifier);
+    ruleGroup(`Rule ${rule.message.rule.name}`, () => {
+      const { title, modifier, tags } = rule;
       let failed = false;
       function failRule() {
         failed = true;
         onFailure();
       }
-      beforeAll(async (...args) => {
+      beforeAll(async () => {
         events.rule.emitStart({ title, modifier, tags });
-        await executeSetupHooks(child.hooks?.setup, events.setup, failRule, ...args);
+        await runSetupHooks(rule.hooks?.setup, events.setup, failRule);
       });
-      afterAll(async (...args) => {
-        await executeSetupHooks(child.hooks?.teardown, events.teardown, failRule, ...args);
-      });
+
       afterAll(async () => {
+        await runTeardownHooks(this.feature.hooks?.teardown, onFailure);
+
         events.rule.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
       });
-      for (const ruleChild of child.childer) {
+      for (const ruleChild of rule.childer) {
         if (ruleChild instanceof GherkinScenarioOutline) {
           this.runOutline(ruleChild, failRule);
         }
 
         if (ruleChild instanceof GherkinScenario) {
-          this.runScenario(ruleChild, child.hooks?.before, child.hooks?.after, failRule);
+          this.runScenario(ruleChild, rule.hooks?.before, rule.hooks?.after, failRule);
         }
       }
     });
@@ -103,22 +111,20 @@ export class TestExecutor {
   private runOutline(outline: GherkinScenarioOutline, onFailure: OnFailure) {
     const { beforeAll, afterAll, describe } = Config.get<TestFunctions>("runner");
     const outlineGroup = tagFilter(outline.tags, describe, outline.modifier);
-    outlineGroup(`Scenario Outline: ${outline.message.name}`, () => {
+    outlineGroup(`Scenario Outline: ${outline.message.scenario.name}`, () => {
       const { title, tags, modifier, examples } = outline;
       let failed = false;
       function failOutline() {
         failed = true;
         onFailure();
       }
-      events.scenarioOutline.emitStart({ title, tags, modifier, examples });
-      beforeAll(async (...args) => {
+      beforeAll(async () => {
         events.scenarioOutline.emitStart({ title, tags, modifier, examples });
-        await executeSetupHooks(outline.hooks?.setup, events.setup, failOutline, ...args);
+        await runSetupHooks(outline.hooks?.setup, events.setup, failOutline);
       });
-      afterAll(async (...args) => {
-        await executeSetupHooks(outline.hooks?.teardown, events.teardown, failOutline, ...args);
-      });
+
       afterAll(async () => {
+        await runTeardownHooks(outline.hooks?.teardown, onFailure);
         events.scenarioOutline.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
       });
       const scenarios = outline.scenarios;
@@ -135,26 +141,54 @@ export class TestExecutor {
     onFailure: OnFailure
   ) {
     const { test } = Config.get<TestFunctions>("runner");
-    const { title, tags, modifier } = scenario;
-
-    const app = getApp();
+    const { title, tags, modifier, id, description, example: examples } = scenario;
+    //  new Error(JSON.stringify(this.#instanceDependencies, null, 2));
+    const app = getApp(...this.#instanceDependencies);
     const testFn = tagFilter(scenario.tags, test as FrameworkTestCall, scenario.modifier);
     testFn(scenario.getScenarioTitle(), async () => {
+      events.scenarioWrapper.emitStart();
       await runBeforeHooks(befores, app, onFailure);
+      await runBackgrounds(scenario, app);
       try {
-        events.scenario.emitStart({ title, tags, modifier, args: [] });
+        events.scenario.emitStart({
+          title,
+          tags,
+          modifier,
+          args: [],
+          uuid: id,
+          description,
+          examples,
+        });
         const stepDefinitions = scenario.findMatchingSteps();
         await runSteps(stepDefinitions, app);
-        events.scenario.emitEnd({ title, status: Status.PASSED });
+        events.scenario.emitEnd({ title, status: Status.PASSED, modifier });
       } catch (e) {
-        events.scenario.emitEnd({ title, status: Status.FAILED, errors: [e] });
+        events.scenario.emitEnd({ title, status: Status.FAILED, modifier, error: e as Error });
         throw e;
       } finally {
         await runAfterHooks(afters, app, onFailure);
+        events.scenarioWrapper.emitEnd();
       }
     });
   }
 }
+async function runBackgrounds(scenario: GherkinScenario, app: unknown) {
+  console.log(scenario.message.backgrounds);
+  for (const background of scenario.message.backgrounds ?? []) {
+    if (!background) {
+      continue;
+    }
+    events.before.emitStart({ description: `Background: ${background.name}` });
+    const stepDefinitions = scenario.findMatchingBackgroundSteps();
+    try {
+      await runSteps(stepDefinitions, app);
+      events.before.emitEnd({ status: Status.PASSED });
+    } catch (e) {
+      events.before.emitEnd({ status: Status.FAILED, error: e as Error });
+    }
+  }
+}
+
 async function runSteps(
   stepDefinitions: {
     found: {
@@ -181,8 +215,8 @@ async function runSteps(
       events.step.emitEnd({ text, status: Status.FAILED });
     } catch (e) {
       const old = (e as Error).message;
-      (e as Error).message = `Step "${keyword} ${text}" failed with message ${old}`;
-      events.step.emitEnd({ text, status: Status.FAILED, errors: [e] });
+      (e as Error).message = `Step "${keyword} ${text.source}" failed with message ${old}`;
+      events.step.emitEnd({ text, status: Status.FAILED, error: [e] });
       throw e;
     }
   }
@@ -198,7 +232,23 @@ async function runBeforeHooks(befores: BeforeHook[], app: unknown, onFailure: On
     } catch (e) {
       const oldMessage = (e as Error).message;
       (e as Error).message = `Hook 'Before' "${description} failed with message: ${oldMessage}`;
-      events.before.emitEnd({ description, status: Status.FAILED, errors: [e] });
+      events.before.emitEnd({ description, status: Status.FAILED, error: e as Error });
+      onFailure();
+      throw e;
+    }
+  }
+}
+async function runSetupHooks(setups: SetupHook[], app: unknown, onFailure: OnFailure) {
+  for (const hook of setups ?? []) {
+    const { description } = hook;
+    events.setup.emitStart({ description });
+    try {
+      await hook.action(app);
+      events.setup.emitEnd({ description, status: Status.PASSED });
+    } catch (e) {
+      const oldMessage = (e as Error).message;
+      (e as Error).message = `Hook 'Before' "${description} failed with message: ${oldMessage}`;
+      events.setup.emitEnd({ description, status: Status.FAILED, error: e as Error });
       onFailure();
       throw e;
     }
@@ -206,27 +256,43 @@ async function runBeforeHooks(befores: BeforeHook[], app: unknown, onFailure: On
 }
 
 async function runAfterHooks(afters: AfterHook[], app: unknown, onFailure: OnFailure) {
-  for (const hook of afters ?? []) {
-    events.after.emitStart();
+  for (const hook of afters?.reverse() ?? []) {
     const { description } = hook;
+    events.after.emitStart({ description });
     try {
       await hook.action(app);
       events.after.emitEnd({ description, status: Status.PASSED });
     } catch (e) {
       const oldMessage = (e as Error).message;
       (e as Error).message = `Hook 'After' "${description} failed with message: ${oldMessage}`;
-      events.after.emitEnd({ description, status: Status.FAILED, errors: [e] });
+      events.after.emitEnd({ description, status: Status.FAILED, error: e as Error });
       onFailure();
       throw e;
     }
   }
 }
 
+async function runTeardownHooks(teardowns: TeardownHook[], onFailure: OnFailure) {
+  for (const hook of teardowns?.reverse() ?? []) {
+    const { description } = hook;
+    events.teardown.emitStart({ description });
+    try {
+      await hook.action();
+      events.teardown.emitEnd({ description, status: Status.PASSED });
+    } catch (e) {
+      const oldMessage = (e as Error).message;
+      (e as Error).message = `Hook 'After' "${description} failed with message: ${oldMessage}`;
+      events.teardown.emitEnd({ description, status: Status.FAILED, error: e as Error });
+      onFailure();
+      throw e;
+    }
+  }
+}
 function getRealArgs(
   tableOrDocstring: Docstring | CompiledDataTable | undefined,
   args: unknown[],
   app?: unknown,
-  tableType?: TableType<unknown>
+  tableType?: TableType<ParsedDataTable>
 ) {
   const transformedTable = getTableOrDocstringArg(tableOrDocstring, tableType);
 
@@ -243,9 +309,9 @@ function getRealArgs(
 
 function getTableOrDocstringArg(
   tableOrDocstring: Docstring | CompiledDataTable | undefined,
-  tableType?: TableType<unknown>
+  tableType?: TableType<ParsedDataTable>
 ) {
-  const defaultTable: TableType<unknown> = Config.get("dataTables.default", {
+  const defaultTable: TableType<ParsedDataTable> = Config.get("dataTables.default", {
     dataTables: { default: tableType },
   });
 

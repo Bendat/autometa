@@ -2,12 +2,12 @@
 // Sync object
 const config = {
   moduleDirectories: ["node_modules", "src"],
-  setupFilesAfterEnv: ["reflect-metadata", "./autometa.config.ts"],
+  setupFilesAfterEnv: ["reflect-metadata", "./src/autometa.config.ts"],
   verbose: true,
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
-  testMatch: ['**/?(*.)+(spec|test|feature).[jt]s?(x)']
+  testMatch: ["**/?(*.)+(spec|test|feature).[jt]s?(x)"],
   // testRegex: ".*\\.feature\\.test\\.spec.ts$",
   // moduleNameMapper: {},
 };

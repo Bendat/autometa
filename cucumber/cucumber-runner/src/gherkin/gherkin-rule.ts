@@ -1,5 +1,5 @@
-import { Rule } from "@cucumber/messages";
-import { RuleScope } from "../test-scopes/feature-scope";
+import { Background, Rule } from "@cucumber/messages";
+import { RuleScope } from "../test-scopes/rule-scope";
 import { ScenarioScope } from "../test-scopes/scenario-scope";
 import { StepScope } from "../test-scopes/step-scope";
 import { HookCache, StepCache } from "./step-cache";
@@ -7,15 +7,21 @@ import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
 import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinNode } from "./gherkin-node";
 import { Modifiers } from "./types";
+import { ScenarioOutlineScope } from "@scopes/scenario-outline-scope";
+export type RuleMessage = { rule: Rule; backgrounds?: Background[] };
 
 export class GherkinRule extends GherkinNode {
   tags: string[] = [];
   childer: Array<GherkinScenario | GherkinScenarioOutline> = [];
   hooks: HookCache;
   #modifier?: Modifiers;
-  constructor(readonly message: Rule, readonly stepCache: StepCache, inheritedTags?: string[]) {
+  constructor(
+    readonly message: RuleMessage,
+    readonly stepCache: StepCache,
+    inheritedTags?: string[]
+  ) {
     super();
-    this.takeTags([...message.tags], ...(inheritedTags ?? []));
+    this.takeTags([...message.rule.tags], ...(inheritedTags ?? []));
 
     this.#buildChildren(message);
   }
@@ -24,7 +30,7 @@ export class GherkinRule extends GherkinNode {
   }
 
   get title() {
-    return this.message.name ?? "";
+    return this.message.rule.name ?? "";
   }
 
   build(rule: RuleScope) {
@@ -36,6 +42,8 @@ export class GherkinRule extends GherkinNode {
     rule.closedScopes.forEach((scope) => {
       if (scope instanceof StepScope) {
         this.#buildStep(scope);
+      } else if (scope instanceof ScenarioOutlineScope) {
+        this.#buildScenarioOutline(scope);
       } else if (scope instanceof ScenarioScope) {
         this.#buildScenario(scope);
       }
@@ -43,31 +51,48 @@ export class GherkinRule extends GherkinNode {
   }
 
   #buildScenario(scope: ScenarioScope) {
-    const matching = this.childer.find((it) => it.message.name === scope.title);
+    const matching = this.childer.find(
+      (it) => it.message.scenario.name === scope.title
+    ) as GherkinScenario;
     if (matching) {
       matching.build(scope);
     } else {
-      throw new Error(`Unknown Scenario ${scope.title} for Feature: ${this.message.name}`);
+      throw new Error(`Unknown Scenario ${scope.title} for Feature: ${this.message.rule.name}`);
     }
   }
-
+  #buildScenarioOutline(scope: ScenarioOutlineScope) {
+    const matching = this.childer.find((it) => it.message.scenario.name === scope.title);
+    if (matching) {
+      matching.build(scope);
+    } else {
+      throw new Error(`Unknown Scenario ${scope.title} for Feature: ${this.message.rule.name}`);
+    }
+  }
   #buildStep(scope: StepScope) {
     const { keywordType, keyword, text, action } = scope;
     this.stepCache.add(keywordType, keyword, text, action);
   }
 
-  #buildChildren(message: Rule) {
-    for (const child of message.children) {
-      if (child.scenario) {
+  #buildChildren(message: RuleMessage) {
+    const ruleBackground = message.rule.children.find((it) => it.background) as Background;
+    const backgrounds = [...(message.backgrounds ?? []), ruleBackground].filter(
+      (it) => it
+    ) as Background[];
+    for (const { scenario } of message.rule.children) {
+      if (scenario) {
         // scenario
-        if (child.scenario.examples.length === 0) {
+        if (scenario.examples.length === 0) {
           this.childer.push(
-            new GherkinScenario(child.scenario, new StepCache(this.stepCache), this.tags)
+            new GherkinScenario({ scenario, backgrounds }, new StepCache(this.stepCache), this.tags)
           );
           // scenario outline
         } else {
           this.childer.push(
-            new GherkinScenarioOutline(child.scenario, new StepCache(this.stepCache), this.tags)
+            new GherkinScenarioOutline(
+              { scenario, backgrounds },
+              new StepCache(this.stepCache),
+              this.tags
+            )
           );
         }
       }

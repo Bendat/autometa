@@ -6,12 +6,12 @@ export abstract class Scope {
   abstract idString: () => string;
   openChild: Scope | undefined;
   readonly closedScopes: Scope[] = [];
-  readonly hooks = new HookCache();
   abstract readonly action: () => void;
   abstract canAttach<T extends Scope>(childScope: T): boolean;
   protected get canAttachHook(): boolean {
     return true;
   }
+  constructor(readonly hooks: HookCache) {}
   run = () => {
     const result = this.action() as unknown as void | Promise<void>;
     if (this.synchronous && result instanceof Promise) {

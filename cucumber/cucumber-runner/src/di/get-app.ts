@@ -1,11 +1,13 @@
 import { Config } from "../config/config-manager";
 import { Class } from "@typing/class";
-import { container } from "tsyringe";
+import { container, InjectionToken } from "tsyringe";
 
-export function getApp<T>() {
+export function getApp<T>(...instances: { token: InjectionToken<unknown>; instance: unknown }[]) {
   const app = Config.get<Class<T> | undefined>("app");
   if (!app) {
     return undefined;
   }
-  return container.createChildContainer().resolve(app);
+  const child = container.createChildContainer();
+  instances.forEach(({ token, instance }) => child.registerInstance(token, instance));
+  return child.resolve(app);
 }

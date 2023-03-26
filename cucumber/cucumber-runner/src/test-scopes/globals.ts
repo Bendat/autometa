@@ -1,6 +1,7 @@
 import { GherkinFeature } from "@gherkin/gherkin-feature";
 import { parseGherkin } from "@gherkin/parse";
-import { FeatureScope, RuleScope } from "./feature-scope";
+import { FeatureScope } from "./feature-scope";
+import { RuleScope } from "./rule-scope";
 import { GlobalScope } from "./global-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
@@ -14,7 +15,9 @@ import fs from "fs";
 import fsPath from "path";
 import { TableType } from "@gherkin/datatables/table-type";
 import { Modifiers } from "@gherkin/types";
-export const globalScope = new GlobalScope();
+import { ParsedDataTable } from "@gherkin/datatables/datatable";
+import { HookCache } from "@gherkin/step-cache";
+export const globalScope = new GlobalScope(new HookCache());
 interface IFeature {
   /**
    * Executes a .feature file or multiple .feature files.
@@ -85,7 +88,7 @@ export const runFeature = (
   args.paths.forEach((path) => {
     const files = getActualFeatureFiles(path, caller);
     files.forEach((file) => {
-      const scope = new FeatureScope(args.action, file, modifiers);
+      const scope = new FeatureScope(args.action, file, globalScope.hookCache, modifiers);
       globalScope.attach(scope);
       const featureFile = getFeatureFile(file);
       const ast = parseGherkin(featureFile);
@@ -167,7 +170,7 @@ function normalizeFeatureArgs(
  * ```
  */
 export function Rule(title: string, action: StepAction) {
-  const scope = new RuleScope(title, action);
+  const scope = new RuleScope(title, action, globalScope.hookCache);
   globalScope.attach(scope);
 }
 
@@ -175,15 +178,15 @@ export function Rule(title: string, action: StepAction) {
 //   baseScenario(title, action);
 // }
 function baseScenario(title: string, action: StepAction) {
-  const scope = new ScenarioScope(title, action);
+  const scope = new ScenarioScope(title, action, globalScope.hookCache);
   globalScope.attach(scope);
 }
 function onlyScenario(title: string, action: StepAction) {
-  const scope = new ScenarioScope(title, action, "only");
+  const scope = new ScenarioScope(title, action, globalScope.hookCache, "only");
   globalScope.attach(scope);
 }
 function skipScenario(title: string, action: StepAction) {
-  const scope = new ScenarioScope(title, action, "skip");
+  const scope = new ScenarioScope(title, action, globalScope.hookCache, "skip");
   globalScope.attach(scope);
 }
 Reflect.defineProperty(baseScenario, "only", {
@@ -263,7 +266,7 @@ export const Scenario = baseScenario as IScenario;
  * @param action
  */
 export function ScenarioOutline(title: string, action: StepAction) {
-  const scope = new ScenarioOutlineScope(title, action);
+  const scope = new ScenarioOutlineScope(title, action, globalScope.hookCache);
   globalScope.attach(scope);
 }
 /**
@@ -382,7 +385,7 @@ export function When<T extends TableType<any> = any>(
  * @param action The step action to execute.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function Then<T extends TableType<any> = any>(
+export function Then<T extends ParsedDataTable = ParsedDataTable>(
   text: StepText,
   action: StepAction,
   tableType?: TableType<T>
@@ -391,7 +394,8 @@ export function Then<T extends TableType<any> = any>(
   globalScope.attach(scope);
 }
 
-export type HookAction = (...args: unknown[]) => void | Promise<void>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type HookAction = (...args: any[]) => void | Promise<void>;
 
 /**
  * Hook to execute before each proceeding tests. If declared

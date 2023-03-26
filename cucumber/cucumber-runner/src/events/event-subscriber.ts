@@ -1,3 +1,5 @@
+import { Class } from "@typing/class";
+import { InjectionToken } from "tsyringe";
 import {
   EndAfterOpts,
   EndBeforeOpts,
@@ -18,6 +20,7 @@ import {
   StartTeardownOpts,
 } from "./event-options";
 
+export type DependencyInstanceProvider = { token: InjectionToken<unknown>; instance: unknown };
 export interface EventSubscriber {
   onFeatureStart?(opts: StartFeatureOpts): void;
   onFeatureEnd?(opts: EndFeatureOpts): void;
@@ -25,6 +28,8 @@ export interface EventSubscriber {
   onRuleEnd?(opts: EndRuleOpts): void;
   onScenarioOutlineStart?(opts: StartScenarioOutlineOpts): void;
   onScenarioOutlineEnd?(opts: EndScenarioOpts): void;
+  onPreScenarioStart?(): void;
+  onPostScenarioEnd?(): void;
   onScenarioStart?(opts: StartScenarioOpts): void;
   onScenarioEnd?(opts: EndScenarioOpts): void;
   onStepStart?(opts: StartStepOpts): void;
@@ -37,4 +42,17 @@ export interface EventSubscriber {
   onBeforeEnd?(opts: EndBeforeOpts): void;
   onAfterStart?(opts: StartAfterOpts): void;
   onAfterEnd?(opts: EndAfterOpts): void;
+}
+
+export abstract class ProviderSubscriber implements EventSubscriber {
+  abstract get fixtures(): {
+    instances?: DependencyInstanceProvider[];
+    prototypes?: Class<unknown>[];
+  };
+
+  addFixtureInstance = (instance: DependencyInstanceProvider) => {
+    this.fixtures.instances?.push(instance);
+  };
+
+  onFeatureStart?(opts: StartFeatureOpts): void;
 }
