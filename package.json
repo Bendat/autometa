@@ -12,8 +12,8 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepublish": "npm run build",
-    "release": "turbo run build lint test && changeset version && changeset publish",
+    "prepublish": "pnpm run build",
+    "release": "pnpm run build && changeset version && changeset publish",
     "local:unpublish": "pnpm unpublish --registry http://localhost:4873/ --force",
     "local:publish": "pnpm publish --registry http://localhost:4873/ --force"
   },
