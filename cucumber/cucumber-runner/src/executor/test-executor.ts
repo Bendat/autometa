@@ -23,7 +23,7 @@ export class TestExecutor {
   #instanceDependencies: DependencyInstanceProvider[];
   constructor(private feature: GherkinFeature) {
     const prototypes = Config.get<Class<ProviderSubscriber>[]>("subscribers");
-    this.subscribers = prototypes?.map((it) => new it());
+    this.subscribers = prototypes?.map((it) => new it()) ?? [];
     this.subscribers?.forEach((it) => events.load(it));
     // throw new Error(JSON.stringify(this.subscribers, null, 2));
     this.#instanceDependencies = this.subscribers
