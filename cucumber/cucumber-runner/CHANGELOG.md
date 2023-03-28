@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.3
+
+### Patch Changes
+
+- 2d58b0c: Fixed a bug where an undefined subscriber was applied to a scenario
+
 ## 0.3.2
 
 ### Patch Changes
