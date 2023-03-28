@@ -27,8 +27,8 @@ export class TestExecutor {
     this.subscribers?.forEach((it) => events.load(it));
     // throw new Error(JSON.stringify(this.subscribers, null, 2));
     this.#instanceDependencies = this.subscribers
-      .filter((sub) => sub.fixtures)
-      .flatMap<DependencyInstanceProvider>(
+      ?.filter((sub) => sub.fixtures)
+      ?.flatMap<DependencyInstanceProvider>(
         (sub) => sub.fixtures.instances as DependencyInstanceProvider[]
       );
   }
