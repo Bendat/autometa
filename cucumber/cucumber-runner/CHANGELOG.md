@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.2
+
+### Patch Changes
+
+- 20584c5: Fixed a bug which caused an error to be thrown if no subscriber fixtures were found
+
 ## 0.3.1
 
 ### Patch Changes
