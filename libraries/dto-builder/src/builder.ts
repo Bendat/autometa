@@ -1,5 +1,5 @@
 import { AbstractDtoBuilder } from "./abstract-builder";
-import { getDtoPropertyDecorators } from "./dto-decorators";
+import { getDtoDefaultsDecorators, getDtoPropertyDecorators, isDto } from "./dto-decorators";
 import { Class, Dict } from "./types";
 
 /*
@@ -55,15 +55,30 @@ export function Builder<T>(dtoType: Class<T>): Class<DtoBuilder<T>> {
     constructor() {
       const dto = new dtoType() as T;
       super(dtoType, dto);
-      const propertyNames = getDtoPropertyDecorators(
-        dto as unknown as { constructor: { name: string } }
-      );
+      const propertyNames = getDtoPropertyDecorators(dto as { constructor: { name: string } });
       const self = this as unknown as Dict;
       propertyNames.forEach((key) => {
         self[key] = (arg: T) => this.set(key)(arg);
       });
+      const defaultValues = getDtoDefaultsDecorators(dto as { constructor: { name: string } });
+      constructDefaults(dto, defaultValues);
     }
   };
 
   return GeneratedBuilder as Class<DtoBuilder<T>>;
+}
+
+function constructDefaults<T>(target: T, values: ReturnType<typeof getDtoDefaultsDecorators>) {
+  values.forEach(({ propertyKey, defaultValue }) => {
+    if (isDto(defaultValue as Record<string, unknown>)) {
+      const instance = new (defaultValue as Class<unknown>)();
+      constructDefaults(
+        instance,
+        getDtoDefaultsDecorators(instance as { constructor: { name: string } })
+      );
+      (target as Record<string, unknown>)[propertyKey] = instance;
+    } else {
+      (target as Record<string, unknown>)[propertyKey] = defaultValue;
+    }
+  });
 }

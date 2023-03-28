@@ -67,19 +67,101 @@ userBuilder.id(1).name("bob").age(23);
 // -------------
 // error       |
 //             V
-userBuilder.id('1').name("bob").age(23);
+userBuilder.id("1").name("bob").age(23);
 
 // Bypass
-userBuilder.id('1' as unknown as number).name("bob").age(23);
-
-
-
+userBuilder
+  .id("1" as unknown as number)
+  .name("bob")
+  .age(23);
 ```
 
 You can also pass in an already existing DTO and build it
 further.
 
 ```ts
-const cachedUser = new UserDto()
+const cachedUser = new UserDto();
 const userBuilder = new UserBuilder(cachedUser);
+```
+
+# Default Values
+
+You can pass a value into the Property decorator to provide a default value.
+The default value will be injected by the Builder class.
+
+```ts
+import { Property } from "@autometa/dto-builder";
+
+export class UserDto {
+  @Property(100)
+  id: number;
+  @Property("paul")
+  name: string;
+  @Property(20)
+  age: number;
+}
+
+const user = new UserBuilder().build();
+
+console.log(user.id === 100); // true
+console.log(user.name === "paul"); // true
+console.log(user.age === 20); // true
+```
+
+## Nesting DTOs
+
+For complex classes with nested classes or objects it is adiviseable to use a type
+or interface rather than a Dto type.
+
+```ts
+// prefer not
+class InnerDto {
+  @Property
+  value: number;
+}
+
+class OutterDto {
+  @Property
+  inner: InnerDto;
+}
+
+// prefer
+interface Inner {
+  value: number;
+}
+
+class InnerDto {
+  @Property
+  value: number;
+}
+
+class OutterDto {
+  @Property
+  inner: Inner;
+}
+```
+
+To make a DTO available for nesting, pass its prototype to the Property decorator
+as its default value. Note, this is the prototype, not an instance.
+
+```ts
+
+// prefer
+interface Inner {
+    value: number
+}
+
+class InnerDto {
+  @Property(1)
+  value: number;
+}
+
+class OutterDto {
+  @Property(InnerDto)
+  inner: Inner;
+}
+
+const outter = new OuterBuilder().build()
+console.log(outer.inner instanceOf InnerDto); // true
+console.log(outer.innerr.value === 1); // true
 ```
