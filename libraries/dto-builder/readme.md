@@ -1,5 +1,6 @@
 # DTO and Builder Pattern
 
+[Full documentation](https://bendat.github.io/autometa/docs/libraries/dto-builder/intro)
 This library allows defining DTO classes with decoratated properties.
 You an then automatically create a new builder class that incrementally
 assigns the value of the DTO, and returns the built result.

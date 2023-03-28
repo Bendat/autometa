@@ -180,3 +180,20 @@ const outter = new OuterBuilder().build()
 console.log(outer.inner instanceOf InnerDto); // true
 console.log(outer.innerr.value === 1); // true
 ```
+
+You can also create a unique dto with default values by calling the static `default`
+method on your builder
+
+```ts
+const outter = OuterBuilder.default();
+```
+
+For many tests, valid default values may be all you need on your dto. If
+you wish to make further edits you can pass the instance to a builder later
+
+```ts
+new OuterBuilder(outter).inner(new InnerBuilder().value(1).build());
+```
+
+Note that this will mutate the original dto. You do not need to reassign it or
+even `build` it.

@@ -69,7 +69,6 @@ export abstract class AbstractDtoBuilder<TDtoType> {
     };
   };
 }
-
 // Creates a person oriented (non JSON) string representing
 // validation failures.
 function humaniseValidationErrors(dtoName: string, errors: ValidationError[]) {
