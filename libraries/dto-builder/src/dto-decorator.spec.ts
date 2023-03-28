@@ -5,7 +5,7 @@ class TestClass {
   @Property
   foo!: string;
 
-  @Property
+  @Property('hi')
   bar!: string;
 }
 describe("Property", () => {

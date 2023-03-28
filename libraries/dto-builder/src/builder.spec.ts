@@ -1,21 +1,33 @@
 import { IsOptional, IsString } from "class-validator";
 import { Builder } from "./builder";
 import { Property } from "./dto-decorators";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, test } from "vitest";
+class Bar {
+  @Property(1)
+  id: number;
+}
 class Foo {
   @IsString()
-  @Property
+  @Property("hast")
   fooHast!: string;
 
   @IsOptional()
   @IsString()
-  @Property
+  @Property("rubber")
   fooHastMich?: string;
+
+  @Property(Bar)
+  bar: Bar;
 }
 
 describe("makeDtoBuilder", () => {
   const FooBuilder = Builder<Foo>(Foo);
-
+  it("should have default values", () => {
+    const dto = new FooBuilder().build();
+    console.log(dto);
+    expect(dto.fooHast).toEqual("hast");
+    expect(dto.fooHastMich).toEqual("rubber");
+  });
   it("should create a valid builder", () => {
     const builder = new FooBuilder();
     const dto = builder.fooHast("aa").fooHastMich("bb").build();
