@@ -31,18 +31,21 @@ export abstract class AbstractDtoBuilder<TDtoType> {
    */
 
   build = (validate = true): TDtoType => {
-    if (validate && validateSync) {
-      const validated = validateSync(this.#dto as unknown as object);
-      if (validated.length > 0) {
-        const type = this.#dto.constructor.name;
-        const errorString = humaniseValidationErrors(type, validated);
-        console.error(errorString);
-        throw new FailedValidationError(validated.join("").trimEnd(), validated);
-      }
+    if (validate && (validateSync as unknown)) {
+      return AbstractDtoBuilder.validate(this.#dto);
     }
     return this.#dto;
   };
-
+  static validate = <T extends { constructor: { name: string } }>(dto: T) => {
+    const validated = validateSync(dto as unknown as object);
+    if (validated.length > 0) {
+      const type = dto.constructor.name;
+      const errorString = humaniseValidationErrors(type, validated);
+      console.error(errorString);
+      throw new FailedValidationError(validated.join("").trimEnd(), validated);
+    }
+    return dto;
+  };
   /**
    * Proxy function for builder functions. Takes the name
    * of the property/field to update an provides

@@ -197,3 +197,30 @@ new OuterBuilder(outter).inner(new InnerBuilder().value(1).build());
 
 Note that this will mutate the original dto. You do not need to reassign it or
 even `build` it.
+
+# DTO From Raw Object
+
+Sometimes it's necessary to convert a raw object into a DTO. This can be achieved by
+calling `fromRaw` on the Builder class, passing it the raw object.
+
+```ts
+const raw = { outter: { inner: { value: 1 } } };
+const dto = OutterBuilder.fromRaw(raw);
+
+expect(dto).toBeInstanceOf(Outter);
+```
+
+## Tranforming raw values
+
+If a raw value should be further processed, a transformation function
+can be provided. For example, if a string should be converted to a date,
+`Date.parse` can be provided.
+
+```ts
+@Property(Date.parse)
+created: Date
+
+// wrapping function
+@Property(<string>(value) => Date.parse(value))
+created: Date
+```
