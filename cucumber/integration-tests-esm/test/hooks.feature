@@ -1,9 +1,9 @@
 Feature: A Nested Feature With Hook Areas
 
-  Scenario: Outter Hook Scenario
+  Scenario: Outer Hook Scenario
     Given a scenario with hooks
 
-  Scenario Outline: Outter Hook Scenario Outline
+  Scenario Outline: Outer Hook Scenario Outline
     Given a scenario with hooks
 
     Examples: 
