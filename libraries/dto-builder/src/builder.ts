@@ -1,5 +1,5 @@
 import { AbstractDtoBuilder } from "./abstract-builder";
-import { makeDtoDefaults } from "./dto-decorators";
+import { makeDtoDefaults, makeDtoFromRaw } from "./dto-decorators";
 import { Class, Dict } from "./types";
 
 /*
@@ -49,7 +49,9 @@ export type DtoBuilder<T> = AbstractDtoBuilder<T> & DtoBuilderTransformer<T>;
  * but with builder/setter functions instead of properties/fields -
  * I.E. `foo: string` becomes `foo: (value: string) => DtoBuilder<T>`
  */
-export function Builder<T>(dtoType: Class<T>): Class<DtoBuilder<T>> & { default: () => T } {
+export function Builder<T>(
+  dtoType: Class<T>
+): Class<DtoBuilder<T>> & { default: () => T; fromRaw: <K>(raw: K, validate?: boolean) => T } {
   // Generate a new class which will be the DTO
   const GeneratedBuilder = class GeneratedBuilder extends AbstractDtoBuilder<T> {
     constructor() {
@@ -61,10 +63,22 @@ export function Builder<T>(dtoType: Class<T>): Class<DtoBuilder<T>> & { default:
         self[key] = (arg: T) => this.set(key)(arg);
       });
     }
+    
     static default() {
       return new this().build(false);
     }
+
+    static fromRaw(raw: unknown, validate = false) {
+      const dto = makeDtoFromRaw(dtoType, raw);
+      if (validate) {
+        this.validate(dto as { constructor: { name: string } });
+      }
+      return dto;
+    }
   };
 
-  return GeneratedBuilder as unknown as Class<DtoBuilder<T>> & { default: () => T };
+  return GeneratedBuilder as unknown as Class<DtoBuilder<T>> & {
+    default: () => T;
+    fromRaw: <K>(raw: K, validate?: boolean) => T;
+  };
 }

@@ -21,6 +21,8 @@ class Foo {
   bar: Bar;
   @Property(1)
   baz: number;
+  @Property((value: string) => Number(value))
+  mapped: number;
 }
 
 describe("makeDtoBuilder", () => {
@@ -33,6 +35,37 @@ describe("makeDtoBuilder", () => {
     expect(dto.bar.id).toBe(1);
     expect(dto.baz).toEqual(1);
   });
+  it("should build from raw", () => {
+    const raw: Foo = {
+      fooHast: "bruh",
+      fooHastMich: "duh",
+      bar: { id: 1 },
+      baz: 1,
+      mapped: "1" as unknown as number,
+    };
+    const dto = FooBuilder.fromRaw(raw, true);
+    expect(dto).toBeInstanceOf(Foo);
+    expect(dto.fooHast).toEqual("bruh");
+    expect(dto.fooHastMich).toEqual("duh");
+    expect(dto.bar).instanceOf(Bar);
+    expect(dto.bar.id).toEqual(1);
+    expect(dto.baz).toEqual(1);
+    expect(dto.mapped).toEqual(1);
+  });
+
+  it("should build from raw", () => {
+    const raw: Foo = {
+      fooHast: lie(undefined),
+      fooHastMich: "duh",
+      bar: { id: 1 },
+      baz: 1,
+      mapped: "1" as unknown as number,
+    };
+    const dto = () => FooBuilder.fromRaw(raw, true);
+    expect(dto).toThrow(`An instance of Foo has failed the validation:
+ - property fooHast has failed the following constraints: isString`);
+  });
+  
   it("should create a valid builder", () => {
     const builder = new FooBuilder();
     const dto = builder.fooHast("aa").fooHastMich("bb").build();
@@ -57,3 +90,6 @@ describe("makeDtoBuilder", () => {
     expect(fooHastMich).toBe(undefined);
   });
 });
+export function lie<T>(input: unknown): T {
+  return input as T;
+}
