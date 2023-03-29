@@ -17,7 +17,7 @@ const results = {
     afterCalled: false,
     tearDownCalled: false,
   },
-  outterOutline: {
+  OuterOutline: {
     setupCalled: false,
     beforeCalled: false,
     afterCalled: false,
@@ -36,44 +36,44 @@ const results = {
     },
   },
 };
-Setup("Outter setup", () => {
+Setup("Outer setup", () => {
   results.base.setupCalled = true;
 });
-Before("Outter before", () => {
+Before("Outer before", () => {
   results.base.beforeCalled = true;
 });
-After("Outter After", () => {
+After("Outer After", () => {
   results.base.afterCalled = true;
 });
-Teardown("Outter Teardown", () => {
+Teardown("Outer Teardown", () => {
   results.base.tearDownCalled = true;
-  expect(results.outterOutline.tearDownCalled).toBe(true);
+  expect(results.OuterOutline.tearDownCalled).toBe(true);
   expect(results.rule.ruleOutline.tearDownCalled).toBe(true);
 });
 Feature(() => {
-  Scenario("Outter Hook Scenario", () => {
+  Scenario("Outer Hook Scenario", () => {
     Given("a scenario with hooks", () => {
       expect(results.base.setupCalled).toBe(true);
       expect(results.base.beforeCalled).toBe(true);
     });
   });
-  ScenarioOutline("Outter Hook Scenario Outline", () => {
-    Setup("Outter Outline setup", () => {
-      results.outterOutline.setupCalled = true;
+  ScenarioOutline("Outer Hook Scenario Outline", () => {
+    Setup("Outer Outline setup", () => {
+      results.OuterOutline.setupCalled = true;
     });
-    Before("Outter Outline before", () => {
-      results.outterOutline.beforeCalled = true;
+    Before("Outer Outline before", () => {
+      results.OuterOutline.beforeCalled = true;
     });
-    After("Outter Outline After", () => {
-      results.outterOutline.afterCalled = true;
+    After("Outer Outline After", () => {
+      results.OuterOutline.afterCalled = true;
     });
-    Teardown("Outter Outline Teardown", () => {
-      results.outterOutline.tearDownCalled = true;
+    Teardown("Outer Outline Teardown", () => {
+      results.OuterOutline.tearDownCalled = true;
     });
     Given("a scenario with hooks", () => {
       expect(results.base.afterCalled).toBe(true);
-      expect(results.outterOutline.setupCalled).toBe(true);
-      expect(results.outterOutline.beforeCalled).toBe(true);
+      expect(results.OuterOutline.setupCalled).toBe(true);
+      expect(results.OuterOutline.beforeCalled).toBe(true);
     });
   });
   Rule("A Rule with hooks", () => {
@@ -91,7 +91,7 @@ Feature(() => {
     });
     Scenario("Inner Hook Scenario", () => {
       Given("a scenario with hooks", () => {
-        expect(results.outterOutline.afterCalled).toBe(true);
+        expect(results.OuterOutline.afterCalled).toBe(true);
         expect(results.rule.beforeCalled).toBe(true);
         expect(results.rule.setupCalled).toBe(true);
       });

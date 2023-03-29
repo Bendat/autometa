@@ -121,7 +121,7 @@ class InnerDto {
   value: number;
 }
 
-class OutterDto {
+class OuterDto {
   @Property
   inner: InnerDto;
 }
@@ -136,7 +136,7 @@ class InnerDto {
   value: number;
 }
 
-class OutterDto {
+class OuterDto {
   @Property
   inner: Inner;
 }
@@ -157,12 +157,12 @@ class InnerDto {
   value: number;
 }
 
-class OutterDto {
+class OuterDto {
   @Property(InnerDto)
   inner: Inner;
 }
 
-const outter = new OuterBuilder().build()
+const Outer = new OuterBuilder().build()
 console.log(outer.inner instanceOf InnerDto); // true
 console.log(outer.innerr.value === 1); // true
 ```
@@ -172,14 +172,14 @@ You can also create a unique dto with default values by calling the static `defa
 method on your builder
 
 ```ts
-const outter = OuterBuilder.default();
+const Outer = OuterBuilder.default();
 ```
 
 For many tests, valid default values may be all you need on your dto. If
 you wish to make further edits you can pass the instance to a builder later
 
 ```ts
-new OuterBuilder(outter).inner(new InnerBuilder().value(1).build());
+new OuterBuilder(Outer).inner(new InnerBuilder().value(1).build());
 ```
 
 Note that this will mutate the original dto. You do not need to reassign it or
@@ -191,10 +191,10 @@ Sometimes it's necessary to convert a raw object into a DTO. This can be achieve
 calling `fromRaw` on the Builder class, passing it the raw object.
 
 ```ts
-const raw = { outter: { inner: { value: 1 } } };
-const dto = OutterBuilder.fromRaw(raw);
+const raw = { Outer: { inner: { value: 1 } } };
+const dto = OuterBuilder.fromRaw(raw);
 
-expect(dto).toBeInstanceOf(Outter);
+expect(dto).toBeInstanceOf(Outer);
 ```
 
 ## Tranforming raw values

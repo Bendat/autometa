@@ -2,7 +2,7 @@ Feature: A Feature with a background
     Background: Feature Level Background
         Given a background step
     
-    Scenario: Outter Scenario
+    Scenario: Outer Scenario
         Given a scenario step
     
     Rule: A Rule
