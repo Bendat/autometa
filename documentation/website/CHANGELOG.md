@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.4.0
+
+### Minor Changes
+
+- bb7d90b: Added support for default values and nested DTO types
+
 ## 0.3.0
 
 ### Minor Changes
