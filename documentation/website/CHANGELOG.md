@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.4.1
+
+### Patch Changes
+
+- f892a6b: Builders can now construct DTOs from raw objects
+
 ## 0.4.0
 
 ### Minor Changes
