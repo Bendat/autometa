@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.5.1
+
+### Patch Changes
+
+- f7c581f: Fixed typo in docs
+
 ## 0.5.0
 
 ### Minor Changes
