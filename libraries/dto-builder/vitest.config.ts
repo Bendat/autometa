@@ -1,7 +1,9 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  root: "libraries/dto-builder",
+  // root: "src",
   plugins: [],
-  test: {},
+  test: {
+    setupFiles: ["reflect-metadata"],
+  },
 });

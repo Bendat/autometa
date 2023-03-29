@@ -1,5 +1,5 @@
 import { AbstractDtoBuilder } from "./abstract-builder";
-import { getDtoPropertyDecorators } from "./dto-decorators";
+import { makeDtoDefaults } from "./dto-decorators";
 import { Class, Dict } from "./types";
 
 /*
@@ -49,21 +49,22 @@ export type DtoBuilder<T> = AbstractDtoBuilder<T> & DtoBuilderTransformer<T>;
  * but with builder/setter functions instead of properties/fields -
  * I.E. `foo: string` becomes `foo: (value: string) => DtoBuilder<T>`
  */
-export function Builder<T>(dtoType: Class<T>): Class<DtoBuilder<T>> {
+export function Builder<T>(dtoType: Class<T>): Class<DtoBuilder<T>> & { default: () => T } {
   // Generate a new class which will be the DTO
   const GeneratedBuilder = class GeneratedBuilder extends AbstractDtoBuilder<T> {
     constructor() {
-      const dto = new dtoType() as T;
+      const dto = makeDtoDefaults(dtoType);
       super(dtoType, dto);
-      const propertyNames = getDtoPropertyDecorators(
-        dto as unknown as { constructor: { name: string } }
-      );
+      const propertyNames: string[] = Reflect.getMetadata("dto:properties", dtoType.prototype);
       const self = this as unknown as Dict;
       propertyNames.forEach((key) => {
         self[key] = (arg: T) => this.set(key)(arg);
       });
     }
+    static default() {
+      return new this().build(false);
+    }
   };
 
-  return GeneratedBuilder as Class<DtoBuilder<T>>;
+  return GeneratedBuilder as unknown as Class<DtoBuilder<T>> & { default: () => T };
 }
