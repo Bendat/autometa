@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.1.0
+
+### Minor Changes
+
+- 621ec9a: Added 'status-code' library
+
 ## 0.5.1
 
 ### Patch Changes
