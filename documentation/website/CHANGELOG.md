@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.4.2
+
+### Patch Changes
+
+- f7c581f: Fixed typo in docs
+
 ## 0.4.1
 
 ### Patch Changes
