@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.5.4
+
+### Patch Changes
+
+- 113d6cd: Readme fix
+
 ## 0.5.3
 
 ### Patch Changes
