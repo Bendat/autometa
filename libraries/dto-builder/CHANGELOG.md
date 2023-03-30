@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.5.3
+
+### Patch Changes
+
+- 8ce46c5: Added code generator for runner
+
 ## 0.5.2
 
 ### Patch Changes

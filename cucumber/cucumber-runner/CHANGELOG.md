@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.4
+
+### Patch Changes
+
+- 8ce46c5: Added code generator for runner
+
 ## 0.3.3
 
 ### Patch Changes
