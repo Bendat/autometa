@@ -7,7 +7,7 @@
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
   "bin": {
-    "cucumber-markdown": "dist/cjs/cli.js"
+    "cucumber-markdown": "dist/cjs/src/cli.js"
   },
   "scripts": {
     "test": "vitest run --passWithNoTests",
