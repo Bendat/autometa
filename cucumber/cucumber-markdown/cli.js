@@ -1,1 +1,1 @@
-import "./dist/mjs/cli";
+import "./dist/cjs/src/cli";
