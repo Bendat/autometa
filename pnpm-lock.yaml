@@ -269,6 +269,36 @@ importers:
       typescript: 4.9.5
       vitest: 0.28.5
 
+  libraries/status-codes:
+    specifiers:
+      '@typescript-eslint/eslint-plugin': ^5.54.1
+      '@typescript-eslint/parser': ^5.54.1
+      eslint: ^7.32.0
+      eslint-config-custom: workspace:*
+      node: ^19.6.0
+      prettier: ^2.8.3
+      reflect-metadata: ^0.1.13
+      rimraf: ^4.1.2
+      ts-jest: ^29.0.5
+      ts-node: ^10.9.1
+      tsc-alias: ^1.8.2
+      typescript: ^4.9.5
+      vitest: ^0.28.5
+    devDependencies:
+      '@typescript-eslint/eslint-plugin': 5.54.1_2raik7ghbnj434s5izctn4kvma
+      '@typescript-eslint/parser': 5.54.1_jofidmxrjzhj7l6vknpw5ecvfe
+      eslint: 7.32.0
+      eslint-config-custom: link:../../packages/eslint-config-custom
+      node: 19.6.0
+      prettier: 2.8.3
+      reflect-metadata: 0.1.13
+      rimraf: 4.1.2
+      ts-jest: 29.0.5_typescript@4.9.5
+      ts-node: 10.9.1_typescript@4.9.5
+      tsc-alias: 1.8.2
+      typescript: 4.9.5
+      vitest: 0.28.5
+
   packages/eslint-config-custom:
     specifiers:
       '@typescript-eslint/eslint-plugin': ^5.54.1
@@ -281,7 +311,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.54.1_jofidmxrjzhj7l6vknpw5ecvfe
       eslint: 7.32.0
       eslint-config-prettier: 8.6.0_eslint@7.32.0
-      eslint-config-turbo: 0.0.10_eslint@7.32.0
+      eslint-config-turbo: 1.8.8_eslint@7.32.0
       eslint-plugin-react: 7.31.8_eslint@7.32.0
     devDependencies:
       typescript: 4.9.5
@@ -6686,13 +6716,13 @@ packages:
       eslint: 7.32.0
     dev: false
 
-  /eslint-config-turbo/0.0.10_eslint@7.32.0:
-    resolution: {integrity: sha512-o4ULFZYM1OihSd63eDGEuy9rt6tW4ma6xnW9grnr44BoJwKaGQko2aka9kfqQs0vtmwD1++Os3ThPHETmzkFzA==}
+  /eslint-config-turbo/1.8.8_eslint@7.32.0:
+    resolution: {integrity: sha512-+yT22sHOT5iC1sbBXfLIdXfbZuiv9bAyOXsxTxFCWelTeFFnANqmuKB3x274CFvf7WRuZ/vYP/VMjzU9xnFnxA==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
       eslint: 7.32.0
-      eslint-plugin-turbo: 0.0.10_eslint@7.32.0
+      eslint-plugin-turbo: 1.8.8_eslint@7.32.0
     dev: false
 
   /eslint-plugin-react/7.31.8_eslint@7.32.0:
@@ -6718,8 +6748,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: false
 
-  /eslint-plugin-turbo/0.0.10_eslint@7.32.0:
-    resolution: {integrity: sha512-T7QRwF4rjBQCJD9AHLHn9ShtHCHNkfIZW5Oio92WtQYhoU5jZCU3ynU+ONFXLuvoUx4dJ19WergIyHL+DwL2+g==}
+  /eslint-plugin-turbo/1.8.8_eslint@7.32.0:
+    resolution: {integrity: sha512-zqyTIvveOY4YU5jviDWw9GXHd4RiKmfEgwsjBrV/a965w0PpDwJgEUoSMB/C/dU310Sv9mF3DSdEjxjJLaw6rA==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
