@@ -1,5 +1,11 @@
 # integration-tests-esm
 
+## 0.3.4
+
+### Patch Changes
+
+- f7c581f: Fixed typo in docs
+
 ## 0.3.3
 
 ### Patch Changes
