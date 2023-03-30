@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.7
+
+### Patch Changes
+
+- 5ad2e12: Fix Glob pattern for test generator
+
 ## 0.3.6
 
 ### Patch Changes
