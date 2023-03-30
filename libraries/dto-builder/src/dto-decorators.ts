@@ -138,7 +138,9 @@ export function makeDtoDefaults<T>(target: Class<T>): T {
       instanceDict[property] = makeDtoDefaults(defaultValue);
       continue;
     }
-    instanceDict[property] = defaultValue;
+    if (defaultValue !== undefined) {
+      instanceDict[property] = defaultValue;
+    }
   }
   return instance;
 }
