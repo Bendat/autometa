@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-runner",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Convert Cucumber .feature files into markdown",
   "type": "module",
   "main": "dist/cjs/index.js",
