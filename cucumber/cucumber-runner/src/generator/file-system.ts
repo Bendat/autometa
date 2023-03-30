@@ -1,5 +1,5 @@
 import path from "node:path";
-import { readFileSync, writeFileSync, existsSync, promises } from "node:fs";
+import { writeFileSync, existsSync, promises } from "node:fs";
 import glob from "glob";
 export function getFeatureFiles(pathGlob: string) {
   if (path.extname(pathGlob) == ".feature") {
