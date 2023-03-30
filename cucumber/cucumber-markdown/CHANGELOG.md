@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.3.2
+
+### Patch Changes
+
+- b18ac45: Another fix for binaries
+
 ## 0.3.1
 
 ### Patch Changes

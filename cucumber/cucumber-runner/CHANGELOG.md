@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.6
+
+### Patch Changes
+
+- b18ac45: Another fix for binaries
+
 ## 0.3.5
 
 ### Patch Changes
