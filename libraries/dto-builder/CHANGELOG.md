@@ -5,6 +5,7 @@
 ### Patch Changes
 
 - 0ec20e7: Properties with no default value will no longer be assigned as undefined, and will the keys will not exist on the dto class object
+
 - f7c581f: Fixed typo in docs
 
 ## 0.5.0
