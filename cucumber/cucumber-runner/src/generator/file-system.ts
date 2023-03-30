@@ -5,7 +5,7 @@ export function getFeatureFiles(pathGlob: string) {
   if (path.extname(pathGlob) == ".feature") {
     return [pathGlob];
   }
-  return glob.sync(path.join(pathGlob, "*.feature"));
+  return glob.sync(path.join(pathGlob, "*/*.feature"));
 }
 export interface TransformOptions {
   generate: boolean;
