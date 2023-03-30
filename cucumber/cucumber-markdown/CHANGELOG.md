@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.3.1
+
+### Patch Changes
+
+- 0039747: Fixed wrong path for bin files
+
 ## 0.3.0
 
 ### Minor Changes

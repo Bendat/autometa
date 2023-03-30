@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.5
+
+### Patch Changes
+
+- 0039747: Fixed wrong path for bin files
+
 ## 0.3.4
 
 ### Patch Changes
