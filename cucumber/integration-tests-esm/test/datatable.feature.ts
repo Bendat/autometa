@@ -36,6 +36,7 @@ Feature(() => {
     Given(
       "a table",
       (table: VTable) => {
+        console.log(table);
         expect(table.get("name")).toStrictEqual(["alien", "titanic"]);
         expect(table.get("name", 0)).toStrictEqual("alien");
         expect(table.get("director")).toStrictEqual([
