@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.8
+
+### Patch Changes
+
+- 90450d9: Fixed bug where steps don't use alternatable datatable constructors
+
 ## 0.3.7
 
 ### Patch Changes
