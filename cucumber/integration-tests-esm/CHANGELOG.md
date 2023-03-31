@@ -1,5 +1,13 @@
 # integration-tests-esm
 
+## 0.3.9
+
+### Patch Changes
+
+- 90450d9: Fixed bug where steps don't use alternatable datatable constructors
+- Updated dependencies [90450d9]
+  - @autometa/cucumber-runner@0.3.8
+
 ## 0.3.8
 
 ### Patch Changes
