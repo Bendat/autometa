@@ -34,8 +34,8 @@ export class GlobalScope extends Scope {
     }
     this.closedScopes.forEach((scope) => {
       if (scope instanceof StepScope) {
-        const { keywordType, keyword, text, action } = scope;
-        this.stepCache.add(keywordType, keyword, text, action);
+        const { keywordType, keyword, text, action, tableType } = scope;
+        this.stepCache.add(keywordType, keyword, text, action, tableType);
       }
     });
     this.isBuilt = true;

@@ -310,15 +310,16 @@ function getTableOrDocstringArg(
   tableOrDocstring: Docstring | CompiledDataTable | undefined,
   tableType?: TableType<ParsedDataTable>
 ) {
-  const defaultTable: TableType<ParsedDataTable> = Config.get("dataTables.default", {
+  const actualTableType: TableType<ParsedDataTable> = Config.get("dataTables.default", {
     dataTables: { default: tableType },
   });
 
   if (tableOrDocstring instanceof Docstring) {
     return tableOrDocstring;
   }
+
   if (tableOrDocstring) {
-    return new defaultTable(tableOrDocstring);
+    return new actualTableType(tableOrDocstring);
   }
   return undefined;
 }
