@@ -9,7 +9,7 @@ export const getCacheKey = (
   fileData: crypto.BinaryLike,
   filename: crypto.BinaryLike,
   configString: crypto.BinaryLike,
-  { instrument }: { instrument?: crypto.BinaryLike }
+  instrument: { instrument?: crypto.BinaryLike }
 ) =>
   crypto
     .createHash("md5")
