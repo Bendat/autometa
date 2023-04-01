@@ -24,17 +24,19 @@ export const getCacheKey = (
     .update(instrument ? "instrument" : "")
     .digest("hex");
 
-export function process(src: string, filePath: string, jestConfig: Config.ProjectConfig) {
-  const testFile = `
-const { Feature } = require('@cucumber/cucumber-runner');            
-Feature(${filePath})
+    export default {
+      process: (src: string, filePath: string, jestConfig: Config.ProjectConfig) => {
+        const testFile = `
+const { Feature } = require('@autometa/cucumber-runner');            
+Feature('${filePath}')
 `;
 
-  const featureFile = transform(testFile, {
-    filename: filePath,
-    presets: [jestPreset],
-    root: jestConfig.cwd,
-  });
+        const featureFile = transform(testFile, {
+          filename: filePath,
+          presets: [jestPreset],
+          root: jestConfig.cwd,
+        });
 
-  return featureFile ? featureFile.code : src;
-}
+        return featureFile;
+      },
+    };
