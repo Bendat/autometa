@@ -1,5 +1,11 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.1.4
+
+### Patch Changes
+
+- 24daeba: Fixed missing cache key
+
 ## 0.1.3
 
 ### Patch Changes
