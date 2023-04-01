@@ -1,5 +1,11 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.1.3
+
+### Patch Changes
+
+- 1834d13: Removed link to non existent binary file
+
 ## 0.1.2
 
 ### Patch Changes
