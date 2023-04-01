@@ -10,9 +10,6 @@
     "type": "git",
     "url": "https://github.com/Bendat/autometa"
   },
-  "bin": {
-    "cucumber-runner": "dist/cjs/src/cli.js"
-  },
   "scripts": {
     "test": "vitest run --passWithNoTests ",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
