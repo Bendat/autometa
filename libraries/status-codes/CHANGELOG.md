@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.1.1
+
+### Patch Changes
+
+- 9bc2d17: Added Jest Transformer library for feature files
+
 ## 0.1.0
 
 ### Minor Changes
