@@ -1,5 +1,11 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.1.2
+
+### Patch Changes
+
+- 96b74cb: Fixed broken transformer logic
+
 ## 0.1.1
 
 ### Patch Changes
