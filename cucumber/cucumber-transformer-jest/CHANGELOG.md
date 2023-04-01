@@ -1,5 +1,12 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.1.5
+
+### Patch Changes
+
+- c634bed: Fixed missing cache key
+- c634bed: Fixed error when instrument undefined in jest transformer
+
 ## 0.1.4
 
 ### Patch Changes
