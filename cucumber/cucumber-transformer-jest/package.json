@@ -1,0 +1,71 @@
+{
+  "name": "@autometa/cucumber-transformer-jest",
+  "version": "0.3.8",
+  "description": "Convert Cucumber .feature files into Autometa cucumber tests with jest",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bendat/autometa"
+  },
+  "bin": {
+    "cucumber-runner": "dist/cjs/src/cli.js"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests ",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "postbuild": "tsc-alias -p ./tsconfig.cjs.json && tsc-alias -p ./tsconfig.json",
+    "build:libs": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
+    "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
+    "build": "pnpm build:code && pnpm postbuild",
+    "build:mjs": "rimraf dist/ && ttsc -p tsconfig.json && ./fixup",
+    "build:cjs": "rimraf dist/ && tsc -p tsconfig.cjs.json && ./fixup"
+  },
+  "keywords": [
+    "jest gherkin",
+    "jest cucumber",
+    "autometa jest",
+    "jest",
+    "cucumber"
+  ],
+  "homepage": "http://github.com/bendat/autometa",
+  "author": "Ben Aherne",
+  "license": "ISC",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/cjs/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/types/index.d.ts"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.4.3",
+    "@jest/types": "^29.4.3",
+    "@types/babel__core": "^7.20.0",
+    "@types/glob": "^8.0.1",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "^18.11.18",
+    "@types/uuid": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "babel-preset-jest": "^29.5.0",
+    "eslint": "^7.23.0",
+    "eslint-config-custom": "workspace:*",
+    "jest": "^29.4.3",
+    "node": "^19.6.0",
+    "prettier": "^2.8.3",
+    "rimraf": "^4.1.2",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.1",
+    "tsc-alias": "^1.8.2",
+    "typescript": "^4.9.5",
+    "vite-tsconfig-paths": "^4.0.5"
+  },
+  "dependencies": {
+    "@autometa/cucumber-runner": "workspace:^0.3.8",
+    "@babel/core": "^7.21.4"
+  }
+}

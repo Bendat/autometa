@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types"
+  },
+  "files": ["index.ts", "allure.ts", "src/test-scopes/rule-scope.ts"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.js"]
+}
