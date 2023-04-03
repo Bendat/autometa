@@ -8,7 +8,7 @@ import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinNode } from "./gherkin-node";
 import { Modifiers } from "./types";
 import { ScenarioOutlineScope } from "@scopes/scenario-outline-scope";
-export type RuleMessage = { rule: Rule; backgrounds?: Background[] };
+export type RuleMessage = { rule: Rule; backgrounds?: { background: Background }[] };
 
 export class GherkinRule extends GherkinNode {
   tags: string[] = [];
@@ -74,10 +74,10 @@ export class GherkinRule extends GherkinNode {
   }
 
   #buildChildren(message: RuleMessage) {
-    const ruleBackground = message.rule.children.find((it) => it.background) as Background;
-    const backgrounds = [...(message.backgrounds ?? []), ruleBackground].filter(
-      (it) => it
-    ) as Background[];
+    const ruleBackground = message.rule.children.find((it) => it.background) as {
+      background: Background;
+    };
+    const backgrounds = [ruleBackground].filter((it) => it);
     for (const { scenario } of message.rule.children) {
       if (scenario) {
         // scenario

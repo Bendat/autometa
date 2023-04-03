@@ -11,7 +11,7 @@ import { Modifiers } from "./types";
 import { TableValue } from "./datatables/table-value";
 import { Docstring } from "./doc-string";
 import crypto from "crypto";
-export type ScenarioMessage = { scenario: Scenario; backgrounds?: Background[] };
+export type ScenarioMessage = { scenario: Scenario; backgrounds?: { background: Background }[] };
 export class GherkinScenario extends GherkinNode {
   tags: string[] = [];
   readonly steps: GherkinStep[] = [];
@@ -63,10 +63,11 @@ export class GherkinScenario extends GherkinNode {
   ) {
     const backgrounds = message.backgrounds ?? [];
     for (const background of backgrounds) {
-      if(!background){
-        continue
+      if (!background) {
+        continue;
       }
-      for (const { keywordType, keyword, text, dataTable, docString } of background?.steps ?? []) {
+      const { steps } = background.background;
+      for (const { keywordType, keyword, text, dataTable, docString } of steps ?? []) {
         const realText = interpolateStepText(text, example);
         const compiledTable = compileDatatable(dataTable);
         this.loadGherkinStep(

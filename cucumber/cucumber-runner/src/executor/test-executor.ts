@@ -176,7 +176,11 @@ export class TestExecutor {
   }
 }
 async function runBackgrounds(scenario: GherkinScenario, app: unknown) {
-  for (const background of scenario.message.backgrounds ?? []) {
+  const backgrounds = scenario.message.backgrounds?.filter((it) => it);
+  if (!backgrounds || backgrounds.length <= 0) {
+    return;
+  }
+  for (const { background } of backgrounds) {
     if (!background) {
       continue;
     }
