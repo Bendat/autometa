@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.9
+
+### Patch Changes
+
+- d1c6132: Fixed a bug where hooks are not executed inside Rules or Outlines
+
 ## 0.3.8
 
 ### Patch Changes
