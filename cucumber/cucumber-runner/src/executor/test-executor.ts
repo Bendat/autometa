@@ -81,6 +81,7 @@ export class TestExecutor {
     const ruleGroup = tagFilter(rule.tags, describe, rule.modifier);
     ruleGroup(`Rule ${rule.message.rule.name}`, () => {
       const { title, modifier, tags } = rule;
+      const hooks = rule.hooks ?? globalScope.hooks;
       let failed = false;
       function failRule() {
         failed = true;
@@ -102,7 +103,7 @@ export class TestExecutor {
         }
 
         if (ruleChild instanceof GherkinScenario) {
-          this.runScenario(ruleChild, rule.hooks?.before, rule.hooks?.after, failRule);
+          this.runScenario(ruleChild, hooks?.before, hooks?.after, failRule);
         }
       }
     });
@@ -113,6 +114,8 @@ export class TestExecutor {
     const outlineGroup = tagFilter(outline.tags, describe, outline.modifier);
     outlineGroup(`Scenario Outline: ${outline.message.scenario.name}`, () => {
       const { title, tags, modifier, examples } = outline;
+      const hooks = outline.hooks ?? globalScope.hooks;
+
       let failed = false;
       function failOutline() {
         failed = true;
@@ -120,7 +123,7 @@ export class TestExecutor {
       }
       beforeAll(async () => {
         events.scenarioOutline.emitStart({ title, tags, modifier, examples });
-        await runSetupHooks(outline.hooks?.setup, events.setup, failOutline);
+        await runSetupHooks(hooks?.setup, events.setup, failOutline);
       });
 
       afterAll(async () => {
@@ -129,7 +132,7 @@ export class TestExecutor {
       });
       const scenarios = outline.scenarios;
       for (const scenario of scenarios) {
-        this.runScenario(scenario, outline.hooks?.before, outline.hooks?.after, failOutline);
+        this.runScenario(scenario, hooks?.before, hooks?.after, failOutline);
       }
     });
   }
@@ -173,7 +176,11 @@ export class TestExecutor {
   }
 }
 async function runBackgrounds(scenario: GherkinScenario, app: unknown) {
-  for (const background of scenario.message.backgrounds ?? []) {
+  const backgrounds = scenario.message.backgrounds?.filter((it) => it);
+  if (!backgrounds || backgrounds.length <= 0) {
+    return;
+  }
+  for (const { background } of backgrounds) {
     if (!background) {
       continue;
     }

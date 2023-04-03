@@ -14,7 +14,7 @@ export class GlobalScope extends Scope {
   parent: Scope;
   action: (...args: unknown[]) => void;
   get hookCache(){
-    return this.openChild ? this.openChild.hooks : this.hooks;
+    return this.openChild ? this.openChild.hooks ?? this.hooks : this.hooks;
   }
   override run = () => {
     // do nothing

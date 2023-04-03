@@ -97,7 +97,7 @@ export class GherkinFeature extends GherkinNode {
   }
 
   #buildChildren(message: Feature) {
-    const background = message.children.find((it) => it.background) as Background;
+    const background = message.children.find((it) => it.background) as { background: Background };
     for (const { scenario, rule } of message.children) {
       if (scenario) {
         if (scenario.examples.length === 0) {

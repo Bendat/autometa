@@ -6,7 +6,7 @@ import { GherkinScenario } from "./gherkin-scenario";
 import { Examples } from "./parser.types";
 import { StepCache } from "./step-cache";
 import { Modifiers } from "./types";
-export type ExamplesMessage = { examples: Examples; backgrounds: Background[] };
+export type ExamplesMessage = { examples: Examples; backgrounds: { background: Background }[] };
 export class GherkinExamples extends GherkinNode {
   get modifier(): Modifiers | undefined {
     throw new Error("Method not implemented.");
