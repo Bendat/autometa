@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.11
+
+### Patch Changes
+
+- 58678de: Fixed an incorrect description in cucumber-runner 'package.json'
+
 ## 0.3.10
 
 ### Patch Changes
