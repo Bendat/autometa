@@ -194,10 +194,12 @@ function parseDatatable(data: DataTable) {
     .join("|\n");
   const heading =
     data.rows.length > 0
-      ? "|  Data Table " + "|   ".repeat(data.rows.length) + "|"
+      ? "|  Data Table " + "|   ".repeat(data.rows[0].cells.length)
       : "";
   const buffer =
-    data.rows.length > 0 ? "| --- ".repeat(data.rows.length + 1) + "|" : "";
+    data.rows.length > 0
+      ? "| --- ".repeat(data.rows[0].cells.length + 1) + "|"
+      : "";
   return `${heading}
 ${buffer}
 ${cells}|`;
