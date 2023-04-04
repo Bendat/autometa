@@ -3,20 +3,23 @@
 Autometa Cucumber-Markdown can convert your Cucumber `.feature` files
 to beautiful markdown for your documentation sites like Vercel or Docusuaurus.
 
+The output is not necessarily compatible with gherkin markdown files
+which can be used to run tests.
+
 ## Install
 
 **As a global command**
 
 ```sh title=NPM
-npm i -D @autometa/dto-builder
+npm i -D @autometa/cucumber-markdown
 ```
 
  ```sh title=Yarn
- yarn add -D @autometa/dto-builder
+ yarn add -D @autometa/cucumber-markdown
  ```
 
 ```sh title=PNPM
-pnpm i -D @autometa/dto-builder
+pnpm i -D @autometa/cucumber-markdown
 ```
 
 # Use
@@ -25,7 +28,6 @@ pnpm i -D @autometa/dto-builder
 $ cucumber-markdown ./inputDir ./outputDir
 ```
 
-File globs are supported e.g `**/*.feature`
 
 Options:
 ```sh
@@ -36,5 +38,7 @@ Options:
                              (default: false)
   -o, --overwrite <boolean>  If true, overwrites existing markdown files (default:
                              true)
+  -c  --collapse <boolean>   If true, files with the same feature name will be collapsed
+                             into a single file
   -h, --help                 display help for command
 ```
