@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { program } from "commander";
-import { TransformOptions } from "./file-system";
+import { collapseMarkdownFiles, TransformOptions } from "./file-system";
 import { getFeatureFiles, writeMarkdownFiles } from "./file-system";
 
 program
@@ -28,6 +28,11 @@ program
     "-o, --overwrite <boolean>",
     "If true, overwrites existing markdown files",
     true
+  )
+  .option(
+    "-c, --collapse <boolean>",
+    "If true, overwrites existing markdown files",
+    true
   );
 
 program.parse();
@@ -35,7 +40,10 @@ program.parse();
 async function run() {
   const options: TransformOptions = program.opts();
   const [input, output] = program.args;
-  const files = await getFeatureFiles(input);
+  const files = getFeatureFiles(input);
+  if (options.collapse) {
+    return collapseMarkdownFiles(output, files, options);
+  }
   await Promise.all(writeMarkdownFiles(output, files, options));
 }
 
