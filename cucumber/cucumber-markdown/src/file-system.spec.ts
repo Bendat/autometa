@@ -11,6 +11,7 @@ test("glob", async () => {
     overwrite: true,
     verbose: true,
     flatten: false,
+    collapse: false,
   };
   await Promise.all(writeMarkdownFiles("./out", x, option));
 });

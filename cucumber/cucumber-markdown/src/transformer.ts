@@ -213,3 +213,16 @@ ${parseChildren(gherkin.feature)}
 `;
   return prettier.format(template, { parser: "markdown" });
 }
+export function convertFeatureToMarkdown(feature: Feature) {
+  const gherkin = {feature}
+  const template = `# ${gherkin.feature?.name}
+  
+${formatTags(gherkin.feature?.tags)}
+${formatMultiline(gherkin.feature?.description ?? "")}
+${parseChildren(gherkin.feature)}
+`;
+  return prettier.format(template, { parser: "markdown" });
+}
+export function serialize(featureString: string) {
+  return parser.parse(featureString);
+}
