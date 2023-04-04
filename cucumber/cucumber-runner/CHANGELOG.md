@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.3.10
+
+### Patch Changes
+
+- 1b6e728: Added 'confirm' type function. Small fix in markdown rendering
+
 ## 0.3.9
 
 ### Patch Changes
