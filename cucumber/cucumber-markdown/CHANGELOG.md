@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.4.1
+
+### Patch Changes
+
+- bdcd867: Fixed mistake where README pointed to dto-builder package
+
 ## 0.4.0
 
 ### Minor Changes
