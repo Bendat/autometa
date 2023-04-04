@@ -16,8 +16,8 @@ _A Background Description_
 
 **_And_** setup is set up
 
-| Data Table |     |
-| ---------- | --- |
+| Data Table |
+| ---------- |
 | data1      |
 
 **_When_** anuther
@@ -61,8 +61,8 @@ _Roight_
 
 **_Given_** the application is started
 
-| Data Table |       |     |
-| ---------- | ----- | --- |
+| Data Table |       |
+| ---------- | ----- |
 | name       | blame |
 | grame      | shame |
 
