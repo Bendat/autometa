@@ -59,7 +59,6 @@ export async function collapseMarkdownFiles(
     const featureChildren: FeatureChild[] = [];
     feature.children = featureChildren;
     if (description) {
-      console.log(description);
       feature.description = description;
     }
     feature.name = arr[0]?.feature?.name ?? "no name given";
