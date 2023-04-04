@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.4.0
+
+### Minor Changes
+
+- c466c8a: Added support for collapsing feature files by feature name.
+
 ## 0.3.2
 
 ### Patch Changes
