@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.4.2
+
+### Patch Changes
+
+- ba3ebb1: Removed unnecessary console.log call
+
 ## 0.4.1
 
 ### Patch Changes
