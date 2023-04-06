@@ -1,6 +1,6 @@
 packages:
+  - "configuration/*"
   - "packages/*"
-  - "internal/*"
   - "cucumber/*"
   - "libraries/*"
   - "documentation/*"

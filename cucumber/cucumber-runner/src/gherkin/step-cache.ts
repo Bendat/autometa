@@ -29,6 +29,7 @@ export class HookCache {
   private beforeAll: BeforeHook[] = [];
   private afterEach: BeforeHook[] = [];
   private afterAll: BeforeHook[] = [];
+
   constructor(readonly parent?: HookCache) {}
   addHook = (hook: Hook) => {
     if (hook instanceof BeforeHook) {
@@ -72,7 +73,14 @@ export class StepCache {
   private Outcome: StoredStep[] = [];
   private Conjunction: StoredStep[] = [];
   private Unknown: StoredStep[] = [];
-  private keySet = new Map<KeywordType, Set<string | RegExp>>();
+  private keySet = new Map<string, Set<string | RegExp>>([
+    ["Action", new Set<string | RegExp>()],
+    ["Context", new Set<string | RegExp>()],
+    ["Outcome", new Set<string | RegExp>()],
+    ["Conjunction", new Set<string | RegExp>()],
+    ["Unknown", new Set<string | RegExp>()],
+  ]);
+
   constructor(readonly parent?: StepCache) {
     this.keySet.set("Action", new Set<string | RegExp>());
     this.keySet.set("Context", new Set<string | RegExp>());
