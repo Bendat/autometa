@@ -3,9 +3,9 @@
   "version": "0.6.0",
   "description": "Define DTOs and Entities and automatically create a builder class.",
   "type": "module",
-  "main": "dist/cjs/index.js",
+  "main": "dist/index.js",
   "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "vitest run --passWithNoTests",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",

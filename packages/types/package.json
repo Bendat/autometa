@@ -1,9 +1,9 @@
 {
   "name": "@autometa/types",
   "version": "0.1.0",
-  "main": "dist/cjs/index.js",
+  "main": "dist/index.js",
   "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "type": "module",
   "description": "Common types and type utilities for Autometa",
   "scripts": {
