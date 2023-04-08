@@ -501,7 +501,6 @@ importers:
   packages/types:
     specifiers:
       '@autometa/dto-builder': workspace:*
-      '@autometa/types': workspace:*
       '@cucumber/cucumber-expressions': ^16.1.2
       '@cucumber/gherkin': ^26.0.3
       '@cucumber/messages': ^21.0.1
@@ -520,7 +519,6 @@ importers:
       uuid: ^9.0.0
     dependencies:
       '@autometa/dto-builder': link:../../libraries/dto-builder
-      '@autometa/types': 'link:'
       '@cucumber/gherkin': 26.0.3
       '@cucumber/messages': 21.0.1
       '@cucumber/tag-expressions': 5.0.1
