@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.5.5
+
+### Patch Changes
+
+- 4fdd04a: Removed call to vitest and commented out code
+
 ## 0.5.4
 
 ### Patch Changes
