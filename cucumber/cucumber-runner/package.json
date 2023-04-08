@@ -14,7 +14,7 @@
     "cucumber-runner": "dist/cjs/src/cli.js"
   },
   "scripts": {
-    "test": "vitest run --passWithNoTests ",
+    "test": "jest --passWithNoTests ",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
