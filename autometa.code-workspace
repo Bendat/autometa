@@ -1,0 +1,30 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": [
+      "libraries/status-codes/dist/esm",
+      "libraries/status-codes/dist/cjs",
+      "libraries/dto-builder/dist/esm",
+      "libraries/dto-builder/dist/cjs",
+      "cucumber/testrail-cucumber/dist/cjs",
+      "cucumber/testrail-cucumber/dist/esm",
+      "cucumber/cucumber-markdown/dist/cjs",
+      "cucumber/cucumber-markdown/dist/esm",
+      "cucumber/integration-tests-esm",
+      "cucumber/cucumber-runner/dist/esm",
+      "cucumber/cucumber-runner/dist/cjs",
+      "cucumber/integration-tests-esm/dist/esm",
+      "cucumber/cucumber-transformer-jest/dist/cjs",
+      "cucumber/cucumber-transformer-jest/dist/esm",
+      "packages/types/dist/cjs",
+      "packages/types/dist/esm",
+      "documentation/website",
+      "configuration/eslint-config-custom",
+      "configuration/tsconfig"
+    ]
+  }
+}

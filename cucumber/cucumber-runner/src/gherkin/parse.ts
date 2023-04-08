@@ -61,9 +61,9 @@ const createTranslationMap = (translateDialect: Dialect) => {
     "but",
     "examples",
     "feature",
-    "given",
     "scenario",
     "scenarioOutline",
+    "given",
     "then",
     "when",
     "rule",
@@ -76,7 +76,6 @@ const createTranslationMap = (translateDialect: Dialect) => {
     let defaultWordIndex: number | null = null;
 
     for (const dialectWord of dialectWords) {
-      // skip "* " word
       if (dialectWord.indexOf("*") !== 0) {
         if (translationWords[index] !== undefined) {
           translationMap[dialectWord] = translationWords[index];
