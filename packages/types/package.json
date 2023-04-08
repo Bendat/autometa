@@ -1,6 +1,6 @@
 {
   "name": "@autometa/types",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -24,7 +24,7 @@
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
-    "eslint-config-custom": "workspace:^0.3.0",
+    "eslint-config-custom": "workspace:^0.4.0",
     "eslint-config-prettier": "^8.3.0",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.3",
