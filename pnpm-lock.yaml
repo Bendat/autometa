@@ -498,6 +498,67 @@ importers:
       webpack-cli: 5.0.1_webpack@5.77.0
       webpack-node-externals: 3.0.0
 
+  packages/scopes:
+    specifiers:
+      '@autometa/dto-builder': workspace:*
+      '@autometa/types': workspace:*
+      '@cucumber/cucumber-expressions': ^16.1.2
+      '@cucumber/gherkin': ^26.0.3
+      '@cucumber/messages': ^21.0.1
+      '@cucumber/tag-expressions': ^5.0.1
+      '@jest/globals': ^29.4.3
+      '@jest/types': ^29.4.3
+      '@types/node': ^18.11.18
+      '@types/uuid': ^9.0.1
+      '@typescript-eslint/eslint-plugin': ^5.54.1
+      '@typescript-eslint/parser': ^5.54.1
+      eslint: ^8.37.0
+      eslint-config-custom: workspace:^0.3.0
+      eslint-config-prettier: ^8.3.0
+      jest: ^29.4.3
+      nodemon: ^2.0.22
+      prettier: ^2.8.3
+      reflect-metadata: ^0.1.13
+      rimraf: ^4.1.2
+      ts-jest: ^29.0.5
+      ts-node: ^10.9.1
+      typescript: ^4.9.5
+      uuid: ^9.0.0
+      vitest: ^0.29.8
+      webpack: ^5.77.0
+      webpack-cli: ^5.0.1
+      webpack-node-externals: ^3.0.0
+    dependencies:
+      '@autometa/dto-builder': link:../../libraries/dto-builder
+      '@autometa/types': link:../types
+      '@cucumber/gherkin': 26.0.3
+      '@cucumber/messages': 21.0.1
+      '@cucumber/tag-expressions': 5.0.1
+      uuid: 9.0.0
+    devDependencies:
+      '@cucumber/cucumber-expressions': 16.1.2
+      '@jest/globals': 29.4.3
+      '@jest/types': 29.4.3
+      '@types/node': 18.11.18
+      '@types/uuid': 9.0.1
+      '@typescript-eslint/eslint-plugin': 5.54.1_xatzg4mnpnxcd637nitk7if6iq
+      '@typescript-eslint/parser': 5.54.1_ip5up2nocltd47wbnuyybe5dxu
+      eslint: 8.37.0
+      eslint-config-custom: link:../../configuration/eslint-config-custom
+      eslint-config-prettier: 8.6.0_eslint@8.37.0
+      jest: 29.4.3_zfha7dvnw4nti6zkbsmhmn6xo4
+      nodemon: 2.0.22
+      prettier: 2.8.3
+      reflect-metadata: 0.1.13
+      rimraf: 4.1.2
+      ts-jest: 29.0.5_wxmisg25rongpaut3p5oj6e7z4
+      ts-node: 10.9.1_bdgp3l2zgaopogaavxusmetvge
+      typescript: 4.9.5
+      vitest: 0.29.8
+      webpack: 5.77.0_webpack-cli@5.0.1
+      webpack-cli: 5.0.1_webpack@5.77.0
+      webpack-node-externals: 3.0.0
+
   packages/types:
     specifiers:
       '@autometa/dto-builder': workspace:*
