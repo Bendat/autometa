@@ -1,5 +1,6 @@
 // import "reflect-metadata";
 import { Class } from "./types";
+
 function decorator(target: Class<unknown>, key: string) {
   if (!Reflect.hasMetadata("dto:isDto", target)) {
     Reflect.defineMetadata("dto:isDto", true, target);
