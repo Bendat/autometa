@@ -11,7 +11,9 @@
     "integrate": {
       "dependsOn": ["^build"]
     },
-    "test": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
     "lint": {
       "inputs": ["**/*.ts"]
     },

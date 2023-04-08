@@ -376,7 +376,7 @@ importers:
       typescript: 4.9.5
       vitest: 0.28.5
 
-  packages/gherkin:
+  packages/events:
     specifiers:
       '@autometa/dto-builder': workspace:*
       '@autometa/types': workspace:*
@@ -437,7 +437,7 @@ importers:
       webpack-cli: 5.0.1_webpack@5.77.0
       webpack-node-externals: 3.0.0
 
-  packages/scopes:
+  packages/gherkin:
     specifiers:
       '@autometa/dto-builder': workspace:*
       '@autometa/types': workspace:*
