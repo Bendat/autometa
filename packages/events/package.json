@@ -1,11 +1,11 @@
 {
-  "name": "@autometa/gherkin",
-  "version": "0.1.0",
+  "name": "@autometa/events",
+  "version": "0.0.0",
   "main": "index.ts",
   "type": "module",
-  "description": "Gherkin implementation for @autometa",
+  "description": "Test Scopes for Autometa",
   "scripts": {
-    "test": "vitest run",
+    "test": "jest --passWithNoTests",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -14,7 +14,7 @@
     "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
     "build": "pnpm build:code && pnpm postbuild"
   },
-  "author": "Ben Aherne <null@null.com>",
+  "author": "Ben Aherne",
   "license": "MIT",
   "devDependencies": {
     "@cucumber/cucumber-expressions": "^16.1.2",
@@ -25,7 +25,7 @@
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
-    "eslint-config-custom": "workspace:^0.4.0",
+    "eslint-config-custom": "workspace:^0.3.0",
     "eslint-config-prettier": "^8.3.0",
     "jest": "^29.4.3",
     "nodemon": "^2.0.22",
