@@ -1,6 +1,5 @@
 import { Background, Rule, Scenario } from "@cucumber/messages";
 import { describe, it, expect } from "@jest/globals";
-import { ScenarioOutline } from "src/groups";
 import {
   isBackground,
   isRule,
