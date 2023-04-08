@@ -8,6 +8,9 @@ export function compileDatatable(
   if (!table) {
     return undefined;
   }
+  if (table.rows.length === 0) {
+    return undefined;
+  }
   function transformRowValues({ cells }: TableRow) {
     return cells.map(transformTableValue);
   }

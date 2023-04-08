@@ -1,5 +1,5 @@
 import { Expression } from "@cucumber/cucumber-expressions";
-import { DocString } from "src/steps/doc-string";
+import { DocString } from "./doc-string";
 import { StepType, StepKeyword } from "./types";
 import { CompiledDataTable } from "./datatables";
 import { Builder, Property } from "@autometa/dto-builder";
@@ -21,7 +21,7 @@ export class Step {
   }
 
   get hasTable() {
-    return this.docstring !== undefined;
+    return this.table !== undefined;
   }
 
   matches = (expression: Expression) => {

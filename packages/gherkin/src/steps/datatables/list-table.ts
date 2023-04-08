@@ -1,5 +1,5 @@
 import { ParsedDataTable } from "./datatable";
-import { CompiledDataTable } from "./table-type";
+import { CompiledDataTable } from ".";
 import { TableValue } from "./table-value";
 interface IListTable {
   /**
@@ -44,7 +44,9 @@ export class ListTable extends ParsedDataTable implements IListTable {
     if (columnIndex != undefined && columnIndex != null) {
       const cell = row.at(columnIndex);
       if (!cell) {
-        throw new Error(`No table cell found at index ${rowIndex}, ${columnIndex}`);
+        throw new Error(
+          `No table cell found at index ${rowIndex}, ${columnIndex}`
+        );
       }
       return cell;
     }

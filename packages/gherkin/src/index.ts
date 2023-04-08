@@ -3,7 +3,6 @@ export * from "./steps/doc-string";
 export * from "./groups/examples";
 export * from "./groups/feature";
 export * from "./gherkin-node";
-export * from "./hooks";
 export * from "./parser/parse";
 export * from "./groups/rule";
 export * from "./scenario";

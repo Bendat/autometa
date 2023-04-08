@@ -1,11 +1,12 @@
 import {
-  DocString as ds,
   Background as GherkinBackground,
   Feature as GherkinFeature,
   Rule as GherkinRule,
   Scenario as GherkinScenario,
   Tag,
   StepKeywordType,
+  FeatureChild,
+  RuleChild,
 } from "@cucumber/messages";
 import { FeatureBuilder } from "../groups/feature";
 import { Rule, RuleBuilder } from "../groups/rule";
@@ -22,17 +23,19 @@ import {
   isScenario,
   notEmpty,
 } from "./validators";
-import { FeatureChildType, RuleChildType } from "./FeatureChildType";
+import { FeatureChildType, RuleChildType } from "./child-types";
+import { ExampleBuilder } from "../example";
 
 export function convertToClass(feature: GherkinFeature, filePath: string) {
   return new FeatureBuilder()
     .name(feature.name)
     .description(feature.description)
     .keyword(feature.keyword)
-    .tags(buildTags(feature.tags))
+    .tags(new Set(buildTags(feature.tags)))
     .uri(filePath)
     .language(feature.language)
-    .children(buildChildren(feature));
+    .children(buildChildren(feature))
+    .build();
 }
 
 export function buildChildren(
@@ -57,14 +60,18 @@ export function buildChildren(
   if (!backgrounds) {
     backgrounds = [];
   }
-  return featureOrRule.children
-    .map((child) => {
+  return featureOrRule.children.map(makeChildren()).filter(notEmpty);
+
+  function makeChildren() {
+    return (child: FeatureChild | RuleChild) => {
       if (isBackground(child)) {
         if (!backgrounds) {
           backgrounds = [];
         }
-        const bg = buildBackground(child, tags, featureOrRule);
+        child.background.description;
+        const bg = buildBackground(child);
         backgrounds.push(bg);
+        return bg;
       }
 
       if (isRule(child)) {
@@ -86,8 +93,8 @@ export function buildChildren(
         const tagsNew = [...(tags ?? []), ...buildTags(scenario.tags)];
         return buildScenario(scenario, backgrounds, tagsNew);
       }
-    })
-    .filter(notEmpty);
+    };
+  }
 }
 
 export function buildScenario(
@@ -95,52 +102,52 @@ export function buildScenario(
   backgrounds: Background[] | undefined,
   tagsNew: string[]
 ) {
-  const steps = scenario.steps.map((step) =>
-    new StepBuilder()
-      .text(step.text)
-      .docstring(new DocString(step.docString as unknown as ds))
-      .table(compileDatatable(step.dataTable))
-      .keyword(step.keyword as StepKeyword)
-      .keywordType(step.keywordType as StepKeywordType)
-      .build()
-  );
+  const steps = makeSteps(scenario);
   const [bg1, bg2] = backgrounds ?? [];
   const scen = new ScenarioBuilder()
     .name(scenario.name)
     .description(scenario.description)
-    .tags(tagsNew)
+    .tags(new Set(tagsNew))
     .steps(steps)
     .backgrounds([bg1, bg2])
     .keyword(scenario.keyword)
     .build();
   return scen;
 }
-export function buildOutline(scenario: GherkinScenario, tagsNew: string[]) {
-  const examples = buildExamples(scenario, tagsNew);
+export function buildOutline(scenario: GherkinScenario, tags: string[]) {
+  const examples = buildExamples(scenario, tags);
   const outline = new ScenarioOutlineBuilder()
     .name(scenario.name)
-    .tags(tagsNew)
+    .tags(new Set(tags))
     .keyword(scenario.keyword)
     .examples(examples)
     .build();
   return outline;
 }
 
-export function buildBackground(
-  child: { background: GherkinBackground },
-  tags: string[] | undefined,
-  featureOrRule: GherkinFeature | GherkinRule
-) {
+export function buildBackground(child: { background: GherkinBackground }) {
   const { background } = child;
-
-  const tagsNew = [...(tags ?? []), ...buildTags(featureOrRule.tags)];
+  const steps = makeSteps(background);
   const bg = new BackgroundBuilder()
     .name(background.name)
     .description(background.description)
     .keyword(background.keyword)
-    .tags(tagsNew)
+    .steps(steps)
     .build();
   return bg;
+}
+
+function makeSteps(background: GherkinBackground | GherkinScenario) {
+  return background.steps.map((step) => {
+    const doc = step.docString ? new DocString(step.docString) : undefined;
+    return new StepBuilder()
+      .text(step.text)
+      .docstring(doc)
+      .table(compileDatatable(step.dataTable))
+      .keyword(step.keyword as StepKeyword)
+      .keywordType(step.keywordType as StepKeywordType)
+      .build();
+  });
 }
 
 export function buildRule(
@@ -154,32 +161,42 @@ export function buildRule(
     .name(rule?.name)
     .keyword(rule?.keyword)
     .description(rule.description)
-    .tags(tagsNew)
+    .tags(new Set(tagsNew))
     .childer(buildChildren(rule, tagsNew, backgrounds))
     .build();
   return ruleObject;
 }
 
 export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
-  return scenario.examples.map((it) => {
-    const titles = it.tableHeader?.cells.map((cell) => cell.value) ?? [];
+  return scenario.examples.map((example) => {
+    const titles = example.tableHeader?.cells.map((cell) => cell.value) ?? [];
     const values =
-      it.tableBody.map((row) => row.cells.map((cell) => cell.value)) ?? [];
+      example.tableBody.map((row) => row.cells.map((cell) => cell.value)) ?? [];
 
     const scenarios = values.map((row) => {
-      const name = interpolateExamples(it.name, titles, row);
-      return new ScenarioBuilder()
+      const name = scenarioExampleTitle(titles, scenario, row);
+      const exampleValues = titles
+        .map((title, index) => {
+          return { [title]: row[index] };
+        })
+        .reduce((old, current) => {
+          return { ...old, ...current };
+        }, {});
+      const steps = makeSteps(scenario);
+      return new ExampleBuilder()
         .name(name)
         .description(scenario.description)
-        .tags(tagsNew)
-        .keyword(scenario.keyword)
+        .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
+        .keyword("Example")
+        .example(exampleValues)
+        .steps(steps)
         .build();
     });
     return new ExamplesBuilder()
-      .name(it.name)
-      .description(it.description)
-      .keyword(it.keyword)
-      .tags(tagsNew)
+      .name(example.name)
+      .description(example.description)
+      .keyword(example.keyword)
+      .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
       .titles(titles)
       .values(values)
       .children(scenarios)
@@ -187,7 +204,32 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
   });
 }
 
-export function interpolateExamples(name: string, titles: string[], values: string[]) {
+function scenarioExampleTitle(
+  titles: string[],
+  scenario: GherkinScenario,
+  row: string[]
+) {
+  const hasVariables = titles.map((title) =>
+    scenario.name.includes(`<${title}>`)
+  );
+  let name: string = scenario.name;
+  if (hasVariables.length > 0 && !hasVariables.includes(false)) {
+    name = interpolateExamples(scenario.name, titles, row);
+  } else {
+    const suffixVars = titles
+      .map((title, idx) => `${title}: ${row[idx]}`)
+      .join(", ");
+    const suffix = `<${suffixVars}>`;
+    name = `${name} ${suffix}`;
+  }
+  return name;
+}
+
+export function interpolateExamples(
+  name: string,
+  titles: string[],
+  values: string[]
+) {
   if (titles.length !== values.length) {
     throw new Error(
       "Titles must have the same length as values in an example Table"

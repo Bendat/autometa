@@ -5,8 +5,6 @@ import { Background } from "./background";
 
 export class Scenario extends GherkinNode {
   @Property
-  readonly tags: readonly string[];
-  @Property
   readonly backgrounds: readonly [Background?, Background?];
   @Property
   readonly keyword: string;
@@ -16,6 +14,10 @@ export class Scenario extends GherkinNode {
   readonly description: string;
   @Property
   readonly steps: readonly Step[];
+
+  get title() {
+    return `${this.keyword}: ${this.name}`;
+  }
 }
 
 export const ScenarioBuilder = Builder(Scenario);

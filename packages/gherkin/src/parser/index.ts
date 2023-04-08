@@ -1,1 +1,1 @@
-export { parseGherkin } from "./messages";
+export { parseGherkin } from "./load";

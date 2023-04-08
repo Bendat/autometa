@@ -1,6 +1,6 @@
+import { CompiledDataTable } from ".";
 import { ParsedDataTable } from "./datatable";
 import { JsonTableRow } from "./json-table-row";
-import { CompiledDataTable } from "./table-type";
 import { TableValue } from "./table-value";
 interface IHTable {
   /**
@@ -73,7 +73,9 @@ export class HTable extends ParsedDataTable implements IHTable {
     if (index !== null && index != undefined) {
       const found = col.at(index);
       if (!found) {
-        throw new Error(`Column ${index} does not exist. This table has ${col.length} columns.`);
+        throw new Error(
+          `Column ${index} does not exist. This table has ${col.length} columns.`
+        );
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return found as any;
@@ -94,7 +96,9 @@ export class HTable extends ParsedDataTable implements IHTable {
   row(number: number): TableValue[] {
     const row = this.rows.at(number);
     if (!row) {
-      throw new Error(`Row ${number} does not exist. This table has ${this.rows.length} rows.`);
+      throw new Error(
+        `Row ${number} does not exist. This table has ${this.rows.length} rows.`
+      );
     }
     return row;
   }
@@ -111,7 +115,9 @@ export class HTable extends ParsedDataTable implements IHTable {
     return this.rows.map((row) => {
       const col = row.at(number);
       if (!col) {
-        throw new Error(`Column ${number} does not exist. This table has ${row.length} rows.`);
+        throw new Error(
+          `Column ${number} does not exist. This table has ${row.length} rows.`
+        );
       }
       return col;
     });

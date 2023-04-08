@@ -4,8 +4,6 @@ import { Step } from "./steps";
 
 export class Background extends GherkinNode {
   @Property
-  readonly tags: readonly string[];
-  @Property
   readonly keyword: string;
   @Property
   readonly name: string;
@@ -13,6 +11,10 @@ export class Background extends GherkinNode {
   readonly description: string;
   @Property
   readonly steps: readonly Step[];
+
+  get title() {
+    return `${this.keyword}: ${this.name}`;
+  }
 }
 
 export const BackgroundBuilder = Builder(Background);

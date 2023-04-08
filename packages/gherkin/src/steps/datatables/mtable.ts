@@ -1,5 +1,5 @@
 import { ParsedDataTable } from "./datatable";
-import { CompiledDataTable } from "./table-type";
+import { CompiledDataTable } from ".";
 import { TableValue } from "./table-value";
 type HeaderMapping = { [key: string]: number };
 interface IMTable {
@@ -63,9 +63,10 @@ export class MTable extends ParsedDataTable implements IMTable {
     const row = raw.at(0) ?? [];
     this.hheaders = row.slice(1, row.length).map((it) => it as string) ?? [];
     this.rows = raw.slice(1, raw.length).map((row) => row.slice(1, row.length));
-    const mapHeaders = (collection: HeaderMapping) => (header: string, idx: number) => {
-      collection[header] = idx;
-    };
+    const mapHeaders =
+      (collection: HeaderMapping) => (header: string, idx: number) => {
+        collection[header] = idx;
+      };
     this.vheaders.forEach(mapHeaders(this.vheaderMappings));
     this.hheaders.forEach(mapHeaders(this.hheaderMappings));
   }
