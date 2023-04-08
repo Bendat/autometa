@@ -9,7 +9,6 @@ const config = {
   },
   testMatch: ["**/?(*.)+(spec|test|.feature).[jt]s?(x)"],
   modulePathIgnorePatterns: ["<rootDir>/dist/"],
-
   // testRegex: ".*\\.feature\\.test\\.spec.ts$",
   // moduleNameMapper: {},
 };
