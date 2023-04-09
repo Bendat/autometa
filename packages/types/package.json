@@ -15,7 +15,7 @@
     "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
     "build": "pnpm build:code && pnpm postbuild"
   },
-  "author": "Ben Aherne <null@null.com>",
+  "author": "Ben Aherne",
   "license": "MIT",
   "devDependencies": {
     "@cucumber/cucumber-expressions": "^16.1.2",

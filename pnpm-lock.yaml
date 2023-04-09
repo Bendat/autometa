@@ -331,7 +331,6 @@ importers:
       reflect-metadata: ^0.1.13
       rimraf: ^4.1.2
       ts-node: ^10.9.1
-      ts-patch: ^2.1.0
       tsc-alias: ^1.8.2
       tsup: ^6.7.0
       typescript: ^4.9.5
@@ -350,7 +349,6 @@ importers:
       reflect-metadata: 0.1.13
       rimraf: 4.1.2
       ts-node: 10.9.1_typescript@4.9.5
-      ts-patch: 2.1.0_typescript@4.9.5
       tsc-alias: 1.8.2
       tsup: 6.7.0_6qtx7vkbdhwvdm4crzlegk4mvi
       typescript: 4.9.5
@@ -401,7 +399,7 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.54.1
       '@typescript-eslint/parser': ^5.54.1
       eslint: ^8.37.0
-      eslint-config-custom: workspace:^0.3.0
+      eslint-config-custom: workspace:^0.4.0
       eslint-config-prettier: ^8.3.0
       jest: ^29.4.3
       nodemon: ^2.0.22
@@ -410,6 +408,7 @@ importers:
       rimraf: ^4.1.2
       ts-jest: ^29.0.5
       ts-node: ^10.9.1
+      tsup: ^6.7.0
       typescript: ^4.9.5
       uuid: ^9.0.0
       vitest: ^0.29.8
@@ -441,67 +440,7 @@ importers:
       rimraf: 4.1.2
       ts-jest: 29.0.5_wxmisg25rongpaut3p5oj6e7z4
       ts-node: 10.9.1_bdgp3l2zgaopogaavxusmetvge
-      typescript: 4.9.5
-      vitest: 0.29.8
-      webpack: 5.77.0_webpack-cli@5.0.1
-      webpack-cli: 5.0.1_webpack@5.77.0
-      webpack-node-externals: 3.0.0
-
-  packages/gherkin:
-    specifiers:
-      '@autometa/dto-builder': workspace:*
-      '@autometa/types': workspace:*
-      '@cucumber/cucumber-expressions': ^16.1.2
-      '@cucumber/gherkin': ^26.0.3
-      '@cucumber/messages': ^21.0.1
-      '@cucumber/tag-expressions': ^5.0.1
-      '@jest/globals': ^29.4.3
-      '@jest/types': ^29.4.3
-      '@types/node': ^18.11.18
-      '@types/uuid': ^9.0.1
-      '@typescript-eslint/eslint-plugin': ^5.54.1
-      '@typescript-eslint/parser': ^5.54.1
-      eslint: ^8.37.0
-      eslint-config-custom: workspace:^0.3.0
-      eslint-config-prettier: ^8.3.0
-      jest: ^29.4.3
-      nodemon: ^2.0.22
-      prettier: ^2.8.3
-      reflect-metadata: ^0.1.13
-      rimraf: ^4.1.2
-      ts-jest: ^29.0.5
-      ts-node: ^10.9.1
-      typescript: ^4.9.5
-      uuid: ^9.0.0
-      vitest: ^0.29.8
-      webpack: ^5.77.0
-      webpack-cli: ^5.0.1
-      webpack-node-externals: ^3.0.0
-    dependencies:
-      '@autometa/dto-builder': link:../../libraries/dto-builder
-      '@autometa/types': link:../types
-      '@cucumber/gherkin': 26.0.3
-      '@cucumber/messages': 21.0.1
-      '@cucumber/tag-expressions': 5.0.1
-      uuid: 9.0.0
-    devDependencies:
-      '@cucumber/cucumber-expressions': 16.1.2
-      '@jest/globals': 29.4.3
-      '@jest/types': 29.4.3
-      '@types/node': 18.11.18
-      '@types/uuid': 9.0.1
-      '@typescript-eslint/eslint-plugin': 5.54.1_xatzg4mnpnxcd637nitk7if6iq
-      '@typescript-eslint/parser': 5.54.1_ip5up2nocltd47wbnuyybe5dxu
-      eslint: 8.37.0
-      eslint-config-custom: link:../../configuration/eslint-config-custom
-      eslint-config-prettier: 8.6.0_eslint@8.37.0
-      jest: 29.4.3_zfha7dvnw4nti6zkbsmhmn6xo4
-      nodemon: 2.0.22
-      prettier: 2.8.3
-      reflect-metadata: 0.1.13
-      rimraf: 4.1.2
-      ts-jest: 29.0.5_wxmisg25rongpaut3p5oj6e7z4
-      ts-node: 10.9.1_bdgp3l2zgaopogaavxusmetvge
+      tsup: 6.7.0_6qtx7vkbdhwvdm4crzlegk4mvi
       typescript: 4.9.5
       vitest: 0.29.8
       webpack: 5.77.0_webpack-cli@5.0.1
@@ -581,11 +520,12 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.54.1
       '@typescript-eslint/parser': ^5.54.1
       eslint: ^8.37.0
-      eslint-config-custom: workspace:^0.3.0
+      eslint-config-custom: workspace:^0.4.0
       eslint-config-prettier: ^8.3.0
       nodemon: ^2.0.22
       prettier: ^2.8.3
       rimraf: ^4.1.2
+      tsup: ^6.7.0
       typescript: ^4.9.5
       uuid: ^9.0.0
     dependencies:
@@ -606,6 +546,7 @@ importers:
       nodemon: 2.0.22
       prettier: 2.8.3
       rimraf: 4.1.2
+      tsup: 6.7.0_typescript@4.9.5
       typescript: 4.9.5
 
 packages:
@@ -6134,6 +6075,7 @@ packages:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
     dependencies:
       balanced-match: 1.0.2
+    dev: false
 
   /braces/3.0.2:
     resolution: {integrity: sha512-b8um+L1RzM3WDSzvhm6gIz1yfTbBt6YTlcEKAvsmqCZZFw46z626lVj9j1yEPW33H5H+lBQpZMP1k8l+78Ha0A==}
@@ -8484,6 +8426,7 @@ packages:
       inherits: 2.0.4
       minimatch: 5.1.6
       once: 1.4.0
+    dev: false
 
   /global-dirs/3.0.1:
     resolution: {integrity: sha512-NBcGGFbBA9s1VzD41QXDG+3++t9Mn5t1FpLdhESY6oKY4gYTFpX4wO3sqGUa0Srjtbfj3szX0RnemmrVRUdULA==}
@@ -8505,6 +8448,7 @@ packages:
       ini: 1.3.8
       kind-of: 6.0.3
       which: 1.3.1
+    dev: false
 
   /globals/11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -8978,6 +8922,7 @@ packages:
 
   /ini/1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
+    dev: false
 
   /ini/2.0.0:
     resolution: {integrity: sha512-7PnF4oN3CvZF23ADhA5wRaYEQpJ8qygSkbtTXWBeXWXmEVRXK+1ITciHWwHhsjv1TmW0MgacIv6hEi5pX5NQdA==}
@@ -9063,6 +9008,7 @@ packages:
   /interpret/1.4.0:
     resolution: {integrity: sha512-agE4QfB2Lkp9uICn7BAqoscw4SZP9kTE2hxiFI3jBPmXJfdqiahTbUuKGsMoN2GtqL9AxhYioAcVvgsb1HvRbA==}
     engines: {node: '>= 0.10'}
+    dev: false
 
   /interpret/3.1.1:
     resolution: {integrity: sha512-6xwYfHbajpoF0xLW+iwLkhwgvLoZDfjYfoFNu8ftMoXINzwuymNLd9u/KmwtdT2GbR+/Cz66otEGEVVUHX9QLQ==}
@@ -10452,6 +10398,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
+    dev: false
 
   /minimist-options/4.1.0:
     resolution: {integrity: sha512-Q4r8ghd80yhO/0j1O3B2BjweX3fiHg9cdOwjJd2J76Q135c+NDxGCqdYKQ1SKBuFfgWbAUzBfvYjPUEeNgqN1A==}
@@ -10464,6 +10411,7 @@ packages:
 
   /minimist/1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+    dev: false
 
   /mixme/0.5.5:
     resolution: {integrity: sha512-/6IupbRx32s7jjEwHcycXikJwFD5UujbVNuJFkeKLYje+92OvtuPniF6JhnFm5JCTDUhS+kYK3W/4BWYQYXz7w==}
@@ -11142,6 +11090,22 @@ packages:
       postcss: 8.4.21
       postcss-selector-parser: 6.0.11
     dev: false
+
+  /postcss-load-config/3.1.4:
+    resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      postcss: '>=8.0.9'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      ts-node:
+        optional: true
+    dependencies:
+      lilconfig: 2.1.0
+      yaml: 1.10.2
+    dev: true
 
   /postcss-load-config/3.1.4_ts-node@10.9.1:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
@@ -11948,6 +11912,7 @@ packages:
     engines: {node: '>= 0.10'}
     dependencies:
       resolve: 1.22.1
+    dev: false
 
   /rechoir/0.8.0:
     resolution: {integrity: sha512-/vxpCXddiX8NGfGO/mTafwjq4aFa/71pvamip0++IQk3zG8cbCj0fifNPrjjF1XMXUne91jL9OoxmdykoEtifQ==}
@@ -12520,6 +12485,7 @@ packages:
       glob: 7.2.3
       interpret: 1.4.0
       rechoir: 0.6.2
+    dev: false
 
   /side-channel/1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
@@ -13434,22 +13400,6 @@ packages:
       yn: 3.1.1
     dev: true
 
-  /ts-patch/2.1.0_typescript@4.9.5:
-    resolution: {integrity: sha512-+6LbQSGgHUnK+grgk9nvKhesc0/dDNxms0IL1XPZeTfmPFCx/QSuwz9k+9yFe0xYDD7xBlHYK0Zp0qrTCaJcAw==}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=4.0.0'
-    dependencies:
-      chalk: 4.1.2
-      glob: 8.1.0
-      global-prefix: 3.0.0
-      minimist: 1.2.8
-      resolve: 1.22.1
-      shelljs: 0.8.5
-      strip-ansi: 6.0.1
-      typescript: 4.9.5
-    dev: true
-
   /tsc-alias/1.8.2:
     resolution: {integrity: sha512-ukBkcNekOgwtnSWYLD5QsMX3yQWg7JviAs8zg3qJGgu4LGtY3tsV4G6vnqvOXIDkbC+XL9vbhObWSpRA5/6wbg==}
     hasBin: true
@@ -13506,6 +13456,42 @@ packages:
       globby: 11.1.0
       joycon: 3.1.1
       postcss-load-config: 3.1.4_ts-node@10.9.1
+      resolve-from: 5.0.0
+      rollup: 3.12.0
+      source-map: 0.8.0-beta.0
+      sucrase: 3.31.0
+      tree-kill: 1.2.2
+      typescript: 4.9.5
+    transitivePeerDependencies:
+      - supports-color
+      - ts-node
+    dev: true
+
+  /tsup/6.7.0_typescript@4.9.5:
+    resolution: {integrity: sha512-L3o8hGkaHnu5TdJns+mCqFsDBo83bJ44rlK7e6VdanIvpea4ArPcU3swWGsLVbXak1PqQx/V+SSmFPujBK+zEQ==}
+    engines: {node: '>=14.18'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1
+      postcss: ^8.4.12
+      typescript: '>=4.1.0'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      postcss:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      bundle-require: 4.0.1_esbuild@0.17.15
+      cac: 6.7.14
+      chokidar: 3.5.3
+      debug: 4.3.4
+      esbuild: 0.17.15
+      execa: 5.1.1
+      globby: 11.1.0
+      joycon: 3.1.1
+      postcss-load-config: 3.1.4
       resolve-from: 5.0.0
       rollup: 3.12.0
       source-map: 0.8.0-beta.0
