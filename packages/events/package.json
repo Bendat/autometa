@@ -1,6 +1,6 @@
 {
   "name": "@autometa/events",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "index.ts",
   "type": "module",
   "description": "Test Events & Subscribers for Autometa",

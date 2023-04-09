@@ -1,5 +1,11 @@
 # tsconfig
 
+## 0.5.0
+
+### Minor Changes
+
+- 0a27508: Created "gherkin" package to help split up cucumber-runner
+
 ## 0.4.0
 
 ### Minor Changes
