@@ -1,13 +1,11 @@
 {
-  "name": "@autometa/gherkin",
-  "version": "0.1.0",
-  "description": "Gherkin implementation for @autometa",
+  "name": "@autometa/events",
+  "version": "0.0.0",
+  "main": "index.ts",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
+  "description": "Test Events & Subscribers for Autometa",
   "scripts": {
-    "test": "vitest run",
+    "test": "jest --passWithNoTests",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -15,29 +13,33 @@
     "build:code": "rimraf dist/ && pnpm run build:libs",
     "build": "pnpm build:code"
   },
+  "author": "Ben Aherne",
+  "license": "MIT",
   "exports": {
     "import": "./dist/esm/index.js",
     "require": "./dist/index.js",
     "default": "./dist/esm/index.js",
     "types": "./dist/index.d.ts"
   },
-  "author": "Ben Aherne <null@null.com>",
-  "license": "MIT",
   "devDependencies": {
     "@cucumber/cucumber-expressions": "^16.1.2",
+    "@jest/globals": "^29.4.3",
+    "@jest/types": "^29.4.3",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
+    "tsconfig": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
     "jest": "^29.4.3",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^4.1.2",
-    "tsconfig": "workspace: *",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.1",
     "tsup": "^6.7.0",
     "typescript": "^4.9.5",
     "vitest": "^0.29.8",
@@ -47,10 +49,12 @@
   },
   "dependencies": {
     "@autometa/dto-builder": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
     "@autometa/types": "workspace:*",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",
+    "tsyringe": "^4.7.0",
     "uuid": "^9.0.0"
   }
 }

@@ -1,6 +1,6 @@
 import { Builder } from "@autometa/dto-builder";
 import { GherkinNode } from "./gherkin-node";
-import { it, expect, describe } from "@jest/globals";
+import { it, expect, describe } from "vitest";
 class FakeNode extends GherkinNode {}
 const FakeNodeBuilder = Builder(FakeNode);
 

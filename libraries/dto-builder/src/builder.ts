@@ -1,6 +1,7 @@
 import { AbstractDtoBuilder } from "./abstract-builder";
 import { makeDtoDefaults, makeDtoFromRaw } from "./dto-decorators";
-import { Class, Dict } from "./types";
+import { Dict } from "./types";
+import { Class } from "@autometa/types";
 
 /*
  * Takes an object, iterates through it's keys, and produces
@@ -55,7 +56,7 @@ export function Builder<T>(
   // Generate a new class which will be the DTO
   const GeneratedBuilder = class GeneratedBuilder extends AbstractDtoBuilder<T> {
     constructor() {
-      const dto = makeDtoDefaults(dtoType);
+      const dto: T = makeDtoDefaults(dtoType);
       super(dtoType, dto);
       const propertyNames: string[] = Reflect.getMetadata("dto:properties", dtoType.prototype);
       const self = this as unknown as Dict;
@@ -63,7 +64,7 @@ export function Builder<T>(
         self[key] = (arg: T) => this.set(key)(arg);
       });
     }
-    
+
     static default() {
       return new this().build(false);
     }

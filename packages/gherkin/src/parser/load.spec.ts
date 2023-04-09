@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "vitest";
 import { Rule, ScenarioOutline } from "../groups";
 import { Background, Scenario } from "../";
 import { parseGherkin } from "./load";

@@ -1,7 +1,7 @@
 import { validateSync, ValidationError } from "class-validator";
 import { FailedValidationError } from "./errors/validation-errors";
-import { Class, Dict } from "./types";
-
+import { Dict } from "./types";
+import { Class } from "@autometa/types";
 export abstract class AbstractDtoBuilder<TDtoType> {
   #dto: TDtoType & { constructor: { name: string } };
   /**
