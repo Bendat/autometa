@@ -2,7 +2,8 @@ import { Expression } from "@cucumber/cucumber-expressions";
 import { DocString } from "./doc-string";
 import { StepType, StepKeyword } from "./types";
 import { CompiledDataTable } from "./datatables";
-import { Builder, Property } from "@autometa/dto-builder";
+import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
+import { Class } from "@autometa/types";
 
 export class Step {
   @Property
@@ -29,4 +30,4 @@ export class Step {
   };
 }
 
-export const StepBuilder = Builder(Step);
+export const StepBuilder: Class<DtoBuilder<Step>> = Builder(Step);
