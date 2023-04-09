@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.5.0
+
+### Minor Changes
+
+- 83bd517: Created "gherkin" package to help split up cucumber-runner
+
 ## 0.4.3
 
 ### Patch Changes

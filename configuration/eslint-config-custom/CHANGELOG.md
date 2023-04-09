@@ -1,5 +1,11 @@
 # eslint-config-custom
 
+## 0.4.0
+
+### Minor Changes
+
+- 83bd517: Created "gherkin" package to help split up cucumber-runner
+
 ## 0.3.0
 
 ### Minor Changes

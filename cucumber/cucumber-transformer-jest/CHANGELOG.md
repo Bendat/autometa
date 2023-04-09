@@ -1,5 +1,16 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.2.0
+
+### Minor Changes
+
+- 83bd517: Created "gherkin" package to help split up cucumber-runner
+
+### Patch Changes
+
+- Updated dependencies [83bd517]
+  - @autometa/cucumber-runner@0.4.0
+
 ## 0.1.5
 
 ### Patch Changes

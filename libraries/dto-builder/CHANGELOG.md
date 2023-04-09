@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.6.0
+
+### Minor Changes
+
+- 83bd517: Created "gherkin" package to help split up cucumber-runner
+
 ## 0.5.5
 
 ### Patch Changes
