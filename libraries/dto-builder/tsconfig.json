@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "tsconfig/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",
@@ -8,5 +8,5 @@
   },
   "files": ["index.ts"],
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.js"],
+  "exclude": ["node_modules", "**/*.test.js"]
 }
