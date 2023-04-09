@@ -164,7 +164,7 @@ importers:
 
   cucumber/cucumber-transformer-jest:
     specifiers:
-      '@autometa/cucumber-runner': workspace:^0.4.0
+      '@autometa/cucumber-runner': workspace:^0.5.0
       '@babel/core': ^7.21.4
       '@jest/globals': ^29.4.3
       '@jest/types': ^29.4.3
@@ -466,8 +466,6 @@ importers:
       '@cucumber/gherkin': ^26.0.3
       '@cucumber/messages': ^21.0.1
       '@cucumber/tag-expressions': ^5.0.1
-      '@jest/globals': ^29.4.3
-      '@jest/types': ^29.4.3
       '@types/node': ^18.11.18
       '@types/uuid': ^9.0.1
       '@typescript-eslint/eslint-plugin': ^5.54.1
@@ -497,8 +495,6 @@ importers:
       uuid: 9.0.0
     devDependencies:
       '@cucumber/cucumber-expressions': 16.1.2
-      '@jest/globals': 29.4.3
-      '@jest/types': 29.4.3
       '@types/node': 18.11.18
       '@types/uuid': 9.0.1
       '@typescript-eslint/eslint-plugin': 5.54.1_xatzg4mnpnxcd637nitk7if6iq
