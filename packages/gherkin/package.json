@@ -4,6 +4,10 @@
   "main": "index.ts",
   "type": "module",
   "description": "Gherkin implementation for @autometa",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "test": "vitest run",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
@@ -34,6 +38,7 @@
     "vitest": "^0.29.8",
     "webpack": "^5.77.0",
     "webpack-cli": "^5.0.1",
+    "tsup": "^6.7.0",
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
