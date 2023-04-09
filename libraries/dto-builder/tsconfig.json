@@ -2,11 +2,11 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "module": "ES2020",
+    "module": "ESNext",
     "outDir": "dist/esm",
     "declarationDir": "dist/types"
   },
   "files": ["index.ts"],
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.js"]
+  "exclude": ["node_modules", "**/*.test.js"],
 }

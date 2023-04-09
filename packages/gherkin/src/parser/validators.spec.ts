@@ -1,5 +1,5 @@
 import { Background, Rule, Scenario } from "@cucumber/messages";
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "vitest";
 import {
   isBackground,
   isRule,

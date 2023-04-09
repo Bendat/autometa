@@ -4,7 +4,7 @@ export default defineConfig({
   // root: "src",
   plugins: [],
   test: {
-    root: "src",
+    // root: "src",
     setupFiles: ["reflect-metadata"],
   },
 });
