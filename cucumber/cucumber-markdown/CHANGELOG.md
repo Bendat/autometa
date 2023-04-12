@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.6.1
+
+### Patch Changes
+
+- b5d40e4: Documentation update
+
 ## 0.6.0
 
 ### Minor Changes
