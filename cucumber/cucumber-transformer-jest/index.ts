@@ -18,7 +18,6 @@ export const getCacheKey = (
     .update("\0", "utf8")
     .update(filename)
     .update("\0", "utf8")
-    .update(configString)
     .update("\0", "utf8")
     .update("\0", "utf8")
     .update(instrument ? "instrument" : "")
