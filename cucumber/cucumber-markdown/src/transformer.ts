@@ -205,6 +205,11 @@ ${buffer}
 ${cells}|`;
 }
 
+/**
+ * Converts a gherkin file to markdown, prints it and formats it 
+ * @param featureString 
+ * @returns 
+ */
 export function convertToMarkdown(featureString: string) {
   const gherkin = parser.parse(featureString);
   const template = `# ${gherkin.feature?.name}
