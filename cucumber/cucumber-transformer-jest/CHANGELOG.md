@@ -1,5 +1,11 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.3.1
+
+### Patch Changes
+
+- 8978ce5: Fixed cache key miss
+
 ## 0.3.0
 
 ### Minor Changes
