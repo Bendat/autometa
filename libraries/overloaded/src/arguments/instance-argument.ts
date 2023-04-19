@@ -1,5 +1,5 @@
 import { object } from "myzod";
-import { Class } from "@autometa/types";
+import { Class, AbstractClass } from "@autometa/types";
 import { ShapeArgument } from "./shape-argument";
 import { BaseArgument } from "./base-argument";
 export const InstanceConstructorArgumentSchema = object({});
@@ -67,14 +67,17 @@ export function instance<
   TClass extends { constructor: unknown },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TShape extends ShapeArgument<any, Partial<TClass>>
->(blueprint: Class<TClass>, shape?: TShape): InstanceArgument<TClass, TShape>;
+>(
+  blueprint: Class<TClass> | AbstractClass<TClass>,
+  shape?: TShape
+): InstanceArgument<TClass, TShape>;
 export function instance<
   TClass extends { constructor: unknown },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TShape extends ShapeArgument<any, Partial<TClass>>
 >(
   name: string,
-  blueprint: Class<TClass>,
+  blueprint: Class<TClass> | AbstractClass<TClass>,
   shape?: TShape
 ): InstanceArgument<TClass, TShape>;
 export function instance<

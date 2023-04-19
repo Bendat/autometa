@@ -8,6 +8,8 @@ export class Overload<
   TAction extends OverloadAction
 > {
   constructor(
+    readonly name: string | undefined,
+    readonly description: string | undefined,
     readonly args: TArgs,
     readonly action: TAction,
     readonly fallback = false

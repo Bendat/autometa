@@ -1,4 +1,4 @@
 export * from "./arguments";
 export { overloads } from "./overloads";
-export { params } from "./params";
+export { def as params } from "./def";
 export { fallback } from "./fallback";

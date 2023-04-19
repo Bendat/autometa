@@ -5,7 +5,7 @@ import { AnyArg, ReturnTypes } from "./types";
 
 export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
   constructor(readonly overloads: T) {
-    overloads.forEach((argument, idx) => argument.args[0].withIndex(idx));
+    // overloads.forEach((argument, idx) => argument.args[0].withIndex(idx));
   }
 
   match(args: ArgumentType[]) {
@@ -36,7 +36,7 @@ ${reports}`);
  * function foo(a: string, b: number): void;
  * function foo(...args: (string | number)[]){
  *  return overloads(
- *    params(string(), number()).match((a, b)=>{...})
+ *    def(string(), number()).match((a, b)=>{...})
  *    fallback().match((a, b)=>{...})
  *  ).use(args)
  * }

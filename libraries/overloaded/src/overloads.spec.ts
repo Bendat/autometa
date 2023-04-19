@@ -4,15 +4,15 @@ import { number } from "./arguments/number-argument";
 import { string } from "./arguments/string-argument";
 import { Overload } from "./overload";
 import { overloads, Overloads } from "./overloads";
-import { params } from "./params";
+import { def } from "./def";
 
 describe("Overloads", () => {
   it("should match the correct overload", () => {
     const ssFn = vi.fn().mockReturnValue(1);
     const snFn = vi.fn();
     const overloadFunctions = [
-      new Overload([string(), string()], ssFn),
-      new Overload([string(), number()], snFn),
+      new Overload(undefined, undefined, [string(), string()], ssFn),
+      new Overload(undefined, undefined, [string(), number()], snFn),
     ];
     const overloads = new Overloads(overloadFunctions);
     const match = overloads.match(["hi", "ho"]);
@@ -24,8 +24,8 @@ describe("Overloads", () => {
     const ssFn = vi.fn().mockReturnValue(1);
     const snFn = vi.fn().mockReturnValue(2);
     const overloadFunctions = [
-      new Overload([string(), string()], ssFn),
-      new Overload([string(), number()], snFn),
+      new Overload(undefined, undefined, [string(), string()], ssFn),
+      new Overload(undefined, undefined, [string(), number()], snFn),
     ];
     const overloads = new Overloads(overloadFunctions);
     const match = overloads.match(["hi", 1]);
@@ -37,8 +37,8 @@ describe("Overloads", () => {
     const ssFn = vi.fn().mockReturnValue(1);
     const snFn = vi.fn();
     const overloadFunctions = [
-      new Overload([string(), string()], ssFn),
-      new Overload([string(), number()], snFn),
+      new Overload(undefined, undefined, [string(), string()], ssFn),
+      new Overload(undefined, undefined, [string(), number()], snFn),
     ];
     const overloads = new Overloads(overloadFunctions);
     expect(() => overloads.match([])).toThrow();
@@ -51,8 +51,8 @@ describe("overloads function", () => {
   it("should execute the correct overload", () => {
     const testFn = vi.fn();
     overloads(
-      params(string(), number(), boolean()).matches(testFn),
-      params(number(), string()).matches(vi.fn())
+      def(string(), number(), boolean()).matches(testFn),
+      def(number(), string()).matches(vi.fn())
     ).use(["hi", 1, true]);
     expect(testFn).toHaveBeenCalled();
   });

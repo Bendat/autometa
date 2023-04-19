@@ -1,0 +1,60 @@
+import glob from "glob";
+import path from "path";
+import os from "os";
+import { readFileSync } from "fs";
+
+const homeDirectory = os.homedir();
+const pathWithTilde = (pathWithTilde: string) => {
+  if (typeof pathWithTilde !== "string") {
+    throw new TypeError(`Expected a string, got ${typeof pathWithTilde}`);
+  }
+
+  return homeDirectory
+    ? pathWithTilde.replace(/^~(?=$|\/|\\)/, homeDirectory)
+    : pathWithTilde;
+};
+export function getFeatureFile(filePath: string) {
+  const file = readFileSync(filePath, "utf-8");
+  if (file.length === 0) {
+    throw new Error(`Found empty feature file: ${filePath}`);
+  }
+  return file;
+}
+
+export function getRealPath(
+  filePath: string,
+  callerFile: string,
+  featureRoot?: string,
+  isFile = true
+) {
+  const caller = isFile ? path.dirname(callerFile) : callerFile;
+
+  let realPath = filePath;
+  if (filePath.startsWith("./") || filePath.startsWith("../")) {
+    realPath = path.resolve(caller, filePath);
+  } else if (!path.isAbsolute(filePath)) {
+    realPath = path.resolve(filePath);
+  }
+  if (filePath.startsWith("~")) {
+    realPath = pathWithTilde(filePath);
+  }
+  if (filePath.startsWith("^/")) {
+    if (!featureRoot) {
+      throw new Error(
+        `Cannot have Feature Root pattern (^/path/to/file.feature) if 'featuresRoot' is not set in defineConfig`
+      );
+    }
+    realPath = path.resolve(featureRoot, filePath.replace("^/", ""));
+  }
+  return realPath;
+}
+export function loadGlobalStepFiles(globalsRootDir?: string) {
+  if (globalsRootDir) {
+    const globalsDirs = globalsRootDir;
+    const resolved = path.resolve(globalsDirs);
+    const paths = glob.sync(`${resolved}/**/*.steps.ts`);
+    for (const path of paths) {
+      require(path);
+    }
+  }
+}

@@ -17,25 +17,25 @@ export function myFunc(a: string, b: MyClassBuilder): MyClass;
 export function myFunc(...args: unknown) {
   return overloads(
     //     optional name 'a'   // type of 'a' inferred as 'string'
-    params(string("a")).matches((a) => `hello ${a}`),
+    def(string("a")).matches((a) => `hello ${a}`),
 
     // simply declare each argument as you expect it. The first match will
     // be executed
-    params(string("a"), number("b")).matches((a, b) => `hello ${a}`.repeat(b)),
+    def(string("a"), number("b")).matches((a, b) => `hello ${a}`.repeat(b)),
 
     // Verify complex (even nested) objects, arrays, tuples.
-    params(string("a"), shape({ a: string(), arr: array([number()]) })).matches(
+    def(string("a"), shape({ a: string(), arr: array([number()]) })).matches(
       (a, b) => b.arr.map((num) => `${num}: hello ${a}: ${b.a}`)
     ),
 
     // Check for an instance of a class. Optionally provide a 'shape' as above
-    params(string("a"), instance("b", MyClassBuilder)).matches(
+    def(string("a"), instance("b", MyClassBuilder)).matches(
       (name, myClassBuilder) => myClassBuilder.setName(name).build()
     ),
 
     // validate actual values - useful for configurable, non overloaded functions
     // or implementing the strategy pattern.
-    params(
+    def(
       string("a", { equals: "admin" }),
       string("b", { in: ["buyer", "seller"] })
     ).matches((a) => `hello ${a}`),
@@ -64,7 +64,7 @@ pnpm add @autometa/overloaded
 
 ### Function & Method Overloads
 
-Function and method overloads are an elegent way to expose multiple definition signatures
+Function and method overloads are an elegant way to expose multiple definition signatures
 for a function which help intellisense and display more clear intent about the purpose
 of your function for a given input.
 
@@ -163,7 +163,7 @@ function add(
 For just two variables with two primitive types, this is pretty rough.
 We can imagine then how it might look if `a` and `b` can be completely different types from each other - including more complex types like objects and arrays which require even more validation.
 
-At some point the the function parameter list becomes unmaintable
+At some point the the function parameter list becomes unmaintainable
 at the base level, which is easily resolved with a rest param.
 
 ```ts
@@ -181,28 +181,28 @@ Using overloaded to build your function and method overloads is simple.
 Call the `overloads` function with your `param` overloads, then pass
 the real arguments.
 
-Overloaded functions are defined by the function pair `params` and it's child function `match`. Params accepts a rest param array of `BaseArguments`.
+Overloaded functions are defined by the function pair `def` and it's child function `match`. Def accepts a rest param array of `BaseArguments`.
 A `BaseArgument` can be created by it's corresponding function. So `StringArgument` has a `string()` factory function, while `BooleanArgument`
-has the factory function `boolean()`. `params` returns an object
+has the factory function `boolean()`. `def` returns an object
 containing a `match` function. `match` accepts a function who's parameter
-signaure will be inferred from the preceeding `params`.
+signature will be inferred from the preceding `def`.
 
-I.E. for `params(string(), string())`, the `match` callback
+I.E. for `def(string(), string())`, the `match` callback
 will accept exactly 2 arguments which must be strings:
 
 ```ts
 // ----------------------   V 'a' and 'b' both inferred as 'string'
-params(string(), string()).match((a, b)=>}{})
+def(string(), string()).match((a, b)=>}{})
 // okay but redundant
-params(string(), string()).match((a: string, b: string)=>}{});
+def(string(), string()).match((a: string, b: string)=>}{});
 // bad - ts error
-params(string(), string()).match((a: string, b: number)=>}{});
+def(string(), string()).match((a: string, b: number)=>}{});
 ```
 
 Sticking with our original 2 overloads:
 
 ```ts
-import { overloads, params, string, number } from "@autometa/overloaded";
+import { overloads, def, string, number } from "@autometa/overloaded";
 
 function add(a: string, b: string): [string, string];
 function add(a: number, b: number): number;
@@ -211,14 +211,14 @@ function add(
   ...args: (string | number)[]
 ){
   return overloads(
-    params(string(), string()).match((a, b) => [a, b])
-    params(number(), number()).match((a, b) => a + b)
-    // if using individual params pass an array [a, b] to `use`
+    def(string(), string()).match((a, b) => [a, b])
+    def(number(), number()).match((a, b) => a + b)
+    // if using individual def pass an array [a, b] to `use`
   ).use(args);
 }
 ```
 
-And that's it. We now have an equivelent implementation as what we started with.
+And that's it. We now have an equivalent implementation as what we started with.
 
 The return types for the base function definition will be inferred as a union
 of the return types of each `match`. If no matching overload is found, an error will be thrown
@@ -236,7 +236,7 @@ All argument factories can be named. It is suggested these names match the name
 in the corresponding overload. Rewriting the above example:
 
 ```ts
-import { overloads, params, string, number } from "@autometa/overloaded";
+import { overloads, def, string, number } from "@autometa/overloaded";
 function add(a: string, b: string): [string, string];
 function add(a: number, b: number): number;
 function add(
@@ -244,14 +244,14 @@ function add(
   // ...args: unknown[] // generalized alternative
 ){
   return overloads(
-    params(string('a'), string('b')).match((a, b) => [a, b])
-    params(number('a'), number('b')).match((a, b) => a + b)
-    // if using individual params pass an array [a, b] to `use`
+    def(string('a'), string('b')).match((a, b) => [a, b])
+    def(number('a'), number('b')).match((a, b) => a + b)
+    // if using individual def pass an array [a, b] to `use`
   ).use(args);
 }
 ```
 
-**Note:** It is not necesary for all overload parameters to share the same names. Likewise it is not necessary oveloaded argument factories to share the same name across overloads.
+**Note:** It is not necessary for all overload parameters to share the same names. Likewise it is not necessary overloaded argument factories to share the same name across overloads.
 
 The name is optional, and is used primarily for context when an error is thrown. If no
 name is provided, the arguments index in the parameter list will be used instead.
@@ -269,17 +269,17 @@ type UserTypes = "admin" | "buyer" | "seller";
 
 function performUserAction(userType: UserTypes, data: unknown) {
   return overloads(
-    params(string("userType", { equals: "admin" }), unknown("data")).match(
+    def(string("userType", { equals: "admin" }), unknown("data")).match(
       (_userType, data) => {
         return admin.action(data);
       }
     ),
-    params(string("userType", { equals: "buyer" }), unknown("data")).match(
+    def(string("userType", { equals: "buyer" }), unknown("data")).match(
       (_userType, data) => {
         return buyer.action(data);
       }
     ),
-    params(string("userType", { equals: "seller" }), unknown("data")).match(
+    def(string("userType", { equals: "seller" }), unknown("data")).match(
       (_userType, data) => {
         return seller.action(data);
       }
@@ -308,12 +308,12 @@ detailing why each overload failed to match.
 
 Alternatively it is possible to provide a 'fallback' which
 will be executed instead of an error being thrown. The fallback
-will recieve a rest param of arguments with types being `unknown`
+will receive a rest param of arguments with types being `unknown`
 
 A Fallback is defined with the `fallback` function.
 
 ```ts
-import { overloads, params, string, number } from "@autometa/overloaded";
+import { overloads, def, string, number } from "@autometa/overloaded";
 
 function add(a: string, b: string): [string, string];
 function add(a: number, b: number): number;
@@ -322,8 +322,8 @@ function add(
   ...args: (string | number)[] // 'unknown' is a union is also fine here
 ) {
   return overloads(
-    params(string(), string()).match((a, b) => [a, b]),
-    params(number(), number()).match((a, b) => a + b),
+    def(string(), string()).match((a, b) => [a, b]),
+    def(number(), number()).match((a, b) => a + b),
     fallback((...args: unknown[]) => console.log(args))
   ).use(args);
 }
@@ -341,19 +341,19 @@ function makeMyClass(name: string, widgets: string[]): MyObject;
 function makeMyClass(...args: (string | string[])[]) {
   return overloads(
     // Create an instance with only a name
-    params(string("name")).matches((name) => new MyObject(name)),
+    def(string("name")).matches((name) => new MyObject(name)),
     // Create an instance with only its list of widgets
-    params(array("widgets", [string()])).matches(
+    def(array("widgets", [string()])).matches(
       (name, widgets) => new MyObject(undefined, widgets)
     ),
     // Create an instance with both a name and its list of widgets
-    params(string("name"), array("widgets", [string()])).matches(
+    def(string("name"), array("widgets", [string()])).matches(
       (name, widgets) => new MyObject(undefined, widgets)
     ),
     // No match - Throw an error
     fallback((...args) => {
       throw new Error(
-        `A 'MyObject' instance requires either a name, a list of widgets or both. Recieved: ${args}`
+        `A 'MyObject' instance requires either a name, a list of widgets or both. Received: ${args}`
       );
     })
   ).use(args);
@@ -383,22 +383,72 @@ class PaidUser extends User {
   badges: number[];
 }
 
-// return type inferred as 
+// return type inferred as
 // AdminUser | HobbyUser | PaidUser
 // Throws an error if no match found.
 function createUserDto(user: unknown) {
   return overloads(
-    params(shape({ permissions: array([string()]) })).matches((user) =>
-      plainToDto(AdminUser, user)
-    ),
-    params(shape({ interests: array([string()]) })).matches((user) =>
-      plainToDto(HobbuUser, user)
-    ),
-    params(shape({ tier: number() })).matches((user) =>
-      plainToDto(PaidUser, user)
-    )
+    def(shape({ permissions: array([string()]) })).matches((user) => {
+      return plainToDto(AdminUser, user);
+    }),
+    def(shape({ interests: array([string()]) })).matches((user) => {
+      return plainToDto(HobbyUser, user);
+    }),
+    def(shape({ tier: number() })).matches((user) => {
+      return plainToDto(PaidUser, user);
+    })
   ).use([user]);
 }
+```
+
+## Overload Descriptions
+
+Overloads can take an optional description. Simply provide a string as the
+first parameter of an overload. This can be used to document the purpose
+of this particular overload, but won't get lost if things move around
+like a comment.
+
+```ts
+function myOverloadedFunction(...args: unknown[]) {
+  return overloads(
+    param(
+      "return a FooWidgetWrapper when the first argument is a FooWidget",
+      instance(FooWidget)
+    ).matches((widget) => {
+      // ... do stuff
+      return return myNewFooWidgetWrapper;
+    })
+  ).use(args);
+}
+```
+
+## Naming overloads with `String Templates`
+
+It is possible to name an overload by providing a template string
+literal before the function call. This can be used in addition to or instead
+of the description.
+
+Names let you produce overloads that vaguely resemble a function definition.
+
+```ts
+return overloads(
+  def`doThingA`(string(), number()).matches(thingAFunc),
+  def`doThingB`(string(), string()).matches(thingBFunc)
+);
+
+// Using description
+return overloads(
+  def`doThingA`(
+    "some additional context about doing thing A",
+    string(),
+    number()
+  ).matches(thingAFunc),
+  def`doThingB`(
+    "some other context about doing thing B",
+    string(),
+    string()
+  ).matches(thingBFunc)
+);
 ```
 
 ## Argument Types
@@ -413,7 +463,7 @@ of matching name. Each accepts a name and assertion options.
 Matches an argument in the same position which is a string.
 
 ```ts
-params(string("a")).matches((a) => `Foo: ${a}`);
+def(string("a")).matches((a) => `Foo: ${a}`);
 ```
 
 Assertions:
@@ -421,48 +471,46 @@ Assertions:
 _equals_: Asserts that two strings are exactly equal
 
 ```ts
-params(string("a", { equals: "user" })).matches((a) => UserFactory);
+def(string("a", { equals: "user" })).matches((a) => UserFactory);
 ```
 
 _minLength_: Asserts that any string passed will have at _least_ `n` characters (inclusive), where `n` is the value passed to `minLength`
 
 ```ts
-params(string("a", { minLength: 10 })).matches((a) => `Foo: ${a}`);
+def(string("a", { minLength: 10 })).matches((a) => `Foo: ${a}`);
 // name is optional
-params(string({ minLength: 10 })).matches((a) => `Foo: ${a}`);
+def(string({ minLength: 10 })).matches((a) => `Foo: ${a}`);
 ```
 
 _maxLength_: Asserts that any string passed will have at _most_ `n` characters (inclusive),
 where `n` is the value passed to `minLength`
 
 ```ts
-params(string("a", { maxLength: 10 })).matches((a) => `Foo: ${a}`);
+def(string("a", { maxLength: 10 })).matches((a) => `Foo: ${a}`);
 ```
 
 _includes_: Asserts that any string passed includes some substring.
 
 ```ts
-params(string("a", { includes: "users" })).matches((a) => usersFactory(a));
+def(string("a", { includes: "users" })).matches((a) => usersFactory(a));
 ```
 
 _startsWith_: Asserts that a string starts with a specific substring.
 
 ```ts
-params(string("a", { startsWith: "users" })).matches((a) => mySettings[a]);
+def(string("a", { startsWith: "users" })).matches((a) => mySettings[a]);
 ```
 
 _endsWith_: Asserts that a string ends with a specific substring.
 
 ```ts
-params(string("a", { endsWith: "users" })).matches((a) => mySettings[a]);
+def(string("a", { endsWith: "users" })).matches((a) => mySettings[a]);
 ```
 
 _in_: Asserts that a string is part of an array.
 
 ```ts
-params(string("a", { in: ["group1", "group2"] })).matches((a) =>
-  this.getGroup(a)
-);
+def(string("a", { in: ["group1", "group2"] })).matches((a) => this.getGroup(a));
 ```
 
 #### **Number**
@@ -474,19 +522,19 @@ Assertions:
 _min_: Asserts that a number has at least some minimum value (inclusive)
 
 ```ts
-params(number("a", { min: 0 })).matches((a) => myArray[a]);
+def(number("a", { min: 0 })).matches((a) => myArray[a]);
 ```
 
 _max_: Asserts that a number has at most some maximum value (inclusive)
 
 ```ts
-params(number("a", { max: 0 })).matches((a) => throw new Error(`'a' must be positive`));
+def(number("a", { max: 0 })).matches((a) => throw new Error(`'a' must be positive`));
 ```
 
 _in_: Asserts that a number is part of an array.
 
 ```ts
-params(string("a", { in: [101, 102] })).matches((a) =>
+def(string("a", { in: [101, 102] })).matches((a) =>
   this.courses.enroll.math(a)
 );
 ```
@@ -494,15 +542,15 @@ params(string("a", { in: [101, 102] })).matches((a) =>
 _equals_: Asserts that the provided number is exactly equal to the expected.
 
 ```ts
-params(string("a", { equals: 101 })).matches((a) => DalmationCoatFactory);
+def(string("a", { equals: 101 })).matches((a) => DalmatianCoatFactory);
 ```
 
 _types_: Asserts that the provided value is either an integer
 or a float value.
 
 ```ts
-params(string("a", { type: "float" })).matches((a) => a * MY_CONST);
-params(string("a", { type: "int" })).matches((a) => MY_ENUM[a]);
+def(string("a", { type: "float" })).matches((a) => a * MY_CONST);
+def(string("a", { type: "int" })).matches((a) => MY_ENUM[a]);
 ```
 
 **boolean** assertions
@@ -519,7 +567,7 @@ of fixed length with deterministic type options.
 **array**
 
 ```ts
-params(array([string(), number()])).match((a: (string | number)[]) => {
+def(array([string(), number()])).match((a: (string | number)[]) => {
   // ...
 });
 ```
@@ -533,7 +581,7 @@ params(array([string(), number()])).match((a: (string | number)[]) => {
 **tuple**
 
 ```ts
-params(tuple([string(), number()])).match((a: [string, number]) => {
+def(tuple([string(), number()])).match((a: [string, number]) => {
   // ...
 });
 ```
@@ -545,14 +593,14 @@ params(tuple([string(), number()])).match((a: [string, number]) => {
 ### Shapes
 
 Shapes represent anonymous objects and class instances. It accepts
-an object whos keys match the expected object and whos values
+an object whose keys match the expected object and whose values
 are Argument types. By default, only properties with keys defined in the `shape`
 will be used to match.
 If the real value passed to the overloaded function contains additional
 keys, they will not be considered for validation, unless the `exhaustive` option is set to true.
 
 ```ts
-params(shape({ a: string(), b: tuple([number(), boolean()]) })).match(
+def(shape({ a: string(), b: tuple([number(), boolean()]) })).match(
   ({ a, b }) => {
     console.log(a);
     console.log(b[0]);
@@ -564,7 +612,7 @@ params(shape({ a: string(), b: tuple([number(), boolean()]) })).match(
 **Assertions**
 
 - exhaustive
-  - If true, validation of an overload will fail if the recieved argument has keys which are not defined by the overload.
+  - If true, validation of an overload will fail if the received argument has keys which are not defined by the overload.
 - instance
   - A Class blueprint/prototype from which the provided value should be extended.
 
@@ -574,7 +622,7 @@ Functions have minimal validation, providing only a shape
 and an optional argument list length.
 
 ```ts
-params(func<(a: string) => void>()).match((fn) => fn("hi"));
+def(func<(a: string) => void>()).match((fn) => fn("hi"));
 ```
 
 **Assertions**
@@ -588,11 +636,9 @@ Catch-all/wildcard argument with no typing. Will check if the value
 is defined, which can be overwritten.
 
 ```ts
-params(string(), unknown(), number()).match(
-  (a: string, b: unknown, c: number) => {
-    // ...
-  }
-);
+def(string(), unknown(), number()).match((a: string, b: unknown, c: number) => {
+  // ...
+});
 ```
 
 ### Date
@@ -602,7 +648,7 @@ Matches an instance of the Node `Date` class.
 ```ts
 import { yesterdayDate } from "./my-date-utils";
 
-params(date({ before: yesterdayDate() })).match((a: Date) => {
+def(date({ before: yesterdayDate() })).match((a: Date) => {
   // ...
 });
 ```
@@ -610,11 +656,11 @@ params(date({ before: yesterdayDate() })).match((a: Date) => {
 **Assertions**
 
 - before
-  - Checks that this provided date is chronoligically earlier than the configured date
+  - Checks that this provided date is chronologically earlier than the configured date
 - after
-  - Checks that this provided date is chronoligically later than the configured date
+  - Checks that this provided date is chronologically later than the configured date
 - equal
-  - Checks that this provided date is chronoligically equal to the configured date
+  - Checks that this provided date is chronologically equal to the configured date
 
 ### Instance
 
@@ -622,7 +668,7 @@ Matches an argument which is an instance of a provided class (also referred to h
 properties of the instance.
 
 ```ts
-params(instance(MyClass, shape({ name: string(), age: number() }))).match(
+def(instance(MyClass, shape({ name: string(), age: number() }))).match(
   (a: MyClass) => {
     // ...
   }

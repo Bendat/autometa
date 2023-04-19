@@ -7,7 +7,7 @@
     "outDir": "dist/esm",
     "declarationDir": "dist/types"
   },
-  "files": ["index.ts", "src/overload-actions.ts", "./src/fallback.ts"],
+  "files": ["index.ts", "src/overload-actions.ts", "./src/fallback.ts", "./src/disposeDescription.ts"],
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.js"]
 }

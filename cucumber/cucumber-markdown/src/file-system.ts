@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "path";
 import { readFileSync, writeFileSync, existsSync, promises } from "node:fs";
 import {
   convertFeatureToMarkdown,
