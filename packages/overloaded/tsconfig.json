@@ -1,0 +1,19 @@
+{
+  "extends": "tsconfig/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types"
+  },
+  "files": [
+    "index.ts",
+    "src/arguments/base-arguments.ts",
+    "src/overloads.ts",
+    "src/formatting.ts",
+    "./src/params.ts"
+  ],
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.test.js"]
+}

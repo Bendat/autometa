@@ -1,5 +1,5 @@
 {
-  "name": "@autometa/events",
+  "name": "@autometa/overloaded",
   "version": "0.0.2",
   "main": "index.ts",
   "type": "module",
@@ -31,7 +31,6 @@
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
-    "tsconfig": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
     "jest": "^29.4.3",
     "nodemon": "^2.0.22",
@@ -40,6 +39,7 @@
     "rimraf": "^4.1.2",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
+    "tsconfig": "workspace:*",
     "tsup": "^6.7.0",
     "typescript": "^4.9.5",
     "vitest": "^0.29.8",
@@ -54,6 +54,11 @@
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",
+    "@types/git-diff": "^2.0.3",
+    "@vitest/ui": "^0.30.1",
+    "chalk": "^5.2.0",
+    "git-diff": "^2.0.6",
+    "myzod": "^1.10.0",
     "tsyringe": "^4.7.0",
     "uuid": "^9.0.0"
   }
