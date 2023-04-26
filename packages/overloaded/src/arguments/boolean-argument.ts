@@ -1,5 +1,5 @@
 import { Infer, object, string, tuple, boolean as bool } from "myzod";
-import { BaseArgument } from "./base-arguments";
+import { BaseArgument } from "./base-argument";
 
 export const BooleaValidationSchema = object({
   equals: bool(),
@@ -13,7 +13,9 @@ const NumberArgumentConstructorSchema = tuple([
 
 export type BooleanValidatorOpts = Infer<typeof BooleaValidationSchema>;
 
-export class BooleanArgument extends BaseArgument<boolean> {
+export class BooleanArgument<
+  T extends boolean = boolean
+> extends BaseArgument<T> {
   typeName = "boolean";
   options?: BooleanValidatorOpts | undefined;
   argName?: string | undefined;
@@ -66,9 +68,9 @@ export class BooleanArgument extends BaseArgument<boolean> {
   }
 }
 
-export function boolean(): BaseArgument<boolean>;
-export function boolean(opts: BooleanValidatorOpts): BaseArgument<boolean>;
-export function boolean(name: string): BaseArgument<boolean>;
+export function boolean(): BooleanArgument<boolean>;
+export function boolean(opts: BooleanValidatorOpts): BooleanArgument<boolean>;
+export function boolean(name: string): BooleanArgument<boolean>;
 export function boolean(
   name: string,
   opts: BooleanValidatorOpts

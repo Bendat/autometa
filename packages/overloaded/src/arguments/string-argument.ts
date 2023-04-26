@@ -1,6 +1,6 @@
 import gitDiff from "git-diff";
 import { Infer, array, string as zstring, object, number, tuple } from "myzod";
-import { BaseArgument } from "./base-arguments";
+import { BaseArgument } from "./base-argument";
 export const StringValidatorOpsSchema = object({
   minLength: number().optional(),
   maxLength: number().optional(),
@@ -20,7 +20,7 @@ const StringArgumentConstructorSchema = tuple([
   .or(tuple([zstring().or(StringValidatorOpsSchema)]))
   .or(tuple([]));
 
-export class StringArgument extends BaseArgument<string> {
+export class StringArgument<T extends string> extends BaseArgument<T> {
   typeName = "string";
   options?: StringValidatorOpts;
   argName?: string;
@@ -122,16 +122,16 @@ export class StringArgument extends BaseArgument<string> {
   }
 }
 
-export function string(): BaseArgument<string>;
-export function string(opts: StringValidatorOpts): BaseArgument<string>;
-export function string(name: string): BaseArgument<string>;
+export function string(): StringArgument<string>;
+export function string(opts: StringValidatorOpts): StringArgument<string>;
+export function string(name: string): StringArgument<string>;
 export function string(
   name: string,
   opts: StringValidatorOpts
 ): BaseArgument<string>;
 export function string(
   ...args: (StringValidatorOpts | string)[]
-): StringArgument {
+): StringArgument<string> {
   const [nameOrOpts, opts] = args;
   StringArgumentConstructorSchema.parse(args);
   return new StringArgument([nameOrOpts, opts]);

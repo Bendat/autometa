@@ -1,18 +1,26 @@
-import { BaseArgument } from "./arguments/base-arguments";
+import { ArgumentType, BaseArgument } from "./arguments/base-argument";
 import { Overload } from "./overload";
+export type AnyArg = BaseArgument<ArgumentType>;
 
-export type ValidatorArgumentTuple<T extends unknown[]> = {
-  [K in keyof T]: T[K] extends BaseArgument<infer U> ? U : never;
+export type ValidatorArgumentTuple<T> = {
+  [K in keyof T]: T[K] extends AnyArg
+    ? T[K] extends BaseArgument<infer Q>
+      ? Q
+      : never
+    : never;
 };
 
 export type ArgumentTypes<T> = {
-  [K in keyof T]: T[K] extends BaseArgument<infer U> ? BaseArgument<U> : never;
+  [K in keyof T]: T[K] extends AnyArg
+    ? T[K] extends infer U
+      ? U
+      : never
+    : never;
 };
 
 export type ReturnTypeTuple<T> = {
   [K in keyof T]: T[K] extends Overload<infer _TArgs, infer TAction>
-    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      TAction extends (...args: unknown[]) => infer TReturnType
+    ? TAction extends (...args: unknown[]) => infer TReturnType
       ? TReturnType
       : never
     : never;

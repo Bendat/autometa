@@ -1,5 +1,5 @@
 import { describe, it, expectTypeOf } from "vitest";
-import { BaseArgument } from "./arguments/base-arguments";
+import { BaseArgument } from "./arguments/base-argument";
 import { Overload } from "./overload";
 import {
   ArgumentTypes,

@@ -1,10 +1,10 @@
-import { BaseArgument } from "./arguments/base-arguments";
 import { Overload } from "./overload";
-import { ArgumentTypes, ValidatorArgumentTuple } from "./types";
+import { AnyArg, ArgumentTypes, ValidatorArgumentTuple } from "./types";
 
-export function params<P extends BaseArgument[], T extends ArgumentTypes<P>>(
+export function params<P extends AnyArg[], T extends ArgumentTypes<P>>(
   ...args: T
 ) {
+  //   ^?
   return {
     matches: <K>(
       // Typescript doesn't seem to like that this is a tuple type.

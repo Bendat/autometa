@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { BaseArgument, Shape } from "./base-arguments";
+import { BaseArgument, Shape } from "./base-argument";
 import { number } from "./number-argument";
 import { shape, ShapeArgument } from "./shape-argument";
 import { string } from "./string-argument";

@@ -1,4 +1,4 @@
-import { ArgumentType } from "./arguments/base-arguments";
+import { ArgumentType } from "./arguments/base-argument";
 import { argStringArray } from "./formatting";
 import { Overload } from "./overload";
 import { ReturnTypeTuple } from "./types";
@@ -27,6 +27,7 @@ ${reports}`);
 export function overloads<T extends Overload[]>(...args: T) {
   const overloads = new Overloads(args);
   return {
-    use: (actualArgs: any[]): ReturnTypeTuple<T> => overloads.match(actualArgs),
+    use: (actualArgs: any[]): any => overloads.match(actualArgs),
+    // use: (actualArgs: any[]): ReturnTypeTuple<T> => overloads.match(actualArgs),
   };
 }

@@ -1,4 +1,4 @@
-import { BaseArgument, FromShape, ShapeType } from "./base-arguments";
+import { BaseArgument, FromShape, ShapeType } from "./base-argument";
 import chalk from "chalk";
 import { Infer, string, object, boolean, tuple } from "myzod";
 
@@ -14,7 +14,7 @@ export type ShapeValidatorOpts = Infer<typeof ShapeValidationSchema>;
 
 export class ShapeArgument<
   T extends ShapeType,
-  TRaw extends FromShape<T> = FromShape<T>
+  TRaw extends FromShape<T>
 > extends BaseArgument<TRaw> {
   typeName = "object";
   options?: ShapeOptions;
@@ -79,5 +79,5 @@ export class ShapeArgument<
 }
 
 export function shape<T extends ShapeType>(reference: T) {
-  return new ShapeArgument(reference) as BaseArgument<FromShape<T>>;
+  return new ShapeArgument(reference);
 }

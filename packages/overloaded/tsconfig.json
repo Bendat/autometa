@@ -9,7 +9,7 @@
   },
   "files": [
     "index.ts",
-    "src/arguments/base-arguments.ts",
+    "src/arguments/base-argument.ts",
     "src/overloads.ts",
     "src/formatting.ts",
     "./src/params.ts"

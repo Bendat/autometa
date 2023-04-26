@@ -1,16 +1,19 @@
 import c from "chalk";
+import { AnyArg } from "src/types";
 export type Primitive = string | number | boolean | undefined | null;
 export type Shape = { [key: string]: ArgumentType };
-export type ShapeType = { [key: string]: BaseArgument };
+export type Array = { [key: number]: ArgumentType };
+export type ShapeType = { [key: string]: AnyArg };
 export type FromShape<T> = T extends {
-  [K in keyof T]: T[K] extends BaseArgument ? T[K] : never;
+  [K in keyof T]: T[K] extends AnyArg ? T[K] : never;
 }
   ? {
       [K in keyof T]: T[K] extends BaseArgument<infer TArg> ? TArg : never;
     }
   : never;
 
-export type ArgumentType = Shape | Primitive;
+export type ArgumentType = Shape | Array | Primitive;
+
 export class Accumulator<T> extends Array<T | Accumulator<T>> {
   asString(depth = 0) {
     let str = "";
@@ -25,7 +28,8 @@ export class Accumulator<T> extends Array<T | Accumulator<T>> {
     return str;
   }
 }
-export abstract class BaseArgument<TType extends ArgumentType = ArgumentType> {
+export abstract class BaseArgument<TType> {
+  example?: TType;
   abstract typeName: string;
   protected _accumulator: Accumulator<string> = new Accumulator();
   abstract readonly options?: unknown;

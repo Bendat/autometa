@@ -1,10 +1,10 @@
 import { Infer, string, object, number as num, tuple } from "myzod";
-import { BaseArgument } from "./base-arguments";
+import { BaseArgument } from "./base-argument";
 
 export const NumberValidationSchema = object({
-  max: num(),
-  min: num(),
-  equals: num(),
+  max: num().optional(),
+  min: num().optional(),
+  equals: num().optional(),
 });
 const NumberArgumentConstructorSchema = tuple([
   string(),
@@ -15,7 +15,7 @@ const NumberArgumentConstructorSchema = tuple([
 
 export type NumberValidatorOpts = Infer<typeof NumberValidationSchema>;
 
-export class NumberArgument extends BaseArgument<number> {
+export class NumberArgument<T extends number> extends BaseArgument<T> {
   typeName = "number";
   options?: NumberValidatorOpts | undefined;
   argName?: string | undefined;
@@ -79,16 +79,16 @@ export class NumberArgument extends BaseArgument<number> {
   }
 }
 
-export function number(): BaseArgument<number>;
-export function number(opts: NumberValidatorOpts): BaseArgument<number>;
-export function number(name: string): BaseArgument<number>;
+export function number(): NumberArgument<number>;
+export function number(opts: NumberValidatorOpts): NumberArgument<number>;
+export function number(name: string): NumberArgument<number>;
 export function number(
   name: string,
   opts: NumberValidatorOpts
 ): BaseArgument<number>;
 export function number(
   ...args: (NumberValidatorOpts | string)[]
-): NumberArgument {
+): NumberArgument<number> {
   const [nameOrOpts, opts] = args;
   NumberArgumentConstructorSchema.parse(args);
   return new NumberArgument([nameOrOpts, opts]);

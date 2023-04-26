@@ -1,4 +1,4 @@
-import { ArgumentType, BaseArgument } from "./arguments/base-arguments";
+import { ArgumentType, BaseArgument } from "./arguments/base-argument";
 import { argStringArray, colorCompareArgStrings } from "./formatting";
 
 export class Overload<
