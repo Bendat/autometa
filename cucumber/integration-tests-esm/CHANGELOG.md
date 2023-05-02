@@ -1,5 +1,13 @@
 # integration-tests-esm
 
+## 0.5.2
+
+### Patch Changes
+
+- c854f19: Setup and Teardow hooks now carry a global object
+- Updated dependencies [c854f19]
+  - @autometa/cucumber-runner@0.5.2
+
 ## 0.5.1
 
 ### Patch Changes
