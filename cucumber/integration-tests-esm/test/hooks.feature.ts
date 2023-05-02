@@ -36,7 +36,7 @@ const results = {
     },
   },
 };
-Setup("Outer setup", () => {
+Setup("Outer setup", (app) => {
   results.base.setupCalled = true;
 });
 Before("Outer before", () => {
@@ -45,7 +45,7 @@ Before("Outer before", () => {
 After("Outer After", () => {
   results.base.afterCalled = true;
 });
-Teardown("Outer Teardown", () => {
+Teardown("Outer Teardown", (app) => {
   results.base.tearDownCalled = true;
   expect(results.OuterOutline.tearDownCalled).toBe(true);
   expect(results.rule.ruleOutline.tearDownCalled).toBe(true);

@@ -21,6 +21,7 @@ import { globalScope } from "@scopes/globals";
 export class TestExecutor {
   subscribers: ProviderSubscriber[];
   #instanceDependencies: DependencyInstanceProvider[];
+  #globalApp: unknown;
   constructor(private feature: GherkinFeature) {
     const prototypes = Config.get<Class<ProviderSubscriber>[]>("subscribers");
     this.subscribers = prototypes?.map((it) => new it()) ?? [];
@@ -31,6 +32,7 @@ export class TestExecutor {
       ?.flatMap<DependencyInstanceProvider>(
         (sub) => sub.fixtures.instances as DependencyInstanceProvider[]
       );
+    this.#globalApp = getApp(...this.#instanceDependencies);
   }
   execute() {
     const { beforeAll, afterAll, describe } = Config.get<TestFunctions>("runner");
@@ -44,11 +46,11 @@ export class TestExecutor {
     beforeAll(async () => {
       events.feature.emitStart({ title, path, tags, modifier });
       const setup = [...globalScope.hooks?.setup, ...this.feature.hooks?.setup];
-      await runSetupHooks(setup, events.setup, failFeature);
+      await runSetupHooks(setup, this.#globalApp, failFeature);
     });
     afterAll(async () => {
       const teardown = [...globalScope.hooks?.teardown, ...this.feature.hooks?.teardown];
-      await runTeardownHooks(teardown, failFeature);
+      await runTeardownHooks(teardown, this.#globalApp, failFeature);
     });
     afterAll(() => {
       events.feature.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
@@ -89,11 +91,11 @@ export class TestExecutor {
       }
       beforeAll(async () => {
         events.rule.emitStart({ title, modifier, tags });
-        await runSetupHooks(rule.hooks?.setup, events.setup, failRule);
+        await runSetupHooks(rule.hooks?.setup, this.#globalApp, failRule);
       });
 
       afterAll(async () => {
-        await runTeardownHooks(this.feature.hooks?.teardown, onFailure);
+        await runTeardownHooks(this.feature.hooks?.teardown, this.#globalApp, onFailure);
 
         events.rule.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
       });
@@ -123,11 +125,11 @@ export class TestExecutor {
       }
       beforeAll(async () => {
         events.scenarioOutline.emitStart({ title, tags, modifier, examples });
-        await runSetupHooks(hooks?.setup, events.setup, failOutline);
+        await runSetupHooks(hooks?.setup, this.#globalApp, failOutline);
       });
 
       afterAll(async () => {
-        await runTeardownHooks(outline.hooks?.teardown, onFailure);
+        await runTeardownHooks(outline.hooks?.teardown, this.#globalApp, onFailure);
         events.scenarioOutline.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
       });
       const scenarios = outline.scenarios;
@@ -278,12 +280,12 @@ async function runAfterHooks(afters: AfterHook[], app: unknown, onFailure: OnFai
   }
 }
 
-async function runTeardownHooks(teardowns: TeardownHook[], onFailure: OnFailure) {
+async function runTeardownHooks(teardowns: TeardownHook[], app: unknown, onFailure: OnFailure) {
   for (const hook of teardowns?.reverse() ?? []) {
     const { description } = hook;
     events.teardown.emitStart({ description });
     try {
-      await hook.action();
+      await hook.action(app);
       events.teardown.emitEnd({ description, status: Status.PASSED });
     } catch (e) {
       const oldMessage = (e as Error).message;
