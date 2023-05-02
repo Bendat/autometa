@@ -34,7 +34,7 @@ const results = {
       afterCalled: false,
       tearDownCalled: false,
     },
-  },pn
+  },
 };
 Setup("Outer setup", (app) => {
   results.base.setupCalled = true;
