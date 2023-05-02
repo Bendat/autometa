@@ -8,11 +8,7 @@
     "declarationDir": "dist/types"
   },
   "files": [
-    "index.ts",
-    "src/arguments/base-argument.ts",
-    "src/overloads.ts",
-    "src/formatting.ts",
-    "./src/params.ts"
+    "index.ts"
   ],
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.js"]

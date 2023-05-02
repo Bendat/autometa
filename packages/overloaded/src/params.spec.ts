@@ -1,6 +1,8 @@
 import { it, describe, expect, expectTypeOf } from "vitest";
 import { number } from "./arguments/number-argument";
+import { shape } from "./arguments/shape-argument";
 import { string } from "./arguments/string-argument";
+import { Shape } from "./arguments/types";
 import { params } from "./params";
 
 describe("Param list", () => {
@@ -17,3 +19,7 @@ describe("Param list", () => {
     expect(overload.args.length).toEqual(2);
   });
 });
+class Foo {
+  a: number;
+}
+params(shape({ a: number() })).matches(foo=>{});

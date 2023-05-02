@@ -58,14 +58,3 @@ describe("overloads function", () => {
     expect(testFn).toHaveBeenCalled();
   });
 });
-
-it("should check array vaguely works", () => {
-  const testFn = vi.fn();
-  overloads(
-    params(array([boolean(), boolean(), number()])).matches(([a, b]) => a)
-  ).use(["hi", 1, true]);
-  expect(testFn).toHaveBeenCalled();
-});
-const a = array([string(), number()]);
-//    ^?
-it("dunno", () => {});

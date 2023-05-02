@@ -1,33 +1,17 @@
 import c from "chalk";
-import { AnyArg } from "src/types";
-export type Primitive = string | number | boolean | undefined | null;
-export type Shape = { [key: string]: ArgumentType };
-export type Array = { [key: number]: ArgumentType };
-export type ShapeType = { [key: string]: AnyArg };
-export type FromShape<T> = T extends {
-  [K in keyof T]: T[K] extends AnyArg ? T[K] : never;
-}
-  ? {
-      [K in keyof T]: T[K] extends BaseArgument<infer TArg> ? TArg : never;
-    }
-  : never;
+import { object, boolean, Infer } from "myzod";
+import { Accumulator } from "./accumulator";
+import { ArgumentType } from "./types";
+export const BaseArgumentSchema = object({
+  optional: boolean().or(
+    object({
+      undefined: boolean().optional(),
+      null: boolean().optional(),
+    })
+  ),
+});
+export type BaseArgumentConfig = Infer<typeof BaseArgumentSchema>;
 
-export type ArgumentType = Shape | Array | Primitive;
-
-export class Accumulator<T> extends Array<T | Accumulator<T>> {
-  asString(depth = 0) {
-    let str = "";
-    for (const value of this) {
-      if (typeof value === "string") {
-        str += "   ".repeat(depth) + value + "\n";
-      }
-      if (value instanceof Accumulator) {
-        str += value.asString(depth + 1) + "\n";
-      }
-    }
-    return str;
-  }
-}
 export abstract class BaseArgument<TType> {
   example?: TType;
   abstract typeName: string;

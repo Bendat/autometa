@@ -1,4 +1,5 @@
-import { ArgumentType, BaseArgument } from "./arguments/base-argument";
+import { BaseArgument } from "./arguments/base-argument";
+import { ArgumentType } from "./arguments/types";
 import { Overload } from "./overload";
 export type AnyArg = BaseArgument<ArgumentType>;
 

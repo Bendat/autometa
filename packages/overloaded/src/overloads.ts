@@ -18,8 +18,7 @@ export class Overloads<T extends Overload[]> {
       .map((it, idx) => it.getReport(idx, args))
       .join("\n\n");
     throw new Error(`No overloaded function implementation was found for
-    function(${args}){
-    }
+function(${args.join(", ")}){}
 ${reports}`);
   }
 }

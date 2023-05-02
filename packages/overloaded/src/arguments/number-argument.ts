@@ -1,10 +1,11 @@
-import { Infer, string, object, number as num, tuple } from "myzod";
+import { Infer, string, object, number as num, tuple, literal } from "myzod";
 import { BaseArgument } from "./base-argument";
 
 export const NumberValidationSchema = object({
   max: num().optional(),
   min: num().optional(),
   equals: num().optional(),
+  type: literal("int").or(literal("float")).optional(),
 });
 const NumberArgumentConstructorSchema = tuple([
   string(),
@@ -21,6 +22,7 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
   argName?: string | undefined;
   constructor(
     args?:
+
       | [string | NumberValidatorOpts | undefined]
       | [
           string | NumberValidatorOpts | undefined,
@@ -48,21 +50,24 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
       this.accumulator.push(this.fmt(message));
     }
   }
-  assertNumberEquals(num: number, other?: number) {
-    if (other && num !== other) {
-      const message = `Expected ${num} to equal ${other} but did not.`;
+  assertNumberEquals(num: number, equals = this.options?.equals) {
+    if (equals && num !== equals) {
+      const message = `Expected ${num} to equal ${equals} but did not.`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
-  assertNumberLessThanMax(num: number, max?: number): asserts num {
+  assertNumberLessThanMax(num: number, max = this.options?.max): asserts num {
     if (max && num > max) {
       const message = `Expected number to be less than max value ${max}`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
-  assertNumberGreaterThanMin(num: number, min?: number): asserts num {
+  assertNumberGreaterThanMin(
+    num: number,
+    min = this.options?.min
+  ): asserts num {
     if (min && num < min) {
       const message = `Expected number to be greater than minimum value ${min}`;
       this.accumulator.push(this.fmt(message));

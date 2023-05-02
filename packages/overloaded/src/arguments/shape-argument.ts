@@ -1,6 +1,7 @@
-import { BaseArgument, FromShape, ShapeType } from "./base-argument";
+import { BaseArgument } from "./base-argument";
 import chalk from "chalk";
 import { Infer, string, object, boolean, tuple } from "myzod";
+import { FromShape, ShapeType } from "./types";
 
 export const ShapeValidationSchema = object({
   exhaustive: boolean(),
