@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.8.0
+
+### Minor Changes
+
+- 064b589: Added an "assign" method for to assign properties from dynaic strings
+
 ## 0.7.1
 
 ### Patch Changes
