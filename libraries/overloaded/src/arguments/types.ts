@@ -14,10 +14,11 @@ export type CamelCase<T extends string> =
         error: `argument names should not contain spaces. Please update '${T}'`;
       }
     : T;
-type f = CamelCase<"hi ">;
+
 export type FromTuple<T extends BaseArgument<ArgumentType>[]> = {
   [key in keyof T]: T[key] extends BaseArgument<infer K> ? K : never;
 };
+
 export type TupleType = [AnyArg, ...AnyArg[]];
 
 export type ShapeType = { [key: string]: AnyArg };

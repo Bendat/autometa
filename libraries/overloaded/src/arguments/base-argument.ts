@@ -16,7 +16,7 @@ export abstract class BaseArgument<TType> {
   example?: TType;
   abstract typeName: string;
   protected _accumulator: Accumulator<string> = new Accumulator();
-  abstract readonly options?: unknown;
+  readonly options?: unknown;
   argName?: string;
   argCategory = "Arg";
   #index: number;

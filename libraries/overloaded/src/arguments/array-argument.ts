@@ -22,64 +22,80 @@ export class ArrayArgument<
 > extends BaseArgument<TRaw> {
   typeName = "object";
   types: string[] = [];
-  constructor(readonly reference: T, readonly options?: ArrayOptions) {
+  options: ArrayOptions;
+  reference: T;
+  constructor(args: (string | T | ArrayOptions)[]) {
     super();
-    for (const value of reference) {
+    if (typeof args[0] === "string") {
+      this.argName = args[0];
+    }
+    if (typeof args[0] === "object" && Array.isArray(args[0])) {
+      this.reference = args[0];
+    }
+    if (typeof args[1] === "object" && Array.isArray(args[1])) {
+      this.reference = args[1];
+    }
+    if (typeof args[1] === "object" && !Array.isArray(args[1])) {
+      this.options = args[1];
+    }
+    if (typeof args[2] === "object") {
+      this.options = args[2];
+    }
+    for (const value of this.reference) {
       if (!this.types.includes(value.typeName)) {
         this.types.push(value.typeName);
       }
     }
   }
-  assertIsArray(values: unknown): asserts values is T {
+  assertIsArray(values: unknown) {
     if (!Array.isArray(values)) {
       const message = `Expected value to be an array but found ${typeof values}`;
       this.accumulator.push(this.fmt(message));
     }
   }
-  assertLengthLessThanMax(values: unknown[], length = this.options?.maxLength) {
-    if (!Array.isArray(values)) {
-      return;
-    }
-    if (length && values?.length <= length) {
-      this.accumulator.push(
-        `Expected value to be an array with max length ${length} but was ${values?.length}`
-      );
+  assertLengthLessThanMax(values: unknown, length = this.options?.maxLength) {
+    if (Array.isArray(values)) {
+      if (length && values?.length > length) {
+        this.accumulator.push(
+          `Expected value to be an array with max length ${length} but was ${values?.length}`
+        );
+      }
     }
   }
   assertLengthGreaterThanMin(
-    values: unknown[],
-    length = this.options?.maxLength
+    values: unknown,
+    length = this.options?.minLength
   ) {
-    if (!Array.isArray(values)) {
-      return;
-    }
-    if (length && values?.length >= length) {
-      this.accumulator.push(
-        `Expected value to be an array with min length ${length} but was ${values?.length}`
-      );
-    }
-  }
-  assertLengthEquals(values: unknown[], length = this.options?.length) {
-    if (!Array.isArray(values)) {
-      return;
-    }
-    if (length !== values?.length) {
-      this.accumulator.push(
-        `Expected array to have length ${length} but was ${values?.length}`
-      );
+    if (Array.isArray(values)) {
+      if (length && values?.length < length) {
+        this.accumulator.push(
+          `Expected value to be an array with min length ${length} but was ${values?.length}`
+        );
+      }
     }
   }
-  assertPermittedType(values: unknown[]) {
+  assertLengthEquals(values: unknown, length = this.options?.length) {
+    if (Array.isArray(values)) {
+      if (length !== values?.length) {
+        this.accumulator.push(
+          `Expected array to have length ${length} but was ${values?.length}`
+        );
+      }
+    }
+  }
+  assertPermittedType(values: unknown) {
     if (!Array.isArray(values)) {
       return;
     }
     for (const value of values) {
       if (!this.types.includes(typeof value)) {
-        throw new Error(
-          `Expected array to contain only known types ${
-            this.types
-          } but found ${typeof value}: ${value}; ${values}`
-        );
+        const index = values.indexOf(value);
+        const message = `Expected array to contain only known types ${
+          this.types
+        } but index [${index}] contains ${typeof value}: '${JSON.stringify(
+          value
+        )}'; ${JSON.stringify(values)}`;
+        this.accumulator.push(this.fmt(message));
       }
     }
   }
@@ -107,20 +123,29 @@ export class ArrayArgument<
     this.assertLengthEquals(value);
     this.assertLengthGreaterThanMin(value);
     this.assertLengthLessThanMax(value);
+    this.assertPermittedType(value);
+    this.assertChildValidations(value);
     return this.accumulator.length === 0;
   }
 }
-
+export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
+  name: string,
+  acceptedTypes: T
+): ArrayArgument<P, FromArray<T>>;
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
   acceptedTypes: T
+): ArrayArgument<P, FromArray<T>>;
+export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
+  name: string,
+  acceptedTypes: T,
+  options: ArrayOptions
 ): ArrayArgument<P, FromArray<T>>;
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
   acceptedTypes: T,
   options: ArrayOptions
 ): ArrayArgument<P, FromArray<T>>;
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
-  acceptedTypes: T,
-  options?: ArrayOptions
+  ...args: (string | T | ArrayOptions)[]
 ) {
-  return new ArrayArgument(acceptedTypes, options);
+  return new ArrayArgument(args);
 }
