@@ -71,6 +71,8 @@ export abstract class AbstractDtoBuilder<TDtoType> {
       return this;
     };
   };
+
+  assign = (property: string, value: unknown) => this.set(property)(value);
 }
 // Creates a person oriented (non JSON) string representing
 // validation failures.
