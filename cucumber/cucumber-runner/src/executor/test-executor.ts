@@ -152,7 +152,7 @@ export class TestExecutor {
     const testFn = tagFilter(scenario.tags, test as FrameworkTestCall, scenario.modifier);
     testFn(scenario.getScenarioTitle(), async () => {
       events.scenarioWrapper.emitStart();
-      await runBeforeHooks(befores, app, onFailure);
+      await runBeforeHooks(befores, scenario.tags, app, onFailure);
       await runBackgrounds(scenario, app);
       try {
         events.scenario.emitStart({
@@ -171,7 +171,7 @@ export class TestExecutor {
         events.scenario.emitEnd({ title, status: Status.FAILED, modifier, error: e as Error });
         throw e;
       } finally {
-        await runAfterHooks(afters, app, onFailure);
+        await runAfterHooks(afters, scenario.tags, app, onFailure);
         events.scenarioWrapper.emitEnd();
       }
     });
@@ -230,8 +230,16 @@ async function runSteps(
   }
 }
 
-async function runBeforeHooks(befores: BeforeHook[], app: unknown, onFailure: OnFailure) {
+async function runBeforeHooks(
+  befores: BeforeHook[],
+  tags: string[],
+  app: unknown,
+  onFailure: OnFailure
+) {
   for (const hook of befores ?? []) {
+    if (!isTagFiltered(tags, hook.tagFilter)) {
+      continue;
+    }
     const { description } = hook;
     events.before.emitStart({ description });
     try {
@@ -263,8 +271,16 @@ async function runSetupHooks(setups: SetupHook[], app: unknown, onFailure: OnFai
   }
 }
 
-async function runAfterHooks(afters: AfterHook[], app: unknown, onFailure: OnFailure) {
+async function runAfterHooks(
+  afters: AfterHook[],
+  tags: string[],
+  app: unknown,
+  onFailure: OnFailure
+) {
   for (const hook of afters?.reverse() ?? []) {
+    if (!isTagFiltered(tags, hook.tagFilter)) {
+      continue;
+    }
     const { description } = hook;
     events.after.emitStart({ description });
     try {
@@ -348,4 +364,14 @@ function tagFilter(tags: string[], fn: FrameworkTestCall | TestGroup, modifiers?
   }
 
   return fn;
+}
+
+export function isTagFiltered(tags: string[], filter?: string) {
+  if (filter) {
+    if (!parse(filter).evaluate(tags)) {
+      return false;
+    }
+  }
+
+  return true;
 }
