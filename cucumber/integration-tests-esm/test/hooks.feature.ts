@@ -50,6 +50,7 @@ Teardown("Outer Teardown", (app) => {
   expect(results.OuterOutline.tearDownCalled).toBe(true);
   expect(results.rule.ruleOutline.tearDownCalled).toBe(true);
 });
+After("beardown", () => console.error("Running"), "@skipHook");
 Feature(() => {
   Scenario("Outer Hook Scenario", () => {
     Given("a scenario with hooks", () => {

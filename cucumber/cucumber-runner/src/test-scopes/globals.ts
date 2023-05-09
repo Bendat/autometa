@@ -417,7 +417,7 @@ export type HookAction = (...args: any[]) => void | Promise<void>;
  * when one fails.
  * @param action the callback to execute in the hook
  */
-export function Before(action: HookAction): void;
+// export function Before(action: HookAction): void;
 /**
  * Hook to execute before each proceeding tests. If declared
  * globally, will be run for all tests. If run inside a Feature,
@@ -445,17 +445,18 @@ export function Before(action: HookAction): void;
  *
  * @param action the callback to execute in the hook
  */
-export function Before(description: string, action: HookAction): void;
+// export function Before(description: string, action: HookAction): void;
 export function Before(
   description?: string | undefined | HookAction,
-  action?: HookAction | undefined
+  action?: HookAction | undefined,
+  tagFilter?: string
 ): void {
   const descriptionString = typeof description === "string" ? description : undefined;
   const actionFn = typeof description === "string" ? action : description;
   if (!actionFn) {
     throw new Error("An action must be provided Before function");
   }
-  const instance = new BeforeHook(descriptionString, actionFn);
+  const instance = new BeforeHook(descriptionString, actionFn, tagFilter);
   globalScope.attachHook(instance);
 }
 /**
@@ -476,7 +477,7 @@ export function Before(
  *
  * @param action the callback to execute in the hook
  */
-export function After(action: HookAction): void;
+// export function After(action: HookAction): void;
 /**
  * Hook to execute after each proceeding tests. If declared
  * globally, will be run for all tests. If run inside a Feature,
@@ -504,17 +505,18 @@ export function After(action: HookAction): void;
  *
  * @param action the callback to execute in the hook
  */
-export function After(description: string, action: HookAction): void;
+// export function After(description: string, action: HookAction): void;
 export function After(
   description?: string | undefined | HookAction,
-  action?: HookAction | undefined
+  action?: HookAction | undefined,
+  tagFilter?: string
 ): void {
   const descriptionString = typeof description === "string" ? description : undefined;
   const actionFn = typeof description === "string" ? action : description;
   if (!actionFn) {
     throw new Error("An action must be provided to After function");
   }
-  const instance = new AfterHook(descriptionString, actionFn);
+  const instance = new AfterHook(descriptionString, actionFn, tagFilter);
   globalScope.attachHook(instance);
 }
 
@@ -536,7 +538,7 @@ export function After(
  *
  * @param action the callback to execute in the hook
  */
-export function Setup(action: HookAction): void;
+// export function Setup(action: HookAction, ...tags: string[]): void;
 /**
  * Hook to execute after each proceeding tests. If declared
  * globally, will be run for all tests. If run inside a Feature,
@@ -564,11 +566,8 @@ export function Setup(action: HookAction): void;
  *
  * @param action the callback to execute in the hook
  */
-export function Setup(description: string, action: HookAction): void;
-export function Setup(
-  description?: string | undefined | HookAction,
-  action?: HookAction | undefined
-): void {
+// export function Setup(description: string, action: HookAction, ...tags: string[]): void;
+export function Setup(description?: string, action?: HookAction): void {
   const descriptionString = typeof description === "string" ? description : undefined;
   const actionFn = typeof description === "string" ? action : description;
   if (!actionFn) {
@@ -599,7 +598,7 @@ export interface HookOptions {
  *
  * @param action the callback to execute in the hook
  */
-export function Teardown(action: HookAction): void;
+// export function Teardown(action: HookAction): void;
 /**
  * Hook to execute after all proceeding tests have completed. If declared
  * globally, will be run for all tests. If run inside a Feature,
@@ -627,11 +626,8 @@ export function Teardown(action: HookAction): void;
  *
  * @param action the callback to execute in the hook
  */
-export function Teardown(description: string, action: HookAction): void;
-export function Teardown(
-  description?: string | undefined | HookAction,
-  action?: HookAction | undefined
-): void {
+// export function Teardown(description: string, action: HookAction): void;
+export function Teardown(description?: string, action?: HookAction): void {
   const descriptionString = typeof description === "string" ? description : undefined;
   const actionFn = typeof description === "string" ? action : description;
   if (!actionFn) {
