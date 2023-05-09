@@ -22,7 +22,6 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
   argName?: string | undefined;
   constructor(
     args?:
-
       | [string | NumberValidatorOpts | undefined]
       | [
           string | NumberValidatorOpts | undefined,
@@ -44,12 +43,13 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
     }
   }
 
-  assertNumber(num?: number): asserts num {
+  assertNumber(num?: number) {
     if (typeof num !== "number") {
       const message = `Expected value to be a number but was [${typeof num}]: ${num}`;
       this.accumulator.push(this.fmt(message));
     }
   }
+
   assertNumberEquals(num: number, equals = this.options?.equals) {
     if (equals && num !== equals) {
       const message = `Expected ${num} to equal ${equals} but did not.`;

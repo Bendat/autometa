@@ -37,9 +37,9 @@ export abstract class BaseArgument<TType> {
 
   assertDefined(value?: unknown): asserts value {
     if (value === undefined || value === null) {
-      const message = `Expected ${c.gray(
-        c.italic(this.typeName)
-      )} to be defined but found ${c.red(value)}`;
+      const message = `Expected ${
+        this.typeName
+      } to be defined but found ${value}`;
       this.accumulator.push(this.fmt(message));
     }
   }

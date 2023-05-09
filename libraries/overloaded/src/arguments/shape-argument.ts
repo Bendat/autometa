@@ -1,10 +1,10 @@
 import { BaseArgument } from "./base-argument";
-import chalk from "chalk";
 import { Infer, string, object, boolean, tuple } from "myzod";
 import { FromShape, ShapeType } from "./types";
 
 export const ShapeValidationSchema = object({
-  exhaustive: boolean(),
+  exhaustive: boolean().optional(),
+  instance: object({}, { allowUnknown: true }).optional(),
 });
 const ShapeArgumentConstructorSchema = tuple([string(), ShapeValidationSchema])
   .or(tuple([string().or(ShapeValidationSchema).optional()]))
@@ -19,47 +19,72 @@ export class ShapeArgument<
 > extends BaseArgument<TRaw> {
   typeName = "object";
   options?: ShapeOptions;
-  constructor(readonly reference: T) {
+  reference: T;
+  constructor(args: (string | T | ShapeOptions)[]) {
     super();
-    for (const key in reference) {
-      const name = reference[key].argName;
+    if (typeof args[0] === "string") {
+      this.argName = args[0];
+    }
+    if (typeof args[0] === "object") {
+      this.reference = args[0] as unknown as T;
+      if (typeof args[1] === "object") {
+        this.options = args[1] as unknown as ShapeOptions;
+      }
+    } else if (typeof args[1] === "object") {
+      this.reference = args[1] as unknown as T;
+      if (typeof args[2] === "object") {
+        this.options = args[2] as unknown as ShapeOptions;
+      }
+    }
+    if (!this.reference) {
+      throw new Error(`Shape Argument must be provided a reference object`);
+    }
+    for (const key in this.reference) {
+      const name = this.reference[key].argName;
       if (!name) {
-        reference[key].argName = key;
-        reference[key].argCategory = "Property";
+        this.reference[key].argName = key;
+        this.reference[key].argCategory = "Property";
       }
     }
   }
 
-  assertObject(value: TRaw) {
+  assertObject(value: unknown) {
     if (typeof value !== "object") {
-      const message = `Expected value to be an ${chalk.blue(
+      const message = `Expected value to be an ${
         this.typeName
-      )} but was [${typeof value}]: ${value}`;
+      } but was [type: ${typeof value}]: '${value}'`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
-  assertExhaustive(value: TRaw) {
-    if (!this.options?.exhaustive || !(this.options?.exhaustive === true)) {
+  assertExhaustive(value: unknown) {
+    if (
+      this.options?.exhaustive === undefined ||
+      this.options?.exhaustive === false
+    ) {
       return;
     }
-    const keys = Object.keys(this.reference);
-    const hasKeys = !keys.map((key) => key in value).includes(false);
-    if (!hasKeys) {
-      const filter = keys
-        .filter((key) => !(key in value))
-        .map((key) => ` ${key}: ${this.reference[key].typeName} `)
-        .join(", ");
-      const message = `Expected object to include all defined keys, but was missing {${filter}}`;
-      this.accumulator.push(this.fmt(message));
+    const asObj = value as unknown as Record<string, unknown>;
+    const refKeys = Object.keys(this.reference);
+    const valKeys = Object.keys(asObj);
+    if (refKeys.length != valKeys.length) {
+      for (const property of valKeys) {
+        if (!(property in this.reference)) {
+          const message = `Argument value contains property '${property}' which is not known for object with keys [${refKeys
+            .map((it) => `'${it}'`)
+            .join()}]`;
+          this.accumulator.push(this.fmt(message));
+        }
+      }
     }
   }
 
-  assertShapeMatches(value: Record<string, unknown> | undefined | null) {
+  assertShapeMatches(value: unknown | undefined | null) {
     const refShape: ShapeType = this.reference;
+    const asObj = value as unknown as Record<string, unknown>;
     for (const key in refShape) {
       const reference = refShape[key];
-      const actual = value && value[key];
+      const actual = value && asObj[key];
       if (!reference.validate(actual)) {
         const message = `Expected all properties to be valid but found:`;
         this.accumulator.push(this.fmt(message));
@@ -70,15 +95,42 @@ export class ShapeArgument<
     }
   }
 
-  validate(value: TRaw): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  assertIsInstance(value: unknown, instance: any = this.options?.instance) {
+    if (instance && !(value instanceof instance)) {
+      const message = `Expected shape to be an instance of ${instance} but was not`;
+      this.accumulator.push(this.fmt(message));
+    }
+  }
+
+  validate(value: unknown): boolean {
     this.assertDefined(value);
     this.assertObject(value);
     this.assertExhaustive(value);
     this.assertShapeMatches(value);
+    this.assertIsInstance(value);
     return this._accumulator.length === 0;
   }
 }
 
-export function shape<T extends ShapeType>(reference: T) {
-  return new ShapeArgument(reference);
+export function shape<T extends ShapeType>(
+  reference: T
+): ShapeArgument<T, FromShape<T>>;
+export function shape<T extends ShapeType>(
+  name: string,
+  reference: T
+): ShapeArgument<T, FromShape<T>>;
+export function shape<T extends ShapeType>(
+  name: string,
+  reference: T,
+  options?: ShapeOptions
+): ShapeArgument<T, FromShape<T>>;
+export function shape<T extends ShapeType>(
+  reference: T,
+  options?: ShapeOptions
+): ShapeArgument<T, FromShape<T>>;
+export function shape<T extends ShapeType>(
+  ...args: (string | T | ShapeOptions)[]
+) {
+  return new ShapeArgument(args);
 }

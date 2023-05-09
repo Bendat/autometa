@@ -2,7 +2,7 @@ import { Infer, object, string, tuple, boolean as bool } from "myzod";
 import { BaseArgument } from "./base-argument";
 
 export const BooleaValidationSchema = object({
-  equals: bool(),
+  equals: bool().optional(),
 });
 const NumberArgumentConstructorSchema = tuple([
   string(),

@@ -1,7 +1,5 @@
-import { ArgumentType } from "./arguments/base-argument";
-import { argStringArray } from "./formatting";
+import { ArgumentType } from "./arguments/types";
 import { Overload } from "./overload";
-import { ReturnTypeTuple } from "./types";
 
 export class Overloads<T extends Overload[]> {
   constructor(readonly overloads: T) {
