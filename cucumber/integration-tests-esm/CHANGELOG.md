@@ -1,5 +1,13 @@
 # integration-tests-esm
 
+## 0.5.4
+
+### Patch Changes
+
+- 2b0a616: Added tag filters to Before and After hook
+- Updated dependencies [2b0a616]
+  - @autometa/cucumber-runner@0.5.4
+
 ## 0.5.3
 
 ### Patch Changes

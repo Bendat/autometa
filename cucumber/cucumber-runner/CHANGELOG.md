@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.5.4
+
+### Patch Changes
+
+- 2b0a616: Added tag filters to Before and After hook
+
 ## 0.5.3
 
 ### Patch Changes
