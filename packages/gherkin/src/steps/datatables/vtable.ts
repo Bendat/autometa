@@ -60,6 +60,7 @@ export class VTable extends ParsedDataTable implements IVTable {
     if (index !== null && index != undefined) {
       return col.at(index);
     }
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return col as any;
   };
