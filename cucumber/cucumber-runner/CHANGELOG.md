@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.5.5
+
+### Patch Changes
+
+- 64bacd4: added 'tryGet' to datatables
+
 ## 0.5.4
 
 ### Patch Changes
