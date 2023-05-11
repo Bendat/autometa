@@ -81,7 +81,15 @@ export class HTable extends ParsedDataTable implements IHTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return col as any;
   };
-
+  tryGet = (header: string, index?: number) => {
+    const colIdx = this.headerMapping[header];
+    const col = this.rows.map((row) => row[colIdx]);
+    if (index !== null && index != undefined) {
+      return col.at(index);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return col as any;
+  };
   /**
    * Return an entire row of the table by its index.
    * ```ts

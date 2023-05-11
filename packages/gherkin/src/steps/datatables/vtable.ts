@@ -45,10 +45,22 @@ export class VTable extends ParsedDataTable implements IVTable {
     if (index !== null && index != undefined) {
       const found = col.at(index);
       if (!found) {
-        throw new Error(`Column ${index} does not exist. This table has ${col.length} columns.`);
+        throw new Error(
+          `Column ${index} does not exist. This table has ${col.length} columns.`
+        );
       }
       return found;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return col as any;
+  };
+  tryGet = (header: string, index?: number) => {
+    const colIdx = this.#headerMapping[header];
+    const col = this.rows[colIdx];
+    if (index !== null && index != undefined) {
+      return col.at(index);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return col as any;
   };
@@ -65,7 +77,9 @@ export class VTable extends ParsedDataTable implements IVTable {
   row(number: number): TableValue[] {
     const row = this.rows.at(number);
     if (!row) {
-      throw new Error(`Row ${number} does not exist. This table has ${this.rows.length} rows.`);
+      throw new Error(
+        `Row ${number} does not exist. This table has ${this.rows.length} rows.`
+      );
     }
     return row;
   }
@@ -82,7 +96,9 @@ export class VTable extends ParsedDataTable implements IVTable {
     return this.rows.map((row) => {
       const col = row.at(number);
       if (!col) {
-        throw new Error(`Column ${number} does not exist. This table has ${row.length} rows.`);
+        throw new Error(
+          `Column ${number} does not exist. This table has ${row.length} rows.`
+        );
       }
       return col;
     });

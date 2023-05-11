@@ -1,5 +1,5 @@
 Feature: A Nested Feature With Hook Areas
-
+  @skipHook
   Scenario: Outer Hook Scenario
     Given a scenario with hooks
 

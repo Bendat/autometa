@@ -1,5 +1,34 @@
 # integration-tests-esm
 
+## 0.5.5
+
+### Patch Changes
+
+- Updated dependencies [64bacd4]
+  - @autometa/cucumber-runner@0.5.5
+
+## 0.5.4
+
+### Patch Changes
+
+- 2b0a616: Added tag filters to Before and After hook
+- Updated dependencies [2b0a616]
+  - @autometa/cucumber-runner@0.5.4
+
+## 0.5.3
+
+### Patch Changes
+
+- @autometa/cucumber-runner@0.5.3
+
+## 0.5.2
+
+### Patch Changes
+
+- c854f19: Setup and Teardow hooks now carry a global object
+- Updated dependencies [c854f19]
+  - @autometa/cucumber-runner@0.5.2
+
 ## 0.5.1
 
 ### Patch Changes

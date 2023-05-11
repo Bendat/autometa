@@ -1,5 +1,30 @@
 # @autometa/cucumber-runner
 
+## 0.5.5
+
+### Patch Changes
+
+- 64bacd4: added 'tryGet' to datatables
+
+## 0.5.4
+
+### Patch Changes
+
+- 2b0a616: Added tag filters to Before and After hook
+
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies [064b589]
+  - @autometa/dto-builder@0.8.0
+
+## 0.5.2
+
+### Patch Changes
+
+- c854f19: Setup and Teardow hooks now carry a global object
+
 ## 0.5.1
 
 ### Patch Changes

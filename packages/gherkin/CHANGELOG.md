@@ -1,5 +1,18 @@
 # Gherkin
 
+## 0.2.3
+
+### Patch Changes
+
+- 64bacd4: added 'tryGet' to datatables
+
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [064b589]
+  - @autometa/dto-builder@0.8.0
+
 ## 0.2.1
 
 ### Patch Changes
