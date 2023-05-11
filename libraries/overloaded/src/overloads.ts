@@ -1,7 +1,9 @@
 import { ArgumentType } from "./arguments/types";
 import { Overload } from "./overload";
+import { OverloadAction } from "./overload-actions";
+import { AnyArg, ReturnTypes, ReturnTypeTuple } from "./types";
 
-export class Overloads<T extends Overload[]> {
+export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
   constructor(readonly overloads: T) {
     overloads.forEach((argument, idx) => argument.args[0].withIndex(idx));
   }
@@ -21,10 +23,13 @@ ${reports}`);
   }
 }
 
-export function overloads<T extends Overload[]>(...args: T) {
+export function overloads<T extends Overload<AnyArg[], OverloadAction>[]>(
+  ...args: T
+) {
   const overloads = new Overloads(args);
   return {
-    use: (actualArgs: any[]): any => overloads.match(actualArgs),
-    // use: (actualArgs: any[]): ReturnTypeTuple<T> => overloads.match(actualArgs),
+    // use: (actualArgs: any[]): any => overloads.match(actualArgs),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    use: (actualArgs: any[]): ReturnTypes<T> => overloads.match(actualArgs),
   };
 }

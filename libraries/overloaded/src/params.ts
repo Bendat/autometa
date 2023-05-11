@@ -11,7 +11,7 @@ export function params<P extends AnyArg[], T extends ArgumentTypes<P>>(
       // Otherwise it works fine
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      implementation: (...args: ValidatorArgumentTuple<T>) => K
+      implementation: (...implArgs: ValidatorArgumentTuple<T>) => K
     ) => {
       return new Overload(args, implementation);
     },

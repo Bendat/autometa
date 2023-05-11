@@ -1,8 +1,6 @@
 import { object, number as num, string as str, Infer } from "myzod";
-import { AnyArg, ArgumentTypes } from "src/types";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
-import { string } from "./string-argument";
-import { ArgumentType, FunctionType } from "./types";
+import { FunctionType } from "./types";
 
 export const FunctionValidationSchema = object({
   maxArgLength: num().optional(),

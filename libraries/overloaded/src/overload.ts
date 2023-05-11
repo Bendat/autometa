@@ -1,10 +1,12 @@
-import { ArgumentType, BaseArgument } from "./arguments/base-argument";
+import { BaseArgument } from "./arguments/base-argument";
+import { ArgumentType } from "./arguments/types";
 import { argStringArray, colorCompareArgStrings } from "./formatting";
-
+import { OverloadAction } from "./overload-actions";
+import { AnyArg } from "./types";
 export class Overload<
-  TArgs extends BaseArgument[] = BaseArgument[],
+  TArgs extends AnyArg[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TAction extends (...args: any[]) => any = (...args: any) => any
+  TAction extends OverloadAction
 > {
   constructor(readonly args: TArgs, readonly action: TAction) {
     args.forEach((arg, idx) => arg.withIndex(idx));

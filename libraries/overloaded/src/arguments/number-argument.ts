@@ -51,24 +51,21 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
   }
 
   assertNumberEquals(num: number, equals = this.options?.equals) {
-    if (equals && num !== equals) {
+    if (equals !== undefined && num !== equals) {
       const message = `Expected ${num} to equal ${equals} but did not.`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
-  assertNumberLessThanMax(num: number, max = this.options?.max): asserts num {
-    if (max && num > max) {
-      const message = `Expected number to be less than max value ${max}`;
+  assertNumberLessThanMax(num: number, max = this.options?.max) {
+    if (max !== undefined && num > max) {
+      const message = `Expected number ${num} to be less than max value ${max}`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
-  assertNumberGreaterThanMin(
-    num: number,
-    min = this.options?.min
-  ): asserts num {
-    if (min && num < min) {
+  assertNumberGreaterThanMin(num: number, min = this.options?.min) {
+    if (min !== undefined && num < min) {
       const message = `Expected number to be greater than minimum value ${min}`;
       this.accumulator.push(this.fmt(message));
     }
@@ -90,7 +87,7 @@ export function number(name: string): NumberArgument<number>;
 export function number(
   name: string,
   opts: NumberValidatorOpts
-): BaseArgument<number>;
+): NumberArgument<number>;
 export function number(
   ...args: (NumberValidatorOpts | string)[]
 ): NumberArgument<number> {

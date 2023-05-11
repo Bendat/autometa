@@ -13,9 +13,7 @@ const NumberArgumentConstructorSchema = tuple([
 
 export type BooleanValidatorOpts = Infer<typeof BooleaValidationSchema>;
 
-export class BooleanArgument<
-  T extends boolean = boolean
-> extends BaseArgument<T> {
+export class BooleanArgument<T extends boolean = boolean> extends BaseArgument<T> {
   typeName = "boolean";
   options?: BooleanValidatorOpts | undefined;
   argName?: string | undefined;
@@ -42,12 +40,12 @@ export class BooleanArgument<
     }
   }
 
-  assertBoolean(num?: boolean): asserts num {
-    if (typeof num !== "boolean") {
+  assertBoolean(val?: boolean): asserts val {
+    if (typeof val !== "boolean") {
       this.accumulator.push(
         `Arg[${
           this.identifier
-        }]: Expected boolean but found [${typeof num}]${num}`
+        }]: Expected boolean but found [type: ${typeof val}]${val}`
       );
     }
   }
