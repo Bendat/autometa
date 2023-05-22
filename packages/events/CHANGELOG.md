@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.0.5
+
+### Patch Changes
+
+- bc5e12c: Added 'overloaded' package for overloaded or pattern matched functins and methods
+- Updated dependencies [bc5e12c]
+  - @autometa/gherkin@0.2.4
+
 ## 0.0.4
 
 ### Patch Changes

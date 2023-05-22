@@ -1,5 +1,11 @@
 # integration-tests-esm
 
+## 0.5.6
+
+### Patch Changes
+
+- bc5e12c: Added 'overloaded' package for overloaded or pattern matched functins and methods
+
 ## 0.5.5
 
 ### Patch Changes
