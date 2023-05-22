@@ -8,6 +8,7 @@ import { overloads } from "src/overloads";
 import { params } from "src/params";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { func } from "src/arguments/function-argument";
+import { unknown } from "../arguments/unknown-argument";
 const testFn = vi.fn();
 
 function overloaded(stringParam1: number, stringparam2: number): number;
@@ -19,6 +20,7 @@ function overloaded(
 function overloaded(arrayParam: (string | number)[]): void;
 function overloaded(shapeParam: { c: string; d: [string, number] }): void;
 function overloaded(functionParam: (a: string) => string): void;
+function overloaded(str: string, ukwn: unknown, tail: boolean): void;
 function overloaded(...args: unknown[]) {
   return overloads(
     params(string(), string()).matches((a, b) => {
@@ -57,6 +59,12 @@ function overloaded(...args: unknown[]) {
       expect(d).toBeInstanceOf(Array);
       testFn(a);
       return d;
+    }),
+    params(string(), unknown(), boolean()).matches((a, b) => {
+      expect(typeof a).toEqual("string");
+      expect(typeof b).toEqual('boolean');
+      testFn(a, b);
+      return "hello there";
     }),
     params(func<(a: string) => string>("a")).matches((a) => {
       expect(typeof a).toEqual("function");
@@ -102,6 +110,10 @@ describe("integration test - function", () => {
   });
   it("should match a ((a: string)=> string) function", () => {
     overloaded((a: string) => a);
+    expect(testFn).toHaveBeenCalledTimes(1);
+  });
+  it("should match a ((a: string)=> string) function", () => {
+    overloaded("hello", true, true);
     expect(testFn).toHaveBeenCalledTimes(1);
   });
 });

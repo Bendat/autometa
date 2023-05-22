@@ -22,7 +22,7 @@ export const ArrayValidationSchema = object({
   includes: unknown().optional(),
 }).and(BaseArgumentSchema);
 
-type ArrayOptions = Infer<typeof ArrayValidationSchema>;
+export type ArrayValidatorOpts = Infer<typeof ArrayValidationSchema>;
 const ArrayArgumentParamSchema = arr(
   string().or(arr(unknown())).or(ArrayValidationSchema)
 );
@@ -32,9 +32,9 @@ export class ArrayArgument<
 > extends BaseArgument<TRaw> {
   typeName = "Array";
   types: string[] = [];
-  options: ArrayOptions;
+  declare options: ArrayValidatorOpts;
   reference: T;
-  constructor(args: (string | T | ArrayOptions)[]) {
+  constructor(args: (string | T | ArrayValidatorOpts)[]) {
     super();
     if (typeof args[0] === "string") {
       this.argName = args[0];
@@ -158,14 +158,14 @@ export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
   name: string,
   acceptedTypes: T,
-  options: ArrayOptions
+  options: ArrayValidatorOpts
 ): ArrayArgument<P, FromArray<T>>;
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
   acceptedTypes: T,
-  options: ArrayOptions
+  options: ArrayValidatorOpts
 ): ArrayArgument<P, FromArray<T>>;
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
-  ...args: (string | T | ArrayOptions)[]
+  ...args: (string | T | ArrayValidatorOpts)[]
 ) {
   ArrayArgumentParamSchema.parse(args);
   return new ArrayArgument(args);

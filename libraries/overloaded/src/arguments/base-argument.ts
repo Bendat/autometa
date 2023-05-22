@@ -11,13 +11,12 @@ export const BaseArgumentSchema = object({
     )
     .optional(),
 });
-export type BaseArgumentConfig = Infer<typeof BaseArgumentSchema>;
-
+export type ArgumentValidatorOpts = Infer<typeof BaseArgumentSchema>;
 export abstract class BaseArgument<TType> {
   example?: TType;
   abstract typeName: string;
   protected _accumulator: Accumulator<string> = new Accumulator();
-  readonly options?: BaseArgumentConfig;
+  readonly options?: ArgumentValidatorOpts;
   argName?: string;
   argCategory = "Arg";
   #index: number;

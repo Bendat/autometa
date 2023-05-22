@@ -67,7 +67,7 @@ export class HTable extends ParsedDataTable implements IHTable {
     const [_headers, ...rows] = [...raw];
     this.rows = rows;
   }
-  get = (header: string, index?: number, throwOnmissing = false) => {
+  get = (header: string, index?: number) => {
     const colIdx = this.headerMapping[header];
     const col = this.rows.map((row) => row[colIdx]);
     if (index !== null && index != undefined) {

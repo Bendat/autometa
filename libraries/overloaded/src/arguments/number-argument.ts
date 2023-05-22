@@ -3,7 +3,6 @@ import {
   string,
   object,
   number as num,
-  tuple,
   literal,
   array,
 } from "myzod";
@@ -17,16 +16,13 @@ export const NumberValidationSchema = object({
   in: array(num()).optional(),
 }).and(BaseArgumentSchema);
 
-const NumberArgumentParamsSchema = tuple([string(), NumberValidationSchema])
-  .or(tuple([string().or(NumberValidationSchema).optional()]))
-  .or(tuple([]));
+const NumberArgumentParamsSchema = array(string().or(NumberValidationSchema));
 
 export type NumberValidatorOpts = Infer<typeof NumberValidationSchema>;
 
 export class NumberArgument<T extends number> extends BaseArgument<T> {
   typeName = "number";
-  options?: NumberValidatorOpts | undefined;
-  argName?: string | undefined;
+  declare options?: NumberValidatorOpts | undefined;
   constructor(args: (NumberValidatorOpts | string)[]) {
     super();
     if (!args) {
@@ -82,8 +78,6 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
     }
   }
   assertinArray(val: unknown, value?: number) {
-    console.log(typeof num !== "number");
-    console.log(typeof num !== "bigint");
     if (typeof num !== "number" && typeof num !== "bigint") {
       return;
     }

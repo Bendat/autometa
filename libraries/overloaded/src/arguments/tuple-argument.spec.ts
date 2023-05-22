@@ -11,7 +11,6 @@ describe("Tuple Argument", () => {
       it("should add an error to the accumulator if the tuple is not an array type", () => {
         const tup = tuple("tuple", [string("a")] as unknown as [AnyArg]);
         tup.validate("");
-        console.log(tup.accumulator.asString());
         expect(tup.accumulator.length).toEqual(1);
       });
       it("should not add an error to the accumulator if the tuple is an array type", () => {

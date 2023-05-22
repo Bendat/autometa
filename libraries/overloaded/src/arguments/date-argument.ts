@@ -1,4 +1,4 @@
-import { date as dt, Infer, object, string, tuple } from "myzod";
+import { date as dt, Infer, object, string, array } from "myzod";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 
 export const DateValidationOptsSchema = object({
@@ -9,12 +9,9 @@ export const DateValidationOptsSchema = object({
 
 export type DateValidatorOpts = Infer<typeof DateValidationOptsSchema>;
 
-const DateConstructorArgumentSchema = tuple([
-  string(),
-  DateValidationOptsSchema.optional(),
-])
-  .or(tuple([string()]))
-  .or(tuple([DateValidationOptsSchema.optional()]));
+const DateConstructorArgumentSchema = array(
+  string().or(DateValidationOptsSchema.optional())
+);
 
 export type DateArguments = Infer<typeof DateConstructorArgumentSchema>;
 
@@ -23,7 +20,7 @@ export class DateArgument<T extends Date> extends BaseArgument<T> {
   isTypeMatch(type: unknown): boolean {
     return type instanceof DateArgument;
   }
-  options?: DateValidatorOpts;
+  declare options?: DateValidatorOpts;
 
   constructor(args: DateArguments) {
     super();

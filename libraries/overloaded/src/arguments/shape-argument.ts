@@ -15,7 +15,7 @@ export class ShapeArgument<
   TRaw extends FromShape<T>
 > extends BaseArgument<TRaw> {
   typeName = "object";
-  options?: ShapeOptions;
+  declare options?: ShapeOptions;
   reference: T;
   constructor(args: (string | T | ShapeOptions)[]) {
     super();

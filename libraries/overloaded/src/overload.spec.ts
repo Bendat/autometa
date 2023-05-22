@@ -2,8 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { number } from "./arguments/number-argument";
 import { string } from "./arguments/string-argument";
 import { Overload } from "./overload";
-import { overloads } from "./overloads";
-import { params } from "./params";
 
 describe("Overload Object", () => {
   it("should match the correct argument signature", () => {

@@ -7,7 +7,7 @@ export const TupleValidationSchema = object({
   includes: unknown().optional(),
 }).and(BaseArgumentSchema);
 
-export type TupleValidationOptions = Infer<typeof TupleValidationSchema>;
+export type TupleValidatorOpts = Infer<typeof TupleValidationSchema>;
 const TupleArgumentParamSchema = array(
   string().or(array(unknown())).or(TupleValidationSchema)
 );
@@ -15,11 +15,11 @@ export class TupleArgument<
   T extends TupleType,
   TRaw extends FromTuple<T>
 > extends BaseArgument<TRaw> {
-  options?: TupleValidationOptions;
+  declare options?: TupleValidatorOpts;
   typeName = "object";
   types: string[] = [];
   readonly reference: T;
-  constructor(args: (string | T | TupleValidationOptions)[]) {
+  constructor(args: (string | T | TupleValidatorOpts)[]) {
     super();
     if (!args) {
       throw new Error(
@@ -100,14 +100,14 @@ export class TupleArgument<
 export function tuple<P extends TupleType, T extends ArgumentTypes<P>>(
   name: string,
   acceptedTypes: T,
-  options?: TupleValidationOptions
+  options?: TupleValidatorOpts
 ): TupleArgument<T, FromTuple<T>>;
 export function tuple<P extends TupleType, T extends ArgumentTypes<P>>(
   acceptedTypes: T,
-  options?: TupleValidationOptions
+  options?: TupleValidatorOpts
 ): TupleArgument<T, FromTuple<T>>;
 export function tuple<P extends TupleType, T extends ArgumentTypes<P>>(
-  ...args: (string | T | TupleValidationOptions)[]
+  ...args: (string | T | TupleValidatorOpts)[]
 ) {
   TupleArgumentParamSchema.parse(args);
   return new TupleArgument(args);

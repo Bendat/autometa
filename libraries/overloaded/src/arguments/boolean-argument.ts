@@ -1,4 +1,4 @@
-import { Infer, object, string, tuple, boolean as bool } from "myzod";
+import { Infer, object, string, boolean as bool, array } from "myzod";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 
 export const BooleaValidationSchema = object({
@@ -6,19 +6,18 @@ export const BooleaValidationSchema = object({
   // "not" equals property
 }).and(BaseArgumentSchema);
 
-const BooleanArgumentConstructorSchema = tuple([
-  string(),
-  BooleaValidationSchema,
-])
-  .or(tuple([string().or(BooleaValidationSchema).optional()]))
-  .or(tuple([]));
+const BooleanArgumentConstructorSchema = array(
+  string().or(BooleaValidationSchema)
+);
 
 export type BooleanValidatorOpts = Infer<typeof BooleaValidationSchema>;
 
-export class BooleanArgument<T extends boolean = boolean> extends BaseArgument<T> {
+export class BooleanArgument<
+  T extends boolean = boolean
+> extends BaseArgument<T> {
   typeName = "boolean";
-  options?: BooleanValidatorOpts;
-  argName?: string | undefined;
+  declare options?: BooleanValidatorOpts;
+
   constructor(args: (BooleanValidatorOpts | string)[]) {
     super();
     if (!args) {

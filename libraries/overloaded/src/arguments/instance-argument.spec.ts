@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { instance } from "./instance-argument";
 import { number } from "./number-argument";
 import { shape } from "./shape-argument";
-import { string } from "./string-argument";
 class Foo {
   constructor(readonly a: number, readonly b: string) {}
 }
@@ -19,7 +18,6 @@ describe("Instance Argument", () => {
         const arg = instance(Foo);
         arg.assertIsInstance(new Bar());
         expect(arg.accumulator).toHaveLength(1);
-        console.log(arg.accumulator[0]);
         expect(arg.accumulator[0]).toEqual(
           "Arg[unnamed arg]: Expected value of [object Object] to be an instance of Foo but it was not."
         );

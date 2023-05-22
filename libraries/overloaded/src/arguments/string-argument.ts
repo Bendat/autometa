@@ -9,9 +9,12 @@ export const StringValidatorOpsSchema = object({
   in: array(zstring()).optional(),
   startsWith: zstring().optional(),
   endsWith: zstring().optional(),
+  pattern: object({ source: zstring() }, { allowUnknown: true }).optional(),
 }).and(BaseArgumentSchema);
 
-export type StringValidatorOpts = Infer<typeof StringValidatorOpsSchema>;
+export type StringValidatorOpts = Infer<typeof StringValidatorOpsSchema> & {
+  pattern?: RegExp;
+};
 
 const StringArgumentConstructorSchema = tuple([
   zstring(),
@@ -22,8 +25,8 @@ const StringArgumentConstructorSchema = tuple([
 
 export class StringArgument<T extends string> extends BaseArgument<T> {
   typeName = "string";
-  options?: StringValidatorOpts;
-  argName?: string;
+  declare options?: StringValidatorOpts;
+
   constructor(args?: (string | StringValidatorOpts)[]) {
     super();
     if (!args) {
@@ -42,69 +45,93 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
   isTypeMatch(type: unknown): boolean {
     return type === this.typeName || typeof type === this.typeName;
   }
-  assertStringLessThanMax(str: string, max?: number) {
-    if (max && str.length > max) {
+  assertStringLessThanMax(str: string, max = this.options?.maxLength) {
+    if (
+      typeof max === "number" &&
+      typeof str === "string" &&
+      str.length > max
+    ) {
       const message = `Expected ${str} to have less than ${max} characters but found ${str.length}`;
       this.accumulator.push(this.fmt(message));
-      return false;
     }
-    return true;
   }
 
-  assertStringGreaterThanMin(str: string, min?: number) {
-    if (min && str.length < min) {
+  assertStringGreaterThanMin(str: unknown, min = this.options?.minLength) {
+    if (
+      typeof min === "number" &&
+      typeof str === "string" &&
+      str.length < min
+    ) {
       const message = `Expected ${str} to have at least ${min} characters but found ${str.length}`;
       this.accumulator.push(this.fmt(message));
-      return false;
     }
-    return true;
   }
-  assertStringIncludes(str: string, value?: string) {
-    if (value && !str.includes(value)) {
+  assertStringIncludes(str: unknown, value = this.options?.includes) {
+    if (
+      typeof str === "string" &&
+      typeof value === "string" &&
+      !str.includes(value)
+    ) {
       const message = `Expected ${str} to include ${value} but the substring could not be found`;
       this.accumulator.push(this.fmt(message));
-      return false;
     }
-    return true;
   }
-
-  assertStringEquals(str: string, value?: string) {
-    if (value && str !== value) {
+  assertStringIn(str: unknown, value = this.options?.in) {
+    if (
+      typeof str === "string" &&
+      Array.isArray(value) &&
+      !value.includes(str)
+    ) {
+      const message = `Expected ${str} to be a member of list ${JSON.stringify(
+        value
+      )} but the substring could not be found`;
+      this.accumulator.push(this.fmt(message));
+    }
+  }
+  assertStringEquals(str: unknown, value = this.options?.equals) {
+    if (typeof str === "string" && typeof value === "string" && str !== value) {
       const diff = gitDiff(str, value);
       const message = `Expected ${str} to equal ${value} but did not. Diff: \n${diff}`;
       this.accumulator.push(this.fmt(message));
-      return false;
     }
-    return true;
   }
 
-  assertStringMatches(str: string, value?: RegExp) {
-    if (value && value.test(str)) {
-      const message = `Expected ${value} to match pattern ${value} but it did not`;
+  assertStringMatches(str: unknown, pattern = this.options?.pattern) {
+    if (
+      typeof str === "string" &&
+      pattern instanceof RegExp &&
+      pattern.test(str)
+    ) {
+      const message = `Expected ${pattern} to match pattern ${pattern.source} but it did not`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
-  assertString(str?: string) {
-    if (typeof str !== "string") {
+  assertString(str?: unknown) {
+    if (typeof str !== "string" && !this.options?.optional) {
       const message = `Expected argument to be of type 'string' but was: [${typeof str}] ${str}`;
       this.accumulator.push(this.fmt(message));
     }
   }
-  assertinArray(val: unknown, value?: string) {
-    if (value && Array.isArray(value) && !value.includes(val)) {
-      const message = `Expected ${value} to include ${val} but it was not`;
+  assertinArray(str: unknown, array = this.options?.in) {
+    if (
+      typeof str === "string" &&
+      Array.isArray(array) &&
+      !array.includes(str)
+    ) {
+      const message = `Expected ${array} to include ${str} but it was not`;
       this.accumulator.push(this.fmt(message));
     }
   }
+
   validate(value: string) {
     this.assertDefined(value);
     this.assertString(value);
-    this.assertStringEquals(value, this.options?.equals);
-    this.assertStringLessThanMax(value, this.options?.maxLength);
-    this.assertStringGreaterThanMin(value, this.options?.minLength);
+    this.assertStringEquals(value);
+    this.assertStringLessThanMax(value);
+    this.assertStringGreaterThanMin(value);
     this.assertinArray(value);
-    this.assertStringIncludes(value, this.options?.includes);
+    this.assertStringIncludes(value);
     return this.accumulator.length === 0;
   }
 }
