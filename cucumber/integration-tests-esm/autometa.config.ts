@@ -13,6 +13,7 @@ defineConfig({
   app: App,
   globalsRoot: "globals",
   featuresRoot: "test",
+  
   runner: {
     name: "jest",
     test,
