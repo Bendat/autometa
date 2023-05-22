@@ -9,7 +9,7 @@ export const FunctionValidationSchema = object({
   name: str().optional(),
 }).and(BaseArgumentSchema);
 
-type FunctionOptions = Infer<typeof FunctionValidationSchema>;
+export type FunctionOptions = Infer<typeof FunctionValidationSchema>;
 
 export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
   typeName = "function";
@@ -103,5 +103,3 @@ export function func<T extends FunctionType>(
 ) {
   return new FunctionArgument<T>(args);
 }
-
-func<(a: string) => void>();

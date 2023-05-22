@@ -301,6 +301,108 @@ Assertions are used for filtering, and do not through errors by themselves.
 most string assertions will not be executed if a number or boolean or object is
 passed. In that case the assertion executed will be on the type itself.
 
+### Fallback
+
+If no overloads match the provided argument an Error will be thrown
+detailing why each overload failed to match.
+
+Alternatively it is possible to provide a 'fallback' which
+will be executed instead of an error being thrown. The fallback
+will recieve a rest param of arguments with types being `unknown`
+
+A Fallback is defined with the `fallback` function.
+
+```ts
+import { overloads, params, string, number } from "@autometa/overloaded";
+
+function add(a: string, b: string): [string, string];
+function add(a: number, b: number): number;
+
+function add(
+  ...args: (string | number)[] // 'unknown' is a union is also fine here
+) {
+  return overloads(
+    params(string(), string()).match((a, b) => [a, b]),
+    params(number(), number()).match((a, b) => a + b),
+    fallback((...args: unknown[]) => console.log(args))
+  ).use(args);
+}
+```
+
+## Normalize Constructor or function arguments
+
+```ts
+declare class MyObject {
+  constructor(name: string | undefined, widgets: string[] | undefined);
+}
+function makeMyClass(name: string): MyObject;
+function makeMyClass(widgets: string[]): MyObject;
+function makeMyClass(name: string, widgets: string[]): MyObject;
+function makeMyClass(...args: (string | string[])[]) {
+  return overloads(
+    // Create an instance with only a name
+    params(string("name")).matches((name) => new MyObject(name)),
+    // Create an instance with only its list of widgets
+    params(array("widgets", [string()])).matches(
+      (name) => new MyObject(undefined, widget)
+    ),
+    // Create an instance with both a name and its list of widgets
+    params(string("name"), array("widgets", [string()])).matches(
+      (name) => new MyObject(undefined, widget)
+    ),
+    // No match - Throw an error
+    fallback((...args) => {
+      throw new Error(
+        `A 'MyObject' instance requires either a name, a list of widgets or both. Recieved: ${args}`
+      );
+    })
+  ).use(args);
+}
+```
+
+## Factory Function
+
+Convert a plain javascript object to a DTO instance. Pretend
+we have a `plainToDto` function which creates a new instance of a class
+and assigns the values from a raw object to its instance properties
+
+```ts
+abstract class User {
+  name: string;
+  registered: Date;
+}
+class AdminUser extends User {
+  permissions: ("read" | "write" | "ban" | "unban" | "sticky")[];
+}
+class HobbyUser extends User {
+  interests: string[];
+}
+class PaidUser extends User {
+  interests: string[];
+  tier: number;
+  badges: number[];
+}
+
+// return type inferred as 
+// AdminUser | HobbyUser | PaidUser
+// Throws an error if no match found.
+function createUserDto(user: unknown) {
+  return overloads(
+    params(shape({ permissions: array([string()]) })).matches((user) =>
+      plainToDto(AdminUser, user)
+    ),
+    params(shape({ interests: array([string()]) })).matches((user) =>
+      plainToDto(HobbuUser, user)
+    ),
+    params(shape({ tier: number() })).matches((user) =>
+      plainToDto(PaidUser, user)
+    )
+  ).use([user]);
+}
+```
+
+## Argument Types
+
 ### Primitives
 
 The "primitives", `string`, `number` and `boolean` are represented by factories
@@ -391,16 +493,18 @@ params(string("a", { in: [101, 102] })).matches((a) =>
 
 _equals_: Asserts that the provided number is exactly equal to the expected.
 
-
 ```ts
 params(string("a", { equals: 101 })).matches((a) => DalmationCoatFactory);
 ```
+
 _types_: Asserts that the provided value is either an integer
 or a float value.
+
 ```ts
-params(string("a", { type: 'float' })).matches((a) => a * MY_CONST);
-params(string("a", { type: 'int' })).matches((a) => MY_ENUM[a]);
+params(string("a", { type: "float" })).matches((a) => a * MY_CONST);
+params(string("a", { type: "int" })).matches((a) => MY_ENUM[a]);
 ```
+
 **boolean** assertions
 
 - equals
@@ -526,31 +630,3 @@ params(instance(MyClass, shape({ name: string(), age: number() }))).match(
 ```
 
 Instance assertions can be defined in the `shape` argument.
-
-### Fallback
-
-If no overloads match the provided argument an Error will be thrown
-detailing why each overload failed to match.
-
-Alternatively it is possible to provide a 'fallback' which
-will be executed instead of an error being thrown. The fallback
-will recieve a rest param of arguments with types being `unknown`
-
-A Fallback is defined with the `fallback` function.
-
-```ts
-import { overloads, params, string, number } from "@autometa/overloaded";
-
-function add(a: string, b: string): [string, string];
-function add(a: number, b: number): number;
-
-function add(
-  ...args: (string | number)[] // 'unknown' is a union is also fine here
-) {
-  return overloads(
-    params(string(), string()).match((a, b) => [a, b]),
-    params(number(), number()).match((a, b) => a + b),
-    fallback((...args: unknown[]) => console.log(args))
-  ).use(args);
-}
-```
