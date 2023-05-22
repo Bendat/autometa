@@ -11,3 +11,4 @@ export { date, DateValidatorOpts } from "./date-argument";
 export { unknown } from "./unknown-argument";
 export { instance } from "./instance-argument";
 export { ArgumentValidatorOpts } from "./base-argument";
+export { func, FunctionOptions } from "./function-argument";
