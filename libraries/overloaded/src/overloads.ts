@@ -1,7 +1,7 @@
 import { ArgumentType } from "./arguments/types";
 import { Overload } from "./overload";
 import { OverloadAction } from "./overload-actions";
-import { AnyArg, ReturnTypes, ReturnTypeTuple } from "./types";
+import { AnyArg, ReturnTypes } from "./types";
 
 export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
   constructor(readonly overloads: T) {
@@ -11,8 +11,12 @@ export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
   match(args: ArgumentType[]) {
     for (const overload of this.overloads) {
       if (overload.isMatch(args)) {
-        return overload.action(args);
+        return overload.action(...args);
       }
+    }
+    const fallback = this.overloads.find((it) => it.fallback === true);
+    if (fallback) {
+      return fallback.action(...args);
     }
     const reports = this.overloads
       .map((it, idx) => it.getReport(idx, args))
@@ -23,13 +27,29 @@ ${reports}`);
   }
 }
 
+/**
+ * Entrypoint for overload implementations. Accepts parameter validators and their matching
+ * function implementations. Once complete, pass the function args to `.use(args)` to execute
+ * your overloads. If none are matching and no fallback is provided, an error will be thrown.
+ *
+ * ```ts
+ * function foo(a: string, b: number): void;
+ * function foo(...args: (string | number)[]){
+ *  return overloads(
+ *    params(string(), number()).match((a, b)=>{...})
+ *    fallback().match((a, b)=>{...})
+ *  ).use(args)
+ * }
+ * ```
+ * @param args
+ * @returns
+ */
 export function overloads<T extends Overload<AnyArg[], OverloadAction>[]>(
   ...args: T
 ) {
   const overloads = new Overloads(args);
   return {
-    // use: (actualArgs: any[]): any => overloads.match(actualArgs),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    use: (actualArgs: any[]): ReturnTypes<T> => overloads.match(actualArgs),
+    use: (actualArgs: unknown[]): ReturnTypes<T> => overloads.match(actualArgs),
   };
 }

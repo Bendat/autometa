@@ -1,14 +1,11 @@
-import { BaseArgument } from "./base-argument";
-import { Infer, string, object, boolean, tuple } from "myzod";
+import { BaseArgument, BaseArgumentSchema } from "./base-argument";
+import { Infer, string, object, boolean, array } from "myzod";
 import { FromShape, ShapeType } from "./types";
 
 export const ShapeValidationSchema = object({
   exhaustive: boolean().optional(),
   instance: object({}, { allowUnknown: true }).optional(),
-});
-const ShapeArgumentConstructorSchema = tuple([string(), ShapeValidationSchema])
-  .or(tuple([string().or(ShapeValidationSchema).optional()]))
-  .or(tuple([]));
+}).and(BaseArgumentSchema);
 
 export type ShapeOptions = Infer<typeof ShapeValidationSchema>;
 export type ShapeValidatorOpts = Infer<typeof ShapeValidationSchema>;
@@ -47,7 +44,9 @@ export class ShapeArgument<
       }
     }
   }
-
+  isTypeMatch(type: unknown): boolean {
+    return type === this.typeName || typeof type === this.typeName;
+  }
   assertObject(value: unknown) {
     if (typeof value !== "object") {
       const message = `Expected value to be an ${
@@ -112,7 +111,12 @@ export class ShapeArgument<
     return this._accumulator.length === 0;
   }
 }
-
+const ShapeArgumentParamsSchema = array(
+  string()
+    .or(object({}).allowUnknownKeys())
+    .or(ShapeValidationSchema)
+    .optional()
+);
 export function shape<T extends ShapeType>(
   reference: T
 ): ShapeArgument<T, FromShape<T>>;
@@ -132,5 +136,6 @@ export function shape<T extends ShapeType>(
 export function shape<T extends ShapeType>(
   ...args: (string | T | ShapeOptions)[]
 ) {
+  ShapeArgumentParamsSchema.parse(args);
   return new ShapeArgument(args);
 }

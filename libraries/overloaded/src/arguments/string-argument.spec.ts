@@ -79,10 +79,10 @@ describe("StringArgument", () => {
     });
     describe("is value in list", () => {
       it("should do nothing if the value is in the array", () => {
-        expect(sut.assertStringIn("1234", ["1234"])).toEqual(true);
+        expect(sut.assertinArray("1234", ["1234"])).toEqual(true);
       });
       it("should throw an error if the value is not included in the array", () => {
-        expect(sut.assertStringIn("1234", [])).toEqual(false);
+        expect(sut.assertinArray("1234", [])).toEqual(false);
       });
     });
   });

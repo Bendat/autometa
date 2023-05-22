@@ -63,5 +63,27 @@ describe("Number Argument", () => {
         );
       });
     });
+
+    describe("assertTypes", () => {
+      it("should validate that the value is a float", () => {
+        const sut = number("first", { type: "float" });
+        sut.assertType(1.5);
+        expect(sut.accumulator.length).toEqual(0);
+      });
+      it("should fail to validate that the value is a float", () => {
+        const sut = number("first", { type: "float" });
+        sut.assertType(0);
+        expect(sut.accumulator.length).toEqual(1);
+
+        expect(sut.accumulator.asString().trim()).toEqual(
+          "Arg[first]: Expected number '0' to be a float but was an integer"
+        );
+      });
+      it("should validate that the value is a float", () => {
+        const sut = number("first", { type: "float" });
+        sut.assertType(1.5);
+        expect(sut.accumulator.length).toEqual(0);
+      });
+    });
   });
 });

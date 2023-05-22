@@ -1,10 +1,12 @@
 import { Infer, object, string, tuple, boolean as bool } from "myzod";
-import { BaseArgument } from "./base-argument";
+import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 
 export const BooleaValidationSchema = object({
   equals: bool().optional(),
-});
-const NumberArgumentConstructorSchema = tuple([
+  // "not" equals property
+}).and(BaseArgumentSchema);
+
+const BooleanArgumentConstructorSchema = tuple([
   string(),
   BooleaValidationSchema,
 ])
@@ -15,16 +17,9 @@ export type BooleanValidatorOpts = Infer<typeof BooleaValidationSchema>;
 
 export class BooleanArgument<T extends boolean = boolean> extends BaseArgument<T> {
   typeName = "boolean";
-  options?: BooleanValidatorOpts | undefined;
+  options?: BooleanValidatorOpts;
   argName?: string | undefined;
-  constructor(
-    args?:
-      | [string | BooleanValidatorOpts | undefined]
-      | [
-          string | BooleanValidatorOpts | undefined,
-          string | BooleanValidatorOpts | undefined
-        ]
-  ) {
+  constructor(args: (BooleanValidatorOpts | string)[]) {
     super();
     if (!args) {
       return;
@@ -57,6 +52,9 @@ export class BooleanArgument<T extends boolean = boolean> extends BaseArgument<T
       );
     }
   }
+  isTypeMatch(type: unknown): boolean {
+    return typeof type === this.typeName;
+  }
 
   validate(value: boolean): boolean {
     this.assertDefined(value);
@@ -76,7 +74,6 @@ export function boolean(
 export function boolean(
   ...args: (BooleanValidatorOpts | string)[]
 ): BooleanArgument {
-  const [nameOrOpts, opts] = args;
-  NumberArgumentConstructorSchema.parse(args);
-  return new BooleanArgument([nameOrOpts, opts]);
+  BooleanArgumentConstructorSchema.parse(args);
+  return new BooleanArgument(args);
 }

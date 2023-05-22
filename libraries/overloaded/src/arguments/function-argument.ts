@@ -28,6 +28,11 @@ export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
       this.options = args[1];
     }
   }
+
+  isTypeMatch(type: unknown): boolean {
+    return type === this.typeName || typeof type === this.typeName;
+  }
+
   assertIsFunction(value: unknown): asserts value is T {
     if (typeof value !== "function") {
       const message = `Expected function arguments to be a function but found ${typeof value}`;
@@ -59,7 +64,7 @@ export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
     if (typeof values !== "function") {
       return;
     }
-    if (length !== values?.length) {
+    if (length !== undefined && length !== values?.length) {
       const message = `Expected function arguments to have length ${length} but was ${values?.length}`;
       this.accumulator.push(this.fmt(message));
     }
@@ -98,3 +103,5 @@ export function func<T extends FunctionType>(
 ) {
   return new FunctionArgument<T>(args);
 }
+
+func<(a: string) => void>();

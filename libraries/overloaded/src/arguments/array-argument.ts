@@ -1,6 +1,13 @@
-import { object, number as num, Infer } from "myzod";
+import {
+  object,
+  number as num,
+  Infer,
+  array as arr,
+  unknown,
+  string,
+} from "myzod";
 import { AnyArg, ArgumentTypes } from "src/types";
-import { BaseArgument } from "./base-argument";
+import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 export type FromArray<T> = T extends infer TArray
   ? TArray extends BaseArgument<infer TArg>[]
     ? TArg[]
@@ -12,15 +19,18 @@ export const ArrayValidationSchema = object({
   maxLength: num().optional(),
   minLength: num().optional(),
   length: num().optional(),
-});
+  includes: unknown().optional(),
+}).and(BaseArgumentSchema);
 
 type ArrayOptions = Infer<typeof ArrayValidationSchema>;
-
+const ArrayArgumentParamSchema = arr(
+  string().or(arr(unknown())).or(ArrayValidationSchema)
+);
 export class ArrayArgument<
   T extends ArrayType,
   TRaw extends FromArray<T>
 > extends BaseArgument<TRaw> {
-  typeName = "object";
+  typeName = "Array";
   types: string[] = [];
   options: ArrayOptions;
   reference: T;
@@ -38,7 +48,7 @@ export class ArrayArgument<
     if (typeof args[1] === "object" && !Array.isArray(args[1])) {
       this.options = args[1];
     }
-    if (typeof args[2] === "object") {
+    if (typeof args[2] === "object" && !Array.isArray(args[2])) {
       this.options = args[2];
     }
     for (const value of this.reference) {
@@ -53,12 +63,14 @@ export class ArrayArgument<
       this.accumulator.push(this.fmt(message));
     }
   }
+  isTypeMatch(type: unknown): boolean {
+    return Array.isArray(type);
+  }
   assertLengthLessThanMax(values: unknown, length = this.options?.maxLength) {
     if (Array.isArray(values)) {
       if (length && values?.length > length) {
-        this.accumulator.push(
-          `Expected value to be an array with max length ${length} but was ${values?.length}`
-        );
+        const message = `Expected value to be an array with max length ${length} but was ${values?.length}`;
+        this.accumulator.push(this.fmt(message));
       }
     }
   }
@@ -68,18 +80,24 @@ export class ArrayArgument<
   ) {
     if (Array.isArray(values)) {
       if (length && values?.length < length) {
-        this.accumulator.push(
-          `Expected value to be an array with min length ${length} but was ${values?.length}`
-        );
+        const message = `Expected value to be an array with min length ${length} but was ${values?.length}`;
+        this.accumulator.push(this.fmt(message));
       }
     }
   }
   assertLengthEquals(values: unknown, length = this.options?.length) {
-    if (Array.isArray(values)) {
+    if (length && Array.isArray(values)) {
       if (length !== values?.length) {
-        this.accumulator.push(
-          `Expected array to have length ${length} but was ${values?.length}`
-        );
+        const message = `Expected array to have length ${length} but was ${values?.length}`;
+        this.accumulator.push(this.fmt(message));
+      }
+    }
+  }
+  assertIncludes(values: unknown, item = this.options?.includes) {
+    if (item && Array.isArray(values)) {
+      if (!values.includes(item)) {
+        const message = `Expected array to have length ${length} but was ${values?.length}`;
+        this.accumulator.push(this.fmt(message));
       }
     }
   }
@@ -105,9 +123,9 @@ export class ArrayArgument<
       return;
     }
     for (const value of values) {
-      const validated = this.reference.map((it) => it.validate(value));
-      const foundMatch = validated.includes(true);
-      if (!foundMatch) {
+      const matching = this.reference.find((it) => it.isTypeMatch(value));
+
+      if (!matching) {
         const message = `Expected array value to be one of ${
           this.types
         } but found ${typeof value}:`;
@@ -124,10 +142,12 @@ export class ArrayArgument<
     this.assertLengthGreaterThanMin(value);
     this.assertLengthLessThanMax(value);
     this.assertPermittedType(value);
+    this.assertIncludes(value);
     this.assertChildValidations(value);
     return this.accumulator.length === 0;
   }
 }
+
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
   name: string,
   acceptedTypes: T
@@ -147,5 +167,6 @@ export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
 export function array<P extends AnyArg[], T extends ArgumentTypes<P>>(
   ...args: (string | T | ArrayOptions)[]
 ) {
+  ArrayArgumentParamSchema.parse(args);
   return new ArrayArgument(args);
 }

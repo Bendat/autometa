@@ -1,4 +1,6 @@
+import { _ } from "vitest/dist/types-c1386a7d";
 import { BaseArgument } from "./arguments/base-argument";
+import { ShapeArgument } from "./arguments/shape-argument";
 import { ArgumentType } from "./arguments/types";
 import { Overload } from "./overload";
 import { OverloadAction } from "./overload-actions";
@@ -6,7 +8,9 @@ export type AnyArg = BaseArgument<ArgumentType>;
 
 export type ValidatorArgumentTuple<T> = {
   [K in keyof T]: T[K] extends AnyArg
-    ? T[K] extends BaseArgument<infer Q>
+    ? T[K] extends ShapeArgument<infer _, infer TShape>
+      ? TShape
+      : T[K] extends BaseArgument<infer Q>
       ? Q
       : never
     : never;

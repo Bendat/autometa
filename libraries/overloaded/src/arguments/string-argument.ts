@@ -1,6 +1,6 @@
 import gitDiff from "git-diff";
 import { Infer, array, string as zstring, object, number, tuple } from "myzod";
-import { BaseArgument } from "./base-argument";
+import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 export const StringValidatorOpsSchema = object({
   minLength: number().optional(),
   maxLength: number().optional(),
@@ -9,7 +9,7 @@ export const StringValidatorOpsSchema = object({
   in: array(zstring()).optional(),
   startsWith: zstring().optional(),
   endsWith: zstring().optional(),
-});
+}).and(BaseArgumentSchema);
 
 export type StringValidatorOpts = Infer<typeof StringValidatorOpsSchema>;
 
@@ -24,14 +24,7 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
   typeName = "string";
   options?: StringValidatorOpts;
   argName?: string;
-  constructor(
-    args?:
-      | [string | StringValidatorOpts | undefined]
-      | [
-          string | StringValidatorOpts | undefined,
-          string | StringValidatorOpts | undefined
-        ]
-  ) {
+  constructor(args?: (string | StringValidatorOpts)[]) {
     super();
     if (!args) {
       return;
@@ -46,7 +39,9 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
       this.options = args[1];
     }
   }
-
+  isTypeMatch(type: unknown): boolean {
+    return type === this.typeName || typeof type === this.typeName;
+  }
   assertStringLessThanMax(str: string, max?: number) {
     if (max && str.length > max) {
       const message = `Expected ${str} to have less than ${max} characters but found ${str.length}`;
@@ -83,40 +78,32 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
     return true;
   }
 
-  assertStringIn(str: string, value?: string[]) {
-    if (value && !value.includes(str)) {
-      const message = `Expected ${value} to include ${str} but it was not`;
-      this.accumulator.push(this.fmt(message));
-      return false;
-    }
-    return true;
-  }
-
   assertStringMatches(str: string, value?: RegExp) {
     if (value && value.test(str)) {
       const message = `Expected ${value} to match pattern ${value} but it did not`;
       this.accumulator.push(this.fmt(message));
-      return false;
     }
-    return true;
   }
 
   assertString(str?: string) {
     if (typeof str !== "string") {
       const message = `Expected argument to be of type 'string' but was: [${typeof str}] ${str}`;
       this.accumulator.push(this.fmt(message));
-      return false;
     }
-    return true;
   }
-
+  assertinArray(val: unknown, value?: string) {
+    if (value && Array.isArray(value) && !value.includes(val)) {
+      const message = `Expected ${value} to include ${val} but it was not`;
+      this.accumulator.push(this.fmt(message));
+    }
+  }
   validate(value: string) {
     this.assertDefined(value);
     this.assertString(value);
     this.assertStringEquals(value, this.options?.equals);
     this.assertStringLessThanMax(value, this.options?.maxLength);
     this.assertStringGreaterThanMin(value, this.options?.minLength);
-    this.assertStringIn(value, this.options?.in);
+    this.assertinArray(value);
     this.assertStringIncludes(value, this.options?.includes);
     return this.accumulator.length === 0;
   }
@@ -132,7 +119,6 @@ export function string(
 export function string(
   ...args: (StringValidatorOpts | string)[]
 ): StringArgument<string> {
-  const [nameOrOpts, opts] = args;
   StringArgumentConstructorSchema.parse(args);
-  return new StringArgument([nameOrOpts, opts]);
+  return new StringArgument(args);
 }

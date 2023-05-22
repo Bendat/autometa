@@ -1,4 +1,3 @@
-import { BaseArgument } from "./arguments/base-argument";
 import { ArgumentType } from "./arguments/types";
 import { argStringArray, colorCompareArgStrings } from "./formatting";
 import { OverloadAction } from "./overload-actions";
@@ -8,7 +7,11 @@ export class Overload<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TAction extends OverloadAction
 > {
-  constructor(readonly args: TArgs, readonly action: TAction) {
+  constructor(
+    readonly args: TArgs,
+    readonly action: TAction,
+    readonly fallback = false
+  ) {
     args.forEach((arg, idx) => arg.withIndex(idx));
   }
 
@@ -16,6 +19,7 @@ export class Overload<
     if (args === undefined || args === null) {
       args = [];
     }
+
     for (let i = 0; i < this.args.length; i++) {
       const argWrapper = this.args[i];
       const arg = args[i];
@@ -25,6 +29,7 @@ export class Overload<
     }
     return true;
   }
+
 
   typeStringArray() {
     return this.args.map((it) => it.typeName);

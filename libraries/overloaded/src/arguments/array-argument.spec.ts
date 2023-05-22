@@ -58,7 +58,7 @@ describe("Array Argument", () => {
         sut.assertLengthEquals(["", 1]);
         expect(sut.accumulator.length).toBe(1);
         expect(sut.accumulator[0]).toEqual(
-          "Expected array to have length 1 but was 2"
+          "Arg[arr]: Expected array to have length 1 but was 2"
         );
       });
       it("should fail validation if the length is too small", () => {
@@ -66,7 +66,7 @@ describe("Array Argument", () => {
         sut.assertLengthEquals([""]);
         expect(sut.accumulator.length).toBe(1);
         expect(sut.accumulator[0]).toEqual(
-          "Expected array to have length 2 but was 1"
+          "Arg[arr]: Expected array to have length 2 but was 1"
         );
       });
     });
@@ -87,7 +87,7 @@ describe("Array Argument", () => {
         sut.assertLengthGreaterThanMin([""]);
         expect(sut.accumulator.length).toBe(1);
         expect(sut.accumulator[0]).toEqual(
-          "Expected value to be an array with min length 2 but was 1"
+          "Arg[arr]: Expected value to be an array with min length 2 but was 1"
         );
       });
     });
@@ -109,7 +109,7 @@ describe("Array Argument", () => {
       sut.assertLengthLessThanMax(["", 1, 1]);
       expect(sut.accumulator.length).toBe(1);
       expect(sut.accumulator[0]).toEqual(
-        "Expected value to be an array with max length 2 but was 3"
+        "Arg[arr]: Expected value to be an array with max length 2 but was 3"
       );
     });
   });

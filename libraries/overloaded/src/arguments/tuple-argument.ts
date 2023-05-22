@@ -1,23 +1,25 @@
-import { object, number as num } from "myzod";
+import { object, Infer, array, string, unknown } from "myzod";
 import { ArgumentTypes } from "src/types";
-import { BaseArgument } from "./base-argument";
+import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 import { FromTuple, TupleType } from "./types";
 
 export const TupleValidationSchema = object({
-  maxLength: num().optional(),
-  minLength: num().optional(),
-  length: num().optional(),
-});
+  includes: unknown().optional(),
+}).and(BaseArgumentSchema);
 
+export type TupleValidationOptions = Infer<typeof TupleValidationSchema>;
+const TupleArgumentParamSchema = array(
+  string().or(array(unknown())).or(TupleValidationSchema)
+);
 export class TupleArgument<
   T extends TupleType,
   TRaw extends FromTuple<T>
 > extends BaseArgument<TRaw> {
-  options?: unknown;
+  options?: TupleValidationOptions;
   typeName = "object";
   types: string[] = [];
   readonly reference: T;
-  constructor(args: (string | T)[]) {
+  constructor(args: (string | T | TupleValidationOptions)[]) {
     super();
     if (!args) {
       throw new Error(
@@ -43,13 +45,23 @@ export class TupleArgument<
       it.withIndex(idx).argCategory = "Element";
     });
   }
+  isTypeMatch(type: unknown): boolean {
+    return Array.isArray(type);
+  }
   assertIsTuple(values: unknown): asserts values is T {
     if (!Array.isArray(values)) {
       const message = `Expected value to be an array but found ${typeof values}`;
       this.accumulator.push(this.fmt(message));
     }
   }
-
+  assertIncludes(values: unknown, item = this.options?.includes) {
+    if (item && Array.isArray(values)) {
+      if (!values.includes(item)) {
+        const message = `Expected array to have length ${length} but was ${values?.length}`;
+        this.accumulator.push(this.fmt(message));
+      }
+    }
+  }
   assertLength(values: unknown[], length = this.types.length) {
     if (length && values?.length <= length) {
       this.accumulator.push(
@@ -80,19 +92,23 @@ export class TupleArgument<
     this.assertDefined(value);
     this.assertIsTuple(value);
     this.assertPermittedType(value);
+    this.assertIncludes(value);
     return this.accumulator.length === 0;
   }
 }
 
 export function tuple<P extends TupleType, T extends ArgumentTypes<P>>(
   name: string,
-  acceptedTypes: T
+  acceptedTypes: T,
+  options?: TupleValidationOptions
 ): TupleArgument<T, FromTuple<T>>;
 export function tuple<P extends TupleType, T extends ArgumentTypes<P>>(
-  acceptedTypes: T
+  acceptedTypes: T,
+  options?: TupleValidationOptions
 ): TupleArgument<T, FromTuple<T>>;
 export function tuple<P extends TupleType, T extends ArgumentTypes<P>>(
-  ...args: (string | T)[]
+  ...args: (string | T | TupleValidationOptions)[]
 ) {
+  TupleArgumentParamSchema.parse(args);
   return new TupleArgument(args);
 }
