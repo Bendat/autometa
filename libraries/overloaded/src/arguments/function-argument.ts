@@ -15,7 +15,7 @@ export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
   typeName = "function";
   types: string[] = [];
   readonly name?: string;
-  readonly options?: FunctionOptions;
+  declare readonly options?: FunctionOptions;
   constructor(args: (string | FunctionOptions | undefined)[]) {
     super();
     if (typeof args[0] === "string") {

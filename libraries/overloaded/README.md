@@ -344,11 +344,11 @@ function makeMyClass(...args: (string | string[])[]) {
     params(string("name")).matches((name) => new MyObject(name)),
     // Create an instance with only its list of widgets
     params(array("widgets", [string()])).matches(
-      (name) => new MyObject(undefined, widget)
+      (name, widgets) => new MyObject(undefined, widgets)
     ),
     // Create an instance with both a name and its list of widgets
     params(string("name"), array("widgets", [string()])).matches(
-      (name) => new MyObject(undefined, widget)
+      (name, widgets) => new MyObject(undefined, widgets)
     ),
     // No match - Throw an error
     fallback((...args) => {
