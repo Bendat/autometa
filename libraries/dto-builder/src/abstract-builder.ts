@@ -66,8 +66,14 @@ export abstract class AbstractDtoBuilder<TDtoType> {
    * internal data model
    */
   protected set = <TPropertyType>(propertyName: string) => {
+    const innerDto = this.#dto as Dict;
     return (value: TPropertyType) => {
-      (this.#dto as Dict)[propertyName] = value;
+      const prop = innerDto[propertyName];
+      if (Array.isArray(prop)) {
+        prop.push(value);
+        return this;
+      }
+      innerDto[propertyName] = value;
       return this;
     };
   };
