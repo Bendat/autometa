@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.1.1
+
+### Patch Changes
+
+- e7aa10e: Updated readme with more examples, fixed the 'func' argument not being available
+
 ## 0.1.0
 
 ### Minor Changes
