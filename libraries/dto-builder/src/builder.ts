@@ -25,7 +25,9 @@ import { Class } from "@autometa/types";
  * ```
  */
 type DtoBuilderTransformer<T> = {
-  [P in keyof T]-?: (value: T[P]) => DtoBuilder<T>;
+  [P in keyof T]-?: ((value: T[P]) => DtoBuilder<T>) & {
+    value: T[P];
+  };
 };
 /**
  * Combines the abstract builder with a transformer

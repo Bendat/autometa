@@ -74,6 +74,12 @@ describe("makeDtoBuilder", () => {
     expect(fooHastMich).toBe("bb");
   });
 
+  it("should retrieve a value", () => {
+    const builder = new FooBuilder();
+    const value = builder.fooHast("aa").fooHast.value;
+    expect(value).toEqual("aa");
+  });
+
   it("Should fail due to validation errors", () => {
     const builder = new FooBuilder();
     const dto = () => builder.fooHastMich("bb").build();

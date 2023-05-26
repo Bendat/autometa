@@ -66,9 +66,15 @@ export abstract class AbstractDtoBuilder<TDtoType> {
    * internal data model
    */
   protected set = <TPropertyType>(propertyName: string) => {
-    return (value: TPropertyType) => {
+    const fn = (value: TPropertyType) => {
       (this.#dto as Dict)[propertyName] = value;
       return this;
+    };
+    Reflect.defineProperty(fn, "value", {
+      get: () => (this.#dto as Dict)[propertyName],
+    });
+    return fn as typeof fn & {
+      value: TPropertyType;
     };
   };
 
