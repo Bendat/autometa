@@ -1,5 +1,12 @@
 # @autometa/cucumber-runner
 
+## 0.5.6
+
+### Patch Changes
+
+- Updated dependencies [a874510]
+  - @autometa/dto-builder@0.9.0
+
 ## 0.5.5
 
 ### Patch Changes

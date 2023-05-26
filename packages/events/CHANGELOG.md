@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [a874510]
+  - @autometa/dto-builder@0.9.0
+  - @autometa/gherkin@0.2.5
+
 ## 0.0.5
 
 ### Patch Changes
