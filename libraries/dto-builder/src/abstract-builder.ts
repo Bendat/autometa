@@ -4,6 +4,9 @@ import { Dict } from "./types";
 import { Class } from "@autometa/types";
 export abstract class AbstractDtoBuilder<TDtoType> {
   #dto: TDtoType & { constructor: { name: string } };
+  protected get dto(){
+    return this.#dto
+  }
   /**
    * Creates a new AbstractBuilder.
    * @param prototype A class reference to the DTO
@@ -66,19 +69,18 @@ export abstract class AbstractDtoBuilder<TDtoType> {
    * internal data model
    */
   protected set = <TPropertyType>(propertyName: string) => {
-    const fn = (value: TPropertyType) => {
-      (this.#dto as Dict)[propertyName] = value;
+    const dto = this.#dto as Dict;
+
+    return(value: TPropertyType) => {
+      dto[propertyName] = value;
       return this;
-    };
-    Reflect.defineProperty(fn, "value", {
-      get: () => (this.#dto as Dict)[propertyName],
-    });
-    return fn as typeof fn & {
-      value: TPropertyType;
     };
   };
 
-  assign = (property: string, value: unknown) => this.set(property)(value);
+  assign = (property: string, value: unknown) => {
+    this.set(property)(value);
+    return this;
+  };
 }
 // Creates a person oriented (non JSON) string representing
 // validation failures.

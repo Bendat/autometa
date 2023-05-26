@@ -64,6 +64,13 @@ export function Builder<T>(
       const self = this as unknown as Dict;
       propertyNames.forEach((key) => {
         self[key] = (arg: T) => this.set(key)(arg);
+        const dto = this.dto;
+        Object.defineProperty(self[key], "value", {
+          get: function () {
+            const dict = dto as Dict;
+            return dict[key];
+          }.bind(this),
+        });
       });
     }
 
