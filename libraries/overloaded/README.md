@@ -424,6 +424,8 @@ function myOverloadedFunction(...args: unknown[]) {
 
 ## Naming overloads with `String Templates`
 
+_Please be aware the following is kind of cursed_
+
 It is possible to name an overload by providing a template string
 literal before the function call. This can be used in addition to or instead
 of the description.
@@ -432,8 +434,12 @@ Names let you produce overloads that vaguely resemble a function definition.
 
 ```ts
 return overloads(
-  def`doThingA`(string(), number()).matches(thingAFunc),
-  def`doThingB`(string(), string()).matches(thingBFunc)
+  def`doThingA`(string(), number()).matches((a, b) => {
+    return a.repeat(b);
+  }),
+  def`doThingB`(string(), string()).matches((a, b) => {
+    return `${a} ${b}`;
+  })
 );
 
 // Using description
@@ -442,12 +448,16 @@ return overloads(
     "some additional context about doing thing A",
     string(),
     number()
-  ).matches(thingAFunc),
+  ).matches((a, b) => {
+    return a.repeat(b);
+  }),
   def`doThingB`(
     "some other context about doing thing B",
     string(),
     string()
-  ).matches(thingBFunc)
+  ).matches((a, b) => {
+    return `${a} ${b}`;
+  })
 );
 ```
 

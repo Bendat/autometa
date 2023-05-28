@@ -1,8 +1,7 @@
-import { FeatureScope } from "../feature-scope";
 export type OnFeatureExecuted = (...args: unknown[]) => unknown;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function Execute<T extends Function>(
-  target: object,
+  _target: object,
   propertyKey: string,
   descriptor: TypedPropertyDescriptor<T>
 ): TypedPropertyDescriptor<T> | void {

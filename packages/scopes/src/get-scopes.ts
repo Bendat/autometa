@@ -7,7 +7,7 @@ import { Scopes } from "./scopes";
 export function GetCucumberFunctions(
   registry: ParameterTypeRegistry,
   onFeatureExecuted: OnFeatureExecuted,
-  ...args: unknown[]
+  // ...args: unknown[]
 ) {
   const global = new GlobalScope(onFeatureExecuted, registry);
   return addAlternatives(global);

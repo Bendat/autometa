@@ -3,25 +3,23 @@ import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { HookCache } from "./caches/hook-cache";
-import { ModifierType } from "@autometa/types";
 
 export class ScenarioOutlineScope extends ScenarioScope {
   canHandleAsync = true;
   constructor(
     public readonly title: string,
     public readonly action: ScenarioAction,
-    parentHooks: HookCache,
-    public readonly modifiers?: ModifierType
+    parentHooks: HookCache
   ) {
-    super(title, action, parentHooks, modifiers);
+    super(title, action, parentHooks);
   }
   protected override get canAttachHook(): boolean {
     return true;
   }
   get idString() {
-    return  this.title;
-   }
- 
+    return this.title;
+  }
+
   canAttach<T extends Scope>(childScope: T): boolean {
     return childScope instanceof StepScope;
   }

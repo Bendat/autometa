@@ -1,4 +1,3 @@
-import { test } from "vitest";
 import { it, describe, expect, expectTypeOf } from "vitest";
 import { number } from "./arguments/number-argument";
 import { string } from "./arguments/string-argument";

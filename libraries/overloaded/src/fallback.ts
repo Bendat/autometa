@@ -3,7 +3,6 @@ import { BaseArgument } from "./arguments/base-argument";
 import { ArgumentType } from "./arguments/types";
 import {
   disposeDescription,
-  disposeTaggedTemplate,
 } from "./disposeDescription";
 import { Overload } from "./overload";
 import { AnyArg } from "./types";

@@ -1,11 +1,4 @@
-import {
-  Infer,
-  string,
-  object,
-  number as num,
-  literal,
-  array,
-} from "myzod";
+import { Infer, string, object, number as num, literal, array } from "myzod";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 
 export const NumberValidationSchema = object({
@@ -18,7 +11,9 @@ export const NumberValidationSchema = object({
 
 const NumberArgumentParamsSchema = array(string().or(NumberValidationSchema));
 
-export type NumberValidatorOpts = Infer<typeof NumberValidationSchema>;
+export type NumberValidatorOpts = Infer<typeof NumberValidationSchema> & {
+  test: (arg: number) => boolean;
+};
 
 export class NumberArgument<T extends number> extends BaseArgument<T> {
   typeName = "number";
@@ -59,6 +54,9 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
   }
 
   assertNumberLessThanMax(num: unknown, max = this.options?.max) {
+    if (num === undefined) {
+      return;
+    }
     if (typeof num !== "number" && typeof num !== "bigint") {
       return;
     }
@@ -69,6 +67,9 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
   }
 
   assertNumberGreaterThanMin(num: unknown, min = this.options?.min) {
+    if (num === undefined) {
+      return;
+    }
     if (typeof num !== "number" && typeof num !== "bigint") {
       return;
     }
@@ -77,7 +78,10 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
       this.accumulator.push(this.fmt(message));
     }
   }
-  assertinArray(val: unknown, value?: number) {
+  assertInArray(val: unknown, value?: number) {
+    if (num === undefined) {
+      return;
+    }
     if (typeof num !== "number" && typeof num !== "bigint") {
       return;
     }
@@ -89,6 +93,9 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
     return true;
   }
   assertType(value: unknown, type = this.options?.type) {
+    if (num === undefined) {
+      return;
+    }
     if (typeof value !== "number") {
       return;
     }
@@ -102,10 +109,10 @@ export class NumberArgument<T extends number> extends BaseArgument<T> {
     }
   }
   validate(value: number): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertNumber(value);
     this.assertNumberEquals(value);
-    this.assertinArray(value);
+    this.assertInArray(value);
     this.assertNumberGreaterThanMin(value);
     this.assertNumberLessThanMax(value);
     this.assertType(value);

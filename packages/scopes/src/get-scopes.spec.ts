@@ -17,17 +17,15 @@ describe("GetCucumberFunctions", () => {
     expect(Feature).toHaveProperty("only");
     expect(Feature.only).toBeTypeOf("function");
 
-    const feature = Feature("foo", vi.fn());
+    const feature = Feature.skip("foo", vi.fn());
     expect(feature).toBeInstanceOf(FeatureScope);
+    expect(feature.alts.skip).toEqual(true);
   });
   it("should attach a skip and only to RuleScope", () => {
     expect(Rule).toHaveProperty("skip");
     expect(Rule.skip).toBeTypeOf("function");
     expect(Rule).toHaveProperty("only");
     expect(Rule.only).toBeTypeOf("function");
-
-    // const rule = Rule.skip("foo", vi.fn());
-    // expect(rule).toBeInstanceOf(RuleScope);
   });
   it("should attach a skip and only to Scenario", () => {
     expect(Scenario).toHaveProperty("skip");

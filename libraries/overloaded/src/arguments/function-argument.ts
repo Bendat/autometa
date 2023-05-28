@@ -34,12 +34,18 @@ export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
   }
 
   assertIsFunction(value: unknown): asserts value is T {
+    if (value === undefined) {
+      return;
+    }
     if (typeof value !== "function") {
       const message = `Expected function arguments to be a function but found ${typeof value}`;
       this.accumulator.push(this.fmt(message));
     }
   }
   assertLengthLessThanMax(value: unknown, length = this.options?.maxArgLength) {
+    if (value === undefined) {
+      return;
+    }
     if (typeof value !== "function") {
       return;
     }
@@ -49,38 +55,50 @@ export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
     }
   }
   assertLengthGreaterThanMin(
-    values: unknown,
+    value: unknown,
     length = this.options?.maxArgLength
   ) {
-    if (typeof values !== "function") {
+    if (value === undefined) {
       return;
     }
-    if (length && values?.length >= length) {
-      const message = `Expected function arguments to be an array with min length ${length} but was ${values?.length}`;
+    if (typeof value !== "function") {
+      return;
+    }
+    if (length && value?.length >= length) {
+      const message = `Expected function arguments to be an array with min length ${length} but was ${value?.length}`;
       this.accumulator.push(this.fmt(message));
     }
   }
-  assertLengthEquals(values: unknown, length = this.options?.argLength) {
-    if (typeof values !== "function") {
+  assertLengthEquals(value: unknown, length = this.options?.argLength) {
+    if (value === undefined) {
       return;
     }
-    if (length !== undefined && length !== values?.length) {
-      const message = `Expected function arguments to have length ${length} but was ${values?.length}`;
+    if (typeof value !== "function") {
+      return;
+    }
+    if (length !== undefined && length !== value?.length) {
+      const message = `Expected function arguments to have length ${length} but was ${value?.length}`;
       this.accumulator.push(this.fmt(message));
     }
   }
-  assertName(func: unknown, name = this.options?.name) {
-    if (typeof func !== "function") {
+  assertName(value: unknown, name = this.options?.name) {
+    if (value === undefined) {
       return;
     }
-    if (name && func.name === name) {
-      const message = `Expected function to have name ${name} but was ${func?.name}`;
+    if (value === undefined) {
+      return;
+    }
+    if (typeof value !== "function") {
+      return;
+    }
+    if (name && value.name === name) {
+      const message = `Expected function to have name ${name} but was ${value?.name}`;
       this.accumulator.push(this.fmt(message));
     }
   }
 
   validate(value: unknown): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertIsFunction(value);
     this.assertLengthEquals(value);
     this.assertLengthGreaterThanMin(value);

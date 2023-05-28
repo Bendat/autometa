@@ -49,12 +49,18 @@ export class TupleArgument<
     return Array.isArray(type);
   }
   assertIsTuple(values: unknown): asserts values is T {
+    if (values === undefined) {
+      return;
+    }
     if (!Array.isArray(values)) {
       const message = `Expected value to be an array but found ${typeof values}`;
       this.accumulator.push(this.fmt(message));
     }
   }
   assertIncludes(values: unknown, item = this.options?.includes) {
+    if (values === undefined) {
+      return;
+    }
     if (item && Array.isArray(values)) {
       if (!values.includes(item)) {
         const message = `Expected array to have length ${length} but was ${values?.length}`;
@@ -63,6 +69,9 @@ export class TupleArgument<
     }
   }
   assertLength(values: unknown[], length = this.types.length) {
+    if (values === undefined) {
+      return;
+    }
     if (length && values?.length <= length) {
       this.accumulator.push(
         `Expected value to be an array with max length ${length} but was ${values?.length}`
@@ -70,6 +79,9 @@ export class TupleArgument<
     }
   }
   assertPermittedType(values: unknown) {
+    if (values === undefined) {
+      return;
+    }
     if (!Array.isArray(values)) {
       return;
     }
@@ -89,7 +101,7 @@ export class TupleArgument<
   }
 
   validate(value: unknown): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertIsTuple(value);
     this.assertPermittedType(value);
     this.assertIncludes(value);

@@ -1,7 +1,6 @@
 import { ScenarioAction } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
-import { ModifierType } from "@autometa/types";
 import { HookCache } from "./caches/hook-cache";
 
 export class ScenarioScope extends Scope {
@@ -10,7 +9,6 @@ export class ScenarioScope extends Scope {
     public readonly title: string,
     public readonly action: ScenarioAction,
     parentHooks: HookCache,
-    public readonly modifiers?: ModifierType
   ) {
     super(new HookCache(parentHooks));
   }
@@ -25,6 +23,7 @@ export class ScenarioScope extends Scope {
   canAttach<T extends Scope>(childScope: T): boolean {
     return childScope instanceof StepScope;
   }
+
   attach<T extends Scope>(childScope: T): void {
     if (!this.canAttach(childScope)) {
       throw new Error(

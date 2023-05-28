@@ -34,18 +34,24 @@ export class BooleanArgument<
     }
   }
 
-  assertBoolean(val?: boolean): asserts val {
-    if (typeof val !== "boolean") {
+  assertBoolean(actual?: boolean): asserts actual {
+    if (actual === undefined) {
+      return;
+    }
+    if (actual !== undefined && typeof actual !== "boolean") {
       this.accumulator.push(
         `Arg[${
           this.identifier
-        }]: Expected boolean but found [type: ${typeof val}]${val}`
+        }]: Expected boolean but found [type: ${typeof actual}]${actual}`
       );
     }
   }
   assertEquals(actual: boolean) {
+    if (actual === undefined) {
+      return;
+    }
     const equals = this.options?.equals;
-    if (equals && actual !== this.options?.equals) {
+    if (actual !== undefined && equals !== undefined && actual !== equals) {
       this.accumulator.push(
         `Arg[${this.identifier}]:Expected ${actual} to equal ${boolean} but did not.`
       );
@@ -56,7 +62,7 @@ export class BooleanArgument<
   }
 
   validate(value: boolean): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertBoolean(value);
     this.assertEquals(value);
     return this.accumulator.length === 0;

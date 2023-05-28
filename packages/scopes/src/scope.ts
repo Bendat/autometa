@@ -7,12 +7,11 @@ import {
   instance,
   overloads,
   def,
-  shape,
 } from "@autometa/overloaded";
 
 export abstract class Scope {
-  skip: boolean;
-  only: boolean;
+  skip = false;
+  only = false;
   abstract canHandleAsync: boolean;
   abstract get idString(): string;
   openChild: Scope | undefined;
@@ -30,7 +29,7 @@ export abstract class Scope {
       return;
     }
     const result = this.action() as unknown as void | Promise<void>;
-    if (this.canHandleAsync && result instanceof Promise) {
+    if (!this.canHandleAsync && result instanceof Promise) {
       throw new Error(
         `${this.constructor.name} cannot be run asynchronously or return a promise.`
       );
@@ -49,7 +48,7 @@ export abstract class Scope {
 
   attach<T extends Scope>(childScope: T): void {
     overloads(
-      def(
+      def`attachToChild`(
         "Attach incoming scopes to the currently open child scope",
         instance(Scope)
       ).matches((scope) => {
@@ -70,17 +69,17 @@ export abstract class Scope {
   attachHook<T extends Hook>(hook: T) {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(
-      params`handleUnacceptedScope`(
+      def`handleHooksNotAllowed`(
         "Throw an error if this Scope implementation can't add hooks, such as StepScope",
         boolean({ equals: false }),
         instance(Hook),
-        instance(Scope, shape({}, { optional: true }))
+        instance(Scope, undefined, { optional: true })
       ).matches(() => {
         throw new Error(
           `Cannot attach hooks to ${this.constructor.name}. Only 'Feature', 'Rule', 'ScenarioOutline' and global scopes can have hooks`
         );
       }),
-      params`attachToChildScope`(
+      def`attachToChildScope`(
         "If there is an open Child Scope available, attach the hook to that",
         boolean(),
         instance(Hook),
@@ -90,7 +89,9 @@ export abstract class Scope {
       }),
       fallback(
         "When no open child is available, add the hook directly to this scope",
-        () => this.hooks.addHook(hook)
+        () => {
+          this.hooks.addHook(hook);
+        }
       )
     ).use(pattern);
   }

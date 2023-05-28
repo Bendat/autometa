@@ -2,59 +2,129 @@ import glob from "glob";
 import path from "path";
 import os from "os";
 import { readFileSync } from "fs";
+import { Bind } from "@autometa/bind-decorator";
+import { AutomationError } from "src/automation-error";
+import { parseGherkin } from "@autometa/gherkin";
 
 const homeDirectory = os.homedir();
-const pathWithTilde = (pathWithTilde: string) => {
-  if (typeof pathWithTilde !== "string") {
-    throw new TypeError(`Expected a string, got ${typeof pathWithTilde}`);
+
+abstract class FileSystem {
+  abstract get path(): string;
+  declare stepDefRoot: string;
+
+  getFeatureFile() {
+    const text = readFileSync(this.path, "utf-8");
+    return parseGherkin(text, this.path);
   }
 
-  return homeDirectory
-    ? pathWithTilde.replace(/^~(?=$|\/|\\)/, homeDirectory)
-    : pathWithTilde;
-};
-export function getFeatureFile(filePath: string) {
-  const file = readFileSync(filePath, "utf-8");
-  if (file.length === 0) {
-    throw new Error(`Found empty feature file: ${filePath}`);
+  loadStepDefinitions() {
+    const globalsDirs = this.stepDefRoot;
+    if (globalsDirs !== undefined) {
+      const resolved = path.resolve(globalsDirs);
+      const paths = [
+        ...glob.sync(`${resolved}/**/*.steps.ts`),
+        ...glob.sync(`${resolved}/**/*.hooks.ts`),
+      ];
+      for (const path of paths) {
+        require(path);
+      }
+    }
   }
-  return file;
 }
-
-export function getRealPath(
-  filePath: string,
-  callerFile: string,
-  featureRoot?: string,
-  isFile = true
-) {
-  const caller = isFile ? path.dirname(callerFile) : callerFile;
-
-  let realPath = filePath;
-  if (filePath.startsWith("./") || filePath.startsWith("../")) {
-    realPath = path.resolve(caller, filePath);
-  } else if (!path.isAbsolute(filePath)) {
-    realPath = path.resolve(filePath);
-  }
-  if (filePath.startsWith("~")) {
-    realPath = pathWithTilde(filePath);
-  }
-  if (filePath.startsWith("^/")) {
-    if (!featureRoot) {
-      throw new Error(
-        `Cannot have Feature Root pattern (^/path/to/file.feature) if 'featuresRoot' is not set in defineConfig`
+export class RelativeFileSystem extends FileSystem {
+  constructor(
+    private caller: string,
+    private uri: string,
+    readonly stepDefRoot: string
+  ) {
+    super();
+    if (!this.caller) {
+      throw new AutomationError(
+        `Cannot use relative path without caller file. Stub was ${uri}`
       );
     }
-    realPath = path.resolve(featureRoot, filePath.replace("^/", ""));
   }
-  return realPath;
+  get path() {
+    return path.resolve(this.caller, this.uri);
+  }
 }
-export function loadGlobalStepFiles(globalsRootDir?: string) {
-  if (globalsRootDir) {
-    const globalsDirs = globalsRootDir;
-    const resolved = path.resolve(globalsDirs);
-    const paths = glob.sync(`${resolved}/**/*.steps.ts`);
-    for (const path of paths) {
-      require(path);
+export class HomeDirectoryFileSystem extends FileSystem {
+  constructor(private uri: string, readonly stepDefRoot: string) {
+    super();
+    if (!uri.startsWith("~")) {
+      throw new AutomationError(
+        `Cannot use home directory path without ~. Stub was ${uri}`
+      );
     }
+  }
+  get path() {
+    return this.uri.replace(/^~(?=$|\/|\\)/, homeDirectory);
+  }
+}
+export class AbsoluteFileSystem extends FileSystem {
+  constructor(private uri: string, readonly stepDefRoot: string) {
+    super();
+  }
+  get path() {
+    return this.uri;
+  }
+}
+
+export class FeatureRootFileSystem extends FileSystem {
+  constructor(
+    private featureRoot: string,
+    private uri: string,
+    readonly stepDefRoot: string
+  ) {
+    super();
+    if (!this.featureRoot) {
+      throw new AutomationError(
+        `Cannot use Feature Root path without feature root. Stub was ${uri}`
+      );
+    }
+  }
+  get path() {
+    return path.resolve(this.featureRoot, this.uri.replace("^/", ""));
+  }
+}
+export class Files {
+  featureRoot: string;
+  callerFile: string;
+  stepDefRoot: string;
+
+  @Bind
+  withFeatureRoot(featureRoot: string) {
+    this.featureRoot = featureRoot;
+    return this;
+  }
+  @Bind
+  withCallerFile(callerFile: string) {
+    this.callerFile = callerFile;
+    return this;
+  }
+  @Bind
+  withGlobalRoot(globalsRootDir: string) {
+    this.stepDefRoot = globalsRootDir;
+    return this;
+  }
+  @Bind
+  fromUrlPattern(uriPattern: string) {
+    const global = this.stepDefRoot;
+    if (uriPattern.startsWith("./") || uriPattern.startsWith("../")) {
+      return new RelativeFileSystem(this.callerFile, uriPattern, global);
+    }
+    if (path.isAbsolute(uriPattern)) {
+      return new AbsoluteFileSystem(uriPattern, global);
+    }
+    if (uriPattern.startsWith("~")) {
+      return new HomeDirectoryFileSystem(uriPattern, global);
+    }
+    if (uriPattern.startsWith("^/")) {
+      return new FeatureRootFileSystem(this.featureRoot, uriPattern, global);
+    }
+
+    throw new AutomationError(
+      `Could not find a strategy for ${uriPattern}. Ensure it is a valid file path`
+    );
   }
 }

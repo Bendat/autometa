@@ -67,7 +67,7 @@ export class DateArgument<T extends Date> extends BaseArgument<T> {
   }
 
   validate(value: unknown): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertBefore(value);
     this.assertAfter(value);
     this.assertEquals(value);

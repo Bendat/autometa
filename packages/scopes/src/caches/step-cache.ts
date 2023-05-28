@@ -5,22 +5,6 @@ import {
 } from "@autometa/gherkin";
 import { StepScope } from "../step-scope";
 import { closestMatch } from "closest-match";
-// export const STEP_KEYWORD = {
-//   Given: "Given",
-//   When: "When",
-//   Then: "Then",
-// };
-
-// export type StepKeyword = keyof typeof STEP_KEYWORD;
-// const slots = [
-//   "Context",
-//   "Action",
-//   "Outcome",
-//   "Conjunction",
-//   "Unknown",
-// ] as const;
-
-// export type KeywordType = ArrayElement<typeof slots>;
 
 export class StepCache {
   private Context: StepScope[] = [];

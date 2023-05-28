@@ -5,7 +5,7 @@ import { HookCache } from "./caches/hook-cache";
 import { StepScope } from "./step-scope";
 import { FeatureAction, RuleAction, ScenarioAction } from "./types";
 import { Bind } from "@autometa/bind-decorator";
-import { overloads, params, string, func } from "@autometa/overloaded";
+import { overloads, def, string, func } from "@autometa/overloaded";
 import { Empty_Function } from "./novelties";
 import { Execute, OnFeatureExecuted } from "./decorators";
 import { ScenarioScope } from "./scenario-scope";
@@ -19,15 +19,9 @@ import {
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
 export class GlobalScope extends Scope implements Scopes {
-  canHandleAsync = true;
+  canHandleAsync = false;
   readonly stepCache: StepCache = new StepCache();
-  canAttach<T extends Scope>(_childScope: T): boolean {
-    return true;
-  }
-  
-  get idString() {
-    return "global";
-  }
+  private isBuilt = false;
 
   parent: Scope;
   action: (...args: unknown[]) => void;
@@ -41,6 +35,14 @@ export class GlobalScope extends Scope implements Scopes {
   get hookCache() {
     return this.openChild ? this.openChild.hooks ?? this.hooks : this.hooks;
   }
+  get idString() {
+    return "global";
+  }
+
+  canAttach<T extends Scope>(_childScope: T): boolean {
+    return true;
+  }
+
   @Bind
   override run() {
     // do nothing
@@ -58,7 +60,7 @@ export class GlobalScope extends Scope implements Scopes {
     super.attach(childScope);
     return childScope;
   }
-  private isBuilt = false;
+  
   @Bind
   getStepCache() {
     if (this.isBuilt) {
@@ -66,7 +68,7 @@ export class GlobalScope extends Scope implements Scopes {
     }
     this.closedScopes
       .filter((it) => it instanceof StepScope)
-      .map((it) => it as unknown as StepScope)
+      .map((it) => it as StepScope)
       .forEach(this.stepCache.add);
     this.isBuilt = true;
     return this.stepCache;
@@ -78,13 +80,19 @@ export class GlobalScope extends Scope implements Scopes {
   @Execute
   Feature(...args: (FeatureAction | string)[]) {
     return overloads(
-      params(func("featureAction"), string("filepath")).matches(
-        (featureAction, filePath) => {
-          const feature = new FeatureScope(filePath, featureAction, this.hooks);
-          return this.attach(feature);
-        }
-      ),
-      params(string("filePath")).matches((filePath) => {
+      def`makeFeatureWithAction`(
+        `An actionable feature has locally defined steps, 
+        hooks, or scenarios which override globally defined ones`,
+        func("featureAction"),
+        string("filepath")
+      ).matches((featureAction, filePath) => {
+        const feature = new FeatureScope(filePath, featureAction, this.hooks);
+        return this.attach(feature);
+      }),
+      def`makeGlobalStepFeature`(
+        "makes a Feature scope which only executed globally defined steps.",
+        string("filePath")
+      ).matches((filePath) => {
         const feature = new FeatureScope(filePath, Empty_Function, this.hooks);
         return this.attach(feature);
       })

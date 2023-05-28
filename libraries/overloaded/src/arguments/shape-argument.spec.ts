@@ -23,14 +23,6 @@ describe("Shape Argument", () => {
           "Arg[foo]: Expected value to be an object but was [type: string]: ''"
         );
       });
-      it("should fail validation when the input value is a undefined", () => {
-        const sut = shape("foo", {});
-        sut.assertObject(undefined as unknown as string);
-        expect(sut.accumulator.length).toEqual(1);
-        expect(sut.accumulator[0]).toEqual(
-          "Arg[foo]: Expected value to be an object but was [type: undefined]: 'undefined'"
-        );
-      });
     });
     describe("assertExhaustive", () => {
       it("should accept unknown properties by default", () => {

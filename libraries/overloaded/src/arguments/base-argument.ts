@@ -1,4 +1,4 @@
-import { object, boolean, Infer } from "myzod";
+import { object, boolean, Infer, unknown } from "myzod";
 import { Accumulator } from "./accumulator";
 import { ArgumentType } from "./types";
 export const BaseArgumentSchema = object({
@@ -10,13 +10,19 @@ export const BaseArgumentSchema = object({
       })
     )
     .optional(),
+  test: unknown().optional(),
 });
-export type ArgumentValidatorOpts = Infer<typeof BaseArgumentSchema>;
+
+export type ArgTestFunction<TArgType> = {
+  test?: (arg: TArgType) => boolean;
+};
+export type ArgumentOptions = Infer<typeof BaseArgumentSchema>;
+// &  ArgTestFunction<TArgType>;
 export abstract class BaseArgument<TType> {
   example?: TType;
   abstract typeName: string;
   protected _accumulator: Accumulator<string> = new Accumulator();
-  readonly options?: ArgumentValidatorOpts;
+  readonly options?: ArgumentOptions;
   argName?: string;
   argCategory = "Arg";
   #index: number;
@@ -36,10 +42,11 @@ export abstract class BaseArgument<TType> {
   }
   abstract isTypeMatch(type: unknown): boolean;
 
-  assertDefined(
-    value?: unknown,
-    optional = this.options?.optional
-  ): asserts value {
+  baseAssertions(value?: unknown): asserts value {
+    this.assertIsDefined(value);
+    this.assertTestSucceeds(value);
+  }
+  assertIsDefined(value: unknown, optional = this.options?.optional) {
     if (optional === true) {
       return;
     }
@@ -54,7 +61,20 @@ export abstract class BaseArgument<TType> {
       this.accumulator.push(this.fmt(message));
     }
   }
-
+  assertTestSucceeds(value: unknown, test = this.options?.test) {
+    if (value === undefined || value === null) {
+      return;
+    }
+    const realTest = test as undefined | ((arg: unknown) => boolean);
+    if (realTest) {
+      const result = realTest(value);
+      if (result === true) {
+        return;
+      }
+      const message = `Expected ${value} to to evaluate to true but was ${result}.`;
+      this.accumulator.push(this.fmt(message));
+    }
+  }
   protected shouldAssert(value: unknown, optional = this.options?.optional) {
     if (optional === true) {
       return true;
