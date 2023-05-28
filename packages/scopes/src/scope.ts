@@ -6,7 +6,7 @@ import {
   fallback,
   instance,
   overloads,
-  params,
+  def,
   shape,
 } from "@autometa/overloaded";
 
@@ -49,7 +49,7 @@ export abstract class Scope {
 
   attach<T extends Scope>(childScope: T): void {
     overloads(
-      params(
+      def(
         "Attach incoming scopes to the currently open child scope",
         instance(Scope)
       ).matches((scope) => {
@@ -70,7 +70,7 @@ export abstract class Scope {
   attachHook<T extends Hook>(hook: T) {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(
-      params(
+      params`handleUnacceptedScope`(
         "Throw an error if this Scope implementation can't add hooks, such as StepScope",
         boolean({ equals: false }),
         instance(Hook),
@@ -80,7 +80,7 @@ export abstract class Scope {
           `Cannot attach hooks to ${this.constructor.name}. Only 'Feature', 'Rule', 'ScenarioOutline' and global scopes can have hooks`
         );
       }),
-      params(
+      params`attachToChildScope`(
         "If there is an open Child Scope available, attach the hook to that",
         boolean(),
         instance(Hook),

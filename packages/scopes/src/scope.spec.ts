@@ -2,7 +2,7 @@ import { HookCache } from "./caches";
 import { Scope } from "./scope";
 import { describe, it, expect } from "vitest";
 class TestScope extends Scope {
-  canAttach<T extends Scope>(childScope: T): boolean {
+  canAttach<T extends Scope>(_childScope: T): boolean {
     throw new Error("Method not implemented.");
   }
   get idString() {
