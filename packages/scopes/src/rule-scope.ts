@@ -6,7 +6,7 @@ import { ModifierType } from "@autometa/types";
 import { HookCache } from "./caches/hook-cache";
 
 export class RuleScope extends Scope {
-  canHandleAsync = true;
+  canHandleAsync = false;
   constructor(
     readonly title: string,
     readonly action: FeatureAction,
@@ -25,6 +25,7 @@ export class RuleScope extends Scope {
       childScope instanceof ScenarioScope || childScope instanceof StepScope
     );
   }
+
   attach<T extends Scope>(childScope: T): void {
     if (!this.canAttach(childScope)) {
       throw new Error(

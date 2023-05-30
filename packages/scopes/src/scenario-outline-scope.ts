@@ -5,7 +5,7 @@ import { ScenarioScope } from "./scenario-scope";
 import { HookCache } from "./caches/hook-cache";
 
 export class ScenarioOutlineScope extends ScenarioScope {
-  canHandleAsync = true;
+  canHandleAsync = false;
   constructor(
     public readonly title: string,
     public readonly action: ScenarioAction,

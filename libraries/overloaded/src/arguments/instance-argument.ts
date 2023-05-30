@@ -75,7 +75,7 @@ export function instance<
   TShape extends ShapeArgument<any, Partial<TClass>>
 >(
   blueprint: Class<TClass> | AbstractClass<TClass>,
-  shape?: TShape,
+  shape?: TShape | null,
   options?: InstanceOptions
 ): InstanceArgument<TClass, TShape>;
 export function instance<
@@ -85,7 +85,7 @@ export function instance<
 >(
   name: string,
   blueprint: Class<TClass> | AbstractClass<TClass>,
-  shape?: TShape,
+  shape?: TShape | null,
   options?: InstanceOptions
 ): InstanceArgument<TClass, TShape>;
 export function instance<

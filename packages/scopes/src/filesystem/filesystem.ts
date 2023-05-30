@@ -7,7 +7,17 @@ import { AutomationError } from "src/automation-error";
 import { parseGherkin } from "@autometa/gherkin";
 
 const homeDirectory = os.homedir();
-
+const extensions = [
+  ".steps.ts",
+  ".given.ts",
+  ".when.ts",
+  ".then.ts",
+  ".hooks.ts",
+  ".before.ts",
+  ".after.ts",
+  ".setup.ts",
+  ".teardown.ts",
+];
 abstract class FileSystem {
   abstract get path(): string;
   declare stepDefRoot: string;
@@ -21,16 +31,16 @@ abstract class FileSystem {
     const globalsDirs = this.stepDefRoot;
     if (globalsDirs !== undefined) {
       const resolved = path.resolve(globalsDirs);
-      const paths = [
-        ...glob.sync(`${resolved}/**/*.steps.ts`),
-        ...glob.sync(`${resolved}/**/*.hooks.ts`),
-      ];
+      const paths = extensions.flatMap((ext) =>
+        glob.sync(`${resolved}/**/*${ext}`)
+      );
       for (const path of paths) {
         require(path);
       }
     }
   }
 }
+
 export class RelativeFileSystem extends FileSystem {
   constructor(
     private caller: string,
@@ -62,7 +72,7 @@ export class HomeDirectoryFileSystem extends FileSystem {
   }
 }
 export class AbsoluteFileSystem extends FileSystem {
-  constructor(private uri: string, readonly stepDefRoot: string) {
+  constructor(private uri: string) {
     super();
   }
   get path() {
@@ -107,6 +117,7 @@ export class Files {
     this.stepDefRoot = globalsRootDir;
     return this;
   }
+  
   @Bind
   fromUrlPattern(uriPattern: string) {
     const global = this.stepDefRoot;
@@ -114,7 +125,7 @@ export class Files {
       return new RelativeFileSystem(this.callerFile, uriPattern, global);
     }
     if (path.isAbsolute(uriPattern)) {
-      return new AbsoluteFileSystem(uriPattern, global);
+      return new AbsoluteFileSystem(uriPattern);
     }
     if (uriPattern.startsWith("~")) {
       return new HomeDirectoryFileSystem(uriPattern, global);

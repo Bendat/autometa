@@ -12,7 +12,7 @@ import {
 export abstract class Scope {
   skip = false;
   only = false;
-  abstract canHandleAsync: boolean;
+  canHandleAsync = false;
   abstract get idString(): string;
   openChild: Scope | undefined;
   readonly closedScopes: Scope[] = [];
@@ -35,6 +35,7 @@ export abstract class Scope {
       );
     }
   }
+  
   get alts() {
     return {
       skip: this.skip,

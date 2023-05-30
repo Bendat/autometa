@@ -1,4 +1,7 @@
-import { Rule } from "@autometa/gherkin";
+import {
+  CucumberExpression,
+  ParameterTypeRegistry,
+} from "@cucumber/cucumber-expressions";
 import { describe, it, expect, vi } from "vitest";
 import { HookCache } from "./caches";
 import { FeatureScope } from "./feature-scope";
@@ -55,8 +58,12 @@ describe("ScenarioScope", () => {
     });
     it("should return true when the scope is a StepScope", () => {
       const sut = new ScenarioScope("My Scenario", vi.fn(), new HookCache());
+      const expression = new CucumberExpression(
+        "my step",
+        new ParameterTypeRegistry()
+      );
       const result = sut.canAttach(
-        new StepScope("Given", "Context", "my step", vi.fn(), new HookCache())
+        new StepScope("Given", "Context", expression, vi.fn())
       );
       expect(result).toBe(true);
     });

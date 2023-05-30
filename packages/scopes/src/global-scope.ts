@@ -18,6 +18,7 @@ import {
   ParameterTypeRegistry,
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
+import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "./hook";
 export class GlobalScope extends Scope implements Scopes {
   canHandleAsync = false;
   readonly stepCache: StepCache = new StepCache();
@@ -60,7 +61,7 @@ export class GlobalScope extends Scope implements Scopes {
     super.attach(childScope);
     return childScope;
   }
-  
+
   @Bind
   getStepCache() {
     if (this.isBuilt) {
@@ -136,6 +137,38 @@ export class GlobalScope extends Scope implements Scopes {
     const expression = toExpression(title, this.parameterRegistry);
     const scenario = new StepScope("Then", "Outcome", expression, action);
     return this.attach(scenario);
+  }
+
+  @Bind
+  After(description: string, action: StepAction, tagFilterExpression?: string) {
+    const hook = new AfterHook(description, action, tagFilterExpression);
+    return this.attachHook(hook);
+  }
+  
+  @Bind
+  Before(
+    description: string,
+    action: StepAction,
+    tagFilterExpression?: string
+  ) {
+    const hook = new BeforeHook(description, action, tagFilterExpression);
+    return this.attachHook(hook);
+  }
+
+  @Bind
+  Setup(description: string, action: StepAction, tagFilterExpression?: string) {
+    const hook = new SetupHook(description, action, tagFilterExpression);
+    return this.attachHook(hook);
+  }
+
+  @Bind
+  Teardown(
+    description: string,
+    action: StepAction,
+    tagFilterExpression?: string
+  ) {
+    const hook = new TeardownHook(description, action, tagFilterExpression);
+    return this.attachHook(hook);
   }
 }
 
