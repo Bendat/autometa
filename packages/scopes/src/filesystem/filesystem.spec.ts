@@ -6,6 +6,9 @@ import {
   HomeDirectoryFileSystem,
   RelativeFileSystem,
 } from "./filesystem";
+import os from "os";
+
+const homeDirectory = os.homedir();
 
 describe("FileSystem", () => {
   describe("RelativeFileSystem", () => {
@@ -33,7 +36,7 @@ describe("FileSystem", () => {
         const uri = "~/features";
         const stepDefRoot = "step_definitions";
         const fs = new HomeDirectoryFileSystem(uri, stepDefRoot);
-        expect(fs.path).toBe("/Users/ben.aherne/features");
+        expect(fs.path).toBe(`${homeDirectory}/features`);
       });
     });
   });
@@ -41,8 +44,7 @@ describe("FileSystem", () => {
     describe("path", () => {
       it("should return the absolute path", () => {
         const uri = "/home/user/features";
-        const stepDefRoot = "step_definitions";
-        const fs = new AbsoluteFileSystem(uri, stepDefRoot);
+        const fs = new AbsoluteFileSystem(uri);
         expect(fs.path).toBe("/home/user/features");
       });
     });
@@ -83,7 +85,6 @@ describe("FileSystem", () => {
   });
 });
 
-
 describe("Files", () => {
   describe("withFeatureRoot", () => {
     it("should return a new instance of Files with the feature root set", () => {
@@ -94,7 +95,7 @@ describe("Files", () => {
       expect(newFiles).toEqual(files);
     });
   });
-  
+
   describe("withCallerFile", () => {
     it("should return a new instance of Files with the caller file set", () => {
       const files = new Files();
