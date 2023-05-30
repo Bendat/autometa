@@ -1,5 +1,19 @@
 # Gherkin
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [a874510]
+  - @autometa/dto-builder@0.9.0
+  - @autometa/gherkin@0.2.5
+
+## 0.1.1
+
+### Patch Changes
+
+- e7aa10e: Updated readme with more examples, fixed the 'func' argument not being available
+
 ## 0.1.0
 
 ### Minor Changes

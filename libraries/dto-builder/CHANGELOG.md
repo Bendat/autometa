@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.9.0
+
+### Minor Changes
+
+- a874510: Builder methods can now retrieve the underlying value with the `.value` property
+
 ## 0.8.0
 
 ### Minor Changes

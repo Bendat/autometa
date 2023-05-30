@@ -1,6 +1,6 @@
 {
   "name": "@autometa/dto-builder",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Define DTOs and Entities and automatically create a builder class.",
   "type": "module",
   "main": "dist/index.js",
@@ -8,6 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "vitest run",
+    "test:watch": "vitest",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
