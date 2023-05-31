@@ -1,6 +1,6 @@
 {
   "name": "@autometa/bind-decorator",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Binds the this keyword of a method",
   "type": "module",
   "main": "dist/cjs/index.js",
