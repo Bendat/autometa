@@ -1,5 +1,20 @@
 # Gherkin
 
+## 0.2.0
+
+### Minor Changes
+
+- b48f577: Added initial implemention of scopes and updated `overloads`
+- b48f577: Renamed 'params' to def and added template string support
+
+### Patch Changes
+
+- b48f577: fixed def being exported as params
+- Updated dependencies [b48f577]
+  - @autometa/gherkin@0.3.0
+  - @autometa/types@0.3.0
+  - @autometa/dto-builder@0.9.1
+
 ## 0.1.2
 
 ### Patch Changes

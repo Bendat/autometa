@@ -1,5 +1,15 @@
 # @autometa/cucumber-runner
 
+## 0.6.0
+
+### Minor Changes
+
+- b48f577: Added initial implemention of scopes and updated `overloads`
+
+### Patch Changes
+
+- @autometa/dto-builder@0.9.1
+
 ## 0.5.6
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # integration-tests-esm
 
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [b48f577]
+  - @autometa/cucumber-runner@0.6.0
+
 ## 0.5.7
 
 ### Patch Changes

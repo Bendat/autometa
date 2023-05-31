@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.3.0
+
+### Minor Changes
+
+- b48f577: Added initial implemention of scopes and updated `overloads`
+
 ## 0.2.1
 
 ### Patch Changes

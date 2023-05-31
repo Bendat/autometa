@@ -1,5 +1,15 @@
 # Gherkin
 
+## 0.3.0
+
+### Minor Changes
+
+- b48f577: Added initial implemention of scopes and updated `overloads`
+
+### Patch Changes
+
+- @autometa/dto-builder@0.9.1
+
 ## 0.2.5
 
 ### Patch Changes
