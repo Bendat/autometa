@@ -24,6 +24,7 @@
   "author": "Ben Aherne <null@null.com>",
   "license": "MIT",
   "devDependencies": {
+    "@autometa/types": "workspace:*",
     "@cucumber/cucumber-expressions": "^16.1.2",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
@@ -47,10 +48,12 @@
   },
   "dependencies": {
     "@autometa/dto-builder": "workspace:*",
-    "@autometa/types": "workspace:*",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",
     "uuid": "^9.0.0"
+  },
+  "volta": {
+    "node": "16.20.0"
   }
 }

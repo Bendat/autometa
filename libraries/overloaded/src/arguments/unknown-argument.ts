@@ -1,6 +1,6 @@
 import {
   BaseArgument,
-  ArgumentValidatorOpts,
+  ArgumentOptions,
   BaseArgumentSchema,
 } from "./base-argument";
 import { array, string } from "myzod";
@@ -10,8 +10,8 @@ const UnknownArgumentParamsSchema = array(
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 export class UnknownArgument<T extends unknown> extends BaseArgument<T> {
   typeName = "unknown";
-  options?: ArgumentValidatorOpts = { optional: true };
-  constructor(args: (string | ArgumentValidatorOpts)[]) {
+  options?: ArgumentOptions = { optional: true };
+  constructor(args: (string | ArgumentOptions)[]) {
     super();
     if (typeof args[0] === "string") {
       this.argName = args[0];
@@ -34,11 +34,11 @@ export class UnknownArgument<T extends unknown> extends BaseArgument<T> {
 export function unknown(): UnknownArgument<unknown>;
 export function unknown(
   name: string,
-  opts: ArgumentValidatorOpts
+  opts: ArgumentOptions
 ): UnknownArgument<unknown>;
-export function unknown(opts: ArgumentValidatorOpts): UnknownArgument<unknown>;
+export function unknown(opts: ArgumentOptions): UnknownArgument<unknown>;
 export function unknown(
-  ...args: (string | ArgumentValidatorOpts)[]
+  ...args: (string | ArgumentOptions)[]
 ): UnknownArgument<unknown> {
   UnknownArgumentParamsSchema.parse(args);
   return new UnknownArgument(args);

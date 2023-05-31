@@ -5,7 +5,7 @@ import { string } from "src/arguments/string-argument";
 import { tuple } from "src/arguments/tuple-argument";
 import { shape } from "src/arguments/shape-argument";
 import { overloads } from "src/overloads";
-import { params } from "src/params";
+import { def } from "src/def";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { func } from "src/arguments/function-argument";
 import { unknown } from "../arguments/unknown-argument";
@@ -23,19 +23,19 @@ function overloaded(functionParam: (a: string) => string): void;
 function overloaded(str: string, ukwn: unknown, tail: boolean): void;
 function overloaded(...args: unknown[]) {
   return overloads(
-    params(string(), string()).matches((a, b) => {
+    def(string(), string()).matches((a, b) => {
       expect(typeof a).toEqual("string");
       expect(typeof b).toEqual("string");
       testFn(a, b);
       return "hello there";
     }),
-    params(number(), number()).matches((a, b) => {
+    def(number(), number()).matches((a, b) => {
       expect(typeof a).toEqual("number");
       expect(typeof b).toEqual("number");
       testFn(a, b);
       return a + b;
     }),
-    params(tuple([string(), number()]), boolean()).matches((a, b) => {
+    def(tuple([string(), number()]), boolean()).matches((a, b) => {
       const [a1, a2] = a;
       expect(typeof a1).toEqual("string");
       expect(typeof a2).toEqual("number");
@@ -43,14 +43,14 @@ function overloaded(...args: unknown[]) {
       testFn(a, b);
       return [a1, a2, b];
     }),
-    params(array([string("a1"), number("a2")])).matches((a) => {
+    def(array([string("a1"), number("a2")])).matches((a) => {
       const [a1, a2] = a;
       expect(typeof a1).toEqual("string");
       expect(typeof a2).toEqual("number");
       testFn(a);
       return [a1, a2];
     }),
-    params(
+    def(
       shape("a", { c: string("c"), d: array([string(), number()]) })
     ).matches((a) => {
       const { c, d } = a;
@@ -60,13 +60,13 @@ function overloaded(...args: unknown[]) {
       testFn(a);
       return d;
     }),
-    params(string(), unknown(), boolean()).matches((a, b) => {
+    def(string(), unknown(), boolean()).matches((a, b) => {
       expect(typeof a).toEqual("string");
       expect(typeof b).toEqual('boolean');
       testFn(a, b);
       return "hello there";
     }),
-    params(func<(a: string) => string>("a")).matches((a) => {
+    def(func<(a: string) => string>("a")).matches((a) => {
       expect(typeof a).toEqual("function");
       expect(a).toHaveLength(1);
       testFn(a);
@@ -116,4 +116,5 @@ describe("integration test - function", () => {
     overloaded("hello", true, true);
     expect(testFn).toHaveBeenCalledTimes(1);
   });
+
 });

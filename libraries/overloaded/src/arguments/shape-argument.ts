@@ -20,19 +20,16 @@ export class ShapeArgument<
   constructor(args: (string | T | ShapeOptions)[]) {
     super();
     if (typeof args[0] === "string") {
-      this.argName = args[0];
+      this.argName = args.shift() as string;
     }
     if (typeof args[0] === "object") {
-      this.reference = args[0] as unknown as T;
-      if (typeof args[1] === "object") {
-        this.options = args[1] as unknown as ShapeOptions;
-      }
-    } else if (typeof args[1] === "object") {
-      this.reference = args[1] as unknown as T;
-      if (typeof args[2] === "object") {
-        this.options = args[2] as unknown as ShapeOptions;
-      }
+      this.reference = args.shift() as  T;
+      
+    } 
+    if (typeof args[0] === "object") {
+      this.options = args[0] as unknown as ShapeOptions;
     }
+
     if (!this.reference) {
       throw new Error(`Shape Argument must be provided a reference object`);
     }
@@ -48,6 +45,9 @@ export class ShapeArgument<
     return type === this.typeName || typeof type === this.typeName;
   }
   assertObject(value: unknown) {
+    if (value === undefined) {
+      return;
+    }
     if (typeof value !== "object") {
       const message = `Expected value to be an ${
         this.typeName
@@ -57,6 +57,9 @@ export class ShapeArgument<
   }
 
   assertExhaustive(value: unknown) {
+    if (value === undefined) {
+      return;
+    }
     if (
       this.options?.exhaustive === undefined ||
       this.options?.exhaustive === false
@@ -79,6 +82,9 @@ export class ShapeArgument<
   }
 
   assertShapeMatches(value: unknown | undefined | null) {
+    if (value === undefined) {
+      return;
+    }
     const refShape: ShapeType = this.reference;
     const asObj = value as unknown as Record<string, unknown>;
     for (const key in refShape) {
@@ -96,6 +102,9 @@ export class ShapeArgument<
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assertIsInstance(value: unknown, instance: any = this.options?.instance) {
+    if (value === undefined) {
+      return;
+    }
     if (instance && !(value instanceof instance)) {
       const message = `Expected shape to be an instance of ${instance} but was not`;
       this.accumulator.push(this.fmt(message));
@@ -103,7 +112,7 @@ export class ShapeArgument<
   }
 
   validate(value: unknown): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertObject(value);
     this.assertExhaustive(value);
     this.assertShapeMatches(value);

@@ -1,9 +1,9 @@
 import { Expression } from "@cucumber/cucumber-expressions";
 import { DocString } from "./doc-string";
-import { StepType, StepKeyword } from "./types";
 import { CompiledDataTable } from "./datatables";
 import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
 import { Class } from "@autometa/types";
+import { StepType, StepKeyword } from "./enums";
 
 export class Step {
   @Property

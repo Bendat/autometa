@@ -14,6 +14,7 @@ export const StringValidatorOpsSchema = object({
 
 export type StringValidatorOpts = Infer<typeof StringValidatorOpsSchema> & {
   pattern?: RegExp;
+  test?: (arg: string) => boolean;
 };
 
 const StringArgumentConstructorSchema = tuple([
@@ -125,7 +126,7 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
   }
 
   validate(value: string) {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertString(value);
     this.assertStringEquals(value);
     this.assertStringLessThanMax(value);

@@ -1,9 +1,10 @@
-import { object } from "myzod";
-import { Class } from "@autometa/types";
+import { Infer, object } from "myzod";
+import { Class, AbstractClass } from "@autometa/types";
 import { ShapeArgument } from "./shape-argument";
-import { BaseArgument } from "./base-argument";
+import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 export const InstanceConstructorArgumentSchema = object({});
-
+export const InstanceOptionsArgumentSchema = object({}).and(BaseArgumentSchema);
+export type InstanceOptions = Infer<typeof InstanceOptionsArgumentSchema>;
 export class InstanceArgument<
   TClass extends { constructor: unknown },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,25 +12,26 @@ export class InstanceArgument<
 > extends BaseArgument<TClass> {
   typeName = "object";
   blueprint: Class<TClass>;
+  declare options?: InstanceOptions;
   shape: TShape;
   constructor(args: (string | Class<TClass> | TShape)[]) {
     super();
     if (typeof args[0] === "string") {
-      this.argName = args[0];
+      this.argName = args.shift() as string;
     }
 
     if (typeof args[0] === "function") {
-      this.blueprint = args[0];
+      this.blueprint = args.shift() as Class<TClass>;
     }
 
-    if (typeof args[1] === "function") {
-      this.blueprint === args[1];
+    if (typeof args[0] === "object") {
+      this.shape = args.shift() as TShape;
     }
-    if (typeof args[1] === "object") {
-      this.shape = args[1];
+    if (typeof args[0] === "undefined") {
+      args.shift();
     }
-    if (typeof args[2] === "object") {
-      this.shape = args[2];
+    if (typeof args[0] === "object") {
+      this.options = args.shift() as InstanceOptions;
     }
   }
   isTypeMatch(type: unknown): boolean {
@@ -37,7 +39,11 @@ export class InstanceArgument<
   }
 
   assertIsInstance(value: unknown) {
-    if (this.blueprint && !(value instanceof this.blueprint)) {
+    if (
+      value !== undefined &&
+      this.blueprint &&
+      !(value instanceof this.blueprint)
+    ) {
       const message = `Expected value of ${value} to be an instance of ${this.blueprint.name} but it was not.`;
       this.accumulator.push(this.fmt(message));
     }
@@ -56,7 +62,7 @@ export class InstanceArgument<
     }
   }
   validate(value: unknown): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertIsInstance(value);
     this.assertShapeArguments(value);
     return this.accumulator.length === 0;
@@ -67,15 +73,20 @@ export function instance<
   TClass extends { constructor: unknown },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TShape extends ShapeArgument<any, Partial<TClass>>
->(blueprint: Class<TClass>, shape?: TShape): InstanceArgument<TClass, TShape>;
+>(
+  blueprint: Class<TClass> | AbstractClass<TClass>,
+  shape?: TShape | null,
+  options?: InstanceOptions
+): InstanceArgument<TClass, TShape>;
 export function instance<
   TClass extends { constructor: unknown },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TShape extends ShapeArgument<any, Partial<TClass>>
 >(
   name: string,
-  blueprint: Class<TClass>,
-  shape?: TShape
+  blueprint: Class<TClass> | AbstractClass<TClass>,
+  shape?: TShape | null,
+  options?: InstanceOptions
 ): InstanceArgument<TClass, TShape>;
 export function instance<
   TClass extends { constructor: unknown },

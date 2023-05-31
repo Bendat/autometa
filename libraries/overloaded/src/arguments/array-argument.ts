@@ -67,6 +67,9 @@ export class ArrayArgument<
     return Array.isArray(type);
   }
   assertLengthLessThanMax(values: unknown, length = this.options?.maxLength) {
+    if (values === undefined) {
+      return;
+    }
     if (Array.isArray(values)) {
       if (length && values?.length > length) {
         const message = `Expected value to be an array with max length ${length} but was ${values?.length}`;
@@ -78,6 +81,9 @@ export class ArrayArgument<
     values: unknown,
     length = this.options?.minLength
   ) {
+    if (values === undefined) {
+      return;
+    }
     if (Array.isArray(values)) {
       if (length && values?.length < length) {
         const message = `Expected value to be an array with min length ${length} but was ${values?.length}`;
@@ -94,6 +100,9 @@ export class ArrayArgument<
     }
   }
   assertIncludes(values: unknown, item = this.options?.includes) {
+    if (values === undefined) {
+      return;
+    }
     if (item && Array.isArray(values)) {
       if (!values.includes(item)) {
         const message = `Expected array to have length ${length} but was ${values?.length}`;
@@ -105,6 +114,7 @@ export class ArrayArgument<
     if (!Array.isArray(values)) {
       return;
     }
+    
     for (const value of values) {
       if (!this.types.includes(typeof value)) {
         const index = values.indexOf(value);
@@ -122,6 +132,9 @@ export class ArrayArgument<
     if (!Array.isArray(values)) {
       return;
     }
+    if (values === undefined) {
+      return;
+    }
     for (const value of values) {
       const matching = this.reference.find((it) => it.isTypeMatch(value));
 
@@ -136,7 +149,7 @@ export class ArrayArgument<
   }
 
   validate(value: unknown): boolean {
-    this.assertDefined(value);
+    this.baseAssertions(value);
     this.assertIsArray(value);
     this.assertLengthEquals(value);
     this.assertLengthGreaterThanMin(value);

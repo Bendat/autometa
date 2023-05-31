@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { instance } from "./instance-argument";
+import { instance, InstanceArgument } from "./instance-argument";
 import { number } from "./number-argument";
 import { shape } from "./shape-argument";
 class Foo {
@@ -8,6 +8,20 @@ class Foo {
 class Bar {}
 describe("Instance Argument", () => {
   describe("Assertions", () => {
+    describe("assertDefined", () => {
+      it("should pass when undefined is permitted", () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const arg: InstanceArgument<any, any> = instance(
+          Foo,
+          undefined,
+          {
+            optional: true,
+          }
+        );
+        arg.baseAssertions(undefined);
+        expect(arg.accumulator).toHaveLength(0);
+      });
+    });
     describe("assertIsInstance", () => {
       it("should validate that a value is an instance of a class", () => {
         const arg = instance(Foo);
