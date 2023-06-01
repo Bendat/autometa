@@ -22,14 +22,6 @@
     "@changesets/cli": "^2.26.0",
     "eslint-config-custom": "workspace:*",
     "prettier": "^2.8.3",
-    "tsc-alias": "^1.8.2",
     "turbo": "^1.7.0"
-  },
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "packageManager": "pnpm@7.24.3",
-  "volta": {
-    "node": "16.20.0"
   }
 }

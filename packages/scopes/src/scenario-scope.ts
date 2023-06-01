@@ -2,24 +2,29 @@ import type { ScenarioAction } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { HookCache } from "./caches/hook-cache";
+import { StepCache } from "./caches";
+import { Scenario, ScenarioOutline } from "@autometa/gherkin";
 
 export class ScenarioScope extends Scope {
   canHandleAsync = false;
   constructor(
-    public readonly title: string,
+    public readonly name: string,
     public readonly action: ScenarioAction,
-    parentHooks: HookCache,
+    parentHooksCache: HookCache,
+    parentStepCache: StepCache
   ) {
-    super(new HookCache(parentHooks));
+    super(parentHooksCache, parentStepCache);
   }
   protected get canAttachHook(): boolean {
     return false;
   }
 
   get idString() {
-    return this.title;
+    return this.name;
   }
-
+  title(gherkin: Scenario | ScenarioOutline) {
+    return `${gherkin.keyword}: ${this.name}`
+  }
   canAttach<T extends Scope>(childScope: T): boolean {
     return childScope instanceof StepScope;
   }

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ES2020",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types",
+    "typeRoots": ["./typings/"]
+  },
+  "files": ["index.ts", "src/bridges/jest/jest-bridge-runner.ts"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.js"]
+}

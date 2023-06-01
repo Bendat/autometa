@@ -1,11 +1,13 @@
 import { Expression } from "@cucumber/cucumber-expressions";
 import { GherkinDocString } from "./doc-string";
-import { CompiledDataTable } from "./datatables";
+import { DataTable } from "./datatables";
 import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
 import { Class } from "@autometa/types";
 import { StepType, StepKeyword } from "./enums";
+import { GherkinNode } from "../gherkin-node";
+import { CompiledDataTable } from "./datatables-old";
 
-export class Step {
+export class Step extends GherkinNode{
   @Property
   readonly keywordType: StepType;
   @Property

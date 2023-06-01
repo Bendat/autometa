@@ -40,3 +40,6 @@ tests-out/
 
 .allure
 .allure-reports
+writeup.md
+
+node_modules

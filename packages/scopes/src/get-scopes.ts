@@ -1,27 +1,19 @@
 import { ParameterTypeRegistry } from "@cucumber/cucumber-expressions";
-import { OnFeatureExecuted } from "./decorators";
 import { GlobalScope } from "./global-scope";
 import { Scope } from "./scope";
 import { Scopes } from "./scopes";
 
 export function GetCucumberFunctions(
-  registry: ParameterTypeRegistry,
-  onFeatureExecuted: OnFeatureExecuted,
-  // ...args: unknown[]
-) {
-  const global = new GlobalScope(onFeatureExecuted, registry);
-  return addAlternatives(global);
+  registry: ParameterTypeRegistry
+)  {
+  const global = new GlobalScope( registry);
+  return addAlternatives(global, global);
 }
 
-function addAlternatives({
-  Feature,
-  Scenario,
-  ScenarioOutline,
-  Rule,
-  Given,
-  When,
-  Then,
-}: Scopes) {
+function addAlternatives(
+  { Feature, Scenario, ScenarioOutline, Rule, Given, When, Then }: Scopes,
+  Global: GlobalScope
+) {
   addGroupAlternatives(Feature);
   addGroupAlternatives(Scenario);
   addGroupAlternatives(ScenarioOutline);
@@ -34,6 +26,7 @@ function addAlternatives({
     Given,
     When,
     Then,
+    Global,
   };
 }
 

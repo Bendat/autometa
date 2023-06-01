@@ -9,7 +9,6 @@ const pathWithTilde = (pathWithTilde: string) => {
   if (typeof pathWithTilde !== "string") {
     throw new TypeError(`Expected a string, got ${typeof pathWithTilde}`);
   }
-
   return homeDirectory ? pathWithTilde.replace(/^~(?=$|\/|\\)/, homeDirectory) : pathWithTilde;
 };
 export function getFeatureFile(filePath: string) {
@@ -42,6 +41,7 @@ export function getRealPath(filePath: string, callerFile: string, isFile = true)
   }
   return realPath;
 }
+
 export function loadGlobalStepFiles() {
   if (Config.has("globalsRoot")) {
     const globalsDirs = Config.get<string>("globalsRoot").replace(/\\/g, "/");

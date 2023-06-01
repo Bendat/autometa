@@ -3,7 +3,6 @@ import crypto from "crypto";
 import { transform } from "@babel/core";
 import type { Config } from "@jest/types";
 import jestPreset from "babel-preset-jest";
-
 export let canInstrument: false;
 export const getCacheKey = (
   fileData: crypto.BinaryLike,

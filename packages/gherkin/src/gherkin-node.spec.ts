@@ -1,7 +1,9 @@
 import { Builder } from "@autometa/dto-builder";
 import { GherkinNode } from "./gherkin-node";
 import { it, expect, describe } from "vitest";
-class FakeNode extends GherkinNode {}
+class FakeNode extends GherkinNode {
+  keyword ='Fake';
+}
 const FakeNodeBuilder = Builder(FakeNode);
 
 describe("Gherkin Node", () => {

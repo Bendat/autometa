@@ -1,5 +1,5 @@
 import { TableCell } from "@cucumber/messages";
-import { TableValue } from "./table-value";
+import { TableValue } from "../datatables-old/table-value";
 export function transformTableValue(value: string): TableValue;
 export function transformTableValue(cell: TableCell): TableValue;
 export function transformTableValue(data: TableCell | string) {

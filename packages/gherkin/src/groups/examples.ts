@@ -15,7 +15,7 @@ export class Examples extends GherkinNode {
   @Property
   readonly values: readonly string[][];
   @Property
-  readonly children: readonly Scenario[];
+  declare children: Scenario[];
 }
 
 export const ExamplesBuilder: Class<DtoBuilder<Examples>> = Builder(Examples);

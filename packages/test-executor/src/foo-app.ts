@@ -1,0 +1,3 @@
+class FooApp {
+  a: string;
+}

@@ -1,10 +1,11 @@
 packages:
   - "configuration/*"
+  - "integration/*"
   - "packages/*"
   - "cucumber/*"
   - "libraries/*"
   - "documentation/*"
-  - "**/dist"
+  # - "**/dist"
   # - "playwright/*"
 
   # - "selenium/*"

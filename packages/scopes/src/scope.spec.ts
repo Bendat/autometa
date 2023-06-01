@@ -1,4 +1,4 @@
-import { HookCache } from "./caches";
+import { HookCache, StepCache } from "./caches";
 import { Scope } from "./scope";
 import { describe, it, expect } from "vitest";
 import { BeforeHook } from "./hook";
@@ -18,7 +18,7 @@ class TestScope extends Scope {
     private readonly _canAttachHook: boolean,
     action?: () => void
   ) {
-    super(new HookCache());
+    super(new HookCache(), new StepCache());
     this.action = action;
   }
   get canAttachHook() {
@@ -105,7 +105,7 @@ describe("Scope", () => {
       const hook = new BeforeHook("", () => undefined);
       const sut = new TestScope("scope", true, true, true);
       sut.attachHook(hook);
-      expect(sut.hooks.before).toContain(hook);
+      expect(sut.hookCache.before).toContain(hook);
     });
     it("should attach a new hook to the child scope", () => {
       const hook = new BeforeHook("", () => undefined);
@@ -118,7 +118,7 @@ describe("Scope", () => {
         child.run();
       });
       sut.run();
-      expect(sut.hooks.before).toContain(hook);
+      expect(sut.hookCache.before).toContain(hook);
     });
   });
 });

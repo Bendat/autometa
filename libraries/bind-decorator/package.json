@@ -2,8 +2,11 @@
   "name": "@autometa/bind-decorator",
   "version": "0.4.1",
   "description": "Binds the this keyword of a method. Respectfully a fork of https://www.npmjs.com/package/bind-decorator",
+  "homepage": "http://github.com/bendat/autometa",
+  "author": "Ben Aherne",
+  "license": "ISC",
   "type": "module",
-  "main": "dist/cjs/index.js",
+  "main": "dist/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
@@ -17,24 +20,24 @@
     "build": "pnpm build:js && pnpm build:dts ",
     "build:watch": "tsup --watch"
   },
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"
+  },
   "keywords": [
-    "bind this keyword",
-    "bind decorator"
+    "'this' binding",
+    "method binding",
+    "decorators"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Bendat/autometa"
   },
-  "homepage": "http://github.com/bendat/autometa",
-  "author": "Ben Aherne",
-  "license": "ISC",
-  "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/cjs/index.js",
-    "default": "./dist/esm/index.js",
-    "types": "./dist/types/index.d.ts"
-  },
+ 
   "devDependencies": {
+    "tsup": "^6.7.0",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^7.32.0",

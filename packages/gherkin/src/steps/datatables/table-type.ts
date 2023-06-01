@@ -1,8 +1,8 @@
 import { DataTable, TableRow } from "@cucumber/messages";
-import { CompiledDataTable } from ".";
+import { CompiledDataTable } from "../datatables-old";
 import { transformTableValue } from "./transform-table-value";
 
-export function compileDatatable(
+export function compileDataTable(
   table?: DataTable
 ): CompiledDataTable | undefined {
   if (!table) {

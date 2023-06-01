@@ -9,7 +9,7 @@ import { Class } from "@autometa/types";
 export class Feature extends GherkinNode {
   children: Array<Rule | Background | Scenario | ScenarioOutline> = [];
   @Property
-  readonly uri?: string;
+  readonly uri: string;
   @Property
   readonly name: string;
   @Property
@@ -22,3 +22,4 @@ export class Feature extends GherkinNode {
 }
 
 export const FeatureBuilder: Class<DtoBuilder<Feature>> = Builder(Feature);
+

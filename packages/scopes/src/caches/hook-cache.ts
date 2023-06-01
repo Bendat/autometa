@@ -7,7 +7,9 @@ export class HookCache {
   private afterAll: TeardownHook[] = [];
 
   constructor(readonly parent?: HookCache) {}
-  addHook = (hook: Hook) => {
+  addHook = (...hook: Hook[]) => hook.forEach(this.#addHook);
+
+  #addHook = (hook: Hook) => {
     if (hook instanceof BeforeHook) {
       this.beforeEach.push(hook);
     } else if (hook instanceof SetupHook) {
@@ -22,9 +24,9 @@ export class HookCache {
   };
 
   get before(): BeforeHook[] {
-    if (this.parent) {
-      return [...this.parent.before, ...this.beforeEach];
-    }
+    // if (this.parent) {
+    //   return [...this.parent.before, ...this.beforeEach];
+    // }
     return [...this.beforeEach];
   }
 
@@ -33,9 +35,9 @@ export class HookCache {
   }
 
   get after(): AfterHook[] {
-    if (this.parent) {
-      return [...this.parent.after, ...this.afterEach];
-    }
+    // if (this.parent) {
+    //   return [...this.parent.after, ...this.afterEach];
+    // }
     return [...this.afterEach];
   }
 

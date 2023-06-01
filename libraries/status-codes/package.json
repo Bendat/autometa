@@ -1,6 +1,9 @@
 {
   "name": "@autometa/status-codes",
   "version": "0.3.1",
+  "homepage": "http://github.com/bendat/autometa",
+  "author": "Ben Aherne",
+  "license": "ISC",
   "description": "Simple Library to simply HTTP status codes",
   "type": "module",
   "main": "dist/index.js",
@@ -17,41 +20,32 @@
     "build": "pnpm build:js && pnpm build:dts ",
     "build:watch": "tsup --watch"
   },
-  "keywords": [
-    "status codes",
-    "http",
-    "node",
-    "http status",
-    "status text",
-    "reason phrases"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Bendat/autometa"
-  },
-  "homepage": "http://github.com/bendat/autometa",
-  "author": "Ben Aherne",
-  "license": "ISC",
   "exports": {
     "import": "./dist/esm/index.js",
     "require": "./dist/index.js",
     "default": "./dist/esm/index.js",
     "types": "./dist/index.d.ts"
   },
+  "keywords": [
+    "status codes",
+    "http",
+    "node",
+    "http status",
+    "status text"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bendat/autometa"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^7.32.0",
     "eslint-config-custom": "workspace:*",
+    "tsup": "^6.7.0",
     "node": "^19.6.0",
     "prettier": "^2.8.3",
-    "reflect-metadata": "^0.1.13",
-    "rimraf": "^4.1.2",
-    "ts-jest": "^29.0.5",
-    "ts-node": "^10.9.1",
-    "tsc-alias": "^1.8.2",
     "typescript": "^4.9.5",
-    "tsup": "^6.7.0",
     "vitest": "^0.28.5"
   }
 }

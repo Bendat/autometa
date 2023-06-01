@@ -1,0 +1,47 @@
+{
+  "name": "@autometa/phrases",
+  "version": "0.0.0",
+  "description": "@autometa Human Readable phrases",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "build": "tsup"
+  },
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "author": "Ben Aherne <null@null.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@autometa/types": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.8.3",
+    "reflect-metadata": "^0.1.13",
+    "tsconfig": "workspace: *",
+    "tsup": "^6.7.0",
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.8"
+  },
+  "dependencies": {
+    "@autometa/errors": "workspace:^",
+    "@types/change-case": "^2.3.1",
+    "change-case": "^4.1.2",
+    "closest-match": "^1.3.3"
+  }
+}

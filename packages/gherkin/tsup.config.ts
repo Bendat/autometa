@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   format: ["cjs", "esm"], // generate cjs and esm files
   skipNodeModulesBundle: true,
-  entryPoints: ["src/index.ts"],
+  entryPoints: ["index.ts"],
   target: "es2020",
   outDir: "dist",
   legacyOutput: true,

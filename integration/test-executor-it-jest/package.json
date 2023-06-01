@@ -1,0 +1,44 @@
+{
+  "name": "@autometa/test-executor-it-jest",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "build": "tsup"
+  },
+  "author": "Ben Aherne <null@null.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@autometa/types": "workspace:*",
+    "@types/node": "^18.11.18",
+    "@types/uuid": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.8.3",
+    "reflect-metadata": "^0.1.13",
+    "tsconfig": "workspace: *",
+    "tsup": "^6.7.0",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@autometa/bind-decorator": "workspace:^",
+    "@autometa/dto-builder": "workspace:*",
+    "@autometa/scopes": "workspace:^",
+    "@autometa/test-executor": "workspace:^",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@cucumber/gherkin": "^26.0.3",
+    "@cucumber/messages": "^21.0.1",
+    "@cucumber/tag-expressions": "^5.0.1",
+    "@types/jest": "^29.5.2",
+    "jest": "^29.4.3",
+    "uuid": "^9.0.0"
+  }
+}

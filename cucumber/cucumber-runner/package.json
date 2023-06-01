@@ -3,9 +3,18 @@
   "version": "0.7.3",
   "description": "Run cucumber with jest or vitest, with superpowers",
   "type": "module",
-  "main": "dist/cjs/index.js",
+  "homepage": "http://github.com/bendat/autometa",
+  "author": "Ben Aherne",
+  "license": "ISC",
+  "main": "dist/index.js",
   "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Bendat/autometa"
@@ -33,16 +42,8 @@
     "cucumber runner",
     "dependency injection"
   ],
-  "homepage": "http://github.com/bendat/autometa",
-  "author": "Ben Aherne",
-  "license": "ISC",
-  "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/cjs/index.js",
-    "default": "./dist/esm/index.js",
-    "types": "./dist/types/index.d.ts"
-  },
   "devDependencies": {
+    "tsup": "^6.7.0",
     "@jest/globals": "^29.4.3",
     "@jest/types": "^29.4.3",
     "@types/glob": "^8.0.1",

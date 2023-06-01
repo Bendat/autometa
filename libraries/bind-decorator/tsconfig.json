@@ -5,9 +5,9 @@
     "module": "ES2020",
     "outDir": "out",
     "declarationDir": "out",
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
   },
-  "files": ["index.ts"],
+  "files": ["src/index.ts"],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.js"]
 }

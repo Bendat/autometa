@@ -14,7 +14,6 @@ import { ScenarioBuilder } from "../scenario";
 import { ScenarioOutlineBuilder } from "../groups/scenario-outline";
 import { ExamplesBuilder } from "../groups/examples";
 import { GherkinDocString, StepBuilder, StepKeyword } from "../steps";
-import { compileDatatable } from "../steps/datatables/table-type";
 import { Background, BackgroundBuilder } from "../background";
 import {
   isBackground,
@@ -25,6 +24,7 @@ import {
 } from "./validators";
 import { FeatureChildType, RuleChildType } from "./child-types";
 import { ExampleBuilder } from "../example";
+import { compileDataTable } from "../steps/datatables-old";
 
 export function convertToClass(feature: GherkinFeature, filePath: string) {
   return new FeatureBuilder()
@@ -102,17 +102,17 @@ export function buildScenario(
   backgrounds: Background[] | undefined,
   tagsNew: string[]
 ) {
-  const steps = makeSteps(scenario);
   const [bg1, bg2] = backgrounds ?? [];
-  const scen = new ScenarioBuilder()
+  const bgSteps = backgrounds?.map((bg) => bg.steps).flat() ?? [];
+  const steps = [...bgSteps, ...makeSteps(scenario)];
+  return new ScenarioBuilder()
     .name(scenario.name)
     .description(scenario.description)
     .tags(new Set(tagsNew))
-    .steps(steps)
+    .children(steps)
     .backgrounds([bg1, bg2])
     .keyword(scenario.keyword)
     .build();
-  return scen;
 }
 export function buildOutline(scenario: GherkinScenario, tags: string[]) {
   const examples = buildExamples(scenario, tags);
@@ -120,7 +120,7 @@ export function buildOutline(scenario: GherkinScenario, tags: string[]) {
     .name(scenario.name)
     .tags(new Set(tags))
     .keyword(scenario.keyword)
-    .examples(examples)
+    .children(examples)
     .build();
   return outline;
 }
@@ -137,13 +137,16 @@ export function buildBackground(child: { background: GherkinBackground }) {
   return bg;
 }
 
-function makeSteps(background: GherkinBackground | GherkinScenario) {
+function makeSteps(background?: GherkinBackground | GherkinScenario) {
+  if (!background) {
+    return [];
+  }
   return background.steps.map((step) => {
     const doc = step.docString ? new GherkinDocString(step.docString) : undefined;
     return new StepBuilder()
       .text(step.text)
       .docstring(doc)
-      .table(compileDatatable(step.dataTable))
+      .table(compileDataTable(step.dataTable))
       .keyword(step.keyword as StepKeyword)
       .keywordType(step.keywordType as StepKeywordType)
       .build();
@@ -162,7 +165,7 @@ export function buildRule(
     .keyword(rule?.keyword)
     .description(rule.description)
     .tags(new Set(tagsNew))
-    .childer(buildChildren(rule, tagsNew, backgrounds))
+    .children(buildChildren(rule, tagsNew, backgrounds))
     .build();
   return ruleObject;
 }
@@ -189,7 +192,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
         .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
         .keyword("Example")
         .example(exampleValues)
-        .steps(steps)
+        .children(steps)
         .build();
     });
     return new ExamplesBuilder()

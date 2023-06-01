@@ -7,7 +7,7 @@ import { Class } from "@autometa/types";
 
 export class Rule extends GherkinNode {
   @Property
-  childer: Array<Background | Scenario | ScenarioOutline> = [];
+  declare children: Array<Background | Scenario | ScenarioOutline>;
   @Property
   keyword: string;
   @Property

@@ -11,7 +11,7 @@ export class ScenarioOutline extends GherkinNode {
   @Property
   readonly keyword: string;
   @Property
-  readonly examples: Examples[];
+  declare children: Examples[];
 }
 
 export const ScenarioOutlineBuilder: Class<DtoBuilder<ScenarioOutline>> =

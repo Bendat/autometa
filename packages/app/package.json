@@ -1,0 +1,46 @@
+{
+  "name": "@autometa/app",
+  "version": "0.0.0",
+  "description": "@autometa app, world and fixtures",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "scripts": {
+    "test:unit": "vitest run --passWithNoTests",
+    "test": "npm run test:unit",
+    "test:watch": "vitest",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "build:js": "tsup",
+    "build:dts:tsc": "tsc --build --clean && tsc && tsup --entry.index out/src/index.d.ts --dtsOnly",
+    "build:dts": "pnpm build:dts:tsc",
+    "build": "pnpm build:js && pnpm build:dts ",
+    "build:watch": "tsup --watch"
+  },
+  "author": "Ben Aherne <null@null.com>",
+  "license": "MIT",
+  
+  "devDependencies": {
+    "@autometa/types": "workspace:*",
+    "@types/node": "^18.11.18",
+    "eslint": "^8.37.0",
+    "prettier": "^2.8.3",
+    "reflect-metadata": "^0.1.13",
+    "tsconfig": "workspace: *",
+    "tsup": "^7.1.0",
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.8"
+  },
+  "dependencies": {
+    "@autometa/assertions": "workspace:^",
+    "tsyringe": "^4.7.0"
+  }
+}

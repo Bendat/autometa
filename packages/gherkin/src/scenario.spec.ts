@@ -1,4 +1,4 @@
-import { describe, it, expect } from  "vitest";
+import { describe, it, expect } from "vitest";
 import { ScenarioBuilder } from "./scenario";
 
 describe("Scenario Builder", () => {
@@ -9,6 +9,8 @@ describe("Scenario Builder", () => {
       .keyword("Scenario")
       .build();
     const expected = {
+      children: [],
+      tags: new Set(),
       name: "my scenario",
       description: "foo",
       keyword: "Scenario",

@@ -1,14 +1,15 @@
 import {
   CucumberExpression,
+  Expression,
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
-import { Examples, TableValue } from "@autometa/gherkin";
+import { Examples } from "@autometa/gherkin";
 import { StatusType, ModifierType } from "@autometa/types";
-
+import { TableValue } from "@autometa/types";
 export interface StartFeatureOpts {
   title: string;
   path: string;
-  tags: string[];
+  tags: string[] | Set<string>;
   modifier?: string;
 }
 
@@ -45,44 +46,36 @@ export interface EndScenarioOutlineOpts {
 }
 export interface StartScenarioOpts {
   title: string;
-  tags: string[];
-  args: unknown[];
-  modifier?: string;
+  tags: string[] | Set<string>;
   examples?: { readonly key: string; readonly value: TableValue }[];
 }
 
 export interface EndScenarioOpts {
   title: string;
   status: StatusType;
+  skipped: boolean;
   error?: Error;
-}
-export interface StartScenarioOpts {
-  title: string;
-  description: string;
-  tags: string[];
-  args: unknown[];
-  uuid: string;
 }
 
-export interface EndScenarioOpts {
-  title: string;
-  status: StatusType;
-  error?: Error;
-  modifier?: ModifierType;
-}
+
 export interface StartStepOpts {
   keyword: string;
   text: string;
+  expression: Expression; 
   args: unknown[];
 }
 
 export interface EndStepOpts {
-  text: CucumberExpression | RegularExpression;
+  keyword: string;
+  text: string
+  expression: Expression; 
   status: StatusType;
   error?: Error | unknown;
 }
+
 export interface StartBeforeOpts {
   description?: string;
+  tags?: string[] | Set<string>;
   args?: unknown[];
 }
 
@@ -93,6 +86,7 @@ export interface EndBeforeOpts {
 }
 export interface StartAfterOpts {
   description?: string;
+  tags?: string[] | Set<string>;
   args?: unknown[];
 }
 
@@ -103,12 +97,14 @@ export interface EndAfterOpts {
 }
 export interface StartSetupOpts {
   description?: string;
+  tags?: string[] | Set<string>;
   args?: unknown[];
 }
 
 export interface EndSetupOpts {
   description?: string;
   status: StatusType;
+  tags?: string[] | Set<string>;
   error?: Error;
 }
 

@@ -10,6 +10,8 @@ describe("Example Builder", () => {
       .example({ foo: "1" })
       .build();
     const expected = {
+      children: [],
+      tags: new Set(),
       name: "my example",
       description: "foo",
       keyword: "Example",

@@ -9,6 +9,8 @@ describe("Background Builder", () => {
       .description("foo")
       .build();
     const expected = {
+      tags: new Set(),
+      children: [],
       name: "my background",
       description: "foo",
       keyword: "Background",

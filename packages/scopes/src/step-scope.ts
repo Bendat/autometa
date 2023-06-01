@@ -1,45 +1,75 @@
-import type { ScenarioAction } from "./types";
+import type { StepAction } from "./types";
 import { Scope } from "./scope";
-import {
-  ParsedDataTable,
-  StepKeyword,
-  StepType,
-  TableType,
-} from "@autometa/gherkin";
+import { Step, StepKeyword, StepType } from "@autometa/gherkin";
 import { HookCache } from "./caches/hook-cache";
 import { Expression } from "@cucumber/cucumber-expressions";
 import { Bind } from "@autometa/bind-decorator";
-
-export class StepScope extends Scope {
-  canHandleAsync = false;
+import { StepCache } from "./caches";
+import { App } from "@autometa/app";
+import { Empty_Function } from "./novelties";
+import { DataTable } from "@autometa/gherkin";
+import { Class } from "@autometa/types";
+import { captureError } from "./capture-error";
+import { AutomationError } from "@autometa/errors";
+export class StepScope<TText extends string, TTable> extends Scope {
+  canHandleAsync = true;
+  action = Empty_Function;
   constructor(
     readonly keyword: StepKeyword,
     readonly keywordType: StepType,
     public readonly expression: Expression,
-    public readonly action: ScenarioAction,
-    readonly tableType?: TableType<ParsedDataTable>
+    public readonly stepAction: StepAction<TText, TTable>,
+    readonly tablePrototype?: Class<DataTable>
   ) {
-    super(new HookCache());
+    super(new HookCache(), new StepCache());
   }
-  #args?: unknown[];
+
+  @Bind
   matches(text: string) {
     const match = this.expression.match(text);
     if (text === this.expression.source || match !== null) {
-      this.#args = match?.map((it) => it.getValue(null));
       return true;
     }
     return false;
   }
+
+  @Bind
   getArgs(text: string): unknown[] {
-    if (this.#args) {
-      return this.#args;
-    }
     const match = this.expression.match(text);
     if (text === this.expression.source || match !== null) {
       return match?.map((it) => it.getValue(null)) ?? [];
     }
     return [];
   }
+  @Bind
+  async execute(gherkin: Step, args: unknown[], app: App): Promise<AutomationError | undefined> {
+    // const args = this.getArgs(gherkin.text);
+    if (gherkin.table) {
+      if (!this.tablePrototype) {
+        const error =
+          new AutomationError(`Step '${this.title}' has a table but no table prototype was provided.
+
+To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
+definition as the last argument
+
+Given('text', (table, app)=>{}, HTable)`);
+        return error;
+      }
+      args.push(new this.tablePrototype(gherkin.table));
+    }
+    args.push(app);
+    const error = await captureError(this.stepAction, ...args);
+    if (error instanceof Error) {
+      const message = `Step '${this.title}' failed with error
+  
+  ${error.message}`;
+      const newError = new AutomationError(message);
+      newError.opts = { cause: error };
+      newError.stack = error.stack;
+      return newError;
+    }
+  }
+
   @Bind
   run() {
     // do nothing
@@ -48,7 +78,13 @@ export class StepScope extends Scope {
   get idString() {
     return `${this.keyword}: ${this.expression}`;
   }
+  get title() {
+    return this.idString;
+  }
 
+  get isStepScope() {
+    return true;
+  }
   canAttach<T extends Scope>(_: T): boolean {
     return false;
   }

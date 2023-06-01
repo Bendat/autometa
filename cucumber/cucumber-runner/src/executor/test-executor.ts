@@ -277,6 +277,7 @@ async function runAfterHooks(
   app: unknown,
   onFailure: OnFailure
 ) {
+
   for (const hook of afters?.reverse() ?? []) {
     if (!isTagFiltered(tags, hook.tagFilter)) {
       continue;
