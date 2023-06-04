@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.0
+
+### Minor Changes
+
+- 1ab33ca: Temporary hack fix fo bad filepaths on windows
+
 ## 0.6.0
 
 ### Minor Changes

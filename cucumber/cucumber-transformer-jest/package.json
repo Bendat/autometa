@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-transformer-jest",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Convert Cucumber .feature files into Autometa cucumber tests with jest",
   "type": "module",
   "main": "dist/cjs/index.js",
@@ -62,7 +62,7 @@
     "vite-tsconfig-paths": "^4.0.5"
   },
   "dependencies": {
-    "@autometa/cucumber-runner": "workspace:^0.6.0",
+    "@autometa/cucumber-runner": "workspace:^0.7.0",
     "@babel/core": "^7.21.4",
     "vitest": "^0.29.8"
   }
