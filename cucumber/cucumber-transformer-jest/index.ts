@@ -26,13 +26,14 @@ export const getCacheKey = (
 export default {
   getCacheKey,
   process: (src: string, filePath: string, jestConfig: Config.ProjectConfig) => {
+    const windowsFix = filePath.replace(/\\/g, "/");
     const testFile = `
 const { Feature } = require('@autometa/cucumber-runner');            
-Feature('${filePath}')
+Feature('${windowsFix}')
 `;
 
     const featureFile = transform(testFile, {
-      filename: filePath,
+      filename: windowsFix,
       presets: [jestPreset],
       root: jestConfig.cwd,
     });
