@@ -120,8 +120,9 @@ Reflect.defineProperty(feature, "skip", {
   get: () => skipFeature,
 });
 
-function getActualFeatureFiles(path: string, caller: string) {
-  let files = glob.sync(getRealPath(path, caller));
+export function getActualFeatureFiles(path: string, caller: string) {
+  const realPath = getRealPath(path, caller);
+  let files = glob.sync(realPath);
   files = files.length === 0 ? [path] : files;
   const dirPath = getRealPath(path, caller);
   const dirStat = fs.lstatSync(dirPath);
@@ -144,9 +145,9 @@ function normalizeFeatureArgs(
     );
   }
   if (typeof action === "string") {
-    return { action: () => undefined, paths: [action] };
+    return { action: () => undefined, paths: [action.replace(/\\/, "/")] };
   }
-  return { action, paths: path };
+  return { action, paths: path.map((it) => it.replace(/\\/, "/")) };
 }
 /**
  * Must be called from inside a `Feature`. Allows
@@ -650,6 +651,6 @@ export function Pass() {
 }
 
 export function Pending() {
-  throw new Error('Pending not implemented yet')
+  throw new Error("Pending not implemented yet");
   // do nothing
 }
