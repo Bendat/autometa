@@ -1,5 +1,16 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.4.0
+
+### Minor Changes
+
+- 1ab33ca: Temporary hack fix fo bad filepaths on windows
+
+### Patch Changes
+
+- Updated dependencies [1ab33ca]
+  - @autometa/cucumber-runner@0.7.0
+
 ## 0.3.2
 
 ### Patch Changes
