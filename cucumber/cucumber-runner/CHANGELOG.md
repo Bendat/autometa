@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.1
+
+### Patch Changes
+
+- 174a507: Fixed pathing issue for global steps on windows
+
 ## 0.7.0
 
 ### Minor Changes
