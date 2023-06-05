@@ -11,8 +11,8 @@ import { getFeatureFile, getRealPath } from "../filesystem/filesystem";
 import { TeardownHook, AfterHook, SetupHook, BeforeHook } from "./hook";
 import { glob } from "glob";
 import getCallerFile from "get-caller-file";
-import fs from "fs";
-import fsPath from "path";
+// import fs from "fs";?
+// import fsPath from "path";
 import { TableType } from "@gherkin/datatables/table-type";
 import { Modifiers } from "@gherkin/types";
 import { ParsedDataTable } from "@gherkin/datatables/datatable";
@@ -469,7 +469,7 @@ export function Before(
  * ```ts
  * After(() => console.log('runs after each test'))
  * Feature(() => {
- *  Ater(() => console.log('runs after each test of this feature'))
+ *  After(() => console.log('runs after each test of this feature'))
  *  ScenarioOutline('a scenario outline', () => {
  *    After(() => console.log('runs after each example of this outline'))
  *  })
