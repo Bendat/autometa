@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.1
+
+### Patch Changes
+
+- 939bc8f: Fixed issue with importing 'src' directory without a relative path
+
 ## 0.2.0
 
 ### Minor Changes
