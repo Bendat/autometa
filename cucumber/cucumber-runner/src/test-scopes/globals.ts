@@ -124,14 +124,14 @@ export function getActualFeatureFiles(path: string, caller: string) {
   const realPath = getRealPath(path, caller);
   let files = glob.sync(realPath);
   files = files.length === 0 ? [path] : files;
-  const dirPath = getRealPath(path, caller);
-  const dirStat = fs.lstatSync(dirPath);
-  if (dirStat.isDirectory()) {
-    files = [];
-    fs.readdirSync(getRealPath(path, caller))
-      .filter((it) => fsPath.extname(it) === ".feature")
-      .forEach((file) => files.push(fsPath.resolve(dirPath, file)));
-  }
+  // const dirPath = getRealPath(path, caller);
+  // const dirStat = fs.lstatSync(dirPath);
+  // if (dirStat.isDirectory()) {
+  //   files = [];
+  //   fs.readdirSync(getRealPath(path, caller))
+  //     .filter((it) => fsPath.extname(it) === ".feature")
+  //     .forEach((file) => files.push(fsPath.resolve(dirPath, file)));
+  // }
   return files;
 }
 
