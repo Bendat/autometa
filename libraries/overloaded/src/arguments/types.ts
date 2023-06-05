@@ -1,4 +1,4 @@
-import { AnyArg } from "src/types";
+import { AnyArg } from "../types";
 import { BaseArgument } from "./base-argument";
 import { ShapeArgument } from "./shape-argument";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
