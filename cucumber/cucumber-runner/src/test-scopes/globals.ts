@@ -11,8 +11,8 @@ import { getFeatureFile, getRealPath } from "../filesystem/filesystem";
 import { TeardownHook, AfterHook, SetupHook, BeforeHook } from "./hook";
 import { glob } from "glob";
 import getCallerFile from "get-caller-file";
-import fs from "fs";
-import fsPath from "path";
+// import fs from "fs";?
+// import fsPath from "path";
 import { TableType } from "@gherkin/datatables/table-type";
 import { Modifiers } from "@gherkin/types";
 import { ParsedDataTable } from "@gherkin/datatables/datatable";
@@ -124,14 +124,14 @@ export function getActualFeatureFiles(path: string, caller: string) {
   const realPath = getRealPath(path, caller);
   let files = glob.sync(realPath);
   files = files.length === 0 ? [path] : files;
-  const dirPath = getRealPath(path, caller);
-  const dirStat = fs.lstatSync(dirPath);
-  if (dirStat.isDirectory()) {
-    files = [];
-    fs.readdirSync(getRealPath(path, caller))
-      .filter((it) => fsPath.extname(it) === ".feature")
-      .forEach((file) => files.push(fsPath.resolve(dirPath, file)));
-  }
+  // const dirPath = getRealPath(path, caller);
+  // const dirStat = fs.lstatSync(dirPath);
+  // if (dirStat.isDirectory()) {
+  //   files = [];
+  //   fs.readdirSync(getRealPath(path, caller))
+  //     .filter((it) => fsPath.extname(it) === ".feature")
+  //     .forEach((file) => files.push(fsPath.resolve(dirPath, file)));
+  // }
   return files;
 }
 
@@ -469,7 +469,7 @@ export function Before(
  * ```ts
  * After(() => console.log('runs after each test'))
  * Feature(() => {
- *  Ater(() => console.log('runs after each test of this feature'))
+ *  After(() => console.log('runs after each test of this feature'))
  *  ScenarioOutline('a scenario outline', () => {
  *    After(() => console.log('runs after each example of this outline'))
  *  })
