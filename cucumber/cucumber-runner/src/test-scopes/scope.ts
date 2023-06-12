@@ -31,7 +31,6 @@ export abstract class Scope {
   }
 
   attachHook<T extends Hook>(hook: T): void {
-    console.log(this.canAttachHook)
     if (!this.canAttachHook) {
       throw new Error(
         `Cannot attach hooks to ${this.constructor.name}. Only 'Feature', 'Rule', 'ScenarioOutline' and global scops can have hooks`
