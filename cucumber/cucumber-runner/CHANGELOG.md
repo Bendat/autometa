@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.2
+
+### Patch Changes
+
+- 2544062: Bugfix: scope was logging a boolean value which has been removed
+
 ## 0.7.1
 
 ### Patch Changes
