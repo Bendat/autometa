@@ -1,5 +1,14 @@
 # Gherkin
 
+## 0.2.5
+
+### Patch Changes
+
+- 61f6294: Fix: build not importing when downloaded through npm
+- 61f6294: Changed 'main' file in overloaded
+- 61f6294: Fixed missing npmignores
+- 61f6294: Replaced 'Chalk' library with 'colors-cli'
+
 ## 0.2.4
 
 ### Patch Changes
