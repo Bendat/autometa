@@ -1,5 +1,15 @@
 # Gherkin
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [61f6294]
+- Updated dependencies [61f6294]
+- Updated dependencies [61f6294]
+- Updated dependencies [61f6294]
+  - @autometa/overloaded@0.2.5
+
 ## 0.1.4
 
 ### Patch Changes
