@@ -1,7 +1,9 @@
 {
   "name": "@autometa/overloaded",
   "version": "0.2.3",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "description": "Function and method overloading made easy",
   "scripts": {
