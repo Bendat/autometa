@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import cli from "colors-cli";
 
 export function colorCompareArgStrings(expected: string[], actual: string[]) {
   const maxLength = Math.max(expected.length, actual.length);
@@ -8,11 +8,11 @@ export function colorCompareArgStrings(expected: string[], actual: string[]) {
     const firstArg = expected[i];
     const secondArg = actual[i];
     if (firstArg !== secondArg) {
-      firstAccumulator.push(chalk.yellow(firstArg));
-      secondAccumulator.push(chalk.red(secondArg));
+      firstAccumulator.push(cli.yellow(firstArg));
+      secondAccumulator.push(cli.red(secondArg));
     } else {
-      firstAccumulator.push(chalk.green(firstArg));
-      secondAccumulator.push(chalk.green(secondArg));
+      firstAccumulator.push(cli.green(firstArg));
+      secondAccumulator.push(cli.green(secondArg));
     }
   }
   return [firstAccumulator, secondAccumulator];

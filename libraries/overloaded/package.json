@@ -59,7 +59,7 @@
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",
     "@types/git-diff": "^2.0.3",
-    "chalk": "^5.2.0",
+    "colors-cli": "^1.0.32",
     "git-diff": "^2.0.6",
     "myzod": "^1.10.0",
     "tsyringe": "^4.7.0",
