@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.2
+
+### Patch Changes
+
+- 0bb7108: Fix: build not importing when downloaded through npm
+
 ## 0.2.1
 
 ### Patch Changes
