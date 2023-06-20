@@ -11,8 +11,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "build:libs": "tsup",
-    "build:code": "rimraf dist/ && pnpm run build:libs",
-    "build": "pnpm build:code"
+    "build": "pnpm build:libs"
   },
   "author": "Ben Aherne",
   "license": "MIT",
