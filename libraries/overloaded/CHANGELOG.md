@@ -1,5 +1,12 @@
 # Gherkin
 
+## 0.2.3
+
+### Patch Changes
+
+- 6915447: Fix: build not importing when downloaded through npm
+- 6915447: Fixed missing npmignores
+
 ## 0.2.2
 
 ### Patch Changes
