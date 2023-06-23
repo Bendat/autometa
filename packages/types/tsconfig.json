@@ -8,7 +8,7 @@
     "declarationDir": "dist/types"
   },
   "files": [
-    "index.ts",
+    "src/index.ts",
   ],
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.js"]

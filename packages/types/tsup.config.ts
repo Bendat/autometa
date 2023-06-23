@@ -1,7 +1,8 @@
-import type { Options } from "tsup";
-export const tsup: Options = {
+import { defineConfig } from "tsup";
+
+export default defineConfig({
   clean: true, // clean up the dist folder
-  dts: true, // generate dts files
+  // dts: true, // generate dts files
   format: ["cjs", "esm"], // generate cjs and esm files
   skipNodeModulesBundle: true,
   entryPoints: ["src/index.ts"],
@@ -9,4 +10,7 @@ export const tsup: Options = {
   outDir: "dist",
   legacyOutput: true,
   external: ["dist"],
-};
+  // entry: {
+  //   index: './out/src/index.d.ts'
+  // }
+});

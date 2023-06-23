@@ -20,7 +20,8 @@
     "noUnusedParameters": false,
     "preserveWatchOutput": true,
     "strict": true,
-    "checkJs": true
+    "checkJs": true,
+    "composite": true
   },
   "ts-node": {
     "esm": true,
