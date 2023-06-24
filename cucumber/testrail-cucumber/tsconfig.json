@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "module": "ES2020",
     "outDir": "dist/esm",
-    "declarationDir": "dist/types"
+    "declarationDir": "dist/esm"
   },
   "files": ["index.ts"],
   "include": ["src/"],

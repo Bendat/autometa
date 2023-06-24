@@ -1,6 +1,6 @@
 # Introduction
 
-Binds the `this` keyword on a clss method.
+Binds the `this` keyword on a class method.
 
 This is a fork of [bind-decorator](https://www.npmjs.com/package/bind-decorator) for use with Autometa.
 

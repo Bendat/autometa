@@ -6,8 +6,15 @@
     "moduleResolution": "node",
     "outDir": "dist/esm",
     "target": "esnext",
-    "noImplicitThis": false
+    "noImplicitThis": false,
+    "types": ["node"]
   },
+  // "files": ["./autometa.config.ts"],
   "include": ["src/**/*", "globals"],
-  "exclude": ["test"]
+  // "exclude": ["test", "**/*.spec.ts"],
+  "references": [
+    {
+      "path": "../cucumber-runner"
+    }
+  ]
 }

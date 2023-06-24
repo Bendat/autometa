@@ -2,7 +2,7 @@ import { ParsedDataTable } from "@gherkin/datatables/datatable";
 import { TableType } from "@gherkin/datatables/table-type";
 import { TestFunctions } from "@gherkin/test-functions";
 import { Class } from "@typing/class";
-import { EventSubscriber } from "src/events";
+import { EventSubscriber } from "../events";
 
 export interface AutometaConfig {
   /**

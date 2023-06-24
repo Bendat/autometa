@@ -1,14 +1,14 @@
 import { ScenarioScope } from "../test-scopes/scenario-scope";
 import { StepScope } from "../test-scopes/step-scope";
 import { GherkinNode } from "./gherkin-node";
-import { Scenario } from "./parser.types";
+import type { Scenario } from "./parser.types";
 import { KeywordType, StepCache } from "./step-cache";
 import { GherkinStep } from "./gherkin-steps";
 import { Background, DocString, StepKeywordType } from "@cucumber/messages";
 import { getTableOrDocstring } from "./datatables/get-table-or-docstring";
-import { compileDatatable, CompiledDataTable } from "./datatables/table-type";
-import { Modifiers } from "./types";
-import { TableValue } from "./datatables/table-value";
+import { compileDatatable, type CompiledDataTable } from "./datatables/table-type";
+import type { Modifiers } from "./types";
+import type { TableValue } from "./datatables/table-value";
 import { Docstring } from "./doc-string";
 import crypto from "crypto";
 export type ScenarioMessage = { scenario: Scenario; backgrounds?: { background: Background }[] };

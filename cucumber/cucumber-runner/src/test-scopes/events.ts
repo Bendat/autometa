@@ -1,3 +1,3 @@
-import { TestEventEmitter } from "src/events/test-event-emitter";
+import { TestEventEmitter } from "../events/test-event-emitter";
 
 export const events = new TestEventEmitter();

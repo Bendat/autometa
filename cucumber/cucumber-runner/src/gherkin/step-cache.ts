@@ -1,9 +1,9 @@
 import { CucumberExpression, RegularExpression, Argument } from "@cucumber/cucumber-expressions";
 import { TeardownHook, AfterHook, SetupHook, BeforeHook, Hook } from "@scopes/hook";
 import type { ArrayElement } from "@typing/array-element";
-import { StepAction } from "src/test-scopes/types";
+import type { StepAction } from "../test-scopes/types";
 import { ParsedDataTable } from "./datatables/datatable";
-import { TableType } from "./datatables/table-type";
+import type { TableType } from "./datatables/table-type";
 import { CucumberParameters } from "./parameters";
 
 const slots = ["Context", "Action", "Outcome", "Conjunction", "Unknown"] as const;

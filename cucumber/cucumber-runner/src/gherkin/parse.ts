@@ -1,6 +1,6 @@
 import { Parser, AstBuilder, Dialect, dialects, GherkinClassicTokenMatcher } from "@cucumber/gherkin";
 import { v4 as uuidv4 } from "uuid";
-import { Feature } from "./parser.types";
+import type { Feature } from "./parser.types";
 export function parseGherkin(gherkin: string) {
   try {
     const builder = new AstBuilder(uuidv4);

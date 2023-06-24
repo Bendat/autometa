@@ -3,8 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ES2020",
-    "outDir": "dist/esm",
-    "declarationDir": "dist/types"
+    "outDir": "out",
+    "declarationDir": "out",
+    "emitDeclarationOnly": true
   },
   "files": ["index.ts"],
   "include": ["src/**/*"],

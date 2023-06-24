@@ -1,5 +1,5 @@
 import { AllureStep } from "allure-js-commons";
-import { Fixture } from "src/di";
+import { Fixture } from "../di";
 
 @Fixture
 export class AllureStepper {

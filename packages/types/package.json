@@ -11,10 +11,9 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "build:js": "tsup",
-    "build:dts:tsc": "rimraf out && tsc --declarationDir out --declaration --emitDeclarationOnly",
-    "build:dts:tsup": "tsup --entry.index out/src/index.d.ts --dtsOnly",
-    "build:dts": "pnpm build:dts:tsc && pnpm build:dts:tsup",
-    "build": "pnpm build:dts && pnpm build:js",
+    "build:dts:tsc": " tsc src/index.ts --declarationDir dist --declaration --emitDeclarationOnly",
+    "build:dts": "pnpm build:dts:tsc",
+    "build": "pnpm build:js && pnpm build:dts ",
     "build:watch": "tsup --watch"
   },
   "exports": {

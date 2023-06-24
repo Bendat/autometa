@@ -1,4 +1,4 @@
-import { HookAction } from "./types";
+import type { HookAction } from "./types";
 
 export abstract class Hook {
   abstract readonly name: string;

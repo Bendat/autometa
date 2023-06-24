@@ -1,9 +1,10 @@
+import { StepAction } from "@autometa/gherkin";
 import { FeatureScope } from "./feature-scope";
 import { RuleScope } from "./rule-scope";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { StepScope } from "./step-scope";
-import { FeatureAction, RuleAction, ScenarioAction, StepAction } from "./types";
+import type { FeatureAction, RuleAction, ScenarioAction } from "./types";
 
 export interface Scopes {
   Feature(filepath: string): FeatureScope;

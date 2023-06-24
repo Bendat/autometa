@@ -1,4 +1,3 @@
-import { _ } from "vitest/dist/types-c1386a7d";
 import { BaseArgument } from "./arguments/base-argument";
 import { ShapeArgument } from "./arguments/shape-argument";
 import { ArgumentType } from "./arguments/types";

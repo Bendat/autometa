@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import { Cb } from "./test-event-emitter";
+import { type Cb } from "./test-event-emitter";
 
 export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmitter {
   constructor(readonly name: string) {

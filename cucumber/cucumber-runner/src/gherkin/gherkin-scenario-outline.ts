@@ -5,7 +5,7 @@ import { HookCache, StepCache } from "./step-cache";
 import { GherkinScenario, ScenarioMessage } from "./gherkin-scenario";
 import { GherkinExamples } from "./gherkin-examples";
 import { GherkinStep } from "./gherkin-steps";
-import { Modifiers } from "./types";
+import type { Modifiers } from "./types";
 
 export class GherkinScenarioOutline extends GherkinNode {
   hooks: HookCache;

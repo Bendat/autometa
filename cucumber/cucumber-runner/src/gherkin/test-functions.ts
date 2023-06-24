@@ -1,6 +1,6 @@
 // import { TestGroup, TestCall, Hook } from "./gherkin-feature";
 
-import { TestGroup, Hook, TestCall } from "./types";
+import type { TestGroup, Hook, TestCall } from "./types";
 
 export interface TestFunctions {
   describe: TestGroup;

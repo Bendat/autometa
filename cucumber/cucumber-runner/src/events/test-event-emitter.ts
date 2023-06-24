@@ -1,6 +1,6 @@
 import { EventSubscriber } from "./event-subscriber";
 import { TestEmitter } from "./test-emitter";
-import {
+import type {
   StartScenarioOutlineOpts,
   EndScenarioOutlineOpts,
   StartFeatureOpts,
@@ -68,5 +68,6 @@ export class TestEventEmitter {
     this.scenarioWrapper.load(onPreScenarioStart, onPostScenarioEnd);
   };
 }
+/** eslint-disable-next-line @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Cb = (...args: any[]) => void;

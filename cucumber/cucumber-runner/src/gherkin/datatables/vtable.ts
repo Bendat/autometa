@@ -1,7 +1,7 @@
 import { ParsedDataTable } from "./datatable";
 import { JsonTableRow } from "./json-table-row";
-import { CompiledDataTable } from "./table-type";
-import { TableValue } from "./table-value";
+import type { CompiledDataTable } from "./table-type";
+import type { TableValue } from "./table-value";
 interface IVTable {
   /**
    * Get a column (array) of Table Values based

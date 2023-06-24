@@ -3,7 +3,6 @@ import { Scope } from "./scope";
 import { StepCache } from "./caches/step-cache";
 import { HookCache } from "./caches/hook-cache";
 import { StepScope } from "./step-scope";
-import { FeatureAction, RuleAction, ScenarioAction } from "./types";
 import { Bind } from "@autometa/bind-decorator";
 import { overloads, def, string, func } from "@autometa/overloaded";
 import { Empty_Function } from "./novelties";
@@ -19,6 +18,7 @@ import {
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
 import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "./hook";
+import type{ FeatureAction, RuleAction, ScenarioAction } from "./types";
 export class GlobalScope extends Scope implements Scopes {
   canHandleAsync = false;
   readonly stepCache: StepCache = new StepCache();

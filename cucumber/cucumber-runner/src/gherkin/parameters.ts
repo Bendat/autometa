@@ -19,6 +19,7 @@ export function defineParameterType(
     );
   });
 }
+
 const FLOAT_REGEXP = /(?=.*\d.*)[-+]?\d*(?:\.(?=\d.*))?\d*(?:\d+[E][+-]?\d+)?/;
 defineParameterType(
   {

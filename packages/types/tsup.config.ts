@@ -10,7 +10,4 @@ export default defineConfig({
   outDir: "dist",
   legacyOutput: true,
   external: ["dist"],
-  // entry: {
-  //   index: './out/src/index.d.ts'
-  // }
 });

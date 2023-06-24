@@ -1,7 +1,7 @@
 import { object, Infer, array, string, unknown } from "myzod";
-import { ArgumentTypes } from "src/types";
+import { ArgumentTypes } from "../types";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
-import { FromTuple, TupleType } from "./types";
+import type { FromTuple, TupleType } from "./types";
 
 export const TupleValidationSchema = object({
   includes: unknown().optional(),

@@ -6,15 +6,15 @@ import { GlobalScope } from "./global-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
 import { StepScope } from "./step-scope";
-import { StepAction, StepText } from "./types";
+import type { StepAction, StepText } from "./types";
 import { getFeatureFile, getRealPath } from "../filesystem/filesystem";
 import { TeardownHook, AfterHook, SetupHook, BeforeHook } from "./hook";
 import { glob } from "glob";
 import getCallerFile from "get-caller-file";
 // import fs from "fs";?
 // import fsPath from "path";
-import { TableType } from "@gherkin/datatables/table-type";
-import { Modifiers } from "@gherkin/types";
+import type { TableType } from "@gherkin/datatables/table-type";
+import type { Modifiers } from "@gherkin/types";
 import { ParsedDataTable } from "@gherkin/datatables/datatable";
 import { HookCache } from "@gherkin/step-cache";
 export const globalScope = new GlobalScope(new HookCache());

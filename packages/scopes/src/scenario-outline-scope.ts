@@ -1,4 +1,4 @@
-import { ScenarioAction } from "./types";
+import type { ScenarioAction } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { ScenarioScope } from "./scenario-scope";

@@ -1,6 +1,6 @@
 import { Class } from "@typing/class";
 import { InjectionToken } from "tsyringe";
-import {
+import type {
   EndAfterOpts,
   EndBeforeOpts,
   EndFeatureOpts,
