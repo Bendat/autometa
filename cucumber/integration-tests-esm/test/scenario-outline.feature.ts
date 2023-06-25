@@ -1,4 +1,4 @@
-import { Feature, Given, Pass, Then, When } from "@autometa/cucumber-runner";
+import { Feature, Given } from "@autometa/cucumber-runner";
 import { expect } from "@jest/globals";
 
 Feature(() => {
