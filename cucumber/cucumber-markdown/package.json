@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@types/glob": "^8.0.1",
-    "@types/lodash": "^4.14.191",
+    "@types/lodash": "^4.14.195",
     "@types/node": "^18.11.18",
     "eslint-config-custom": "workspace:*",
     "node": "^19.6.0",

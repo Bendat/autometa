@@ -75,8 +75,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       '@types/lodash':
-        specifier: ^4.14.191
-        version: 4.14.191
+        specifier: ^4.14.195
+        version: 4.14.195
       '@types/node':
         specifier: ^18.11.18
         version: 18.11.18
@@ -175,8 +175,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       '@types/lodash':
-        specifier: ^4.14.191
-        version: 4.14.191
+        specifier: ^4.14.195
+        version: 4.14.195
       '@types/node':
         specifier: ^18.11.18
         version: 18.11.18
@@ -254,8 +254,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       '@types/lodash':
-        specifier: ^4.14.191
-        version: 4.14.191
+        specifier: ^4.14.195
+        version: 4.14.195
       '@types/node':
         specifier: ^18.11.18
         version: 18.11.18
@@ -5864,8 +5864,8 @@ packages:
       '@types/node': 18.11.18
     dev: false
 
-  /@types/lodash@4.14.191:
-    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
+  /@types/lodash@4.14.195:
+    resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
 
   /@types/mdast@3.0.10:
     resolution: {integrity: sha512-W864tg/Osz1+9f4lrGTZpCSO5/z4608eUp19tbozkq2HJK6i3z1kT0H9tlADXuYIb1YYOBByU4Jsqkk75q48qA==}
@@ -16820,7 +16820,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       '@babel/runtime': 7.20.13
-      '@types/lodash': 4.14.191
+      '@types/lodash': 4.14.195
       lodash: 4.17.21
       lodash-es: 4.17.21
       nanoclone: 0.2.1
