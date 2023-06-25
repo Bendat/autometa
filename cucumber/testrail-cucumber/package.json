@@ -18,7 +18,7 @@
     "@autometa/shared-utilities": "0.0.3",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
-    "dotenv": "^16.0.2",
+    "dotenv": "^16.3.1",
     "enquirer": "^2.3.6",
     "eslint": "^7.23.0",
     "inquirer": "^9.1.2",
