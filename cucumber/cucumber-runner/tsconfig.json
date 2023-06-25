@@ -5,7 +5,8 @@
     "module": "ES2020",
     "moduleResolution": "node",
     "outDir": "dist/esm",
-    "declarationDir": "dist/types"
+    "declarationDir": "dist/types",
+    "emitDeclarationOnly": false
   },
   "files": ["index.ts", "allure.ts"],
   "include": ["src/**/*"],

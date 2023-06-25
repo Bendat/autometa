@@ -1,5 +1,5 @@
 import { Expression } from "@cucumber/cucumber-expressions";
-import { DocString } from "./doc-string";
+import { GherkinDocString } from "./doc-string";
 import { CompiledDataTable } from "./datatables";
 import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
 import { Class } from "@autometa/types";
@@ -13,7 +13,7 @@ export class Step {
   @Property
   readonly text: string;
   @Property
-  readonly docstring?: DocString;
+  readonly docstring?: GherkinDocString;
   @Property
   readonly table?: CompiledDataTable;
 

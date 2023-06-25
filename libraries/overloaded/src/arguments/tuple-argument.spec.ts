@@ -1,4 +1,4 @@
-import { AnyArg } from "src/types";
+import { AnyArg } from "../types";
 import { describe, it, expect } from "vitest";
 import { BaseArgument } from "./base-argument";
 import { number } from "./number-argument";

@@ -1,4 +1,4 @@
-import { CompiledDataTable } from "./table-type";
+import { type CompiledDataTable } from "./table-type";
 
 export abstract class ParsedDataTable {
   protected abstract raw: CompiledDataTable;

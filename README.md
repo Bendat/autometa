@@ -1,3 +1,16 @@
+# NOTICE
+
+Autometa is under construction. It is currently unstable, poorly documented and not production ready for most cases.
+
+Check back soon.
+
+The following libraries may be considered relatively stable, but may contain bugs or unclear errors
+
+- [Overloaded](libraries/overloaded/) - Function and method overloads that are as pleasant to make as they are to use
+- [Bind Decorator](libraries/bind-decorator/) - Binds the `this` keyword on a class method. Respectfully a fork of [bind-decorator](https://www.npmjs.com/package/autobind-decorator)
+- [Status Codes](libraries/status-codes/) - Object containing HTTP status
+codes and status messages, visible in the editor via `as const`
+
 # Autometa
 
 _Autometa_ is an early-development automation framework toolkit, which provides libraries to help automate the automation process on node with libraries to
@@ -8,7 +21,7 @@ help bootstrap your node automation framework, for API or E2E testing.
 The Cucumber Runner lets you build and execute Cucumber style tests with alternative test runners. Currently supported are `jest` and `vitest`. Mocha
 likely works but has not been tested.
 
-Initially inspired by [jest-cucumber](github.com/bencompton/jest-cucumber) provides a customizeable hybrid approach between cucumbers flat global steps
+Initially inspired by [jest-cucumber](github.com/bencompton/jest-cucumber) provides a customizable hybrid approach between cucumbers flat global steps
 and jest-cucumbers nested spec-like tests.
 
 Dependency injection is supported to make initializing client classes needed to interface with your service or website simple and logic-free, with unique copies
@@ -61,13 +74,13 @@ Feature(() => {
   Scenario("a user cannot log in without a password", () => {
     Then(
       "a user is informed they cannot log in",
-      (expectedtError: string) => {}
+      (expectedError: string) => {}
     );
   });
   Rule("a rule", () => {
-    ScenarioOutline('some outline', ()=>{
-        // define steps unique to `some outline`
-    })
+    ScenarioOutline("some outline", () => {
+      // define steps unique to `some outline`
+    });
   });
 }, "./my-feature.feature");
 ```

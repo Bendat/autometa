@@ -6,7 +6,7 @@ import {
   unknown,
   string,
 } from "myzod";
-import { AnyArg, ArgumentTypes } from "src/types";
+import { AnyArg, ArgumentTypes } from "../types";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 export type FromArray<T> = T extends infer TArray
   ? TArray extends BaseArgument<infer TArg>[]

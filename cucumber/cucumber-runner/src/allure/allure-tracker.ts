@@ -12,7 +12,7 @@ import {
   ExecutableItemWrapper,
 } from "allure-js-commons";
 import path from "path";
-import { Fixture } from "src/di";
+import { Fixture } from "../di";
 import {
   EndAfterOpts,
   EndBeforeOpts,
@@ -21,7 +21,7 @@ import {
   EndTeardownOpts,
   StartScenarioOpts,
   StartStepOpts,
-} from "src/events";
+} from "../events";
 import { AllureStepper } from "./allure-stepper";
 import { ScenarioMeta } from "./scenario-meta";
 @Fixture

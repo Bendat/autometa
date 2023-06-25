@@ -1,5 +1,5 @@
 import { AllureConfig, Status } from "allure-js-commons";
-import {
+import type {
   EndAfterOpts,
   EndBeforeOpts,
   EndFeatureOpts,
@@ -8,7 +8,6 @@ import {
   EndSetupOpts,
   EndStepOpts,
   EndTeardownOpts,
-  ProviderSubscriber,
   StartAfterOpts,
   StartBeforeOpts,
   StartFeatureOpts,
@@ -19,6 +18,7 @@ import {
   StartStepOpts,
   StartTeardownOpts,
 } from "../events";
+import { ProviderSubscriber } from "../events";
 import { AllureTracker } from "./allure-tracker";
 import { AllureStepper } from "./allure-stepper";
 import { ScenarioMeta } from "./scenario-meta";

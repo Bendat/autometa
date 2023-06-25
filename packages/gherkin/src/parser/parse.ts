@@ -13,7 +13,7 @@ import { Rule, RuleBuilder } from "../groups/rule";
 import { ScenarioBuilder } from "../scenario";
 import { ScenarioOutlineBuilder } from "../groups/scenario-outline";
 import { ExamplesBuilder } from "../groups/examples";
-import { DocString, StepBuilder, StepKeyword } from "../steps";
+import { GherkinDocString, StepBuilder, StepKeyword } from "../steps";
 import { compileDatatable } from "../steps/datatables/table-type";
 import { Background, BackgroundBuilder } from "../background";
 import {
@@ -139,7 +139,7 @@ export function buildBackground(child: { background: GherkinBackground }) {
 
 function makeSteps(background: GherkinBackground | GherkinScenario) {
   return background.steps.map((step) => {
-    const doc = step.docString ? new DocString(step.docString) : undefined;
+    const doc = step.docString ? new GherkinDocString(step.docString) : undefined;
     return new StepBuilder()
       .text(step.text)
       .docstring(doc)

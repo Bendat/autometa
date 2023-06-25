@@ -7,7 +7,7 @@ describe("Param list", () => {
   it("should create a new overload", () => {
     const wrapper = def(string(), number());
     const overload = wrapper.matches((_a, _b) => 1);
-    const func = overload.action;
+    const func = overload.actionOrError as (a: string, b: number) => number;
     type returns = ReturnType<typeof func>;
     type params = Parameters<typeof func>;
     expectTypeOf<returns>().toEqualTypeOf<number>();
@@ -19,7 +19,7 @@ describe("Param list", () => {
   it("should create a new overload with a name and description", () => {
     const wrapper = def`myNamedDef`('optional description', string(), number());
     const overload = wrapper.matches((_a, _b) => 1);
-    const func = overload.action;
+    const func = overload.actionOrError as (a: string, b: number) => number;
     type returns = ReturnType<typeof func>;
     type params = Parameters<typeof func>;
     expectTypeOf<returns>().toEqualTypeOf<number>();
@@ -32,7 +32,7 @@ describe("Param list", () => {
   it("should create a new overload with a name and no description", () => {
     const wrapper = def`myNamedDef`(string(), number());
     const overload = wrapper.matches((_a, _b) => 1);
-    const func = overload.action;
+    const func = overload.actionOrError as (a: string, b: number) => number;
     type returns = ReturnType<typeof func>;
     type params = Parameters<typeof func>;
     expectTypeOf<returns>().toEqualTypeOf<number>();

@@ -7,9 +7,7 @@
     "outDir": "dist/esm",
     "declarationDir": "dist/types"
   },
-  "files": [
-    "index.ts",
-  ],
+  "files": ["src/index.ts"],
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.js"]
 }

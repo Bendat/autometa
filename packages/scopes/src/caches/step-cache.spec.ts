@@ -1,4 +1,4 @@
-import { StepScope } from "src/step-scope";
+import { StepScope } from "../step-scope";
 import { describe, expect, it } from "vitest";
 import { StepCache } from "./step-cache";
 import {

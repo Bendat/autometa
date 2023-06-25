@@ -1,9 +1,9 @@
 import {
   disposeDescription,
   disposeTaggedTemplate,
-} from "./disposeDescription";
+} from "./dispose-description";
 import { Overload } from "./overload";
-import { AnyArg, ArgumentTypes, ValidatorArgumentTuple } from "./types";
+import type { AnyArg, ArgumentTypes, ValidatorArgumentTuple } from "./types";
 
 /**
  * Creates a new set of parameters which should match one overloaded
@@ -30,10 +30,10 @@ export function def(
   | (<P extends AnyArg[], T extends ArgumentTypes<P>>(
       description: string,
       ...args: T
-    ) => ParamReturn<P, T>)
-  & (<P extends AnyArg[], T extends ArgumentTypes<P>>(
-      ...args: T
-    ) => ParamReturn<P, T>);
+    ) => ParamReturn<P, T>) &
+      (<P extends AnyArg[], T extends ArgumentTypes<P>>(
+        ...args: T
+      ) => ParamReturn<P, T>);
 
 export function def<P extends AnyArg[], T extends ArgumentTypes<P>>(
   description: string,
@@ -45,8 +45,8 @@ export function def<P extends AnyArg[], T extends ArgumentTypes<P>>(
 export function def<P extends AnyArg[], T extends ArgumentTypes<P>>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+): // eslint-disable-next-line @typescript-eslint/no-explicit-any
+any {
   const [name, isNamed] = disposeTaggedTemplate(args);
   if (isNamed) {
     return (...args: T) => {
@@ -91,6 +91,9 @@ export function def<P extends AnyArg[], T extends ArgumentTypes<P>>(
     ) => {
       return new Overload(name, description, args, implementation);
     },
+    throws: <T extends Error>(message: string, errorType?: T) => {
+      return new Overload(name, description, args, errorType ?? Error);
+    },
   };
 }
 
@@ -107,9 +110,9 @@ type ParamReturn<P extends AnyArg[], T extends ArgumentTypes<P>> = {
     // Typescript doesn't seem to like that this is a tuple type.
     // Otherwise it works fine
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
+    /**  @ts-expect-error This is valid, just isn't being picked up as tuple type for some reason.  **/
     implementation: (...implArgs: ValidatorArgumentTuple<T>) => K
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
+    /**  @ts-expect-error This is valid, just isn't being picked up as tuple type for some reason. **/
   ) => Overload<P, (...implArgs: ValidatorArgumentTuple<T>) => K>;
 };

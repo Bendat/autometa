@@ -1,6 +1,6 @@
 import { Docstring } from "../doc-string";
 import { DocString } from "@cucumber/messages";
-import { CompiledDataTable } from "./table-type";
+import { type CompiledDataTable } from "./table-type";
 
 export function getTableOrDocstring(
   dataTable: CompiledDataTable | undefined,

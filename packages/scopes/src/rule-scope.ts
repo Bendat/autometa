@@ -1,4 +1,4 @@
-import { FeatureAction } from "./types";
+import type { FeatureAction } from "./types";
 import { ScenarioScope } from "./scenario-scope";
 import { StepScope } from "./step-scope";
 import { Scope } from "./scope";

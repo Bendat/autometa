@@ -1,7 +1,7 @@
 import { ScenarioAction, StepText } from "./types";
 import { Scope } from "./scope";
-import { HookCache, KeywordType } from "src/gherkin/step-cache";
-import { TableType } from "@gherkin/datatables/table-type";
+import { HookCache, KeywordType } from "../gherkin/step-cache";
+import type { TableType } from "@gherkin/datatables/table-type";
 import { ParsedDataTable } from "@gherkin/datatables/datatable";
 
 export class StepScope extends Scope {

@@ -4,13 +4,20 @@
     "baseUrl": ".",
     "module": "ES2020",
     "moduleResolution": "node",
-    "outDir": "dist/esm",
-    "declarationDir": "dist/types"
+    "outDir": "out",
+    "emitDeclarationOnly": true,
+    "declarationDir": "out"
   },
   "files": [
     "index.ts",
   ],
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.js"],
-  "references": []
+  "references": [
+    { "path": "../types" },
+    { "path": "../events" },
+    { "path": "../gherkin" },
+    { "path": "../../libraries/dto-builder" },
+    { "path": "../../libraries/overloaded"}
+  ]
 }

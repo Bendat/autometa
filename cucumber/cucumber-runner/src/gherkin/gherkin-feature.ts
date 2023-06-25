@@ -10,7 +10,7 @@ import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
 import { Scope } from "@scopes/scope";
 import { Modifiers } from "./types";
-import { TestExecutor } from "src/executor/test-executor";
+import { TestExecutor } from "../executor/test-executor";
 import crypto from "crypto";
 import { Background } from "@cucumber/messages";
 export class GherkinFeature extends GherkinNode {

@@ -4,10 +4,12 @@
     "baseUrl": ".",
     "module": "ES2020",
     "moduleResolution": "node",
-    "outDir": "dist/esm",
-    "declarationDir": "dist/types"
+    "emitDeclarationOnly": true,
+    "outDir": "out",
+    "declarationDir": "out"
   },
-  "files": ["index.ts", "src/overload-actions.ts", "./src/fallback.ts", "./src/disposeDescription.ts"],
+  "files": ["src/index.ts"],
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "**/*.test.js"]
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"],
+  "references": [{ "path": "../../packages/types" }]
 }

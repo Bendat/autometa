@@ -1,11 +1,11 @@
 import { Background, Scenario } from "@cucumber/messages";
-import { TableValue } from "./datatables/table-value";
+import type { TableValue } from "./datatables/table-value";
 import { transformTableValue } from "./datatables/transform-table-value";
 import { GherkinNode } from "./gherkin-node";
 import { GherkinScenario } from "./gherkin-scenario";
-import { Examples } from "./parser.types";
+import type { Examples } from "./parser.types";
 import { StepCache } from "./step-cache";
-import { Modifiers } from "./types";
+import type { Modifiers } from "./types";
 export type ExamplesMessage = { examples: Examples; backgrounds: { background: Background }[] };
 export class GherkinExamples extends GherkinNode {
   get modifier(): Modifiers | undefined {

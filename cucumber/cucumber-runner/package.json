@@ -19,10 +19,10 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "postbuild": "tsc-alias -p ./tsconfig.cjs.json && tsc-alias -p ./tsconfig.json",
-    "build:libs": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
-    "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
+    "build:libs": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && ./fixup",
+    "build:code": "rimraf dist/ && pnpm run build:libs",
     "build": "pnpm build:code && pnpm postbuild",
-    "build:mjs": "rimraf dist/ && ttsc -p tsconfig.json && ./fixup",
+    "build:mjs": "rimraf dist/ && tsc -p tsconfig.json && ./fixup",
     "build:cjs": "rimraf dist/ && tsc -p tsconfig.cjs.json && ./fixup"
   },
   "keywords": [

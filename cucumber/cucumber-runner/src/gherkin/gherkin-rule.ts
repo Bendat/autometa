@@ -6,7 +6,7 @@ import { HookCache, StepCache } from "./step-cache";
 import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
 import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinNode } from "./gherkin-node";
-import { Modifiers } from "./types";
+import type { Modifiers } from "./types";
 import { ScenarioOutlineScope } from "@scopes/scenario-outline-scope";
 export type RuleMessage = { rule: Rule; backgrounds?: { background: Background }[] };
 

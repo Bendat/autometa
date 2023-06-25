@@ -1,26 +1,26 @@
-import { array } from "src/arguments/array-argument";
-import { boolean } from "src/arguments/boolean-argument";
-import { number } from "src/arguments/number-argument";
-import { string } from "src/arguments/string-argument";
-import { tuple } from "src/arguments/tuple-argument";
-import { shape } from "src/arguments/shape-argument";
-import { overloads } from "src/overloads";
-import { def } from "src/def";
+import { array } from "../arguments/array-argument";
+import { boolean } from "../arguments/boolean-argument";
+import { number } from "../arguments/number-argument";
+import { string } from "../arguments/string-argument";
+import { tuple } from "../arguments/tuple-argument";
+import { shape } from "../arguments/shape-argument";
+import { overloads } from "../overloads";
+import { def } from "../def";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { func } from "src/arguments/function-argument";
+import { func } from "../arguments/function-argument";
 import { unknown } from "../arguments/unknown-argument";
 const testFn = vi.fn();
 
-function overloaded(stringParam1: number, stringparam2: number): number;
-function overloaded(stringParam1: string, stringparam2: string): string;
+function overloaded(stringParam1: number, stringParam2: number): number;
+function overloaded(stringParam1: string, stringParam2: string): string;
 function overloaded(
   stringParam1: [string, number],
-  stringparam2: boolean
+  stringParam2: boolean
 ): [string, number, boolean];
 function overloaded(arrayParam: (string | number)[]): void;
 function overloaded(shapeParam: { c: string; d: [string, number] }): void;
 function overloaded(functionParam: (a: string) => string): void;
-function overloaded(str: string, ukwn: unknown, tail: boolean): void;
+function overloaded(str: string, unknown: unknown, tail: boolean): void;
 function overloaded(...args: unknown[]) {
   return overloads(
     def(string(), string()).matches((a, b) => {
@@ -50,19 +50,19 @@ function overloaded(...args: unknown[]) {
       testFn(a);
       return [a1, a2];
     }),
-    def(
-      shape("a", { c: string("c"), d: array([string(), number()]) })
-    ).matches((a) => {
-      const { c, d } = a;
-      expect(typeof c).toEqual("string");
-      expect(typeof c).toEqual("string");
-      expect(d).toBeInstanceOf(Array);
-      testFn(a);
-      return d;
-    }),
+    def(shape("a", { c: string("c"), d: array([string(), number()]) })).matches(
+      (a) => {
+        const { c, d } = a;
+        expect(typeof c).toEqual("string");
+        expect(typeof c).toEqual("string");
+        expect(d).toBeInstanceOf(Array);
+        testFn(a);
+        return d;
+      }
+    ),
     def(string(), unknown(), boolean()).matches((a, b) => {
       expect(typeof a).toEqual("string");
-      expect(typeof b).toEqual('boolean');
+      expect(typeof b).toEqual("boolean");
       testFn(a, b);
       return "hello there";
     }),
@@ -116,5 +116,4 @@ describe("integration test - function", () => {
     overloaded("hello", true, true);
     expect(testFn).toHaveBeenCalledTimes(1);
   });
-
 });

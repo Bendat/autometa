@@ -10,9 +10,11 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "build:libs": "tsup",
-    "build:code": "rimraf dist/ && pnpm run build:libs",
-    "build": "pnpm build:code"
+    "build:js": "tsup",
+    "build:dts:tsc": " tsc src/index.ts --declarationDir dist --declaration --emitDeclarationOnly",
+    "build:dts": "pnpm build:dts:tsc",
+    "build": "pnpm build:js && pnpm build:dts ",
+    "build:watch": "tsup --watch"
   },
   "exports": {
     "import": "./dist/esm/index.js",

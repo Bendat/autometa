@@ -10,13 +10,17 @@ export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
 
   match(args: ArgumentType[]) {
     for (const overload of this.overloads) {
-      if (overload.isMatch(args)) {
-        return overload.action(...args);
+      const match = overload.isMatch(args)
+      if (match && overload.actionOrError instanceof Function) {
+        return overload.actionOrError(...args);
+      }
+      if (match && overload.actionOrError instanceof Error) {
+        throw overload.actionOrError;
       }
     }
     const fallback = this.overloads.find((it) => it.fallback === true);
-    if (fallback) {
-      return fallback.action(...args);
+    if (fallback && fallback.actionOrError instanceof Function) {
+      return fallback.actionOrError(...args);
     }
     const reports = this.overloads
       .map((it, idx) => it.getReport(idx, args))
@@ -25,6 +29,7 @@ export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
 function(${args.join(", ")}){}
 ${reports}`);
   }
+
 }
 
 /**

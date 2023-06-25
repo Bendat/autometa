@@ -1,7 +1,7 @@
-import { ArgumentType } from "./arguments/types";
+import type { ArgumentType } from "./arguments/types";
 import { argStringArray, colorCompareArgStrings } from "./formatting";
 import { OverloadAction } from "./overload-actions";
-import { AnyArg } from "./types";
+import type{ AnyArg } from "./types";
 export class Overload<
   TArgs extends AnyArg[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,7 +11,7 @@ export class Overload<
     readonly name: string | undefined,
     readonly description: string | undefined,
     readonly args: TArgs,
-    readonly action: TAction,
+    readonly actionOrError: TAction | Error,
     readonly fallback = false
   ) {
     args.forEach((arg, idx) => arg.withIndex(idx));
