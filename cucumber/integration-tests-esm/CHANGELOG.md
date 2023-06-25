@@ -1,5 +1,13 @@
 # integration-tests-esm
 
+## 0.5.12
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+- Updated dependencies [6a4a9ac]
+  - @autometa/cucumber-runner@0.7.3
+
 ## 0.5.11
 
 ### Patch Changes

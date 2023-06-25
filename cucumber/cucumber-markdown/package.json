@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-markdown",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Convert Cucumber .feature files into markdown",
   "type": "module",
   "main": "dist/cjs/index.js",

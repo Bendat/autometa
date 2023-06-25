@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.4.3
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+
 ## 0.4.2
 
 ### Patch Changes

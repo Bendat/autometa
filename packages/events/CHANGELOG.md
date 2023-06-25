@@ -1,5 +1,14 @@
 # Gherkin
 
+## 0.0.8
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+- Updated dependencies [6a4a9ac]
+  - @autometa/gherkin@0.3.1
+  - @autometa/types@0.3.1
+
 ## 0.0.7
 
 ### Patch Changes

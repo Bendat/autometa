@@ -1,5 +1,18 @@
 # Gherkin
 
+## 0.1.6
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+- Updated dependencies [6a4a9ac]
+  - @autometa/bind-decorator@0.4.1
+  - @autometa/dto-builder@0.9.2
+  - @autometa/overloaded@0.2.6
+  - @autometa/events@0.0.8
+  - @autometa/gherkin@0.3.1
+  - @autometa/types@0.3.1
+
 ## 0.1.5
 
 ### Patch Changes

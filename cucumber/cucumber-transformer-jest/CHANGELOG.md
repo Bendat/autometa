@@ -1,5 +1,13 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.4.1
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+- Updated dependencies [6a4a9ac]
+  - @autometa/cucumber-runner@0.7.3
+
 ## 0.4.0
 
 ### Minor Changes

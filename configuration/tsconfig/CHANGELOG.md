@@ -1,5 +1,11 @@
 # tsconfig
 
+## 0.6.1
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+
 ## 0.6.0
 
 ### Minor Changes
