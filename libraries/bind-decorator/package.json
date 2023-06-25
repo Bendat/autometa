@@ -1,6 +1,6 @@
 {
   "name": "@autometa/bind-decorator",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Binds the this keyword of a method. Respectfully a fork of https://www.npmjs.com/package/bind-decorator",
   "type": "module",
   "main": "dist/cjs/index.js",

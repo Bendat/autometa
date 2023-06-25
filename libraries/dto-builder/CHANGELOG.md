@@ -1,5 +1,13 @@
 # @autometa/dto-builder
 
+## 0.9.2
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+- Updated dependencies [6a4a9ac]
+  - @autometa/types@0.3.1
+
 ## 0.9.1
 
 ### Patch Changes

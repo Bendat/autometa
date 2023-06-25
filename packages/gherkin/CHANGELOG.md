@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.3.1
+
+### Patch Changes
+
+- 6a4a9ac: Swapped project type to "composite", unified build system for most projects
+- Updated dependencies [6a4a9ac]
+  - @autometa/dto-builder@0.9.2
+
 ## 0.3.0
 
 ### Minor Changes
