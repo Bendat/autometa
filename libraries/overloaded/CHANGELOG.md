@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.8
+
+### Patch Changes
+
+- 42badf4: CLeaned up dependencies
+
 ## 0.2.7
 
 ### Patch Changes
