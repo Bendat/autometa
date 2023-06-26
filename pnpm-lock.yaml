@@ -232,7 +232,7 @@ importers:
   cucumber/cucumber-transformer-jest:
     dependencies:
       '@autometa/cucumber-runner':
-        specifier: workspace:^0.7.0
+        specifier: workspace:^0.7.3
         version: link:../cucumber-runner
       '@babel/core':
         specifier: ^7.21.4
@@ -558,18 +558,6 @@ importers:
       '@autometa/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@cucumber/gherkin':
-        specifier: ^26.0.3
-        version: 26.0.3
-      '@cucumber/messages':
-        specifier: ^21.0.1
-        version: 21.0.1
-      '@cucumber/tag-expressions':
-        specifier: ^5.0.1
-        version: 5.0.1
-      '@types/git-diff':
-        specifier: ^2.0.3
-        version: 2.0.3
       colors-cli:
         specifier: ^1.0.32
         version: 1.0.32
@@ -582,49 +570,25 @@ importers:
       tsyringe:
         specifier: ^4.7.0
         version: 4.7.0
-      uuid:
-        specifier: ^9.0.0
-        version: 9.0.0
     devDependencies:
-      '@cucumber/cucumber-expressions':
-        specifier: ^16.1.2
-        version: 16.1.2
+      '@types/git-diff':
+        specifier: ^2.0.3
+        version: 2.0.3
       '@types/node':
         specifier: ^18.11.18
         version: 18.11.18
-      '@types/uuid':
-        specifier: ^9.0.1
-        version: 9.0.1
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^5.54.1
-        version: 5.54.1(@typescript-eslint/parser@5.54.1)(eslint@8.37.0)(typescript@4.9.5)
-      '@typescript-eslint/parser':
-        specifier: ^5.54.1
-        version: 5.54.1(eslint@8.37.0)(typescript@4.9.5)
       '@vitest/coverage-c8':
-        specifier: ^0.31.0
-        version: 0.31.0(vitest@0.31.1)
+        specifier: ^0.32.2
+        version: 0.32.2(vitest@0.31.1)
       '@vitest/coverage-istanbul':
         specifier: ^0.31.0
         version: 0.31.0(vitest@0.31.1)
       eslint:
         specifier: ^8.37.0
         version: 8.37.0
-      eslint-config-custom:
-        specifier: workspace:*
-        version: link:../../configuration/eslint-config-custom
-      eslint-config-prettier:
-        specifier: ^8.3.0
-        version: 8.6.0(eslint@8.37.0)
       prettier:
         specifier: ^2.8.3
         version: 2.8.3
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
-      rimraf:
-        specifier: ^4.1.2
-        version: 4.1.2
       tsconfig:
         specifier: workspace:*
         version: link:../../configuration/tsconfig
@@ -1148,7 +1112,6 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.18
-    dev: true
 
   /@autometa/shared-utilities@0.0.3:
     resolution: {integrity: sha512-3er2pl7PFOTVMpT1FzasnQy7AIfyFioZOZCZiQ55oARkVzq2SWFufge9aHpr6w9141Ulh+5QhyTt5bcZC0KVwA==}
@@ -1236,7 +1199,7 @@ packages:
     resolution: {integrity: sha512-XsMfHovsUYHFMdrIHkZphTN/2Hzzi78R08NuHfDBehym2VsPDL6Zn/JAD/JQdnRvbSsbQc4mVaU1m6JgtTEElg==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@ampproject/remapping': 2.2.0
+      '@ampproject/remapping': 2.2.1
       '@babel/code-frame': 7.21.4
       '@babel/generator': 7.21.3
       '@babel/helper-compilation-targets': 7.20.7(@babel/core@7.20.12)
@@ -1305,8 +1268,8 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/types': 7.21.3
-      '@jridgewell/gen-mapping': 0.3.2
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/gen-mapping': 0.3.3
+      '@jridgewell/trace-mapping': 0.3.18
       jsesc: 2.5.2
     dev: false
 
@@ -1325,7 +1288,7 @@ packages:
     dependencies:
       '@babel/types': 7.22.5
       '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/trace-mapping': 0.3.18
       jsesc: 2.5.2
     dev: true
 
@@ -5080,7 +5043,7 @@ packages:
       '@jest/test-result': 29.4.3
       '@jest/transform': 29.4.3
       '@jest/types': 29.4.3
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/trace-mapping': 0.3.18
       '@types/node': 18.11.18
       chalk: 4.1.2
       collect-v8-coverage: 1.0.1
@@ -5201,7 +5164,7 @@ packages:
     dependencies:
       '@babel/core': 7.21.4
       '@jest/types': 29.4.3
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/trace-mapping': 0.3.18
       babel-plugin-istanbul: 6.1.1
       chalk: 4.1.2
       convert-source-map: 2.0.0
@@ -5283,8 +5246,7 @@ packages:
     dependencies:
       '@jridgewell/set-array': 1.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
-      '@jridgewell/trace-mapping': 0.3.17
-    dev: true
+      '@jridgewell/trace-mapping': 0.3.18
 
   /@jridgewell/resolve-uri@3.1.0:
     resolution: {integrity: sha512-F2msla3tad+Mfht5cJq7LSXcdudKTWCVYUgw6pLFOOHSTtZlj6SWNYAp+AhuqLmWdBO2X5hPrLcu8cVP8fy28w==}
@@ -5297,7 +5259,7 @@ packages:
   /@jridgewell/source-map@0.3.2:
     resolution: {integrity: sha512-m7O9o2uR8k2ObDysZYzdfhb08VuEml5oWGiosa1VdaPZ/A6QyPkAJuwN0Q1lhULOf6B7MtQmHENS743hWtCrgw==}
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.2
+      '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.18
 
   /@jridgewell/sourcemap-codec@1.4.14:
@@ -5305,7 +5267,6 @@ packages:
 
   /@jridgewell/sourcemap-codec@1.4.15:
     resolution: {integrity: sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==}
-    dev: true
 
   /@jridgewell/trace-mapping@0.3.17:
     resolution: {integrity: sha512-MCNzAp77qzKca9+W/+I0+sEpaUnZoeasnghNeVc41VZCEKaCH73Vq3BZZ/SzWIgrqE4H4ceI+p+b6C0mHf9T4g==}
@@ -5323,7 +5284,7 @@ packages:
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
     dependencies:
       '@jridgewell/resolve-uri': 3.1.0
-      '@jridgewell/sourcemap-codec': 1.4.14
+      '@jridgewell/sourcemap-codec': 1.4.15
 
   /@leichtgewicht/ip-codec@2.0.4:
     resolution: {integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==}
@@ -5769,7 +5730,7 @@ packages:
 
   /@types/git-diff@2.0.3:
     resolution: {integrity: sha512-PWQ+uy67HhZG9iJYkH7ReC9ymVbkp7FHXjskA1HrQGQifSPYkFdHBYCpJgI6lWENHFnvssk7uGJ5q/tqUOnEKw==}
-    dev: false
+    dev: true
 
   /@types/glob@8.0.1:
     resolution: {integrity: sha512-8bVUjXZvJacUFkJXHdyZ9iH1Eaj5V7I8c4NdH5sQJsdXkqT4CA5Dhb4yb4VE/3asyx4L9ayZr1NIhTsWHczmMw==}
@@ -6296,12 +6257,12 @@ packages:
       '@typescript-eslint/types': 5.54.1
       eslint-visitor-keys: 3.4.0
 
-  /@vitest/coverage-c8@0.31.0(vitest@0.31.1):
-    resolution: {integrity: sha512-h72qN1D962AO7UefQVulm9JFP5ACS7OfhCdBHioXU8f7ohH/+NTZCgAqmgcfRNHHO/8wLFxx+93YVxhodkEJVA==}
+  /@vitest/coverage-c8@0.32.2(vitest@0.31.1):
+    resolution: {integrity: sha512-z07kMTN6e4t1jDY4XXU6W1LxCb3V5Rw7KAZId4VM6BCIGLGz1QqwH9UWYWv7LemqQVnARl5CwaDDwVrkcYgwPg==}
     peerDependencies:
       vitest: '>=0.30.0 <1'
     dependencies:
-      '@ampproject/remapping': 2.2.0
+      '@ampproject/remapping': 2.2.1
       c8: 7.13.0
       magic-string: 0.30.0
       picocolors: 1.0.0
@@ -11888,7 +11849,7 @@ packages:
     resolution: {integrity: sha512-LA+31JYDJLs82r2ScLrlz1GjSgu66ZV518eyWT+S8VhyQn/JL0u9MeBOvQMGYiPk1DBiSN9DDMOcXvigJZaViQ==}
     engines: {node: '>=12'}
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.14
+      '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
   /make-dir@2.1.0:
@@ -14766,7 +14727,7 @@ packages:
       uglify-js:
         optional: true
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/trace-mapping': 0.3.18
       jest-worker: 27.5.1
       schema-utils: 3.1.1
       serialize-javascript: 6.0.1
@@ -14790,7 +14751,7 @@ packages:
       uglify-js:
         optional: true
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/trace-mapping': 0.3.18
       jest-worker: 27.5.1
       schema-utils: 3.1.1
       serialize-javascript: 6.0.1
@@ -15769,7 +15730,7 @@ packages:
     resolution: {integrity: sha512-6z3GW9x8G1gd+JIIgQQQxXuiJtCXeAjp6RaPEPLv62mH3iPHPxV6W3robxtCzNErRo6ZwTmzWhsbNvjyEBKzKA==}
     engines: {node: '>=10.12.0'}
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.17
+      '@jridgewell/trace-mapping': 0.3.18
       '@types/istanbul-lib-coverage': 2.0.4
       convert-source-map: 1.9.0
     dev: true
