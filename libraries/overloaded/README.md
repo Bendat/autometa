@@ -211,9 +211,8 @@ function add(
   ...args: (string | number)[]
 ){
   return overloads(
-    def(string(), string()).match((a, b) => [a, b])
+    def(string(), string()).match((a, b) => [a, b]),
     def(number(), number()).match((a, b) => a + b)
-    // if using individual def pass an array [a, b] to `use`
   ).use(args);
 }
 ```
@@ -295,7 +294,7 @@ However there are other checks like 'minLength', 'maxLength', 'startsWith' etc w
 Assertions can of course also be used within an overloaded function or method to
 provide additional filtering.
 
-Assertions are used for filtering, and do not through errors by themselves.
+Assertions are used for filtering, and do not throw errors by themselves.
 
 **Note** Some assertions are ignored if an invalid type is passed. For example,
 most string assertions will not be executed if a number or boolean or object is
