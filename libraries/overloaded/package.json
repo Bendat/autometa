@@ -6,6 +6,7 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "description": "Function and method overloading made easy",
+  "homepage": "https://github.com/Bendat/autometa/tree/main/libraries/overloaded",
   "scripts": {
     "test": "vitest run --passWithNoTests",
     "coverage": "vitest run --coverage",
