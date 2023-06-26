@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.7
+
+### Patch Changes
+
+- adeb833: Updated package.json dependencies, moved some todevDependencies, removed others
+
 ## 0.2.6
 
 ### Patch Changes
