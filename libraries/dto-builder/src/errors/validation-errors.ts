@@ -1,4 +1,4 @@
-import { ValidationError } from "class-validator";
+import { ValidationError } from "../validation-error";
 
 /**
  * An Error which indicates a DTO has failed validation.
