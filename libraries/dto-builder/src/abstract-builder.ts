@@ -33,7 +33,7 @@ export abstract class AbstractDtoBuilder<TDtoType> {
    * was added to this builder, validated by default.
    */
 
-  build = (validate = true): TDtoType => {
+  build = (validate = false): TDtoType => {
     if (validate) {
       return AbstractDtoBuilder.validate(this.#dto);
     }

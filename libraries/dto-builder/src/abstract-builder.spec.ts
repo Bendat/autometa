@@ -43,7 +43,7 @@ describe("AbstractDtoBuilder", () => {
       const dto = new TestDto();
       const builder = new TestDtoBuilder(dto);
       try {
-        builder.build();
+        builder.build(true);
       } catch (e) {
         const { validationErrors } = e as FailedValidationError;
         const [error] = validationErrors;

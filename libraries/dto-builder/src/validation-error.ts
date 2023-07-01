@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Validation error description.
  */
@@ -39,5 +40,10 @@ export declare class ValidationError {
    * @param parentPath path as string to the parent of this property
    * @param showConstraintMessages show constraint messages instead of constraint names
    */
-  toString(shouldDecorate?: boolean, hasParent?: boolean, parentPath?: string, showConstraintMessages?: boolean): string;
+  toString(
+    shouldDecorate?: boolean,
+    hasParent?: boolean,
+    parentPath?: string,
+    showConstraintMessages?: boolean
+  ): string;
 }

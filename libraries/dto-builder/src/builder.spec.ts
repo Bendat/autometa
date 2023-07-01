@@ -82,7 +82,7 @@ describe("makeDtoBuilder", () => {
 
   it("Should fail due to validation errors", () => {
     const builder = new FooBuilder();
-    const dto = () => builder.fooHastMich("bb").build();
+    const dto = () => builder.fooHastMich("bb").build(true);
     expect(dto).toThrow(`An instance of Foo has failed the validation:
  - property fooHast has failed the following constraints: isString`);
   });
