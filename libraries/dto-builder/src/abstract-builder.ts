@@ -1,11 +1,11 @@
-import { validateSync, ValidationError } from "class-validator";
+import { ValidationError } from "./validation-error";
 import { FailedValidationError } from "./errors/validation-errors";
 import { Dict } from "./types";
 import { Class } from "@autometa/types";
 export abstract class AbstractDtoBuilder<TDtoType> {
   #dto: TDtoType & { constructor: { name: string } };
-  protected get dto(){
-    return this.#dto
+  protected get dto() {
+    return this.#dto;
   }
   /**
    * Creates a new AbstractBuilder.
@@ -33,13 +33,14 @@ export abstract class AbstractDtoBuilder<TDtoType> {
    * was added to this builder, validated by default.
    */
 
-  build = (validate = true): TDtoType => {
-    if (validate && (validateSync as unknown)) {
+  build = (validate = false): TDtoType => {
+    if (validate) {
       return AbstractDtoBuilder.validate(this.#dto);
     }
     return this.#dto;
   };
   static validate = <T extends { constructor: { name: string } }>(dto: T) => {
+    const { validateSync } = classValidators();
     const validated = validateSync(dto as unknown as object);
     if (validated.length > 0) {
       const type = dto.constructor.name;
@@ -71,7 +72,7 @@ export abstract class AbstractDtoBuilder<TDtoType> {
   protected set = <TPropertyType>(propertyName: string) => {
     const dto = this.#dto as Dict;
 
-    return(value: TPropertyType) => {
+    return (value: TPropertyType) => {
       dto[propertyName] = value;
       return this;
     };
@@ -105,3 +106,16 @@ ${constraintMessages}
     .trimEnd();
   return `${base}\n${errorString}`;
 }
+
+function classValidators() {
+  try {
+    require.resolve("class-validator");
+    return require("class-validator");
+  } catch {
+    throw new Error(
+      "class-validator is not installed. To use validation, please add class-validator as a dependency"
+    );
+  }
+}
+
+
