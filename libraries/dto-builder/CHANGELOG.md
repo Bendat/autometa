@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.9.3
+
+### Patch Changes
+
+- b3edef2: Fix: class-validator should be an optional dependency
+
 ## 0.9.2
 
 ### Patch Changes
