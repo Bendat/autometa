@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.5
+
+### Patch Changes
+
+- b25e85b: Fixed defineParameterType not allowing RegexArrays
+
 ## 0.7.4
 
 ### Patch Changes
