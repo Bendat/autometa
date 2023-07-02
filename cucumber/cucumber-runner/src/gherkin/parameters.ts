@@ -9,7 +9,7 @@ export function defineParameterType(
   ...params: {
     name: string;
     type?: Constructor<unknown>;
-    regexpPattern: RegExp;
+    regexpPattern: RegExp | RegExp[];
     transform: (value: unknown) => unknown;
   }[]
 ) {
