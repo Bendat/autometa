@@ -2,6 +2,7 @@ import { ValidationError } from "./validation-error";
 import { FailedValidationError } from "./errors/validation-errors";
 import { Dict } from "./types";
 import { Class } from "@autometa/types";
+import { closestMatch } from "closest-match";
 export abstract class AbstractDtoBuilder<TDtoType> {
   #dto: TDtoType & { constructor: { name: string } };
   protected get dto() {
@@ -82,6 +83,38 @@ export abstract class AbstractDtoBuilder<TDtoType> {
     this.set(property)(value);
     return this;
   };
+
+  append = (property: string, value: unknown) => {
+    if (property in this.#dto) {
+      assertKey(this.#dto, property);
+      const asArr = this.#dto[property] as unknown as unknown[];
+      asArr.push(value);
+    } else {
+      this.set(property)([value]);
+    }
+    return this;
+  };
+}
+export function assertKey<TObj>(item: TObj, key: string | keyof TObj): asserts key is keyof TObj {
+  if (item === null || item === undefined) {
+    throw new Error(`Item cannot be null or undefined if indexing for values`);
+  }
+  if (!(typeof item === "object" || typeof item === "function")) {
+    throw new Error(`A key can only be valid for a value whos type is object: ${item}`);
+  }
+  if (key && typeof key == "string" && key in item) {
+    return;
+  }
+  const matches = closestMatch(key as string, Object.keys(item), true) ?? [];
+  const properties = Object.getOwnPropertyNames(item)
+    .map((it) => it)
+    .join(`,\n\t`);
+  const objStr = `[ ${"World {"}\n\t${properties}\n   ${"}"}]`;
+  throw new Error(
+    `Key [${String(key)}] does not exist on target ${objStr}.
+Did you mean: 
+${Array.isArray(matches) ? matches.join("\n") : matches}`
+  );
 }
 // Creates a person oriented (non JSON) string representing
 // validation failures.
@@ -117,5 +150,3 @@ function classValidators() {
     );
   }
 }
-
-
