@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/git-diff": "^2.0.3",
     "@types/node": "^18.11.18",
-    "@vitest/coverage-c8": "^0.31.0",
+    "@vitest/coverage-c8": "^0.32.2",
     "@vitest/coverage-istanbul": "^0.31.0",
     "eslint": "^8.37.0",
     "prettier": "^2.8.3",
