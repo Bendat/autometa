@@ -10,7 +10,7 @@ export function transformTableValue(data: TableCell | string) {
   }
 
   if (value === "false" || value === "true") {
-    return Boolean(value);
+    return value === "true";
   }
   return value;
 }

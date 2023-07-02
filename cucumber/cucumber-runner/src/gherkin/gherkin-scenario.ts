@@ -69,7 +69,7 @@ export class GherkinScenario extends GherkinNode {
       const { steps } = background.background;
       for (const { keywordType, keyword, text, dataTable, docString } of steps ?? []) {
         const realText = interpolateStepText(text, example);
-        const compiledTable = compileDatatable(dataTable);
+        const compiledTable = interpolateStepDatatable(compileDatatable(dataTable), example);
         this.loadGherkinStep(
           compiledTable,
           docString,
@@ -83,7 +83,7 @@ export class GherkinScenario extends GherkinNode {
 
     for (const { keywordType, keyword, text, dataTable, docString } of message.scenario.steps) {
       const realText = interpolateStepText(text, example);
-      const compiledTable = compileDatatable(dataTable);
+      const compiledTable = interpolateStepDatatable(compileDatatable(dataTable), example);
       this.loadGherkinStep(compiledTable, docString, keywordType, keyword, realText, this.steps);
     }
   }
@@ -137,4 +137,15 @@ function interpolateStepText(
     }
   }
   return realText;
+}
+
+function interpolateStepDatatable(
+  table?: CompiledDataTable,
+  example?: { readonly key: string; readonly value: TableValue }[]
+) {
+  if (!table) {
+    return undefined;
+  }
+
+  return table.map(rows => rows.map(row => interpolateStepText(row.toString(), example)));
 }
