@@ -1,5 +1,16 @@
 # Gherkin
 
+## 0.1.10
+
+### Patch Changes
+
+- Updated dependencies [06785c2]
+- Updated dependencies [8ad0f1f]
+  - @autometa/overloaded@0.2.9
+  - @autometa/dto-builder@0.9.4
+  - @autometa/gherkin@0.3.3
+  - @autometa/events@0.0.10
+
 ## 0.1.9
 
 ### Patch Changes

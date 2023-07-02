@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.9.4
+
+### Patch Changes
+
+- 8ad0f1f: Feature: 'append" method, similar to "assign" but works with array values
+
 ## 0.9.3
 
 ### Patch Changes

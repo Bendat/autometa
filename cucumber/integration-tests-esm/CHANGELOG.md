@@ -1,5 +1,11 @@
 # integration-tests-esm
 
+## 0.5.15
+
+### Patch Changes
+
+- @autometa/cucumber-runner@0.7.6
+
 ## 0.5.14
 
 ### Patch Changes

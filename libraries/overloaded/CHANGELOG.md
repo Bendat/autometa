@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.9
+
+### Patch Changes
+
+- 06785c2: Typos in docs
+
 ## 0.2.8
 
 ### Patch Changes
