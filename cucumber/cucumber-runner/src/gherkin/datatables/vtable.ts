@@ -1,3 +1,4 @@
+import { transformTableValue } from './transform-table-value';
 import { ParsedDataTable } from "./datatable";
 import { JsonTableRow } from "./json-table-row";
 import type { CompiledDataTable } from "./table-type";
@@ -23,6 +24,17 @@ interface IVTable {
    */
   get(header: string, index: number): TableValue;
   get(header: string, index?: number): TableValue | TableValue[];
+  /**
+   * @param header The column title to collect
+   * @param raw Recover raw data without type transformation.
+   */
+  get(header: string, raw?: boolean): TableValue | TableValue[];
+  /**
+   * @param header The column title to collect
+   * @param index The cells row-index of that column to retrieve.
+   * @param raw Recover raw data without type transformation.
+   */
+  get(header: string, index?: number, raw?: boolean): TableValue | TableValue[];
 }
 export class VTable extends ParsedDataTable implements IVTable {
   readonly headers: string[];
@@ -31,17 +43,25 @@ export class VTable extends ParsedDataTable implements IVTable {
 
   constructor(protected raw: CompiledDataTable) {
     super();
-    this.headers = raw.map(([title]) => title as string);
-    this.rows = raw.map(([_, ...rows]) => rows);
+    this.headers = raw.map(([title]) => title);
+    this.rows = raw.map(([_, ...rows]) => rows.map(transformTableValue));
     const mapHeaders = (header: string, idx: number) => {
       this.#headerMapping[header] = idx;
     };
     this.headers.forEach(mapHeaders);
   }
 
-  get = (header: string, index?: number) => {
+  get = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
+    let index: number | null | undefined;
+    let getRaw = raw;
+    if (typeof indexOrRaw === 'boolean') {
+      getRaw = indexOrRaw;
+    } else {
+      index = indexOrRaw;
+    }
+    const rows = getRaw ? this.raw.map(([_, ...rows]) => rows) : this.rows;
     const colIdx = this.#headerMapping[header];
-    const col = this.rows[colIdx];
+    const col = rows[colIdx];
     if (index !== null && index != undefined) {
       const found = col.at(index);
       if (found === undefined || found === null) {
@@ -52,9 +72,17 @@ export class VTable extends ParsedDataTable implements IVTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return col as any;
   };
-  tryGet = (header: string, index?: number) => {
+  tryGet = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
+    let index: number | null | undefined;
+    let getRaw = raw;
+    if (typeof indexOrRaw === 'boolean') {
+      getRaw = indexOrRaw;
+    } else {
+      index = indexOrRaw;
+    }
+    const rows = getRaw ? this.raw.map(([_, ...rows]) => rows) : this.rows;
     const colIdx = this.#headerMapping[header];
-    const col = this.rows[colIdx];
+    const col = rows[colIdx];
     if (index !== null && index != undefined) {
       return col.at(index);
     }
@@ -69,10 +97,12 @@ export class VTable extends ParsedDataTable implements IVTable {
    * table.row(0); // ['John', 46, 'farmer']
    * ```
    * @param number The index of the row to retrieve
+   * @param raw Recover raw data without type transformation.
    * @returns A Tuple-like array of the values of a row
    */
-  row(number: number): TableValue[] {
-    const row = this.rows.at(number);
+  row(number: number, raw?: boolean): TableValue[] {
+    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows
+    const row = rows.at(number);
     if (!row) {
       throw new Error(`Row ${number} does not exist. This table has ${this.rows.length} rows.`);
     }
@@ -85,10 +115,12 @@ export class VTable extends ParsedDataTable implements IVTable {
    * table.col(0); // ['John', 'Burt']
    * ```
    * @param number The index of the column to retrieve
+   * @param raw Recover raw data without type transformation.
    * @returns A Tuple-like array of the values of a column
    */
-  col(number: number): TableValue[] {
-    return this.rows.map((row) => {
+  col(number: number, raw?: boolean): TableValue[] {
+    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows
+    return rows.map((row) => {
       const col = row.at(number);
       if (!col) {
         throw new Error(`Column ${number} does not exist. This table has ${row.length} rows.`);
@@ -103,10 +135,11 @@ export class VTable extends ParsedDataTable implements IVTable {
    *
    * Numbers and bools will be parsed if possible.
    * @param rowIndex
+   * @param raw Recover raw data without type transformation.
    * @returns
    */
-  json<T extends JsonTableRow = JsonTableRow>(rowIndex: number): T {
-    return this.toList()[rowIndex] as T;
+  json<T extends JsonTableRow = JsonTableRow>(rowIndex: number, raw?: boolean): T {
+    return this.toList(raw)[rowIndex] as T;
   }
 
   /**
@@ -119,21 +152,23 @@ export class VTable extends ParsedDataTable implements IVTable {
    *   { name: 'Burt', age: 24, job: 'doctor' },
    * ]
    * ```
+   * @param raw Recover raw data without type transformation.
    * @returns the converted object array
    */
-  toList() {
-    const raw = this.rows.map((values, idx) => {
+  toList(raw?: boolean) {
+    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows
+    const raws = rows.map((values, idx) => {
       return values.map((value) => {
         const header = this.headers[idx];
         return { [header]: value };
       });
     });
-    const length = raw[0]?.length ?? 0;
+    const length = raws[0]?.length ?? 0;
     const objects: { [name: string]: unknown }[] = [];
     for (let count = 0; count < length; count++) {
       let obj: { [name: string]: unknown } = {};
-      for (let i = 0; i < raw.length; i++) {
-        const first = raw[i].shift();
+      for (let i = 0; i < raws.length; i++) {
+        const first = raws[i].shift();
         obj = { ...obj, ...first };
       }
       objects.push(obj);

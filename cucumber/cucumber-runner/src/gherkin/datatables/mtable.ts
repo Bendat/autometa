@@ -1,3 +1,4 @@
+import { transformTableValue } from './transform-table-value';
 import { ParsedDataTable } from "./datatable";
 import { CompiledDataTable } from "./table-type";
 import { TableValue } from "./table-value";
@@ -34,6 +35,17 @@ interface IMTable {
    */
   get(verticalHeader: string, horizontalHeader: string): TableValue;
   get(verticalHeader: string, horizontalHeader?: string): TableValue;
+  /**
+   * @param header The column title to collect
+   * @param raw Recover raw data without type transformation.
+   */
+  get(header: string, raw?: boolean): TableValue;
+  /**
+   * @param header The column title to collect
+   * @param horizontalHeader The cells row-index of that column to retrieve.
+   * @param raw Recover raw data without type transformation.
+   */
+  get(header: string, horizontalHeader?: string, raw?: boolean): TableValue;
 }
 
 /**
@@ -62,7 +74,7 @@ export class MTable extends ParsedDataTable implements IMTable {
     this.vheaders = raw.slice(1, raw.length).map(([title]) => title as string);
     const row = raw.at(0) ?? [];
     this.hheaders = row.slice(1, row.length).map((it) => it as string) ?? [];
-    this.rows = raw.slice(1, raw.length).map((row) => row.slice(1, row.length));
+    this.rows = raw.slice(1, raw.length).map((row) => row.slice(1, row.length).map(transformTableValue));
     const mapHeaders = (collection: HeaderMapping) => (header: string, idx: number) => {
       collection[header] = idx;
     };
@@ -70,21 +82,25 @@ export class MTable extends ParsedDataTable implements IMTable {
     this.hheaders.forEach(mapHeaders(this.hheaderMappings));
   }
 
-  get = (verticalHeader: string, horizontalHeader?: string) => {
+  get = (verticalHeader: string, horizontalHeaderOrRaw?: string | boolean, raw?: boolean) => {
+    let getRaw = raw;
+    if (typeof horizontalHeaderOrRaw === 'boolean') {
+      getRaw = horizontalHeaderOrRaw;
+    }
+    const rows = getRaw ? this.raw.slice(1, this.raw.length).map((row) => row.slice(1, row.length)) : this.rows
     const vIndex = this.vheaderMappings[verticalHeader];
-    const row = this.rows[vIndex];
-    if (horizontalHeader) {
-      const hIndex = this.hheaderMappings[horizontalHeader];
-      const cell = row[hIndex];
-      return cell;
+    const row = rows[vIndex];
+    if (typeof horizontalHeaderOrRaw === 'string') {
+      const hIndex = this.hheaderMappings[horizontalHeaderOrRaw];
+      return  row[hIndex];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return row as any;
   };
 
-  col = (horizontalHeader: string) => {
+  col = (horizontalHeader: string, raw?: boolean) => {
+    const rows = raw ? this.raw.slice(1, this.raw.length).map((row) => row.slice(1, row.length)) : this.rows
     const hIndex = this.hheaderMappings[horizontalHeader];
-    const col = this.rows.map((it) => it.at(hIndex)) as TableValue[];
-    return col;
+    return  rows.map((it) => it.at(hIndex)) as TableValue[];
   };
 }
