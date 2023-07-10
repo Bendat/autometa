@@ -1,4 +1,5 @@
-export interface BuilderClass<T> extends Function {
+
+export interface BuilderClass<T> {
   new (...args: unknown[]): T;
   // default(): T;
 }

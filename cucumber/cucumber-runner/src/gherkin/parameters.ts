@@ -1,7 +1,7 @@
 import { ParameterType, ParameterTypeRegistry } from "@cucumber/cucumber-expressions";
 
 export const CucumberParameters = new ParameterTypeRegistry();
-interface Constructor<T> extends Function {
+interface Constructor<T> {
   new (...args: unknown[]): T;
   prototype: T;
 }
