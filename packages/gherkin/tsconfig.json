@@ -1,18 +1,4 @@
 {
   "extends": "tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "module": "ES2020",
-    "target": "ES2020",
-    "moduleResolution": "node",
-    "outDir": "out",
-    "declarationDir": "out"
-  },
-  "files": ["src/index.ts"],
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "**/*.test.js"],
-  "references": [
-    { "path": "../types" },
-    { "path": "../../libraries/dto-builder" }
-  ]
+  "files": ["src/index.ts"]
 }

@@ -6,9 +6,6 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build:libs": "tsc -p tsconfig.json",
-    "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
-    "build": "pnpm build:code",
     "integrate": "jest",
     "integrate:allure": " jest; allure serve .allure-reports"
   },

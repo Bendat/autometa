@@ -1,15 +1,6 @@
 {
   "extends": "tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "emitDeclarationOnly": true,
-    "outDir": "out",
-    "declarationDir": "out"
-  },
-  "files": ["src/index.ts"],
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [{ "path": "../../packages/types" }]
+  "files": [
+    "src/index.ts"
+  ],
 }

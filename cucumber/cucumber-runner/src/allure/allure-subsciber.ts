@@ -24,11 +24,12 @@ import { AllureStepper } from "./allure-stepper";
 import { ScenarioMeta } from "./scenario-meta";
 
 export class AllureSubscriber extends ProviderSubscriber {
-  #tracker: AllureTracker = new AllureTracker(this.opts);
+  #tracker: AllureTracker
   readonly meta: ScenarioMeta = {};
 
   constructor(private readonly opts: AllureConfig = { resultsDir: ".allure-reports" }) {
     super();
+    this.#tracker = new AllureTracker(opts);
     this.tracker.startGroup("Base Group");
   }
   get fixtures() {

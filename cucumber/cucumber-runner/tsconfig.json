@@ -1,14 +1,19 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "tsconfig/base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "outDir": "dist/esm",
-    "declarationDir": "dist/types",
-    "emitDeclarationOnly": false
+    "paths": {
+      "@gherkin/*": ["src/gherkin/*"],
+      "@gherkin": ["src/gherkin"],
+      "@scopes/*": ["src/test-scopes/*"],
+      "@scopes": ["src/test-scopes"],
+      "@typing/*": ["src/type-extensions/*"],
+      "@typing": ["src/type-extensions/index.ts"],
+      "@fs/*": ["src/filesystem/*"],
+      "@fs": ["src/filesystem"],
+      "@config/*": ["src/config/*"],
+      "@config": ["src/config"]
+    }
   },
-  "files": ["index.ts", "allure.ts"],
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.js"]
+  "files": ["src/index.ts"]
 }

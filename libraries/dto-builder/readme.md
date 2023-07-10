@@ -1,12 +1,12 @@
 # DTO and Builder Pattern
 
 [Full documentation](https://bendat.github.io/autometa/docs/libraries/dto-builder/intro)
-This library allows defining DTO classes with decoratated properties.
+This library allows defining DTO classes with decorated properties.
 You an then automatically create a new builder class that incrementally
 assigns the value of the DTO, and returns the built result.
 
 :::caution
-This library requires experimental decorators and a reflect polyfill
+This library requires experimental decorators and a reflect poly-fill
 like [reflect-metadata](https://www.npmjs.com/package/reflect-metadata)
 :::
 

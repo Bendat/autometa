@@ -12,11 +12,7 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "build:js": "tsup",
-    "build:dts:tsc": "tsc --build --clean && tsc && tsup --entry.index out/src/index.d.ts --dtsOnly",
-    "build:dts": "pnpm build:dts:tsc",
-    "build": "pnpm build:js && pnpm build:dts ",
-    "build:watch": "tsup --watch"
+    "build": "tsup"
   },
   "exports": {
     "import": "./dist/esm/index.js",

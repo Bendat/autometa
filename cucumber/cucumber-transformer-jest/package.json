@@ -3,6 +3,7 @@
   "version": "0.4.1",
   "description": "Convert Cucumber .feature files into Autometa cucumber tests with jest",
   "type": "module",
+  "private": true,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -14,12 +15,7 @@
     "test": "vitest run --passWithNoTests ",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
-    "build:js": "tsup",
-    "build:dts:tsc": "tsc --build --clean && tsc && tsup --entry.index out/index.d.ts --dtsOnly",
-    "build:dts": "pnpm build:dts:tsc",
-    "build": "pnpm build:js && pnpm build:dts ",
-    "build:watch": "tsup --watch"
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [
     "jest gherkin",

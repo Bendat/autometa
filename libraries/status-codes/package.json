@@ -11,11 +11,7 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "build:js": "tsup",
-    "build:dts:tsc": "tsc --build --clean && tsc && tsup --entry.index out/src/index.d.ts --dtsOnly",
-    "build:dts": "pnpm build:dts:tsc",
-    "build": "pnpm build:js && pnpm build:dts ",
-    "build:watch": "tsup --watch"
+    "build": "tsup"
   },
   "keywords": [
     "status codes",
@@ -47,9 +43,7 @@
     "prettier": "^2.8.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^4.1.2",
-    "ts-jest": "^29.0.5",
-    "ts-node": "^10.9.1",
-    "tsc-alias": "^1.8.2",
+    "tsconfig": "workspace:*",
     "typescript": "^4.9.5",
     "tsup": "^6.7.0",
     "vitest": "^0.28.5"

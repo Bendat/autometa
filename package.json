@@ -8,6 +8,7 @@
     "build": "turbo run build",
     "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
+    "prettify": "turbo run prettify",
     "test": "turbo run test --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "dev": "turbo run dev --parallel",

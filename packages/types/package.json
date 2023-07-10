@@ -10,10 +10,7 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "build:js": "tsup",
-    "build:dts:tsc": " tsc src/index.ts --declarationDir dist --declaration --emitDeclarationOnly",
-    "build:dts": "pnpm build:dts:tsc",
-    "build": "pnpm build:js && pnpm build:dts ",
+    "build": "tsup",
     "build:watch": "tsup --watch"
   },
   "exports": {

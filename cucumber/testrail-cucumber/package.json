@@ -5,14 +5,11 @@
     "testrail-cucumber": "dist/cjs/src/lib/cli.js"
   },
   "type": "commonjs",
+  "private": true,
   "scripts": {
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
-    "postbuild": "tsc-alias -p ./tsconfig.cjs.json && tsc-alias -p ./tsconfig.json && ./fixup",
-    "build:libs": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
-    "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
-    "build": "pnpm build:code && pnpm postbuild"
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@autometa/shared-utilities": "0.0.3",
