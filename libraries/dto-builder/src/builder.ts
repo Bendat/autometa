@@ -1,7 +1,6 @@
 import { AbstractDtoBuilder } from "./abstract-builder";
 import { makeDtoDefaults, makeDtoFromRaw } from "./dto-decorators";
-import { Dict } from "./types";
-import { Class } from "@autometa/types";
+import { BuilderClass, Dict } from "./types";
 
 /*
  * Takes an object, iterates through it's keys, and produces
@@ -53,8 +52,8 @@ export type DtoBuilder<T> = AbstractDtoBuilder<T> & DtoBuilderTransformer<T>;
  * I.E. `foo: string` becomes `foo: (value: string) => DtoBuilder<T>`
  */
 export function Builder<T>(
-  dtoType: Class<T>
-): Class<DtoBuilder<T>> & { default: () => T; fromRaw: <K>(raw: K, validate?: boolean) => T } {
+  dtoType: BuilderClass<T>
+): BuilderClass<DtoBuilder<T>> & { default: () => T; fromRaw: <K>(raw: K, validate?: boolean) => T } {
   // Generate a new class which will be the DTO
   const GeneratedBuilder = class GeneratedBuilder extends AbstractDtoBuilder<T> {
     constructor() {
@@ -78,16 +77,13 @@ export function Builder<T>(
       return new this().build(false);
     }
 
-    static fromRaw(raw: unknown, validate = false) {
+    static fromRaw(raw: unknown) {
       const dto = makeDtoFromRaw(dtoType, raw);
-      if (validate) {
-        this.validate(dto as { constructor: { name: string } });
-      }
       return dto;
     }
   };
 
-  return GeneratedBuilder as unknown as Class<DtoBuilder<T>> & {
+  return GeneratedBuilder as unknown as BuilderClass<DtoBuilder<T>> & {
     default: () => T;
     fromRaw: <K>(raw: K, validate?: boolean) => T;
   };

@@ -1,5 +1,5 @@
-import { ParsedDataTable } from "@gherkin/datatables/datatable";
-import { Docstring } from "@gherkin/doc-string";
+import { ParsedDataTable } from "../gherkin/datatables/datatable";
+import { Docstring } from "../gherkin/doc-string";
 import {
   AllureTest,
   AllureRuntime,

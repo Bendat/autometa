@@ -1,6 +1,6 @@
 import { CucumberExpression, RegularExpression, Argument } from "@cucumber/cucumber-expressions";
-import { TeardownHook, AfterHook, SetupHook, BeforeHook, Hook } from "@scopes/hook";
-import type { ArrayElement } from "@typing/array-element";
+import { TeardownHook, AfterHook, SetupHook, BeforeHook, Hook } from "../test-scopes/hook";
+import type { ArrayElement } from "../type-extensions/array-element";
 import type { StepAction } from "../test-scopes/types";
 import { ParsedDataTable } from "./datatables/datatable";
 import type { TableType } from "./datatables/table-type";

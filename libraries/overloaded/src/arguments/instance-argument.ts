@@ -1,7 +1,7 @@
 import { Infer, object } from "myzod";
-import { Class, AbstractClass } from "@autometa/types";
 import { ShapeArgument } from "./shape-argument";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
+import { AbstractClass, Class } from "./types";
 export const InstanceConstructorArgumentSchema = object({});
 export const InstanceOptionsArgumentSchema = object({}).and(BaseArgumentSchema);
 export type InstanceOptions = Infer<typeof InstanceOptionsArgumentSchema>;

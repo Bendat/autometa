@@ -1,20 +1,4 @@
 {
-  "extends": "../../configuration/tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "dist/esm",
-    "target": "esnext",
-    "noImplicitThis": false,
-    "types": ["node"]
-  },
-  // "files": ["./autometa.config.ts"],
-  "include": ["src/**/*", "globals"],
-  // "exclude": ["test", "**/*.spec.ts"],
-  "references": [
-    {
-      "path": "../cucumber-runner"
-    }
-  ]
+  "extends": "tsconfig/base.json",
+  "files": ["src/index.ts"]
 }

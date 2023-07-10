@@ -1,5 +1,4 @@
-import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
-import { Class } from "@autometa/types";
+import { Builder, Property } from "@autometa/dto-builder";
 import { GherkinNode } from "../gherkin-node";
 import { Scenario } from "../scenario";
 
@@ -18,4 +17,4 @@ export class Examples extends GherkinNode {
   readonly children: readonly Scenario[];
 }
 
-export const ExamplesBuilder: Class<DtoBuilder<Examples>> = Builder(Examples);
+export class ExamplesBuilder extends Builder(Examples){}

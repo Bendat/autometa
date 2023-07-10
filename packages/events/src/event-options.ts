@@ -2,7 +2,6 @@ import {
   CucumberExpression,
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
-import { Examples, TableValue } from "@autometa/gherkin";
 import { StatusType, ModifierType } from "@autometa/types";
 
 export interface StartFeatureOpts {
@@ -33,7 +32,6 @@ export interface EndRuleOpts {
 export interface StartScenarioOutlineOpts {
   title: string;
   tags: string[];
-  examples: Examples;
   modifier?: string;
   uuid?: string;
 }
@@ -48,7 +46,7 @@ export interface StartScenarioOpts {
   tags: string[];
   args: unknown[];
   modifier?: string;
-  examples?: { readonly key: string; readonly value: TableValue }[];
+  examples?: { readonly key: string; readonly value: unknown }[];
 }
 
 export interface EndScenarioOpts {

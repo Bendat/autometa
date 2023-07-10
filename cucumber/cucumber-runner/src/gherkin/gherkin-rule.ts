@@ -7,7 +7,7 @@ import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
 import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinNode } from "./gherkin-node";
 import type { Modifiers } from "./types";
-import { ScenarioOutlineScope } from "@scopes/scenario-outline-scope";
+import { ScenarioOutlineScope } from "../test-scopes/scenario-outline-scope";
 export type RuleMessage = { rule: Rule; backgrounds?: { background: Background }[] };
 
 export class GherkinRule extends GherkinNode {

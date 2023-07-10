@@ -1,4 +1,4 @@
-import { Class } from "@typing/class";
+import { Class } from "../type-extensions/class";
 import { InjectionToken } from "tsyringe";
 import type {
   EndAfterOpts,

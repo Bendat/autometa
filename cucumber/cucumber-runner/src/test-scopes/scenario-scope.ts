@@ -1,8 +1,8 @@
 import type { ScenarioAction } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
-import type { Modifiers } from "@gherkin/types";
-import { HookCache } from "@gherkin/step-cache";
+import type { Modifiers } from "../gherkin/types";
+import { HookCache } from "../gherkin/step-cache";
 
 export class ScenarioScope extends Scope {
   synchronous = false;

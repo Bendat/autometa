@@ -1,6 +1,8 @@
 import { ParameterType, ParameterTypeRegistry } from "@cucumber/cucumber-expressions";
 
 export const CucumberParameters = new ParameterTypeRegistry();
+
+// eslint-disable-next-line @typescript-eslint/ban-types
 interface Constructor<T> extends Function {
   new (...args: unknown[]): T;
   prototype: T;

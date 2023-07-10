@@ -1,6 +1,6 @@
 import "reflect-metadata";
-import { Class } from "@autometa/types";
-function decorator(target: Class<unknown>, key: string) {
+import { BuilderClass } from "./types";
+function decorator(target: BuilderClass<unknown>, key: string) {
   if (!Reflect.hasMetadata("dto:isDto", target)) {
     Reflect.defineMetadata("dto:isDto", true, target);
   }
@@ -11,7 +11,7 @@ function decorator(target: Class<unknown>, key: string) {
   Reflect.defineMetadata("dto:meta", 1, target, key);
 }
 function argdecorator<T>(arg: T, transformer?: FromRawTransformer) {
-  return function (target: Class<unknown>, key: string) {
+  return function (target: BuilderClass<unknown>, key: string) {
     if (!Reflect.hasMetadata("dto:default", target, key)) {
       Reflect.defineMetadata("dto:default", [], target, key);
     }
@@ -36,7 +36,7 @@ export function Property<T>(defaultValue: T, transformer?: FromRawTransformer): 
 export function Property<T>(target: T, propertyKey: string | symbol, descriptor?: never): void;
 export function Property<T>(...args: unknown[]): unknown | decoratorFunction {
   if (args?.length > 2) {
-    const [target, key] = args as [Class<unknown>, string];
+    const [target, key] = args as [BuilderClass<unknown>, string];
     return decorator(target, key);
   }
   if (typeof args[0] === "function" && !isClass(args[0])) {
@@ -47,7 +47,7 @@ export function Property<T>(...args: unknown[]): unknown | decoratorFunction {
   return argdecorator(defaultValue, transformer);
 }
 
-export function makeDtoDefaults<T>(target: Class<T>): T {
+export function makeDtoDefaults<T>(target: BuilderClass<T>): T {
   const type = target.prototype ? target.prototype : target;
   const properties: string[] = Reflect.getMetadata("dto:properties", type);
   const instance = new target();
@@ -70,7 +70,7 @@ export function makeDtoDefaults<T>(target: Class<T>): T {
 function isClass(func: unknown) {
   return typeof func === "function" && /^class\s/.test(Function.prototype.toString.call(func));
 }
-export function makeDtoFromRaw<T, K>(prototype: Class<T>, type: K): T {
+export function makeDtoFromRaw<T, K>(prototype: BuilderClass<T>, type: K): T {
   const blueprint = prototype.prototype ? prototype.prototype : prototype;
   const properties: string[] = Reflect.getMetadata("dto:properties", blueprint);
   const dto = new prototype();

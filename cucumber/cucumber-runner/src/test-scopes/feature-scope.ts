@@ -2,8 +2,8 @@ import type { FeatureAction } from "./types";
 import { ScenarioScope } from "./scenario-scope";
 import { StepScope } from "./step-scope";
 import { Scope } from "./scope";
-import type { Modifiers } from "@gherkin/types";
-import { HookCache } from "@gherkin/step-cache";
+import type { Modifiers } from "../gherkin/types";
+import { HookCache } from "../gherkin/step-cache";
 import { RuleScope } from "./rule-scope";
 
 export class FeatureScope extends Scope {

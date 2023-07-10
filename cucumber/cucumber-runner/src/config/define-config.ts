@@ -1,6 +1,6 @@
-import { loadGlobalStepFiles } from "@fs/filesystem";
 import { Config } from "./config-manager";
 import { AutometaConfig } from "./autometa-config";
+import { loadGlobalStepFiles } from "../filesystem/filesystem";
 /**
  * Allows the setting of configuration options
  * for the Autometa runner.

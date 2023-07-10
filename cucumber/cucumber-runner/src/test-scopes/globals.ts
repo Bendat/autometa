@@ -1,5 +1,5 @@
-import { GherkinFeature } from "@gherkin/gherkin-feature";
-import { parseGherkin } from "@gherkin/parse";
+import { GherkinFeature } from "../gherkin/gherkin-feature";
+import { parseGherkin } from "../gherkin/parse";
 import { FeatureScope } from "./feature-scope";
 import { RuleScope } from "./rule-scope";
 import { GlobalScope } from "./global-scope";
@@ -13,10 +13,10 @@ import { glob } from "glob";
 import getCallerFile from "get-caller-file";
 // import fs from "fs";?
 // import fsPath from "path";
-import type { TableType } from "@gherkin/datatables/table-type";
-import type { Modifiers } from "@gherkin/types";
-import { ParsedDataTable } from "@gherkin/datatables/datatable";
-import { HookCache } from "@gherkin/step-cache";
+import type { TableType } from "../gherkin/datatables/table-type";
+import type { Modifiers } from "../gherkin/types";
+import { ParsedDataTable } from "../gherkin/datatables/datatable";
+import { HookCache } from "../gherkin/step-cache";
 export const globalScope = new GlobalScope(new HookCache());
 interface IFeature {
   /**

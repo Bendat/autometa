@@ -11,10 +11,8 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "build:js": "tsup",
-    "build:dts:tsc": "tsc --build --clean && tsc && tsup --entry.index out/src/index.d.ts --dtsOnly",
-    "build:dts": "pnpm build:dts:tsc",
-    "build": "pnpm build:js && pnpm build:dts ",
+    "clean": "rimraf dist",
+    "build": "tsup",
     "build:watch": "tsup --watch"
   },
   "author": "Ben Aherne",
@@ -54,7 +52,6 @@
   "dependencies": {
     "@autometa/gherkin": "workspace:*",
     "@autometa/types": "workspace:*",
-    "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",
     "tsyringe": "^4.7.0",

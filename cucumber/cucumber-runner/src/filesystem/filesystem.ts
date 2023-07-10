@@ -2,7 +2,7 @@ import glob from "glob";
 import path from "path";
 import os from "os";
 import { readFileSync } from "fs";
-import { Config } from "@config/config-manager";
+import { Config } from "../config/config-manager";
 
 const homeDirectory = os.homedir();
 const pathWithTilde = (pathWithTilde: string) => {

@@ -1,4 +1,4 @@
-import { HookCache, StepCache } from "@gherkin/step-cache";
+import { HookCache, StepCache } from "../gherkin/step-cache";
 import { FeatureScope } from "./feature-scope";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";

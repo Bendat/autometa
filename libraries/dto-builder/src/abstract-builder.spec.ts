@@ -1,11 +1,8 @@
-import { IsString } from "class-validator";
 import { AbstractDtoBuilder } from "./abstract-builder";
 import { Property } from "./dto-decorators";
-import { FailedValidationError } from "./errors/validation-errors";
 import { describe, it, expect } from "vitest";
 describe("AbstractDtoBuilder", () => {
   class TestDto {
-    @IsString()
     @Property
     name!: string;
   }
@@ -37,23 +34,6 @@ describe("AbstractDtoBuilder", () => {
       const builder = new TestDtoBuilder(dto);
       const name = builder.name("bob").build().name;
       expect(name).toBe("bob");
-    });
-
-    it("should error when building an invalid DTO", () => {
-      const dto = new TestDto();
-      const builder = new TestDtoBuilder(dto);
-      try {
-        builder.build(true);
-      } catch (e) {
-        const { validationErrors } = e as FailedValidationError;
-        const [error] = validationErrors;
-        expect(validationErrors.length).toBe(1);
-        expect(error).toBeDefined();
-        expect(error.property).toBe("name");
-        expect(error.constraints?.isString).toBe("name must be a string");
-      } finally {
-        expect.assertions(4);
-      }
     });
 
     it("should ignore validation errors when building with validate=false", () => {

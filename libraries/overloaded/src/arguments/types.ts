@@ -53,3 +53,11 @@ export type FromFunction<T extends BaseArgument<ArgumentType>[]> = {
 export type FunctionType = (
   ...args: AnyType[]
 ) => AnyType | void | Promise<AnyType | void>;
+
+export type Class<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any): T;
+};
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type AbstractClass<T> = Function & { prototype: T }

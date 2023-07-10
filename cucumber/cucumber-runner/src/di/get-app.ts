@@ -1,5 +1,5 @@
 import { Config } from "../config/config-manager";
-import { Class } from "@typing/class";
+import { Class } from "../type-extensions/class";
 import { container, InjectionToken } from "tsyringe";
 
 export function getApp<T>(...instances: { token: InjectionToken<unknown>; instance: unknown }[]) {

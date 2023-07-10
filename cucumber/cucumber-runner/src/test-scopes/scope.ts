@@ -1,4 +1,4 @@
-import { HookCache } from "@gherkin/step-cache";
+import { HookCache } from "../gherkin/step-cache";
 import { Hook } from "./hook";
 
 export abstract class Scope {

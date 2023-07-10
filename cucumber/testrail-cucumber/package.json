@@ -1,6 +1,7 @@
 {
   "name": "@autometa/testrail-cucumber",
   "version": "0.5.1",
+  "private": true,
   "bin": {
     "testrail-cucumber": "dist/cjs/src/lib/cli.js"
   },
@@ -12,7 +13,7 @@
     "postbuild": "tsc-alias -p ./tsconfig.cjs.json && tsc-alias -p ./tsconfig.json && ./fixup",
     "build:libs": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
     "build:code": "rimraf dist/ && pnpm run build:libs && ./fixup",
-    "build": "pnpm build:code && pnpm postbuild"
+    "_build": "pnpm build:code && pnpm postbuild"
   },
   "dependencies": {
     "@autometa/shared-utilities": "0.0.3",

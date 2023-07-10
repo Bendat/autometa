@@ -8,7 +8,7 @@ import { Feature } from "./parser.types";
 import { HookCache, StepCache } from "./step-cache";
 import { GherkinScenario } from "./gherkin-scenario";
 import { GherkinScenarioOutline } from "./gherkin-scenario-outline";
-import { Scope } from "@scopes/scope";
+import { Scope } from "../test-scopes/scope";
 import { Modifiers } from "./types";
 import { TestExecutor } from "../executor/test-executor";
 import crypto from "crypto";

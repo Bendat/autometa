@@ -1,5 +1,4 @@
-import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
-import { Class } from "@autometa/types";
+import { Builder, Property } from "@autometa/dto-builder";
 import { Scenario } from "./scenario";
 
 export class Example extends Scenario {
@@ -7,4 +6,4 @@ export class Example extends Scenario {
   readonly example: { [header: string]: string };
 }
 
-export const ExampleBuilder: Class<DtoBuilder<Example>> = Builder(Example);
+export class ExampleBuilder extends Builder(Example){}

@@ -12,6 +12,8 @@
     "integrate": "turbo run integrate",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "clean": "turbo run clean",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "pnpm run build",
     "release": "pnpm run build && changeset version && changeset publish",
