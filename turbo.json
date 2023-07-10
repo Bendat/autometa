@@ -10,7 +10,11 @@
     "integrate": {
       "dependsOn": ["^build"]
     },
-    "test": {},
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["**/*.spec.ts"],
+      "outputs": ["coverage/**"]
+    },
     "prettify": {
       "inputs": ["**/*.ts"]
     },

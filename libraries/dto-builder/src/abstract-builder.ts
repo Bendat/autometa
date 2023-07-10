@@ -1,7 +1,6 @@
 import { ValidationError } from "./validation-error";
 import { FailedValidationError } from "./errors/validation-errors";
-import { Dict } from "./types";
-import { Class } from "@autometa/types";
+import { Class, Dict } from "./types";
 import { closestMatch } from "closest-match";
 export abstract class AbstractDtoBuilder<TDtoType> {
   #dto: TDtoType & { constructor: { name: string } };

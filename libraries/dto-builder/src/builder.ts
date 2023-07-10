@@ -1,7 +1,6 @@
 import { AbstractDtoBuilder } from "./abstract-builder";
 import { makeDtoDefaults, makeDtoFromRaw } from "./dto-decorators";
-import { Dict } from "./types";
-import { Class } from "@autometa/types";
+import { Class, Dict } from "./types";
 
 /*
  * Takes an object, iterates through it's keys, and produces
