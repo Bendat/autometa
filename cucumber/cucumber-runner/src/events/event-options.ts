@@ -1,7 +1,7 @@
 import { CucumberExpression, RegularExpression } from "@cucumber/cucumber-expressions";
-import { type TableValue } from "@gherkin/datatables/table-value";
-import { GherkinExamples } from "@gherkin/gherkin-examples";
-import { type Modifiers } from "@gherkin/types";
+import { type TableValue } from "../gherkin/datatables/table-value";
+import { GherkinExamples } from "../gherkin/gherkin-examples";
+import { type Modifiers } from "../gherkin/types";
 import { Status } from "allure-js-commons";
 
 export interface StartFeatureOpts {

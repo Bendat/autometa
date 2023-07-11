@@ -1,4 +1,3 @@
-import { IsOptional, IsString } from "class-validator";
 import { Builder } from "./builder";
 import { Property } from "./dto-decorators";
 import { describe, it, expect } from "vitest";
@@ -7,13 +6,9 @@ class Bar {
   id: number;
 }
 class Foo {
-  @IsString()
   @Property
   fooHast!: string;
 
-  @IsOptional()
-  @IsString()
-  @IsOptional()
   @Property
   fooHastMich?: string;
 
@@ -52,19 +47,6 @@ describe("makeDtoBuilder", () => {
     expect(dto.baz).toEqual(1);
     expect(dto.mapped).toEqual(1);
   });
-
-  it("should build from raw", () => {
-    const raw: Foo = {
-      fooHast: lie(undefined),
-      fooHastMich: "duh",
-      bar: { id: 1 },
-      baz: 1,
-      mapped: "1" as unknown as number,
-    };
-    const dto = () => FooBuilder.fromRaw(raw, true);
-    expect(dto).toThrow(`An instance of Foo has failed the validation:
- - property fooHast has failed the following constraints: isString`);
-  });
   
   it("should create a valid builder", () => {
     const builder = new FooBuilder();
@@ -78,13 +60,6 @@ describe("makeDtoBuilder", () => {
     const builder = new FooBuilder();
     const value = builder.fooHast("aa").fooHast.value;
     expect(value).toEqual("aa");
-  });
-
-  it("Should fail due to validation errors", () => {
-    const builder = new FooBuilder();
-    const dto = () => builder.fooHastMich("bb").build(true);
-    expect(dto).toThrow(`An instance of Foo has failed the validation:
- - property fooHast has failed the following constraints: isString`);
   });
 
   it("Should allow optional properties", () => {

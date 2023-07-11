@@ -1,10 +1,9 @@
-import { Property, Builder, DtoBuilder } from "@autometa/dto-builder";
+import { Property, Builder } from "@autometa/dto-builder";
 import { Background } from "../background";
 import { Rule } from ".";
 import { GherkinNode } from "../gherkin-node";
 import { ScenarioOutline } from "./scenario-outline";
 import { Scenario } from "../scenario";
-import { Class } from "@autometa/types";
 
 export class Feature extends GherkinNode {
   children: Array<Rule | Background | Scenario | ScenarioOutline> = [];
@@ -21,4 +20,4 @@ export class Feature extends GherkinNode {
   readonly description: string;
 }
 
-export const FeatureBuilder: Class<DtoBuilder<Feature>> = Builder(Feature);
+export class FeatureBuilder extends Builder(Feature){}

@@ -1,15 +1,4 @@
 {
   "extends": "tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "outDir": "out",
-    "emitDeclarationOnly": false,
-    "declarationDir": "out"
-  },
   "files": ["src/index.ts"],
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "**/*.test.js"],
-  "references": [{ "path": "../gherkin" }, { "path": "../types" }]
 }

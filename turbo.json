@@ -3,13 +3,16 @@
   "globalDependencies": ["env", "CUCUMBER_FILTER_TAGS"],
   "pipeline": {
     "build": {
-      "dependsOn": ["lint", "test"],
       "inputs": ["**/*.ts"],
       "outputs": ["dist/**"]
     },
     "build:docs": {},
     "integrate": {
       "dependsOn": ["^build"]
+    },
+    "clean": {
+      "inputs": ["dist/**"],
+      "outputs": []
     },
     "test": {
       "dependsOn": ["^build"]

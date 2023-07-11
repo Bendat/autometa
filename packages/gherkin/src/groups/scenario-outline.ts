@@ -1,7 +1,6 @@
-import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
+import { Builder, Property } from "@autometa/dto-builder";
 import { GherkinNode, Background } from "..";
 import { Examples } from ".";
-import { Class } from "@autometa/types";
 
 export class ScenarioOutline extends GherkinNode {
   @Property
@@ -14,5 +13,4 @@ export class ScenarioOutline extends GherkinNode {
   readonly examples: Examples[];
 }
 
-export const ScenarioOutlineBuilder: Class<DtoBuilder<ScenarioOutline>> =
-  Builder(ScenarioOutline);
+export class ScenarioOutlineBuilder extends Builder(ScenarioOutline) {}

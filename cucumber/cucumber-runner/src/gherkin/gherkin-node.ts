@@ -1,7 +1,7 @@
 import { Tag } from "@cucumber/messages";
 import type { Modifiers, FrameworkTestCall, TestGroup } from "./types";
 import parse from "@cucumber/tag-expressions";
-import { Config } from "@config/config-manager";
+import { Config } from "../config/config-manager";
 export abstract class GherkinNode {
   abstract tags: string[];
   abstract get modifier(): Modifiers | undefined;

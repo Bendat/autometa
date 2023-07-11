@@ -17,4 +17,4 @@ export class Background extends GherkinNode {
   }
 }
 
-export const BackgroundBuilder = Builder(Background);
+export class BackgroundBuilder extends Builder(Background){}

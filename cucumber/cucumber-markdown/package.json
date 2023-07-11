@@ -14,10 +14,8 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "build:js": "tsup",
-    "build:dts:tsc": "tsc --build --clean && tsc  && tsup --entry.index out/src/index.d.ts --dtsOnly",
-    "build:dts": "pnpm build:dts:tsc",
-    "build": "pnpm build:js && pnpm build:dts ",
+    "clean": "rimraf dist",
+    "build": "tsup",
     "build:watch": "tsup --watch"
   },
   "keywords": [
@@ -48,6 +46,7 @@
     "rimraf": "^4.1.2",
     "ts-node": "^10.9.1",
     "tsup": "^6.7.0",
+    "tsconfig": "workspace:*",
     "typescript": "^4.9.5",
     "vitest": "^0.28.5"
   },

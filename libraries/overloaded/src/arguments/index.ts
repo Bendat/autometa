@@ -12,3 +12,4 @@ export { unknown } from "./unknown-argument";
 export { instance } from "./instance-argument";
 export { ArgumentOptions as ArgumentValidatorOpts } from "./base-argument";
 export { func, FunctionOptions } from "./function-argument";
+export * from './types'

@@ -1,8 +1,7 @@
 import { Expression } from "@cucumber/cucumber-expressions";
 import { GherkinDocString } from "./doc-string";
 import { CompiledDataTable } from "./datatables";
-import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
-import { Class } from "@autometa/types";
+import { Builder, Property } from "@autometa/dto-builder";
 import { StepType, StepKeyword } from "./enums";
 
 export class Step {
@@ -30,4 +29,4 @@ export class Step {
   };
 }
 
-export const StepBuilder: Class<DtoBuilder<Step>> = Builder(Step);
+export const StepBuilder = Builder(Step) 

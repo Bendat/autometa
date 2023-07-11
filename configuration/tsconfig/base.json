@@ -21,12 +21,15 @@
     "preserveWatchOutput": true,
     "strict": true,
     "checkJs": true,
-    "composite": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types"
   },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
   "include": ["/**/*.ts"],
-  "exclude": ["node_modules", "**/*/node_modules"]
+  "exclude": ["node_modules", "**/*/node_modules", "*.spec.ts", "*.test.ts"]
 }

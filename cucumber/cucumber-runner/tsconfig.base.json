@@ -1,6 +1,9 @@
 {
-  "extends": "../../configuration/tsconfig/base.json",
+  "extends": "tsconfig/base.json",
   "compilerOptions": {
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types",
+    "declaration": true,
     "paths": {
       "@gherkin/*": ["src/gherkin/*"],
       "@gherkin": ["src/gherkin"],
@@ -13,5 +16,6 @@
       "@config/*": ["src/config/*"],
       "@config": ["src/config"]
     }
-  }
+  },
+  "files": ["index.ts", "allure.ts"],
 }

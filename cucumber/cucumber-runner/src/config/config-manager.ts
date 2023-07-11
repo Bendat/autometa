@@ -1,10 +1,10 @@
-import { HTable } from "@gherkin/datatables/htable";
 import _ from "lodash";
 import j from "joi";
 import { DefaultApp } from "./default-app";
 import { lie } from "../utils/lie";
 import { AutometaConfig } from "./autometa-config";
 import { ConfigSchema } from "./config-schema";
+import { HTable } from "../gherkin";
 
 const defaultOptions: Partial<AutometaConfig> = {
   app: DefaultApp,
