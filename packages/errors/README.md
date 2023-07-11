@@ -1,3 +1,3 @@
-# Gherkin
+# Errors
 
-Gherkin implementation for @autometa.
+Errors & Exceptions implementation for @autometa.
