@@ -21,6 +21,9 @@
     "lint": {
       "inputs": ["**/*.ts"]
     },
+    "lint:fix": {
+      "inputs": ["**/*.ts"]
+    },
     "dev": {
       "cache": false
     }
