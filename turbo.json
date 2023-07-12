@@ -16,7 +16,6 @@
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^build"]
     },
     "lint": {
       "inputs": ["**/*.ts"]
