@@ -1,9 +1,8 @@
 import { AutomationError } from "@autometa/errors";
 import { closestMatch } from "closest-match";
-import { AnyFunction } from "@autometa/types";
 
 export class InvalidKeyError<
-  T extends Record<string, unknown> | AnyFunction 
+  T
 > extends AutomationError {
   bestMatches: string | string[];
   constructor(

@@ -1,4 +1,4 @@
-import { IsKey } from "@autometa/assertions";
+import { AssertKey } from "@autometa/asserters";
 import { camel, convertPhrase } from "@autometa/phrases";
 type TimeDiffFn = (date1: Date, date2: Date) => number;
 
@@ -33,7 +33,7 @@ export class TimeObject {
 
   fromPhrase(phrase: string): TimeDiffFn {
     const propertyKey = convertPhrase(phrase, camel);
-    IsKey(Time.diff, propertyKey);
+    AssertKey(this.diff, propertyKey);
     return Time.diff[propertyKey];
   }
 }
