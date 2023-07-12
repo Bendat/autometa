@@ -1,8 +1,7 @@
 import { AutomationError } from "@autometa/errors";
-import { AnyFunction } from "@autometa/types";
 import { InvalidKeyError } from "./invalid-key-error";
 
-export function AssertKey<TObj extends Record<string, unknown> | AnyFunction>(
+export function AssertKey<TObj>(
   item: TObj,
   key: string | keyof TObj
 ): asserts key is keyof TObj {

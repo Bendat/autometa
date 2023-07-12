@@ -1,4 +1,4 @@
-name: Merge Workflow
+name: PR Workflow (linux)
 
 on:
   push:
@@ -35,6 +35,7 @@ jobs:
         run: pnpm install
       - name: Lint
         run: pnpm lint
+
   build:
     name: Build and Test
     timeout-minutes: 15
