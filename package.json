@@ -5,7 +5,7 @@
   "scripts": {
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
-    "build": "turbo run build",
+    "build": "turbo --concurrency=1 run build",
     "build:runner": "turbo run build:runner",
     "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
@@ -16,7 +16,7 @@
     "lint:fix": "turbo run lint:fix",
     "clean": "turbo run clean",
     "turbo:update": "npx @turbo/codemod migrate",
-    "turbo:new": "npx create-turbo --example",
+    "turbo:gen": "turbo gen library",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "pnpm run build",
     "release": "pnpm run build && changeset version && changeset publish",
@@ -25,7 +25,10 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
+    "@turbo/gen": "^1.10.7",
+    "@types/lodash": "^4.14.195",
     "eslint-config-custom": "workspace:*",
+    "lodash": "^4.17.21",
     "prettier": "^2.8.3",
     "tsc-alias": "^1.8.2",
     "turbo": "^1.10.0"
