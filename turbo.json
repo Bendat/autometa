@@ -7,9 +7,10 @@
       "outputs": ["dist/**"]
     },
     "build:docs": {},
-    "integrate": {
-      "dependsOn": ["^build"]
+    "build:runner":{
+      "inputs": ["**/*/cucumber-runner/**/*.ts"]
     },
+    "integrate": {},
     "clean": {
       "inputs": ["dist/**"],
       "outputs": []

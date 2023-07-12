@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-      - name: Build
-        run: pnpm build
-      - name: integration tests
+      - name: Build Runner
+        run: pnpm build:runner
+      - name: Integration tests
         run: pnpm run integrate
