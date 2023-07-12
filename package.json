@@ -6,6 +6,7 @@
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
     "build": "turbo run build",
+    "build:runner": "turbo run build:runner",
     "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
     "test": "turbo run test --filter='!@autometa/documentation'",
@@ -14,6 +15,8 @@
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "clean": "turbo run clean",
+    "turbo:update": "npx @turbo/codemod migrate",
+    "turbo:new": "npx create-turbo --example",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "pnpm run build",
     "release": "pnpm run build && changeset version && changeset publish",
@@ -25,7 +28,7 @@
     "eslint-config-custom": "workspace:*",
     "prettier": "^2.8.3",
     "tsc-alias": "^1.8.2",
-    "turbo": "^1.7.0"
+    "turbo": "^1.10.0"
   },
   "engines": {
     "node": ">=14.0.0"
