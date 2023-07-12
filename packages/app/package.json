@@ -23,10 +23,12 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@autometa/types": "workspace:^",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
+    "reflect-metadata": "^0.1.13",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
@@ -35,5 +37,11 @@
     "tsup": "^6.7.0",
     "typescript": "^4.9.5",
     "vitest": "^0.29.8"
+  },
+  "dependencies": {
+    "@autometa/asserters": "workspace:*",
+    "@autometa/errors": "workspace:*",
+    "@autometa/phrases": "workspace:*",
+    "tsyringe": "^4.8.0"
   }
 }

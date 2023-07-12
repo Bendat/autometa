@@ -659,7 +659,23 @@ importers:
         version: 0.28.5
 
   packages/app:
+    dependencies:
+      '@autometa/asserters':
+        specifier: workspace:^
+        version: link:../asserters
+      '@autometa/errors':
+        specifier: workspace:^
+        version: link:../errors
+      '@autometa/phrases':
+        specifier: workspace:^
+        version: link:../phrases
+      tsyringe:
+        specifier: ^4.8.0
+        version: 4.8.0
     devDependencies:
+      '@autometa/types':
+        specifier: workspace:^
+        version: link:../types
       '@types/node':
         specifier: ^18.11.18
         version: 18.11.18
@@ -681,6 +697,9 @@ importers:
       eslint-config-prettier:
         specifier: ^8.3.0
         version: 8.6.0(eslint@8.44.0)
+      reflect-metadata:
+        specifier: ^0.1.13
+        version: 0.1.13
       rimraf:
         specifier: ^4.1.2
         version: 4.1.2
@@ -16552,6 +16571,13 @@ packages:
     engines: {node: '>= 6.0.0'}
     dependencies:
       tslib: 1.14.1
+
+  /tsyringe@4.8.0:
+    resolution: {integrity: sha512-YB1FG+axdxADa3ncEtRnQCFq/M0lALGLxSZeVNbTU8NqhOVc51nnv2CISTcvc1kyv6EGPtXVr0v6lWeDxiijOA==}
+    engines: {node: '>= 6.0.0'}
+    dependencies:
+      tslib: 1.14.1
+    dev: false
 
   /tty-table@4.1.6:
     resolution: {integrity: sha512-kRj5CBzOrakV4VRRY5kUWbNYvo/FpOsz65DzI5op9P+cHov3+IqPbo1JE1ZnQGkHdZgNFDsrEjrfqqy/Ply9fw==}
