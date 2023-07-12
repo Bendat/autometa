@@ -1,11 +1,14 @@
-name: Merge Workflow
+name: PR Workflow (windows)
 
 on:
   push:
     branches: ["main"]
   pull_request:
     types: [opened, synchronize]
-
+  workflow_run:
+      workflows: ['PR Workflow (linux)']
+      types:
+        - completed
 jobs:
   lint:
     name: Lint (Windows)

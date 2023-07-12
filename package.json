@@ -16,7 +16,7 @@
     "lint:fix": "turbo run lint:fix",
     "clean": "turbo run clean",
     "turbo:update": "npx @turbo/codemod migrate",
-    "turbo:gen": "turbo gen library",
+    "turbo:gen": "turbo gen library && pnpm i",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "pnpm run build",
     "release": "pnpm run build && changeset version && changeset publish",
