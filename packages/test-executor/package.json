@@ -1,0 +1,57 @@
+{
+  "name": "@autometa/test-executor",
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "clean": "rimraf dist",
+    "build": "tsup",
+    "build:watch": "tsup --watch"
+  },
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@autometa/app": "workspace:^",
+    "@autometa/asserters": "workspace:^",
+    "@autometa/bind-decorator": "workspace:^",
+    "@autometa/dto-builder": "workspace:^",
+    "@autometa/errors": "workspace:^",
+    "@autometa/events": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/phrases": "workspace:^",
+    "@autometa/scopes": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@jest/reporters": "^29.5.0",
+    "@types/glob": "^8.0.1",
+    "glob": "^8.1.0",
+    "tsup": "^6.7.0",
+    "tsyringe": "^4.7.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@types/uuid": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "rimraf": "^4.1.2",
+    "tsconfig": "workspace: *",
+    "tsup": "^6.7.0",
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.8"
+  }
+}
