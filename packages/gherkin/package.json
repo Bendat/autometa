@@ -42,7 +42,9 @@
     "vitest": "^0.29.8"
   },
   "dependencies": {
+    "@autometa/bind-decorator": "workspace:^",
     "@autometa/dto-builder": "workspace:*",
+    "@autometa/overloaded": "workspace:^",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",

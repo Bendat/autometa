@@ -14,7 +14,7 @@ import { ScenarioBuilder } from "../scenario";
 import { ScenarioOutlineBuilder } from "../groups/scenario-outline";
 import { ExamplesBuilder } from "../groups/examples";
 import { GherkinDocString, StepBuilder, StepKeyword } from "../steps";
-import { compileDatatable } from "../steps/datatables/table-type";
+import { compileDataTable } from "../steps/datatables/compile-table-data";
 import { Background, BackgroundBuilder } from "../background";
 import {
   isBackground,
@@ -143,7 +143,7 @@ function makeSteps(background: GherkinBackground | GherkinScenario) {
     return new StepBuilder()
       .text(step.text)
       .docstring(doc)
-      .table(compileDatatable(step.dataTable))
+      .table(compileDataTable(step.dataTable))
       .keyword(step.keyword as StepKeyword)
       .keywordType(step.keywordType as StepKeywordType)
       .build();
@@ -188,7 +188,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
         .description(scenario.description)
         .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
         .keyword("Example")
-        .example(exampleValues)
+        .table(exampleValues)
         .steps(steps)
         .build();
     });
