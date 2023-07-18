@@ -188,7 +188,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
         .description(scenario.description)
         .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
         .keyword("Example")
-        .example(exampleValues)
+        .row(exampleValues)
         .steps(steps)
         .build();
     });

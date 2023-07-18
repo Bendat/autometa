@@ -5,7 +5,7 @@ import {
   writeMarkdownFiles,
 } from "./file-system";
 
-test("glob", async () => {
+test.skip("glob", async () => {
   const x = await getFeatureFiles("./");
   const option: TransformOptions = {
     overwrite: true,

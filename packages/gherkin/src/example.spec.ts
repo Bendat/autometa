@@ -7,7 +7,7 @@ describe("Example Builder", () => {
       .name("my example")
       .description("foo")
       .keyword("Example")
-      .example({ foo: "1" })
+      .row({ foo: "1" })
       .build();
     const expected = {
       name: "my example",

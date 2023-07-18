@@ -70,6 +70,18 @@ export abstract class AbstractDtoBuilder<TDtoType> {
     return this;
   };
 
+  attach = (property: string, subdocument: string, value: unknown) => {
+    if (property in this.#dto) {
+      assertKey(this.#dto, property);
+      const asObj = this.#dto[property] as unknown as Record<string, unknown>;
+      Object.assign(asObj, { [subdocument]: value });
+    } else {
+      this.set(property)({});
+      this.attach(property, subdocument, value);
+    }
+    return this;
+  };
+
   append = (property: string, value: unknown) => {
     if (property in this.#dto) {
       assertKey(this.#dto, property);
