@@ -12,26 +12,31 @@ import { events } from "../test-scopes/events";
 import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "../test-scopes/hook";
 import { Class } from "../type-extensions/class";
 import { getApp } from "../di/get-app";
-import { DependencyInstanceProvider, ProviderSubscriber } from "../events";
+import { DependencyInstanceProvider, EventSubscriber, ProviderSubscriber } from "../events";
 import { GherkinFeature } from "../gherkin/gherkin-feature";
-import { OnFailure } from "./OnFailure";
+import { OnFailure } from "./on-failure";
 import { Status } from "allure-js-commons";
 import { ParsedDataTable } from "../gherkin/datatables/datatable";
 import { globalScope } from "../test-scopes/globals";
+import { LoggerSubscriber } from "./log-events";
 export class TestExecutor {
-  subscribers: ProviderSubscriber[];
+  subscribers: EventSubscriber[];
   #instanceDependencies: DependencyInstanceProvider[];
   #globalApp: unknown;
   constructor(private feature: GherkinFeature) {
     const prototypes = Config.get<Class<ProviderSubscriber>[]>("subscribers");
     this.subscribers = prototypes?.map((it) => new it()) ?? [];
     this.subscribers?.forEach((it) => events.load(it));
-    // throw new Error(JSON.stringify(this.subscribers, null, 2));
     this.#instanceDependencies = this.subscribers
-      ?.filter((sub) => sub.fixtures)
-      ?.flatMap<DependencyInstanceProvider>(
-        (sub) => sub.fixtures.instances as DependencyInstanceProvider[]
-      );
+      ?.filter((sub) => sub instanceof ProviderSubscriber)
+      ?.filter((sub) => "fixtures" in sub)
+      ?.flatMap<DependencyInstanceProvider>((sub) => {
+        const cast = sub as ProviderSubscriber;
+        return cast.fixtures.instances as DependencyInstanceProvider[];
+      });
+    const logging = new LoggerSubscriber();
+    this.subscribers.push(logging);
+    events.load(logging);
     this.#globalApp = getApp(...this.#instanceDependencies);
   }
   execute() {
