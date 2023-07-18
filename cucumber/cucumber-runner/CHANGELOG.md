@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.7
+
+### Patch Changes
+
+- 9781d8c: Added event logging
+
 ## 0.7.6
 
 ### Patch Changes
