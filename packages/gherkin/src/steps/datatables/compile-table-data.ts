@@ -1,5 +1,4 @@
 import { DataTable, TableRow } from "@cucumber/messages";
-// import { CompiledDataTable } from "./types";
 import { transformTableValue } from "./transform-table-value";
 import { Example } from "../../example";
 import { CompiledDataTable } from "./compiled-data-table";

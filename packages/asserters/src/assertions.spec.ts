@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AssertKey, ConfirmKey, FromKey, InvalidKeyError } from "./assertions";
+import { AssertKey, ConfirmKey, FromKey, InvalidKeyError } from ".";
 describe("confirmations", () => {
   describe("AssertKey", () => {
     it("should throw an error if the key is not in the object", () => {

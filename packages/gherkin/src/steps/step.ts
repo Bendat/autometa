@@ -1,8 +1,8 @@
 import { Expression } from "@cucumber/cucumber-expressions";
 import { GherkinDocString } from "./doc-string";
-import { CompiledDataTable } from "./datatables";
 import { Builder, Property } from "@autometa/dto-builder";
 import { StepType, StepKeyword } from "./enums";
+import { CompiledDataTable } from "./datatables/compiled-data-table";
 
 export class Step {
   @Property

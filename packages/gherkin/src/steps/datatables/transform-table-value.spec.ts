@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { transformTableValue } from "./transform-table-value";
-import { Example } from "../../example";
 import { ExampleBuilder } from "../../example";
 describe("transforming a table string value to a JavaScript typed value", () => {
   it("should transform a string to a string", () => {
@@ -16,8 +15,8 @@ describe("transforming a table string value to a JavaScript typed value", () => 
   describe("interpolating example", () => {
     it("should interpolate table values", () => {
       const example = new ExampleBuilder()
-        .attach('row', "a", "hello")
-        .attach('row', 'b', '2').build();
+        .attach('table', "a", "hello")
+        .attach('table', 'b', '2').build();
       expect(transformTableValue("<a>", example)).toBe("hello");
       expect(transformTableValue("<b>", example)).toBe(2);
     });

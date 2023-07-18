@@ -3,7 +3,7 @@ import { Scenario } from "./scenario";
 
 export class Example extends Scenario {
   @Property
-  readonly row: { [header: string]: string };
+  readonly table: { [header: string]: string };
 }
 
 export class ExampleBuilder extends Builder(Example){}

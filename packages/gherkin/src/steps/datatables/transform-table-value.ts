@@ -15,12 +15,12 @@ export function transformTableValue(
 ) {
   if (example instanceof Example) {
     const value = typeof data === "string" ? data : data.value;
-    const titles = Object.keys(example.row);
+    const titles = Object.keys(example.table);
     const matchingTitle = titles.find((title) =>
       value.match(new RegExp(`^<${title}>$`))
     );
     if (matchingTitle) {
-      const val = example.row[matchingTitle]
+      const val = example.table[matchingTitle]
       return doTransformData(val);
     }
   }

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Rule, ScenarioOutline } from "../groups";
 import { Background, Scenario } from "../";
 import { parseGherkin } from "./load";
+import { CompiledDataTable } from "../steps/datatables/compiled-data-table";
 describe("Gherkin Parser", () => {
   const gherkin = `@first
 Feature: My feature
@@ -60,16 +61,21 @@ Feature: My feature
   it("should have a scenario as the second child", () => {
     const { children } = parsed;
     const [_, scenario] = children as [Background, Scenario];
+    const expectedTable = new CompiledDataTable([
+      ["a", "b", "c"],
+      ["hi", 2, true],
+    ],
+    [
+      ["a", "b", "c"],
+      ["hi", '2', 'true'],
+    ]
+    );
     expect(scenario.name).toEqual("Outer scenario");
     expect([...scenario.tags]).toEqual(["@first", "@second"]);
-
     expect(scenario.steps.length).toEqual(1);
     expect(scenario.steps[0].hasDocstring).toEqual(false);
     expect(scenario.steps[0].hasTable).toEqual(true);
-    expect(scenario.steps[0].table).toEqual([
-      ["a", "b", "c"],
-      ["hi", 2, true],
-    ]);
+    expect(scenario.steps[0].table).toEqual(expectedTable);
   });
   it("should have a scenario outline as the third child", () => {
     const { children } = parsed;
