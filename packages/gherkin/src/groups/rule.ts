@@ -6,7 +6,7 @@ import { Background } from "../background";
 
 export class Rule extends GherkinNode {
   @Property
-  childer: Array<Background | Scenario | ScenarioOutline> = [];
+  declare children: Array<Background | Scenario | ScenarioOutline>;
   @Property
   keyword: string;
   @Property
@@ -15,4 +15,4 @@ export class Rule extends GherkinNode {
   description: string;
 }
 
-export class RuleBuilder extends Builder(Rule){}
+export class RuleBuilder extends Builder(Rule) {}

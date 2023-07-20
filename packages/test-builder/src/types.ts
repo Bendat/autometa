@@ -1,4 +1,4 @@
-import { Feature } from "@autometa/gherkin";
+import { DataTable, Feature } from "@autometa/gherkin";
 import { GherkinNode } from "@autometa/gherkin";
 import { Scope, ScenarioScope, StepScope } from "@autometa/scopes";
 import { App } from "@autometa/app";
@@ -37,7 +37,7 @@ export type TestData = {
 };
 export type StepData = {
   gherkin: Step;
-  scope: StepScope;
+  scope: StepScope<string, DataTable>;
 };
 
 export type OnFailure = () => void;
@@ -45,6 +45,7 @@ export type OnFailure = () => void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TestGroup = ((
   title: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (...args: any[]) => void
 ) => void) & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

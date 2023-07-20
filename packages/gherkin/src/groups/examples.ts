@@ -14,7 +14,7 @@ export class Examples extends GherkinNode {
   @Property
   readonly values: readonly string[][];
   @Property
-  readonly children: readonly Scenario[];
+  declare children: Scenario[];
 }
 
-export class ExamplesBuilder extends Builder(Examples){}
+export class ExamplesBuilder extends Builder(Examples) {}

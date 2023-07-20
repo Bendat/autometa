@@ -1185,6 +1185,34 @@ importers:
         version: 0.31.1
 
   packages/test-builder:
+    dependencies:
+      '@autometa/app':
+        specifier: workspace:^
+        version: link:../app
+      '@autometa/asserters':
+        specifier: workspace:^
+        version: link:../asserters
+      '@autometa/dto-builder':
+        specifier: workspace:^
+        version: link:../../libraries/dto-builder
+      '@autometa/errors':
+        specifier: workspace:^
+        version: link:../errors
+      '@autometa/gherkin':
+        specifier: workspace:^
+        version: link:../gherkin
+      '@autometa/phrases':
+        specifier: workspace:^
+        version: link:../phrases
+      '@autometa/scopes':
+        specifier: workspace:^
+        version: link:../scopes
+      '@autometa/types':
+        specifier: workspace:^
+        version: link:../types
+      zod:
+        specifier: ^3.21.4
+        version: 3.21.4
     devDependencies:
       '@types/node':
         specifier: ^18.11.18
@@ -18321,6 +18349,10 @@ packages:
       nanoclone: 0.2.1
       property-expr: 2.0.5
       toposort: 2.0.2
+
+  /zod@3.21.4:
+    resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
+    dev: false
 
   /zwitch@1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}

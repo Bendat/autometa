@@ -14,6 +14,8 @@ describe("Example Builder", () => {
       description: "foo",
       keyword: "Example",
       table: { foo: "1" },
+      tags: new Set(),
+      children: []
     };
     expect({ ...scenario }).toEqual(expected);
     expect(scenario.title).toEqual("Example: my example");
