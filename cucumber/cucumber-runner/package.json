@@ -83,7 +83,7 @@
     "convert-array-to-csv": "^2.0.0",
     "get-caller-file": "^2.0.5",
     "glob": "^8.1.0",
-    "joi": "^17.8.3",
+    "joi": "^17.9.2",
     "json-colorizer": "^2.2.2",
     "lodash": "^4.17.21",
     "myzod": "^1.10.0",
