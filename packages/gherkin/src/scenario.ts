@@ -13,11 +13,11 @@ export class Scenario extends GherkinNode {
   @Property
   readonly description: string;
   @Property
-  readonly steps: readonly Step[];
+  declare children: Step[];
 
   get title() {
     return `${this.keyword}: ${this.name}`;
   }
 }
 
-export class ScenarioBuilder extends Builder(Scenario){}
+export class ScenarioBuilder extends Builder(Scenario) {}

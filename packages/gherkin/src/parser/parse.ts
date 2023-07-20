@@ -108,7 +108,7 @@ export function buildScenario(
     .name(scenario.name)
     .description(scenario.description)
     .tags(new Set(tagsNew))
-    .steps(steps)
+    .children(steps)
     .backgrounds([bg1, bg2])
     .keyword(scenario.keyword)
     .build();
@@ -120,7 +120,7 @@ export function buildOutline(scenario: GherkinScenario, tags: string[]) {
     .name(scenario.name)
     .tags(new Set(tags))
     .keyword(scenario.keyword)
-    .examples(examples)
+    .children(examples)
     .build();
   return outline;
 }
@@ -132,7 +132,7 @@ export function buildBackground(child: { background: GherkinBackground }) {
     .name(background.name)
     .description(background.description)
     .keyword(background.keyword)
-    .steps(steps)
+    .children(steps)
     .build();
   return bg;
 }
@@ -162,7 +162,7 @@ export function buildRule(
     .keyword(rule?.keyword)
     .description(rule.description)
     .tags(new Set(tagsNew))
-    .childer(buildChildren(rule, tagsNew, backgrounds))
+    .children(buildChildren(rule, tagsNew, backgrounds))
     .build();
   return ruleObject;
 }
@@ -189,7 +189,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
         .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
         .keyword("Example")
         .table(exampleValues)
-        .steps(steps)
+        .children(steps)
         .build();
     });
     return new ExamplesBuilder()

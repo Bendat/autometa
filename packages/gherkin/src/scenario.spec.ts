@@ -1,4 +1,4 @@
-import { describe, it, expect } from  "vitest";
+import { describe, it, expect } from "vitest";
 import { ScenarioBuilder } from "./scenario";
 
 describe("Scenario Builder", () => {
@@ -12,6 +12,8 @@ describe("Scenario Builder", () => {
       name: "my scenario",
       description: "foo",
       keyword: "Scenario",
+      children: [],
+      tags: new Set()
     };
     expect({ ...scenario }).toEqual(expected);
     expect(scenario.title).toEqual("Scenario: my scenario");

@@ -10,7 +10,7 @@ export class Background extends GherkinNode {
   @Property
   readonly description: string;
   @Property
-  readonly steps: readonly Step[];
+  declare readonly children: Step[];
 
   get title() {
     return `${this.keyword}: ${this.name}`;
