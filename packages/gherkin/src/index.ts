@@ -10,3 +10,4 @@ export * from "./groups/scenario-outline";
 export * from "./steps";
 export * from "./types";
 export * from "./background";
+export * from './tags'

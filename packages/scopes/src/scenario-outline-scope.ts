@@ -3,21 +3,23 @@ import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { HookCache } from "./caches/hook-cache";
+import { StepCache } from "./caches";
 
 export class ScenarioOutlineScope extends ScenarioScope {
   canHandleAsync = false;
   constructor(
-    public readonly title: string,
+    public readonly name: string,
     public readonly action: ScenarioAction,
-    parentHooks: HookCache
+    parentHookCache: HookCache,
+    parentStepCache: StepCache
   ) {
-    super(title, action, parentHooks);
+    super(name, action, parentHookCache, parentStepCache);
   }
   protected override get canAttachHook(): boolean {
     return true;
   }
   get idString() {
-    return this.title;
+    return this.name;
   }
 
   canAttach<T extends Scope>(childScope: T): boolean {

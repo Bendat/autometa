@@ -1086,12 +1086,18 @@ importers:
 
   packages/scopes:
     dependencies:
+      '@autometa/app':
+        specifier: workspace:*
+        version: link:../app
       '@autometa/bind-decorator':
         specifier: workspace:*
         version: link:../../libraries/bind-decorator
       '@autometa/dto-builder':
         specifier: workspace:*
         version: link:../../libraries/dto-builder
+      '@autometa/errors':
+        specifier: workspace:^
+        version: link:../errors
       '@autometa/events':
         specifier: workspace:*
         version: link:../events
@@ -1101,6 +1107,9 @@ importers:
       '@autometa/overloaded':
         specifier: workspace:*
         version: link:../../libraries/overloaded
+      '@autometa/phrases':
+        specifier: workspace:^
+        version: link:../phrases
       '@autometa/types':
         specifier: workspace:*
         version: link:../types

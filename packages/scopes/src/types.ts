@@ -1,6 +1,9 @@
 import { App } from "@autometa/app";
-import { NeverDataTable } from "@autometa/gherkin";
-
+import {
+  DataTable,
+  NeverDataTable,
+  DataTableDocument
+} from "@autometa/gherkin";
 export type FeatureAction = () => void;
 export type RuleAction = () => void;
 export type ScenarioAction = () => void;
@@ -22,7 +25,7 @@ export type InferredArguments<T extends StepArguments = [App]> = T extends [
 export type HookArguments = [App];
 
 export interface Types {
-  //   [key: string]: unknown;
+  [key: string]: unknown;
   string: string;
   number: number;
   boolean: boolean;
@@ -47,7 +50,7 @@ type AccumulatorWithKnownTableTable<TAcc, TTable> = TAcc extends [
 
 type ErrorString<TArg extends string> =
   `unknown expression type [${TArg}]. Please update your Types interface to map [${TArg}] to some other type..`;
-  
+
 export type StepWithExpressionArgs<
   T,
   TTable,
@@ -64,3 +67,5 @@ export type StepAction<T extends string, TTable> = StepWithExpressionArgs<
   T,
   TTable
 >;
+
+export type StepTableArg = DataTable | DataTableDocument<DataTable>;

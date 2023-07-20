@@ -6,22 +6,70 @@ import {
   fallback,
   instance,
   overloads,
-  def,
+  def
 } from "@autometa/overloaded";
+import { StepCache } from "./caches";
+import { StepKeyword, StepType } from "@autometa/gherkin";
 
 export abstract class Scope {
+  abstract readonly action:
+    | undefined
+    | (() => void | Promise<void>)
+    | ((...args: unknown[]) => void | Promise<void>);
   skip = false;
   only = false;
   canHandleAsync = false;
-  abstract get idString(): string;
+  steps: StepCache;
   openChild: Scope | undefined;
   readonly closedScopes: Scope[] = [];
-  abstract readonly action: undefined | (() => void | Promise<void>);
-  abstract canAttach<T extends Scope>(childScope: T): boolean;
+  readonly hooks: HookCache;
+  isBuilt = false;
+  constructor(parentHookCache: HookCache, parentStepCache: StepCache) {
+    this.hooks = new HookCache(parentHookCache);
+    this.steps = new StepCache(parentStepCache);
+  }
+
+  abstract get idString(): string;
   protected get canAttachHook(): boolean {
     return true;
   }
-  constructor(readonly hooks: HookCache) {}
+  get [Symbol.toStringTag]() {
+    return `${this.constructor.name}#${this.idString}`;
+  }
+  get hookCache() {
+    return this.openChild ? this.openChild.hooks : this.hooks;
+  }
+  get stepCache() {
+    return this.buildStepCache();
+  }
+  get alts() {
+    return {
+      skip: this.skip,
+      only: this.only,
+    };
+  }
+  // abstract canAttach<T extends Scope>(childScope: T): boolean;
+  // abstract onStartdelete(gherkin: GherkinNode): void;
+  // abstract onEnddelete(error?: Error): void;
+
+  @Bind
+  buildStepCache() {
+    if (this.isBuilt) {
+      return this.steps;
+    }
+    this.closedScopes
+      .filter((it) => it.isStepScope)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((it) => it as any)
+      .forEach(this.steps.add);
+    this.isBuilt = true;
+    return this.steps;
+  }
+
+  @Bind
+  getStep(keywordType: StepType, keyword: string, text: StepKeyword) {
+    return this.buildStepCache().find(keywordType, keyword, text);
+  }
 
   @Bind
   run() {
@@ -35,12 +83,9 @@ export abstract class Scope {
       );
     }
   }
-  
-  get alts() {
-    return {
-      skip: this.skip,
-      only: this.only,
-    };
+
+  get isStepScope() {
+    return false;
   }
 
   setAlt(alt: "skip" | "only", value: boolean) {
@@ -56,7 +101,7 @@ export abstract class Scope {
         scope.attach(childScope);
       }),
       fallback(
-        "If there is no open child, assign the scope directly to this and make it the new open scope",
+        "If there is no open child, assign the scope directly to this scope  and make it the new open scope",
         () => {
           this.openChild = childScope;
           childScope.run();
@@ -67,7 +112,7 @@ export abstract class Scope {
     ).use([this.openChild]);
   }
 
-  attachHook<T extends Hook>(hook: T) {
+  attachHook<T extends Hook>(hook: T): void {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(
       def`handleHooksNotAllowed`(
@@ -85,14 +130,10 @@ export abstract class Scope {
         boolean(),
         instance(Hook),
         instance(Scope)
-      ).matches((_, hook, openChild) => {
-        openChild.attachHook(hook);
-      }),
+      ).matches((_,  hook, openChild) => openChild.attachHook(hook)),
       fallback(
         "When no open child is available, add the hook directly to this scope",
-        () => {
-          this.hooks.addHook(hook);
-        }
+        () => this.hooks.addHook(hook)
       )
     ).use(pattern);
   }
@@ -100,8 +141,5 @@ export abstract class Scope {
   [Symbol.toPrimitive](): string {
     return this.toString();
   }
-
-  get [Symbol.toStringTag]() {
-    return `${this.constructor.name}#${this.idString}`;
-  }
 }
+

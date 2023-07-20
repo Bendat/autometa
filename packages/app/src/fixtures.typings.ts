@@ -5,5 +5,4 @@ import type { AutometaWorld } from "./autometa-world";
 
 export interface World extends AutometaWorld {}
 export interface App extends AutometaApp {
-  world: World;
 }

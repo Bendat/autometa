@@ -4,21 +4,27 @@ import { StepScope } from "./step-scope";
 import { Scope } from "./scope";
 import { RuleScope } from "./rule-scope";
 import { HookCache } from "./caches/hook-cache";
+import { StepCache } from "./caches";
+import { Feature } from "@autometa/gherkin";
 
 export class FeatureScope extends Scope {
   canHandleAsync = true;
-  #path: string;
   constructor(
     readonly path: string,
     readonly action: FeatureAction | undefined,
-    parentHooks: HookCache
+    parentHookCache: HookCache,
+    parentStepCache: StepCache
   ) {
-    super(new HookCache(parentHooks));
-    this.#path = path;
+    super(parentHookCache, parentStepCache);
+    this.path = path;
   }
 
-  public get idString() {
-    return this.#path;
+  get idString() {
+    return this.path;
+  }
+
+  title(gherkin: Feature) {
+    return `${gherkin.keyword}: ${gherkin.name}`;
   }
 
   canAttach<T extends Scope>(childScope: T): boolean {
