@@ -43,7 +43,7 @@
     "@types/node": "^18.11.18",
     "eslint-config-custom": "workspace:*",
     "node": "^19.6.0",
-    "rimraf": "^4.1.2",
+    "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "tsup": "^6.7.0",
     "tsconfig": "workspace:*",
