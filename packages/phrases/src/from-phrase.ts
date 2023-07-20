@@ -19,8 +19,8 @@ export function AssertPhrase<
   const asVariable = convertPhrase(key, ...mutations);
   AssertKey(item, asVariable);
 }
-export function FromPhrase<TReturn>(
-  item: Record<string, unknown> | AnyFunction,
+export function FromPhrase<TObj, TReturn>(
+  item: TObj,
   key: string,
   ...mutations: (() => StringTransformer)[]
 ) {

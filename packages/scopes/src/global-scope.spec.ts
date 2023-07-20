@@ -11,7 +11,8 @@ describe("Global Scope", () => {
   describe("attach", () => {
     it("should fail to attach an unknown scope", () => {
       const action = vi.fn();
-      const sut = new GlobalScope(action, new ParameterTypeRegistry());
+      const sut = new GlobalScope(new ParameterTypeRegistry());
+      sut.onFeatureExecuted = action;
       expect(() => sut.attach(Object.create(Scope))).toThrow(
         "Only FeatureScope and StepScope can be executed globally. Scenarios, Outlines and Rules must exist inside a Feature"
       );
@@ -20,7 +21,9 @@ describe("Global Scope", () => {
 
   describe("getStepCache", () => {
     it("should compile attached steps a cache", () => {
-      const sut = new GlobalScope(vi.fn(), registry);
+      const action = vi.fn();
+      const sut = new GlobalScope(new ParameterTypeRegistry());
+      sut.onFeatureExecuted = action;
       sut.closedScopes.push(
         new StepScope(
           "Given",
@@ -29,7 +32,7 @@ describe("Global Scope", () => {
           vi.fn()
         )
       );
-      const cache = sut.getStepCache();
+      const cache = sut.buildStepCache();
       expect(cache).toBeDefined();
       expect(cache.size).toBe(1);
     });
@@ -37,7 +40,8 @@ describe("Global Scope", () => {
   describe("Feature", () => {
     it("should attach a feature scope with a filepath and action", () => {
       const action = vi.fn();
-      const sut = new GlobalScope(vi.fn(), registry);
+      const sut = new GlobalScope(new ParameterTypeRegistry());
+      sut.onFeatureExecuted = action;
       const feature = sut.Feature(action, "filepath");
       const featAction = feature.action as typeof action;
       featAction();
@@ -47,7 +51,9 @@ describe("Global Scope", () => {
       expect(feature.path).toBe("filepath");
     });
     it("should attach a feature scope with a filepath and action", () => {
-      const sut = new GlobalScope(vi.fn(), registry);
+      const action = vi.fn();
+      const sut = new GlobalScope(new ParameterTypeRegistry());
+      sut.onFeatureExecuted = action;
       const feature = sut.Feature("filepath");
       expect(feature).toBeDefined();
       expect(feature.action?.name).toEqual("Empty_Function");

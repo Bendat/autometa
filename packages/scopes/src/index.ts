@@ -1,4 +1,3 @@
-export * from "./automation-error";
 export * from "./caches";
 export * from "./global-scope";
 export * from "./get-scopes";

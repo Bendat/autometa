@@ -3,7 +3,7 @@ import path from "path";
 import os from "os";
 import { readFileSync } from "fs";
 import { Bind } from "@autometa/bind-decorator";
-import { AutomationError } from "../automation-error";
+import { AutomationError } from "@autometa/errors";
 import { parseGherkin } from "@autometa/gherkin";
 
 const homeDirectory = os.homedir();

@@ -2,22 +2,21 @@ import type { FeatureAction } from "./types";
 import { ScenarioScope } from "./scenario-scope";
 import { StepScope } from "./step-scope";
 import { Scope } from "./scope";
-import { ModifierType } from "@autometa/types";
 import { HookCache } from "./caches/hook-cache";
-
+import { StepCache } from "./caches";
 export class RuleScope extends Scope {
   canHandleAsync = false;
   constructor(
-    readonly title: string,
+    readonly name: string,
     readonly action: FeatureAction,
-    parentHooks: HookCache,
-    public readonly modifiers?: ModifierType
+    parentHookCache: HookCache,
+    parentStepCache: StepCache
   ) {
-    super(new HookCache(parentHooks));
+    super(new HookCache(parentHookCache), parentStepCache);
   }
 
   get idString() {
-    return this.title;
+    return this.name;
   }
 
   canAttach<T extends Scope>(childScope: T): boolean {

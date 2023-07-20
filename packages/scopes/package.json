@@ -43,11 +43,14 @@
     "vitest": "^0.31.1"
   },
   "dependencies": {
+    "@autometa/app": "workspace:*",
     "@autometa/bind-decorator": "workspace:*",
     "@autometa/dto-builder": "workspace:*",
+    "@autometa/errors": "workspace:^",
     "@autometa/events": "workspace:*",
     "@autometa/gherkin": "workspace:*",
     "@autometa/overloaded": "workspace:*",
+    "@autometa/phrases": "workspace:^",
     "@autometa/types": "workspace:*",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",

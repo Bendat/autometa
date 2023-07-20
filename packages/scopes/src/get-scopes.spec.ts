@@ -1,14 +1,11 @@
-import {
-  ParameterTypeRegistry,
-} from "@cucumber/cucumber-expressions";
+import { ParameterTypeRegistry } from "@cucumber/cucumber-expressions";
 import { it, describe, expect, vi } from "vitest";
 import { FeatureScope } from "./feature-scope";
 import { GetCucumberFunctions } from "./get-scopes";
-
+import "@autometa/gherkin";
 describe("GetCucumberFunctions", () => {
-  const { Feature, Rule, Scenario, ScenarioOutline } = GetCucumberFunctions(
-    null as unknown as ParameterTypeRegistry,
-    () => undefined
+  const { Feature, Rule, Scenario, ScenarioOutline, Global } = GetCucumberFunctions(
+    null as unknown as ParameterTypeRegistry
   );
 
   it("should attach a skip and only to FeatureScope", () => {
@@ -16,7 +13,7 @@ describe("GetCucumberFunctions", () => {
     expect(Feature.skip).toBeTypeOf("function");
     expect(Feature).toHaveProperty("only");
     expect(Feature.only).toBeTypeOf("function");
-
+    Global.onFeatureExecuted = vi.fn();
     const feature = Feature.skip("foo", vi.fn());
     expect(feature).toBeInstanceOf(FeatureScope);
     expect(feature.alts.skip).toEqual(true);

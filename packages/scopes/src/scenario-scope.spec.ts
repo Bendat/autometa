@@ -1,9 +1,9 @@
 import {
   CucumberExpression,
-  ParameterTypeRegistry,
+  ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
 import { describe, it, expect, vi } from "vitest";
-import { HookCache } from "./caches";
+import { HookCache, StepCache } from "./caches";
 import { FeatureScope } from "./feature-scope";
 import { RuleScope } from "./rule-scope";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
@@ -20,44 +20,80 @@ describe("ScenarioScope", () => {
   describe("canAttach", () => {
     it("should return false when the scope is a ScenarioScope", () => {
       // Arrange
-      const sut = new ScenarioScope("My Scenario", vi.fn(), new HookCache());
+      const sut = new ScenarioScope(
+        "My Scenario",
+        vi.fn(),
+        new HookCache(),
+        new StepCache()
+      );
       // Act
       const result = sut.canAttach(
-        new ScenarioScope("My Scenario", vi.fn(), new HookCache())
+        new ScenarioScope(
+          "My Scenario",
+          vi.fn(),
+          new HookCache(),
+          new StepCache()
+        )
       );
       // Assert
       expect(result).toBe(false);
     });
     it("should return false when the scope is an OutlineScope", () => {
       // Arrange
-      const sut = new ScenarioScope("My Scenario", vi.fn(), new HookCache());
+      const sut = new ScenarioScope(
+        "My Scenario",
+        vi.fn(),
+        new HookCache(),
+        new StepCache()
+      );
       // Act
       const result = sut.canAttach(
         new ScenarioOutlineScope(
           "My Scenario Outline",
           vi.fn(),
-          new HookCache()
+          new HookCache(),
+          new StepCache()
         )
       );
       // Assert
       expect(result).toBe(false);
     });
     it("should return false when the scope is a RuleScope", () => {
-      const sut = new ScenarioScope("My Scenario", vi.fn(), new HookCache());
+      const sut = new ScenarioScope(
+        "My Scenario",
+        vi.fn(),
+        new HookCache(),
+        new StepCache()
+      );
       const result = sut.canAttach(
-        new RuleScope("My Rule", vi.fn(), new HookCache())
+        new RuleScope("My Rule", vi.fn(), new HookCache(), new StepCache())
       );
       expect(result).toBe(false);
     });
     it("should return false when the scope is a FeatureScope", () => {
-      const sut = new ScenarioScope("My Scenario", vi.fn(), new HookCache());
+      const sut = new ScenarioScope(
+        "My Scenario",
+        vi.fn(),
+        new HookCache(),
+        new StepCache()
+      );
       const result = sut.canAttach(
-        new FeatureScope("My Feature", vi.fn(), new HookCache())
+        new FeatureScope(
+          "My Feature",
+          vi.fn(),
+          new HookCache(),
+          new StepCache()
+        )
       );
       expect(result).toBe(false);
     });
     it("should return true when the scope is a StepScope", () => {
-      const sut = new ScenarioScope("My Scenario", vi.fn(), new HookCache());
+      const sut = new ScenarioScope(
+        "My Scenario",
+        vi.fn(),
+        new HookCache(),
+        new StepCache()
+      );
       const expression = new CucumberExpression(
         "my step",
         new ParameterTypeRegistry()
