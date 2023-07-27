@@ -158,8 +158,8 @@ export class TestExecutor {
     testFn(scenario.getScenarioTitle(), async () => {
       events.scenarioWrapper.emitStart();
       await runBeforeHooks(befores, scenario.tags, app, onFailure);
-      await runBackgrounds(scenario, app);
       try {
+        await runBackgrounds(scenario, app);
         events.scenario.emitStart({
           title,
           tags,
@@ -198,6 +198,7 @@ async function runBackgrounds(scenario: GherkinScenario, app: unknown) {
       events.before.emitEnd({ status: Status.PASSED });
     } catch (e) {
       events.before.emitEnd({ status: Status.FAILED, error: e as Error });
+      throw e;
     }
   }
 }
