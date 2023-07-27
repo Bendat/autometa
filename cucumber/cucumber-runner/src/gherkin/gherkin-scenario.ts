@@ -147,5 +147,12 @@ function interpolateStepDatatable(
     return undefined;
   }
 
-  return table.map(rows => rows.map(row => interpolateStepText(row.toString(), example)));
+  return table.map((row) =>
+    row.map((cell) => {
+      if (typeof cell == "string") {
+        return interpolateStepText(cell, example);
+      }
+      return cell;
+    })
+  );
 }
