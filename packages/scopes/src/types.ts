@@ -7,6 +7,7 @@ import {
 export type FeatureAction = () => void;
 export type RuleAction = () => void;
 export type ScenarioAction = () => void;
+export type BackgroundAction = () => void;
 export type StepText = string | RegExp;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RawStepAction = (...args: unknown[]) => unknown | Promise<unknown>;

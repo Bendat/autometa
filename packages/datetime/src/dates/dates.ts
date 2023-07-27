@@ -15,6 +15,11 @@ export class DatesObject {
     return this.#fmt;
   }
 
+  get now(){
+    return this.#factory.phraseMap.get("now");
+
+  }
+
   get beforeYesterday() {
     return this.#factory.phraseMap.get("beforeYesterday");
   }

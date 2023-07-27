@@ -16,6 +16,7 @@ export type ExternalHooks = {
   afterAll: HookFunction;
   afterEach: HookFunction;
 };
+
 export type ExternalHookWrappers = {
   beforeAll: HookWrapper;
   beforeEach: HookWrapper;

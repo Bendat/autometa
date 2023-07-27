@@ -4,7 +4,7 @@ import { Examples } from ".";
 
 export class ScenarioOutline extends GherkinNode {
   @Property
-  name: string;
+  readonly name: string;
   @Property
   readonly backgrounds: readonly [Background?, Background?];
   @Property

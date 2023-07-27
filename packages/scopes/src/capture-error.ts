@@ -1,10 +1,10 @@
-export async function captureError(
+export function captureError(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (...args: any[]) => any | Promise<any>,
   ...args: unknown[]
-): Promise<Error | undefined> {
+): Error | undefined | Promise<Error | undefined> {
   try {
-    await action(...args);
+    return action(...args);
   } catch (e) {
     return e as Error;
   }

@@ -5,7 +5,8 @@ import { Scope } from "./scope";
 import { RuleScope } from "./rule-scope";
 import { HookCache } from "./caches/hook-cache";
 import { StepCache } from "./caches";
-import { Feature } from "@autometa/gherkin";
+import {  Feature } from "@autometa/gherkin";
+import { BackgroundScope } from "./background-scope";
 
 export class FeatureScope extends Scope {
   canHandleAsync = true;
@@ -13,9 +14,10 @@ export class FeatureScope extends Scope {
     readonly path: string,
     readonly action: FeatureAction | undefined,
     parentHookCache: HookCache,
-    parentStepCache: StepCache
+    parentStepCache: StepCache,
+    buildStepCache: () => unknown
   ) {
-    super(parentHookCache, parentStepCache);
+    super(parentHookCache, parentStepCache, buildStepCache);
     this.path = path;
   }
 
@@ -31,7 +33,8 @@ export class FeatureScope extends Scope {
     return (
       childScope instanceof ScenarioScope ||
       childScope instanceof StepScope ||
-      childScope instanceof RuleScope
+      childScope instanceof RuleScope ||
+      childScope instanceof BackgroundScope
     );
   }
 

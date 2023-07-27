@@ -8,8 +8,10 @@ import {
   pascal,
   pfx,
   sfx,
-  snake,
+  snake
 } from "./string-transformer";
+import { CurriedFromPhraseFunction, FromPhraseFunction } from "./types";
+import { PhraseParser } from "./from-phrase";
 
 describe("Convert Phrase", () => {
   describe("camelCase", () => {
@@ -150,4 +152,14 @@ describe("Convert Phrase", () => {
       expect(conversion).toEqual("The Test Phrase Bar");
     });
   });
+});
+
+@PhraseParser
+class Foo {
+  hi = "hello";
+  declare fromPhrase: CurriedFromPhraseFunction;
+}
+it("should add FromPhrase to a class prototype", () => {
+  const foo = new Foo();
+  expect(foo.fromPhrase("hi")).toEqual("hello");
 });
