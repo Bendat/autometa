@@ -44,7 +44,7 @@ export class VTable extends ParsedDataTable implements IVTable {
     const col = this.rows[colIdx];
     if (index !== null && index != undefined) {
       const found = col.at(index);
-      if (!found) {
+      if (found === undefined || found === null) {
         throw new Error(`Column ${index} does not exist. This table has ${col.length} columns.`);
       }
       return found;
