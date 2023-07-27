@@ -31,7 +31,7 @@ export class StepScope<
     public readonly stepAction: StepAction<TText, TTable>,
     readonly tablePrototype?: Class<TTable>
   ) {
-    super(new HookCache(), new StepCache());
+    super(new HookCache(), new StepCache(), Empty_Function);
   }
 
   @Bind
@@ -52,11 +52,11 @@ export class StepScope<
     return [];
   }
   @Bind
-  async buildArgs(
+  buildArgs(
     gherkin: Step,
     args: unknown[],
     app: App
-  ): Promise<AutomationError | undefined> {
+  ): AutomationError | undefined {
     // const args = this.getArgs(gherkin.text);
     const title = this.stepText(gherkin.text);
     const gotArgs = this.getArgs(gherkin.text);
@@ -75,18 +75,18 @@ Given('text', (table, app)=>{}, HTable)`);
       if (this.tablePrototype.prototype instanceof DataTable) {
         args.push(new this.tablePrototype(gherkin.table));
       } else if (this.tablePrototype.prototype instanceof DataTableDocument) {
-        const type = this.tablePrototype.prototype
+        const type = this.tablePrototype.prototype;
         const tableType = getDocumentTable(type);
         const table = new tableType(gherkin.table);
         args.push(new this.tablePrototype(table));
-        throw new Error('FIX: this should be an array of documents in the end')
+        throw new Error("FIX: this should be an array of documents in the end");
       } else {
         const message = `Step '${title}' has a table but the table prototype provided is not a DataTable or DataTableDocument`;
         throw new AutomationError(message);
       }
     }
     args.push(app);
-    const error = await captureError(this.stepAction, ...args);
+    const error = captureError(this.stepAction, ...args);
     if (error instanceof Error) {
       const message = `Step '${this.title}' failed with error
   

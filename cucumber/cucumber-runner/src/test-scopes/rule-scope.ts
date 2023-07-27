@@ -4,6 +4,7 @@ import { StepScope } from "./step-scope";
 import { Scope } from "./scope";
 import type { Modifiers } from "../gherkin/types";
 import { HookCache } from "../gherkin/step-cache";
+import { ScenarioOutlineScope } from "./scenario-outline-scope";
 
 export class RuleScope extends Scope {
   synchronous = true;
@@ -24,7 +25,7 @@ export class RuleScope extends Scope {
   attach<T extends Scope>(childScope: T): void {
     if (!this.canAttach(childScope)) {
       throw new Error(
-        `A Feature can only execute a ${ScenarioScope.name} or ${StepScope.name}. ${childScope.constructor.name} is not valid`
+        `A Rule can only execute a ${ScenarioScope.name}, ${ScenarioOutlineScope.name}  or ${StepScope.name}. ${childScope.constructor.name} is not valid`
       );
     }
     super.attach(childScope);

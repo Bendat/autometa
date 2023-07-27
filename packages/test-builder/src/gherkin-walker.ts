@@ -6,9 +6,10 @@ import {
   Rule,
   Scenario,
   ScenarioOutline,
-  Step,
+  Step
 } from "@autometa/gherkin";
 import { AutomationError } from "@autometa/errors";
+import { Example } from "@autometa/gherkin";
 
 export type WalkFunction<T extends GherkinNode, TAccumulator, TReturn> = (
   node: T,
@@ -23,6 +24,7 @@ export type WalkFunctionMap<TAccumulator> = {
   onScenario?: WalkFunction<Scenario, TAccumulator, TAccumulator>;
   onScenarioOutline?: WalkFunction<ScenarioOutline, TAccumulator, TAccumulator>;
   onExamples?: WalkFunction<Examples, TAccumulator, TAccumulator>;
+  onExample?: WalkFunction<Example, TAccumulator, TAccumulator>;
   onStep?: WalkFunction<Step, TAccumulator, TAccumulator>;
 };
 
@@ -65,13 +67,22 @@ export class GherkinWalker {
       return this.#walkChildren(child, acc, walkFunction);
     }
 
-    if (child instanceof Scenario && !(child instanceof Examples)) {
-      walkFunction.onScenario?.(child, accumulator, lastNode);
-      return this.#walkChildren(child, accumulator, walkFunction);
+    if (child instanceof Example) {
+      const acc = walkFunction.onExample?.(child, accumulator, lastNode);
+      return this.#walkChildren(child, acc, walkFunction);
+    }
+
+    if (child instanceof Scenario) {
+      const acc = walkFunction.onScenario?.(child, accumulator, lastNode);
+      return this.#walkChildren(child, acc, walkFunction);
     }
 
     if (child instanceof ScenarioOutline) {
-      const acc = walkFunction.onScenarioOutline?.(child, accumulator, lastNode);
+      const acc = walkFunction.onScenarioOutline?.(
+        child,
+        accumulator,
+        lastNode
+      );
       return this.#walkChildren(child, acc, walkFunction);
     }
 

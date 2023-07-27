@@ -14,12 +14,18 @@ import { Scopes } from "./scopes";
 import {
   CucumberExpression,
   ParameterTypeRegistry,
-  RegularExpression,
+  RegularExpression
 } from "@cucumber/cucumber-expressions";
 import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "./hook";
-import type{ FeatureAction, RuleAction, ScenarioAction, HookAction, StepAction, StepTableArg } from "./types";
+import type {
+  FeatureAction,
+  RuleAction,
+  ScenarioAction,
+  HookAction,
+  StepAction,
+  StepTableArg
+} from "./types";
 import { AutomationError } from "@autometa/errors";
-import { GherkinNode } from "@autometa/gherkin";
 import { DataTable } from "@autometa/gherkin";
 import { Class } from "@autometa/types";
 export class GlobalScope extends Scope implements Scopes {
@@ -30,7 +36,7 @@ export class GlobalScope extends Scope implements Scopes {
   action: (...args: unknown[]) => void;
 
   constructor(readonly parameterRegistry: ParameterTypeRegistry) {
-    super(new HookCache(), new StepCache());
+    super(new HookCache(), new StepCache(), Empty_Function);
   }
   set onFeatureExecuted(value: OnFeatureExecuted) {
     this._onFeatureExecuted = value;
@@ -73,7 +79,8 @@ export class GlobalScope extends Scope implements Scopes {
             filePath,
             featureAction,
             this.hookCache,
-            this.stepCache
+            this.stepCache,
+            this.buildStepCache
           );
           this.attach(feature);
           this._onFeatureExecuted(feature);
@@ -88,7 +95,8 @@ export class GlobalScope extends Scope implements Scopes {
           filePath,
           Empty_Function,
           this.hookCache,
-          this.stepCache
+          this.stepCache,
+          this.buildStepCache
         );
         this.attach(feature);
         this._onFeatureExecuted(feature);
@@ -123,21 +131,14 @@ ${JSON.stringify(args, null, 2)}`);
     ).use(args);
   }
 
-  onStart(_gherkin: GherkinNode) {
-    throw new AutomationError(`GlobalScope.onStart is not implemented`);
-  }
-
-  onEnd(_error?: Error) {
-    throw new AutomationError(`GlobalScope.onEnd is not implemented`);
-  }
-
   @Bind
   Scenario(title: string, action: ScenarioAction) {
     const scenario = new ScenarioScope(
       title,
       action,
       this.hookCache,
-      this.stepCache
+      this.stepCache,
+      this.buildStepCache
     );
     return this.attach(scenario);
   }
@@ -148,7 +149,8 @@ ${JSON.stringify(args, null, 2)}`);
       title,
       action,
       this.hookCache,
-      this.stepCache
+      this.stepCache,
+      this.buildStepCache
     );
     return this.attach(scenario);
   }
@@ -159,7 +161,8 @@ ${JSON.stringify(args, null, 2)}`);
       title,
       action,
       this.hookCache,
-      this.stepCache
+      this.stepCache,
+      this.buildStepCache
     );
     return this.attach(scenario);
   }

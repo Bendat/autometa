@@ -24,7 +24,11 @@ export abstract class Scope {
   readonly closedScopes: Scope[] = [];
   readonly hooks: HookCache;
   isBuilt = false;
-  constructor(parentHookCache: HookCache, parentStepCache: StepCache) {
+  constructor(
+    parentHookCache: HookCache,
+    parentStepCache: StepCache,
+    readonly parentBuildCache: () => unknown
+  ) {
     this.hooks = new HookCache(parentHookCache);
     this.steps = new StepCache(parentStepCache);
   }
@@ -45,24 +49,22 @@ export abstract class Scope {
   get alts() {
     return {
       skip: this.skip,
-      only: this.only,
+      only: this.only
     };
   }
-  // abstract canAttach<T extends Scope>(childScope: T): boolean;
-  // abstract onStartdelete(gherkin: GherkinNode): void;
-  // abstract onEnddelete(error?: Error): void;
 
   @Bind
   buildStepCache() {
     if (this.isBuilt) {
       return this.steps;
     }
-    this.closedScopes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filtered = this.closedScopes
       .filter((it) => it.isStepScope)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((it) => it as any)
-      .forEach(this.steps.add);
+      .map((it) => it as any);
+    filtered.forEach(this.steps.add);
     this.isBuilt = true;
+    this.parentBuildCache();
     return this.steps;
   }
 
@@ -112,6 +114,7 @@ export abstract class Scope {
     ).use([this.openChild]);
   }
 
+  attachHook<T extends Hook>(hook: T): void;
   attachHook<T extends Hook>(hook: T): void {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(
@@ -130,7 +133,7 @@ export abstract class Scope {
         boolean(),
         instance(Hook),
         instance(Scope)
-      ).matches((_,  hook, openChild) => openChild.attachHook(hook)),
+      ).matches((_, hook, openChild) => openChild.attachHook(hook)),
       fallback(
         "When no open child is available, add the hook directly to this scope",
         () => this.hooks.addHook(hook)
@@ -142,4 +145,3 @@ export abstract class Scope {
     return this.toString();
   }
 }
-
