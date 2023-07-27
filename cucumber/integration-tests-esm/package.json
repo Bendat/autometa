@@ -1,6 +1,6 @@
 {
   "name": "integration-tests-esm",
-  "version": "0.5.17",
+  "version": "0.5.18",
   "description": "",
   "private": true,
   "type": "module",

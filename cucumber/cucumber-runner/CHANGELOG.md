@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.9
+
+### Patch Changes
+
+- 825ebca: Fixed booleans not returning from datatables
+
 ## 0.7.8
 
 ### Patch Changes
