@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.8
+
+### Patch Changes
+
+- 9339c48: Fixed table cells being incorrectly interpolated when not strings
+
 ## 0.7.7
 
 ### Patch Changes
