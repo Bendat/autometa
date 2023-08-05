@@ -1,9 +1,7 @@
 import {
   FeatureScope,
   GlobalScope,
-  RuleScope,
-  StepScope
-} from "@autometa/scopes";
+  RuleScope} from "@autometa/scopes";
 import {
   BackgroundBridge,
   ExamplesBridge,
@@ -17,7 +15,7 @@ import {
 import { GherkinWalker } from "./gherkin-walker";
 import { scope } from "./scope-search";
 import { Bind } from "@autometa/bind-decorator";
-import { Feature, Step } from "@autometa/gherkin";
+import { Feature } from "@autometa/gherkin";
 import { raise } from "@autometa/errors";
 
 export class TestBuilder {

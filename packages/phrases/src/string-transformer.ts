@@ -4,7 +4,7 @@ import {
   snakeCase,
   constantCase,
   capitalCase,
-  paramCase,
+  paramCase
 } from "change-case-all";
 export abstract class StringTransformer {
   abstract order: number;
@@ -68,6 +68,34 @@ export class PrefixTransformer extends StringTransformer {
   }
 }
 
+export class LowerTransformer extends CaseTransformer {
+  transform(value: string): string {
+    return value.toLowerCase();
+  }
+}
+
+export class UpperTransformer extends CaseTransformer {
+  transform(value: string): string {
+    return value.toUpperCase();
+  }
+}
+
+export class CollapseTransformer extends StringTransformer {
+  order = 5;
+  transform(value: string): string {
+    return value.replace(/\s+/g, "");
+  }
+}
+export function collapse() {
+  return new CollapseTransformer();
+}
+export function upper() {
+  return new UpperTransformer();
+}
+
+export function lower() {
+  return new LowerTransformer();
+}
 export function camel() {
   return new CamelCaseTransformer();
 }

@@ -71,7 +71,7 @@ describe("step-scope", () => {
         .keywordType("Context")
         .text("I have 42 cukes in my belly now")
         .build();
-      const error = await scope.buildArgs(gherkin, [], new App());
+      const error = scope.buildArgs(gherkin, [], new App());
       expect(error).toBeUndefined();
     });
 
@@ -104,15 +104,14 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const error = await scope.buildArgs(gherkin, [], new App());
-      expect(error).toBeInstanceOf(AutomationError);
-      expect(error?.message)
-        .toBe(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
+      const error =  ()=> scope.buildArgs(gherkin, [], new App());
+      expect(error).toThrow(AutomationError);
+      expect(error).toThrow(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
 
-To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
-definition as the last argument
+  To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
+  definition as the last argument
 
-Given('text', (table, app)=>{}, HTable)`);
+  Given('text', (table, app)=>{}, HTable)`);
     });
 
     it("should fail to execute with a gherkin table and an invalid prototype", async () => {
@@ -145,8 +144,8 @@ Given('text', (table, app)=>{}, HTable)`);
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const error = scope.buildArgs(gherkin, [], new App());
-      await expect(error).rejects.toThrow(
+      const error = ()=>scope.buildArgs(gherkin, [], new App());
+      expect(error).toThrow(
         `Step 'Given I have 42 cukes in my belly now' has a table but the table prototype provided is not a DataTable or DataTableDocument`
       );
     });

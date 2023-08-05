@@ -10,16 +10,13 @@ export type StepDiff = {
 export type StepDiffs = StepDiff[];
 export type LimitedStepDiffs = { same: StepDiffs; other: StepDiffs };
 export function checkMatch(text: string, it: CachedStep): boolean {
-  if (it.matches(text) !== null) {
-    return true;
-  }
-  return false;
+  return it.matches(text);
 }
 export function limitDiffs(
   sameStepType: StepDiffs,
   differentStepType: StepDiffs,
   max: number
-) : LimitedStepDiffs {
+): LimitedStepDiffs {
   const sameDistances = sameStepType.map((it) => it.distance);
   const maxSameStepDistance = Math.max(...sameDistances);
   const otherStepDistance = differentStepType.map((it) => it.distance);

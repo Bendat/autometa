@@ -47,7 +47,6 @@ describe("StepMatch", () => {
         )
       };
       const match = new DifferentStepTypeMatch(diff);
-      console.log(match.toString());
       expect(stripColor(match.toString())).toEqual(
         "[4] When I have {int} blue grapes in my {string}"
       );

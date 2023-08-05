@@ -1,4 +1,4 @@
-import { TimeUnit, camel, convertPhrase, sfx } from "@autometa/phrases";
+import { TimeUnit, camel, convertPhrase, collapse } from "@autometa/phrases";
 import { midnight } from "./midnight";
 import { raise } from "@autometa/errors";
 import { ConfirmDefined, ConfirmLengthAtLeast } from "@autometa/asserters";
@@ -35,7 +35,8 @@ export class DateFactory {
   }
 
   make(timeOffset: number, timeunit: TimeUnit) {
-    switch (timeunit) {
+    const unit = timeunit.endsWith("s") ? timeunit : `${timeunit}s`;
+    switch (unit) {
       case "years":
         return this.#addYears(timeOffset);
       case "months":
@@ -66,12 +67,13 @@ export class DateFactory {
     );
   }
   #extractFutureFromPhrase(phrase: string) {
-    const pastPattern = /(\d+) (.*)(s)?( from now)?/gm;
+    const pastPattern = /(\d+) (.*)s? from now?/;
     const pastMatch = pastPattern.exec(phrase);
+
     if (ConfirmDefined(pastMatch) && ConfirmLengthAtLeast(pastMatch, 3)) {
       const [_, value, unit] = pastMatch;
-      const timeunit = convertPhrase(unit, camel, sfx`s`) as TimeUnit;
-      return this.make(-Number(value), timeunit);
+      const timeunit = convertPhrase(unit, collapse) as TimeUnit;
+      return this.make(Number(value), timeunit);
     }
   }
   #extractPastFromPhrase(phrase: string) {
@@ -79,7 +81,7 @@ export class DateFactory {
     const pastMatch = pastPattern.exec(phrase);
     if (ConfirmDefined(pastMatch) && ConfirmLengthAtLeast(pastMatch, 3)) {
       const [_, value, unit] = pastMatch;
-      const timeunit = convertPhrase(unit, camel, sfx`s`) as TimeUnit;
+      const timeunit = convertPhrase(unit, camel) as TimeUnit;
       return this.make(-Number(value), timeunit);
     }
   }

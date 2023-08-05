@@ -2,10 +2,7 @@ import { Bind } from "@autometa/bind-decorator";
 import { StepKeyword, StepType } from "@autometa/gherkin";
 import { CachedStep } from "./types";
 import { AutomationError } from "@autometa/errors";
-import {
-  getDiffs,
-  limitDiffs
-} from "./search/step-matcher";
+import { getDiffs, limitDiffs } from "./search/step-matcher";
 import { FuzzySearchReport, buildFuzzySearchReport } from "./search";
 export class StepCache {
   private Context: CachedStep[] = [];
@@ -26,7 +23,7 @@ export class StepCache {
     return this.stepCount;
   }
 
-  constructor(readonly scopeName: string, readonly parent?: StepCache) {}
+  constructor(readonly scopeName?: string, readonly parent?: StepCache) {}
 
   @Bind
   add(step: CachedStep) {
@@ -106,7 +103,7 @@ export class StepCache {
   private startFuzzySearch(keywordType: StepType, text: string) {
     const closestMatches = this.findClosest(keywordType, text);
     const report = buildFuzzySearchReport(closestMatches);
-    report.addHeading(this.scopeName);
+    if (this.scopeName) report.addHeading(this.scopeName);
     if (this.parent) {
       const parentReport = this.parent.startFuzzySearch(keywordType, text);
       parentReport.addChild(report);

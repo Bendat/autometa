@@ -1,6 +1,5 @@
 import { StepKeyword } from "@autometa/gherkin";
 import { StepType } from "@autometa/gherkin";
-import { CachedStep } from "@autometa/scopes";
 import {
   Scope,
   RuleScope,

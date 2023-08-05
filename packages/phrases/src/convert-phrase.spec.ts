@@ -10,7 +10,7 @@ import {
   sfx,
   snake
 } from "./string-transformer";
-import { CurriedFromPhraseFunction, FromPhraseFunction } from "./types";
+import { CurriedFromPhraseFunction } from "./types";
 import { PhraseParser } from "./from-phrase";
 
 describe("Convert Phrase", () => {

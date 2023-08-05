@@ -1,6 +1,5 @@
 import {
   Background,
-  DataTable,
   Examples,
   Feature,
   GherkinNode,

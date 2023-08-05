@@ -8,7 +8,7 @@ import {
   overloads,
   def
 } from "@autometa/overloaded";
-import { StepCache } from "./caches";
+import { CachedStep, StepCache } from "./caches";
 import { StepKeyword, StepType } from "@autometa/gherkin";
 
 export abstract class Scope {
@@ -26,11 +26,14 @@ export abstract class Scope {
   isBuilt = false;
   constructor(
     parentHookCache: HookCache,
-    parentStepCache: StepCache,
+    parentStepCache: StepCache | string,
     readonly parentBuildCache: () => unknown
   ) {
     this.hooks = new HookCache(parentHookCache);
-    this.steps = new StepCache(this.constructor.name, parentStepCache);
+    this.steps =
+      parentStepCache instanceof StepCache
+        ? new StepCache(this.toString(), parentStepCache)
+        : new StepCache(parentStepCache);
   }
 
   abstract get idString(): string;
@@ -38,7 +41,12 @@ export abstract class Scope {
     return true;
   }
   get [Symbol.toStringTag]() {
-    return `${this.constructor.name}#${this.idString}`;
+    const name = this.constructor.name.replace("Scope", "");
+    return `${name}#${this.idString}`;
+  }
+  toString() {
+    const name = this.constructor.name.replace("Scope", "");
+    return `${name}#${this.idString}`;
   }
   get hookCache() {
     return this.openChild ? this.openChild.hooks : this.hooks;
@@ -58,10 +66,9 @@ export abstract class Scope {
     if (this.isBuilt) {
       return this.steps;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filtered = this.closedScopes
       .filter((it) => it.isStepScope)
-      .map((it) => it as any);
+      .map((it) => it as CachedStep);
     filtered.forEach(this.steps.add);
     this.isBuilt = true;
     this.parentBuildCache();

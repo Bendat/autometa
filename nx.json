@@ -1,7 +1,7 @@
 {
   "tasksRunnerOptions": {
     "default": {
-      "runner": "nx/tasks-runners/default",
+      "runner": "nx-cloud",
       "options": {
         "cacheableOperations": [
           "test",
@@ -18,7 +18,14 @@
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^build"
+      ]
     }
   }
 }

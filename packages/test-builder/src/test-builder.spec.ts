@@ -1,32 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { TestBuilder } from "./test-builder";
 import {
   CucumberExpression,
   ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
+import { TestBuilder } from "./test-builder";
+
 import {
   BackgroundBuilder,
   ExampleBuilder,
   ExamplesBuilder,
   RuleBuilder,
   ScenarioBuilder,
-  ScenarioOutlineBuilder
+  ScenarioOutlineBuilder,
+  StepBuilder,
+  FeatureBuilder
 } from "@autometa/gherkin";
-import { FeatureBuilder } from "@autometa/gherkin";
 import {
   Empty_Function,
   GlobalScope,
   ScenarioOutlineScope,
-  ScenarioScope
+  ScenarioScope,
+  HookCache,
+  StepCache,
+  BackgroundScope,
+  StepScope,
+  FeatureScope
 } from "@autometa/scopes";
-import { FeatureScope } from "@autometa/scopes";
-import { HookCache } from "@autometa/scopes";
-import { StepCache } from "@autometa/scopes";
 import { ScenarioOutlineBridge } from "./bridges";
-import { StepBuilder } from "@autometa/gherkin";
-import { BackgroundScope } from "@autometa/scopes";
-import { StepScope } from "@autometa/scopes";
- const parameterRegistry = new ParameterTypeRegistry();
+const parameterRegistry = new ParameterTypeRegistry();
 const globalScope = vi.mocked(GlobalScope);
 const global = new globalScope(parameterRegistry);
 const onFeatureExecuted = vi.fn();

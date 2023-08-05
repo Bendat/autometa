@@ -106,7 +106,8 @@ describe("step matcher", () => {
       );
       const scope = new StepScope(keyword, type, expression, Empty_Function);
       const [diffs] = getDiffs(text, 1, [scope]);
-      expect(diffs).toHaveLength(1);
+      expect(diffs).not.toBeUndefined();
+      expect(diffs).not.toBeNull();
       const { merged, step, gherkin, distance } = diffs;
       expect(merged).toEqual("I have 2 blue grapes in my bowl");
       expect(step).toEqual(scope);
@@ -127,7 +128,7 @@ describe("step matcher", () => {
       const scope1 = new StepScope(keyword, type, expression1, Empty_Function);
       const diffs = getDiffs(text, 1, [scope, scope1]);
       expect(diffs).toHaveLength(1);
-      const diff = diffs[0];
+      const [diff] = diffs;
       const { merged, step, gherkin, distance } = diff;
       expect(merged).toEqual("I have 2 blue grapes in my bowl");
       expect(step).toEqual(scope);
@@ -165,8 +166,8 @@ describe("step matcher", () => {
       const sameDiffs = [sameTypeDiff1, sameTypeDiff2];
       const otherDiffs = [otherTypeDiff, otherTypeDiff2];
       const { same, other } = limitDiffs(sameDiffs, otherDiffs, 2);
-      expect(same).toEqual(sameTypeDiff1);
-      expect(other).toEqual(sameTypeDiff2);
+      expect(same[0]).toEqual(sameTypeDiff1);
+      expect(other).toHaveLength(0);
     });
     it("should split the diff between same and other types when the others have some lower distances", () => {
       const sameTypeDiff1 = {
@@ -196,8 +197,8 @@ describe("step matcher", () => {
       const sameDiffs = [sameTypeDiff1, sameTypeDiff2];
       const otherDiffs = [otherTypeDiff, otherTypeDiff2];
       const { same, other } = limitDiffs(sameDiffs, otherDiffs, 2);
-      expect(same).toEqual(sameTypeDiff1);
-      expect(other).toEqual(otherTypeDiff);
+      expect(same[0]).toEqual(sameTypeDiff1);
+      expect(other[0]).toEqual(otherTypeDiff);
     });
     it("should limit diff to same type when it exceeds max limit", () => {
       const sameTypeDiff1 = {
@@ -227,8 +228,8 @@ describe("step matcher", () => {
       const sameDiffs = [sameTypeDiff1, sameTypeDiff2];
       const otherDiffs = [otherTypeDiff, otherTypeDiff2];
       const { same, other } = limitDiffs(sameDiffs, otherDiffs, 1);
-      expect(same).toEqual(sameTypeDiff1);
-      expect(other).toEqual(otherTypeDiff);
+      expect(same[0]).toEqual(sameTypeDiff1);
+      expect(other).toHaveLength(0);
     });
   });
 });
