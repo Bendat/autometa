@@ -30,7 +30,7 @@ export abstract class Scope {
     readonly parentBuildCache: () => unknown
   ) {
     this.hooks = new HookCache(parentHookCache);
-    this.steps = new StepCache(parentStepCache);
+    this.steps = new StepCache(this.constructor.name, parentStepCache);
   }
 
   abstract get idString(): string;
@@ -114,7 +114,6 @@ export abstract class Scope {
     ).use([this.openChild]);
   }
 
-  attachHook<T extends Hook>(hook: T): void;
   attachHook<T extends Hook>(hook: T): void {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(

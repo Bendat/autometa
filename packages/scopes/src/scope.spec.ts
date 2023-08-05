@@ -1,7 +1,8 @@
-import { HookCache } from "./caches";
+import { HookCache, StepCache } from "./caches";
 import { Scope } from "./scope";
 import { describe, it, expect } from "vitest";
 import { BeforeHook } from "./hook";
+import { Empty_Function } from "./novelties";
 class TestScope extends Scope {
   canAttach<T extends Scope>(_childScope: T): boolean {
     throw new Error("Method not implemented.");
@@ -18,7 +19,7 @@ class TestScope extends Scope {
     private readonly _canAttachHook: boolean,
     action?: () => void
   ) {
-    super(new HookCache());
+    super(new HookCache(), new StepCache("parent"), Empty_Function);
     this.action = action;
   }
   get canAttachHook() {
