@@ -1,4 +1,6 @@
-export type OnFeatureExecuted = (...args: unknown[]) => unknown;
+import { FeatureScope } from "../feature-scope";
+
+export type OnFeatureExecuted = (feature: FeatureScope ) => unknown;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function Execute<T extends Function>(
   _target: object,

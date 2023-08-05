@@ -8,6 +8,9 @@ export {
   pascal,
   pfx,
   constant,
+  upper,
+  lower,
+  collapse
 } from "./string-transformer";
 export * from './types'
 export { FromPhrase, IsPhrase } from "./from-phrase";

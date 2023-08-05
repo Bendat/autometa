@@ -2,7 +2,7 @@ import { FromKey, ConfirmKey, AssertKey } from "@autometa/asserters";
 import { convertPhrase } from "./convert-phrase";
 import { StringTransformer } from "./string-transformer";
 import { PhraseConverter } from "./types";
-import { AnyFunction } from "@autometa/types";
+import { AnyFunction, Class } from "@autometa/types";
 export function IsPhrase<
   TObj,
   TPhrase extends string,
@@ -31,10 +31,10 @@ export function FromPhrase<TObj, TReturn>(
 export function AddPhraseImpl<T extends Record<string, unknown> | AnyFunction>(
   obj: T,
   transformer?: PhraseConverter
-): T & { phrase: PhraseConverter } {
+): T & { fromPhrase: PhraseConverter } {
   const func = transformer ?? FromPhrase.bind(obj, obj);
   return Object.defineProperties(obj, {
-    phrase: {
+    fromPhrase: {
       enumerable: false,
       configurable: false,
       writable: false,
@@ -44,5 +44,14 @@ export function AddPhraseImpl<T extends Record<string, unknown> | AnyFunction>(
         }
       }
     }
-  }) as unknown as T & { phrase: PhraseConverter };
+  }) as unknown as T & { fromPhrase: PhraseConverter };
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function PhraseParser<T>(target: Class<T>) {
+  target.prototype.fromPhrase = function (
+    key: string,
+    ...mutations: (() => StringTransformer)[]
+  ) {
+    return FromPhrase(this, key, ...mutations);
+  };
 }

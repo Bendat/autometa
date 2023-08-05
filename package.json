@@ -5,15 +5,14 @@
   "scripts": {
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
-    "build": "pnpm nx run-many -t build",
+    "build": "pnpm nx run-many -t build --skip-nx-cache ",
     "build:runner": "turbo run build:runner",
     "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
     "test": "turbo run test --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
+    "lint": "nx run-many -t lint -- --max-warnings=0",
+    "lint:fix": "turbo run lint:fix -- --max-warnings=0",
     "clean": "turbo run clean",
     "turbo:update": "npx @turbo/codemod migrate",
     "turbo:gen": "turbo gen library && pnpm i",
@@ -31,10 +30,11 @@
     "eslint-config-custom": "workspace:*",
     "lodash": "^4.17.21",
     "nx": "16.5.1",
+    "nx-cloud": "^16.2.0",
     "prettier": "^2.8.3",
     "turbo": "^1.10.0",
     "typescript": "4.9.5",
-    "vitest": "^0.33.0"
+    "vitest": "0.33.0"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -42,5 +42,8 @@
   "packageManager": "pnpm@7.24.3",
   "volta": {
     "node": "16.20.0"
+  },
+  "dependencies": {
+    "@nrwl/linter": "^16.6.0"
   }
 }

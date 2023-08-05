@@ -16,6 +16,7 @@ export type ExternalHooks = {
   afterAll: HookFunction;
   afterEach: HookFunction;
 };
+
 export type ExternalHookWrappers = {
   beforeAll: HookWrapper;
   beforeEach: HookWrapper;
@@ -42,8 +43,18 @@ export type StepData = {
 
 export type OnFailure = () => void;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TestGroup = ((
+  title: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: (...args: any[]) => void
+) => void) & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  skip: (title: string, action: (...args: any[]) => void) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  only: (title: string, action: (...args: any[]) => void) => void;
+};
+
+export type Test= ((
   title: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (...args: any[]) => void

@@ -1,6 +1,6 @@
-import { Class, FrameworkTestCall } from "@autometa/types";
+import { Class } from "@autometa/types";
 import { object, function as fun, string, tuple, number } from "zod";
-import { HookWrapper, TestGroup, TimeoutFunction } from "./types";
+import { HookWrapper, Test, TestGroup, TimeoutFunction } from "./types";
 import { App, World } from "@autometa/app";
 
 export const TestExecutorConfigSchema = object({
@@ -38,7 +38,7 @@ export type TestExecutorConfig = {
   runner: {
     name: string;
     describe: TestGroup;
-    test: FrameworkTestCall;
+    test: Test;
     beforeEach: HookWrapper;
     beforeAll: HookWrapper;
     afterEach: HookWrapper;
