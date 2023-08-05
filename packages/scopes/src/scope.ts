@@ -114,6 +114,7 @@ export abstract class Scope {
     ).use([this.openChild]);
   }
 
+  attachHook<T extends Hook>(hook: T): void;
   attachHook<T extends Hook>(hook: T): void {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(
