@@ -29,7 +29,7 @@ export class DateFactory {
     }
     const parsed = new Date(phrase);
     if (isNaN(parsed.getTime())) {
-      throw new Error(`Cannot find date matching '${phrase}'`);
+      return new Date(Date.parse(phrase));
     }
     return parsed;
   }

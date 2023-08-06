@@ -4,5 +4,5 @@ export * from "./confirm-key";
 export * from "./invalid-key-error";
 export * from "./types";
 export * from "./assert-length";
-export * from './assert-defined'
-export * from './assert-is'
+export * from "./assert-defined";
+export * from "./assert-is";

@@ -68,7 +68,7 @@ export class GlobalScope extends Scope implements Scopes {
   }
 
   Feature(filepath: string): FeatureScope;
-  Feature(testDefinition: FeatureAction, filepath: string): FeatureScope;
+  Feature(featureAction: FeatureAction, filepath: string): FeatureScope;
   Feature(...args: (FeatureAction | string)[]): FeatureScope;
   @Bind
   Feature(...args: (FeatureAction | string)[]) {

@@ -21,6 +21,7 @@ export class VTable extends DataTable {
     };
     this.headers.forEach(mapHeaders);
   }
+
   get<T extends [...TableValue[]] = [...TableValue[]]>(
     header: string,
     raw?: boolean
@@ -34,11 +35,6 @@ export class VTable extends DataTable {
   get<T extends TableValue = TableValue>(
     ...args: (string | number | boolean | undefined)[]
   ) {
-    // const rowIdx = this.headers[String(header)];
-    // const row = this.columns[rowIdx];
-    // if (column !== undefined) {
-    //   return row[column] as TReturn;
-    // }
     return overloads(
       def(string(), number(), boolean()).matches((header, col, raw) => {
         const rowIdx = this.headerMapping[header];

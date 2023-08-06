@@ -27,7 +27,7 @@ export class StepCache {
 
   @Bind
   add(step: CachedStep) {
-    const { keywordType, keyword, expression: text } = step as CachedStep;
+    const { type: keywordType, keyword, expression: text } = step as CachedStep;
     const textStr = text.source;
     if (this.find(keywordType, keyword, textStr, false)) {
       throw new Error(`Step [${keyword} ${textStr}] already defined`);

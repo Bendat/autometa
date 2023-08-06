@@ -3,8 +3,8 @@ import {
   ParameterType,
   ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
-import { Empty_Function } from "../novelties";
-import { StepScope } from "../step-scope";
+import { Empty_Function } from "../../novelties";
+import { StepScope } from "../../step-scope";
 import { describe, it, expect } from "vitest";
 import {
   checkMatch,
@@ -13,7 +13,7 @@ import {
   isExpressionCandidate,
   limitDiffs,
   refineDiff
-} from "./search/step-matcher";
+} from "./step-matcher";
 const registry = new ParameterTypeRegistry();
 registry.defineParameterType(
   new ParameterType("task:builder", [/.*/], String, Empty_Function)

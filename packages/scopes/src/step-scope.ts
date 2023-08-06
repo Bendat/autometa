@@ -26,7 +26,7 @@ export class StepScope<
   source: string;
   constructor(
     readonly keyword: StepKeyword,
-    readonly keywordType: StepType,
+    readonly type: StepType,
     public readonly expression: Expression,
     public readonly stepAction: StepAction<TText, TTable>,
     readonly tablePrototype?: Class<TTable>
