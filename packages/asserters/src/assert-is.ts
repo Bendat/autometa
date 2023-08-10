@@ -3,6 +3,9 @@ export function AssertIs<TIsType>(
   value: unknown,
   type: TIsType
 ): asserts value is TIsType {
+  if (value !== type && typeof value !== type) {
+    throw new AutomationError(`Expected ${type} but got ${value}`);
+  }
   if (value !== type && typeof value !== typeof type) {
     throw new AutomationError(`Expected ${type} but got ${value}`);
   }
@@ -16,6 +19,6 @@ export function AssertIs<TIsType>(
     if (value instanceof type) {
       return;
     }
+    throw new AutomationError(`Expected ${type} to be instance of ${value}`);
   }
-  throw new AutomationError(`Expected ${type} to be instance of ${value}`);
 }

@@ -9,14 +9,14 @@ export const FunctionValidationSchema = object({
   name: str().optional(),
 }).and(BaseArgumentSchema);
 
-export type FunctionOptions = Infer<typeof FunctionValidationSchema>;
+export type FunctionValidatorOptions = Infer<typeof FunctionValidationSchema>;
 
 export class FunctionArgument<T extends FunctionType> extends BaseArgument<T> {
   typeName = "function";
   types: string[] = [];
   readonly name?: string;
-  declare readonly options?: FunctionOptions;
-  constructor(args: (string | FunctionOptions | undefined)[]) {
+  declare readonly options?: FunctionValidatorOptions;
+  constructor(args: (string | FunctionValidatorOptions | undefined)[]) {
     super();
     if (typeof args[0] === "string") {
       this.name = args[0];
@@ -111,13 +111,13 @@ export function func<T extends FunctionType>(): FunctionArgument<T>;
 export function func<T extends FunctionType>(name: string): FunctionArgument<T>;
 export function func<T extends FunctionType>(
   name: string,
-  options?: FunctionOptions
+  options?: FunctionValidatorOptions
 ): FunctionArgument<T>;
 export function func<T extends FunctionType>(
-  options: FunctionOptions
+  options: FunctionValidatorOptions
 ): FunctionArgument<T>;
 export function func<T extends FunctionType>(
-  ...args: (string | FunctionOptions | undefined)[]
+  ...args: (string | FunctionValidatorOptions | undefined)[]
 ) {
   return new FunctionArgument<T>(args);
 }

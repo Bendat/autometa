@@ -63,6 +63,7 @@ export class DatesObject {
   fromPhrase(phrase: string) {
     return this.#factory.fromPhrase(phrase);
   }
+  
   make(timeOffset: number, timeUnit: TimeUnit) {
     return this.#factory.make(timeOffset, timeUnit);
   }
