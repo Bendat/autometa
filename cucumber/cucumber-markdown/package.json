@@ -41,7 +41,6 @@
     "@types/glob": "^8.0.1",
     "@types/lodash": "^4.14.195",
     "@types/node": "^18.11.18",
-    "@types/prettier": "^2.7.3",
     "eslint-config-custom": "workspace:*",
     "node": "^19.6.0",
     "rimraf": "^4.1.2",
