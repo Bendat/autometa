@@ -30,7 +30,7 @@ export class StepCache {
     const { type: keywordType, keyword, expression: text } = step as CachedStep;
     const textStr = text.source;
     if (this.find(keywordType, keyword, textStr, false)) {
-      throw new Error(`Step [${keyword} ${textStr}] already defined`);
+      throw new AutomationError(`Step [${keyword} ${textStr}] already defined`);
     }
     this.keySet.get(keywordType)?.add(textStr);
     this[keywordType].push(step as CachedStep);
@@ -95,7 +95,7 @@ export class StepCache {
     if (!step && !this.parent && throwOnNotFound) {
       const report = this.startFuzzySearch(keywordType, text);
       const fmt = formatReport(report);
-      throw new Error(
+      throw new AutomationError(
         `No stored step could be found matching [${keyword} ${text}]${fmt}`
       );
     }

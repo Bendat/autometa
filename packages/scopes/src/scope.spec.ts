@@ -3,9 +3,10 @@ import { Scope } from "./scope";
 import { describe, it, expect } from "vitest";
 import { BeforeHook } from "./hook";
 import { Empty_Function } from "./novelties";
+import { AutomationError } from "@autometa/errors";
 class TestScope extends Scope {
   canAttach<T extends Scope>(_childScope: T): boolean {
-    throw new Error("Method not implemented.");
+    throw new AutomationError("Method not implemented.");
   }
 
   get idString() {

@@ -7,6 +7,7 @@ import { HookCache } from "./caches/hook-cache";
 import { StepCache } from "./caches";
 import {  Feature } from "@autometa/gherkin";
 import { BackgroundScope } from "./background-scope";
+import { AutomationError } from "@autometa/errors";
 
 export class FeatureScope extends Scope {
   canHandleAsync = true;
@@ -40,7 +41,7 @@ export class FeatureScope extends Scope {
 
   attach<T extends Scope>(childScope: T): void {
     if (!this.canAttach(childScope)) {
-      throw new Error(
+      throw new AutomationError(
         `A Feature can only execute a 'Scenario', 'Scenario Outline', 'Rule' or 'Step'(Given, When etc). ${childScope.constructor.name} is not valid`
       );
     }

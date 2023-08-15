@@ -21,6 +21,9 @@ export function defineConfig(config: Config, ...configs: TestExecutorConfig[]) {
       envs.push("default");
       config.environment = "default";
     }
+    if (config.experimental?.errorCauseShim) {
+      require("error-cause/auto");
+    }
   }
   // if (envs.length > 1 && !envs.includes("default")) {
   //   throw new AutomationError(

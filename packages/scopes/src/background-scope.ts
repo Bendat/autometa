@@ -1,3 +1,4 @@
+import { App } from "@autometa/app";
 import { HookCache, StepCache } from "./caches";
 import { Scope } from "./scope";
 import { BackgroundAction } from "./types";

@@ -59,7 +59,7 @@ export class GlobalScope extends Scope implements Scopes {
       !(childScope instanceof FeatureScope) &&
       !(childScope instanceof StepScope)
     ) {
-      throw new Error(
+      throw new AutomationError(
         `Only ${FeatureScope.name} and ${StepScope.name} can be executed globally. Scenarios, Outlines and Rules must exist inside a Feature`
       );
     }

@@ -1,3 +1,4 @@
+import { AutomationError } from "@autometa/errors";
 import { FeatureScope } from "../feature-scope";
 
 export type OnFeatureExecuted = (feature: FeatureScope ) => unknown;
@@ -31,12 +32,12 @@ export function Execute<T extends Function>(
 
 function getExecutor(target: unknown) {
   if (typeof target !== "object" || target === null) {
-    throw new Error("Decorator must be applied to a class object");
+    throw new AutomationError("Decorator must be applied to a class object");
   }
   if ("onFeatureExecuted" in target) {
     return target.onFeatureExecuted as OnFeatureExecuted;
   }
-  throw new Error(
+  throw new AutomationError(
     "Decorator Target must have a callback function called 'onFeatureExecuted'"
   );
 }

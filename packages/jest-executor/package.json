@@ -1,13 +1,13 @@
 {
-  "name": "@autometa/gherkin",
-  "version": "0.3.3",
-  "description": "Gherkin implementation for @autometa",
+  "name": "@autometa/jest-executor",
+  "version": "0.0.0",
+  "description": "",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -21,34 +21,37 @@
     "default": "./dist/esm/index.js",
     "types": "./dist/index.d.ts"
   },
-  "author": "Ben Aherne <null@null.com>",
   "license": "MIT",
   "devDependencies": {
-    "@autometa/types": "workspace:*",
-    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@jest/globals": "^29.5.0",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "dts-bundle-generator": "^8.0.1",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
-    "reflect-metadata": "^0.1.13",
+    "jest": "^29.5.0",
     "rimraf": "^4.1.2",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
     "tsconfig": "workspace: *",
     "tsup": "^6.7.0",
     "typescript": "^4.9.5",
-    "vitest": "0.33.0"
+    "vitest": "^0.29.8"
+  },
+  "peerDependencies": {
+    "@jest/globals": "^29.5.0",
+    "jest": "^29.5.0"
   },
   "dependencies": {
-    "@autometa/bind-decorator": "workspace:^",
-    "@autometa/dto-builder": "workspace:*",
+    "@autometa/app": "workspace:^",
+    "@autometa/asserters": "workspace:^",
+    "@autometa/config": "workspace:^",
     "@autometa/errors": "workspace:^",
-    "@autometa/overloaded": "workspace:^",
-    "@cucumber/gherkin": "^26.0.3",
-    "@cucumber/messages": "^21.0.1",
-    "@cucumber/tag-expressions": "^5.0.1",
-    "uuid": "^9.0.0"
+    "@autometa/gherkin": "workspace:^",
+    "@autometa/scopes": "workspace:^",
+    "@autometa/test-builder": "workspace:^",
+    "@autometa/types": "workspace:^"
   }
 }

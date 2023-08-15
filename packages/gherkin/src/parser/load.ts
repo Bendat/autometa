@@ -3,8 +3,9 @@ import {
   AstBuilder,
   Dialect,
   dialects,
-  GherkinClassicTokenMatcher,
+  GherkinClassicTokenMatcher
 } from "@cucumber/gherkin";
+import { AutomationError } from "@autometa/errors";
 import { v4 as uuidv4 } from "uuid";
 import { Feature as GherkinFeature } from "@cucumber/messages";
 import { convertToClass } from "./parse";
@@ -15,16 +16,15 @@ export function parseGherkin(gherkin: string, filePath: string) {
     const matcher = new GherkinClassicTokenMatcher();
     const ast = new Parser(builder, matcher).parse(gherkin);
     if (!ast.feature) {
-      throw new Error("No Feature found in AST");
+      throw new AutomationError("No Feature found in AST");
     }
     if (ast.feature?.language !== "en") {
       translateKeywords(ast.feature);
     }
     return convertToClass(ast.feature, filePath);
   } catch (err) {
-    const error = err as { message: string };
-    error.message = `Error parsing feature Gherkin: ${error.message}`;
-    throw err;
+    const message = `Error parsing feature Gherkin:`;
+    throw new AutomationError(message, { cause: err as Error});
   }
 }
 
@@ -75,7 +75,7 @@ const createTranslationMap = (translateDialect: Dialect) => {
     "given",
     "then",
     "when",
-    "rule",
+    "rule"
   ];
 
   for (const prop of props) {
@@ -95,7 +95,7 @@ const createTranslationMap = (translateDialect: Dialect) => {
           if (defaultWordIndex !== null) {
             translationMap[dialectWord] = translationWords[defaultWordIndex];
           } else {
-            throw new Error("No translation found for " + dialectWord);
+            throw new AutomationError("No translation found for " + dialectWord);
           }
         }
       }

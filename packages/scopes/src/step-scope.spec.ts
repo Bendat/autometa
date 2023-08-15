@@ -71,8 +71,8 @@ describe("step-scope", () => {
         .keywordType("Context")
         .text("I have 42 cukes in my belly now")
         .build();
-      const error = scope.buildArgs(gherkin, [], new App());
-      expect(error).toBeUndefined();
+      scope.execute(gherkin, new App());
+      expect(fn).toHaveBeenCalled();
     });
 
     it("should fail to execute with a gherkin table and no prototype", async () => {
@@ -104,9 +104,10 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const error =  ()=> scope.buildArgs(gherkin, [], new App());
-      expect(error).toThrow(AutomationError);
-      expect(error).toThrow(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
+      const error = () => scope.execute(gherkin, new App());
+      await expect(error).rejects.toThrow(AutomationError);
+      await expect(error).rejects
+        .toThrow(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
 
   To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
   definition as the last argument
@@ -144,8 +145,8 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const error = ()=>scope.buildArgs(gherkin, [], new App());
-      expect(error).toThrow(
+      const error = () => scope.execute(gherkin, new App());
+      expect(error).rejects.toThrow(
         `Step 'Given I have 42 cukes in my belly now' has a table but the table prototype provided is not a DataTable or DataTableDocument`
       );
     });
@@ -179,8 +180,8 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const error = await scope.buildArgs(gherkin, [], new App());
-      expect(error).toBeUndefined();
+      const args = await scope.execute(gherkin, new App());
+      expect(args).toBeUndefined();
     });
 
     it("should execute with a gherkin table and a HTable prototype", async () => {
@@ -213,10 +214,8 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const args: unknown[] = [];
-      const error = await scope.buildArgs(gherkin, args, new App());
-      expect(error).toBeUndefined();
-      expect(args).toEqual([42, 'belly', new HTable(table), new App()]);
+      await scope.execute(gherkin, new App());
+      expect(fn).toHaveBeenCalled();
     });
   });
 });

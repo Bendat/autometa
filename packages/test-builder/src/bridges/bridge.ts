@@ -22,7 +22,6 @@ import {
 export abstract class GherkinCodeBridge {
   abstract data: { gherkin: GherkinNode; scope: Scope };
 }
-
 export class FeatureBridge extends GherkinCodeBridge {
   data: { gherkin: Feature; scope: FeatureScope };
   background: BackgroundBridge;
