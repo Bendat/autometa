@@ -19,11 +19,15 @@ import {
   StartStepOpts,
   StartTeardownOpts,
 } from "./event-options";
-
+import {object, function as fun} from 'zod'
 export type DependencyInstanceProvider = {
   token: InjectionToken<unknown>;
   instance: unknown;
 };
+
+export const EventSubscriberSchema = object({
+  onFeature: fun()
+})
 export interface EventSubscriber {
   onFeatureStart?(opts: StartFeatureOpts): void;
   onFeatureEnd?(opts: EndFeatureOpts): void;

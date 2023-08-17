@@ -44,6 +44,10 @@ export class RuleBridge extends GherkinCodeBridge {
 export class ScenarioBridge extends GherkinCodeBridge {
   data: { gherkin: Scenario; scope: ScenarioScope };
   steps: StepBridge[] = [];
+  report: {
+    passed?: boolean;
+    error?: Error;
+  } = {};
 }
 
 export class ScenarioOutlineBridge extends GherkinCodeBridge {

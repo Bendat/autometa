@@ -1,6 +1,6 @@
 import { object, string, literal, number, boolean, array } from "zod";
 
-export const RunnerSchema = literal("jest"); //.or(literal("vitest"));
+export const RunnerSchema = literal("jest").or(literal("vitest"));
 export const EnvironmentSchema = string().optional();
 export const TimeoutSchema = number().optional();
 export const TagFilterSchema = string()
@@ -15,8 +15,8 @@ export const TestSchema = object({
   tagFilter: TagFilterSchema
 }).optional();
 
-export const ExperimentalSchema = object({
-  errorCauseShim: boolean().optional()
+export const ShimSchema = object({
+  errorCause: boolean().optional()
 }).optional();
 
 // Use decorators
@@ -27,9 +27,11 @@ export const RootSchema = object({
   features: string().or(array(string())),
   steps: string().or(array(string()))
 });
+
 export const TestExecutorConfigSchema = object({
   runner: RunnerSchema,
   environment: EnvironmentSchema,
   test: TestSchema,
-  experimental: ExperimentalSchema
+  roots: RootSchema,
+  shim: ShimSchema
 });

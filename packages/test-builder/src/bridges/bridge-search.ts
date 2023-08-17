@@ -9,7 +9,7 @@ import {
 } from "./bridge";
 
 export function find(
-  bridge: FeatureBridge | RuleBridge,
+  bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   testName: string
 ): GherkinCodeBridge | undefined {
   if (bridge instanceof FeatureBridge) {
@@ -17,6 +17,9 @@ export function find(
   }
   if (bridge instanceof RuleBridge) {
     return findByRule(bridge, testName);
+  }
+  if (bridge instanceof ScenarioOutlineBridge) {
+    return findScenarioOutlineOrChild(bridge, testName);
   }
 
   throw new AutomationError(`Could not find test matching ${testName}`);

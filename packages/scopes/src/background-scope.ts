@@ -1,4 +1,4 @@
-import { App } from "@autometa/app";
+import { Background } from "@autometa/gherkin";
 import { HookCache, StepCache } from "./caches";
 import { Scope } from "./scope";
 import { BackgroundAction } from "./types";
@@ -15,5 +15,8 @@ export class BackgroundScope extends Scope {
   }
   get idString(): string {
     return this.name ?? "";
+  }
+  title(gherkin: Background){
+    return `${gherkin.keyword} ${gherkin.name}`
   }
 }

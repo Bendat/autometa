@@ -23,6 +23,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@cucumber/cucumber-expressions": "^16.1.2",
     "@jest/globals": "^29.5.0",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
@@ -49,6 +50,7 @@
     "@autometa/asserters": "workspace:^",
     "@autometa/config": "workspace:^",
     "@autometa/errors": "workspace:^",
+    "@autometa/events": "workspace:^",
     "@autometa/gherkin": "workspace:^",
     "@autometa/scopes": "workspace:^",
     "@autometa/test-builder": "workspace:^",
