@@ -3,6 +3,7 @@ import { CompiledDataTable } from "../compiled-data-table";
 import { Bind } from "@autometa/bind-decorator";
 import { DataTable } from "./data-table";
 import { overloads, def, string, number, boolean } from "@autometa/overloaded";
+import { AutomationError } from "@autometa/errors";
 
 export class VTable extends DataTable {
   private headers: string[];
@@ -78,7 +79,7 @@ export class VTable extends DataTable {
       const colSug = column !== undefined ? ` at column ${column}` : "";
       const maxSize = Math.max(...this.columns.map((col) => col.length));
       const maxSizeSlug = ` (max size ${maxSize})`;
-      throw new Error(`Could not find row ${header}${colSug}${maxSizeSlug}}`);
+      throw new AutomationError(`Could not find row ${header}${colSug}${maxSizeSlug}}`);
     }
     return result;
   }
@@ -91,7 +92,7 @@ export class VTable extends DataTable {
     if (rowIdx > source.length) {
       const maxLength = source.length - 1;
       const msg = `Could not find column ${header} row ${column}. Max length for row is ${maxLength} on ${source}.`;
-      throw new Error(msg);
+      throw new AutomationError(msg);
     }
   }
 }

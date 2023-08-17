@@ -44,6 +44,7 @@
   "dependencies": {
     "@autometa/bind-decorator": "workspace:^",
     "@autometa/dto-builder": "workspace:*",
+    "@autometa/errors": "workspace:^",
     "@autometa/overloaded": "workspace:^",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",

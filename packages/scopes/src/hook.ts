@@ -1,20 +1,10 @@
 import type { HookAction } from "./types";
 import { App } from "@autometa/app";
 import { isTagsMatch } from "@autometa/gherkin";
-import { Builder, Property } from "@autometa/dto-builder";
-import { captureError } from "./capture-error";
-import { StatusType } from "@autometa/types";
+import { Builder } from "@autometa/dto-builder";
+import { AutomationError, safe } from "@autometa/errors";
+import { HookReport } from "./hook-report";
 
-class HookReport {
-  @Property
-  name: string;
-  @Property
-  description?: string;
-  @Property
-  status: StatusType;
-  @Property
-  error?: Error;
-}
 const HookReportBuilder = Builder(HookReport);
 export abstract class Hook {
   abstract readonly name: string;
@@ -23,24 +13,27 @@ export abstract class Hook {
   abstract get canFilter(): boolean;
 
   constructor(readonly tagFilterExpression?: string) {}
-
+   canExecute(...tagExpressions: string[]): boolean {
+    return   this.canFilter &&
+    !isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
+  }
   async execute(app: App, ...tagExpressions: string[]) {
     const report = new HookReportBuilder()
       .name(this.name)
       .description(this.description);
-    if (
-      this.canFilter &&
-      !isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
-    ) {
+    if (this.canExecute(...tagExpressions)) {
       return report.status("SKIPPED").build();
     }
-    const result = await captureError(this.action, app);
+    const result = await safe(this.action, app);
     if (result instanceof Error) {
-      report.error(result).status("FAILED");
+      const message = `${this.name}: ${this.description} failed to execute.`;
+      const error = new AutomationError(message, { cause: result });
+      report.error(error).status("FAILED");
     }
 
     return report.status("PASSED").build();
   }
+
 }
 
 export class BeforeHook extends Hook {

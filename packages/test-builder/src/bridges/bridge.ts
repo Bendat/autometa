@@ -22,7 +22,6 @@ import {
 export abstract class GherkinCodeBridge {
   abstract data: { gherkin: GherkinNode; scope: Scope };
 }
-
 export class FeatureBridge extends GherkinCodeBridge {
   data: { gherkin: Feature; scope: FeatureScope };
   background: BackgroundBridge;
@@ -45,6 +44,10 @@ export class RuleBridge extends GherkinCodeBridge {
 export class ScenarioBridge extends GherkinCodeBridge {
   data: { gherkin: Scenario; scope: ScenarioScope };
   steps: StepBridge[] = [];
+  report: {
+    passed?: boolean;
+    error?: Error;
+  } = {};
 }
 
 export class ScenarioOutlineBridge extends GherkinCodeBridge {

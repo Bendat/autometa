@@ -1,3 +1,4 @@
+import { AutomationError } from "@autometa/errors";
 import { StepKeyword } from "@autometa/gherkin";
 import { StepType } from "@autometa/gherkin";
 import {
@@ -52,7 +53,10 @@ export function scope(value: Scope) {
     findBackground: ({ name }: { name?: string }): BackgroundScope => {
       const found = value.closedScopes.find((child) => {
         return child instanceof BackgroundScope;
-      }) as ScenarioOutlineScope | undefined;
+      }) as BackgroundScope | undefined;
+      if(found && found.name !== name){
+        throw new AutomationError(`Could not find background matching ${name} but found ${found?.name}`)
+      }
       if (found) {
         value.attach(found);
         return found;

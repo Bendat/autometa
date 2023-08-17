@@ -1,7 +1,10 @@
 import EventEmitter from "events";
 import { Cb } from "./test-event-emitter";
-
-export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmitter {
+import { AutomationError } from "@autometa/errors";
+export class TestEmitter<
+  TArgsStart = never,
+  TArgsEnd = never
+> extends EventEmitter {
   constructor(readonly name: string) {
     super();
   }
@@ -37,12 +40,14 @@ function tryWrapper(name: string, action: (...args: unknown[]) => void) {
     try {
       const result = action(...args);
       if ((result as unknown) instanceof Promise) {
-        throw new Error(
+        throw new AutomationError(
           `A Subscriber action cannot be async or return a promise. Executing ${name}`
         );
       }
     } catch (e) {
-      console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
+      console.error(
+        `Event Subscriber ${name} threw an error ${(e as Error).message}`
+      );
     }
   };
 }

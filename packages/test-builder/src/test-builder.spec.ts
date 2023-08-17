@@ -386,7 +386,7 @@ describe("TestBuilder", () => {
       Empty_Function
     );
     const bgScope = new BackgroundScope(
-      "bob",
+      "my background",
       Empty_Function,
       scope.hooks,
       scope.steps,

@@ -1,3 +1,4 @@
+import { AutomationError } from "@autometa/errors";
 import { TeardownHook, AfterHook, SetupHook, BeforeHook, Hook } from "../hook";
 
 export class HookCache {
@@ -17,14 +18,14 @@ export class HookCache {
     } else if (hook instanceof TeardownHook) {
       this.afterAll.push(hook);
     } else {
-      throw new Error("unrecognized hook " + hook);
+      throw new AutomationError("unrecognized hook " + hook);
     }
   };
 
   get before(): BeforeHook[] {
-    if (this.parent) {
-      return [...this.parent.before, ...this.beforeEach];
-    }
+    // if (this.parent) {
+    //   return [...this.parent.before, ...this.beforeEach];
+    // }
     return [...this.beforeEach];
   }
 

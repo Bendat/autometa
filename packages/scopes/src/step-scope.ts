@@ -10,12 +10,11 @@ import {
 } from "@autometa/gherkin";
 import { App } from "@autometa/app";
 import { Bind } from "@autometa/bind-decorator";
-import { AutomationError } from "@autometa/errors";
+import { AutomationError, safe } from "@autometa/errors";
 import { Class } from "@autometa/types";
 import { Expression } from "@cucumber/cucumber-expressions";
 import { HookCache } from "./caches/hook-cache";
 import { Empty_Function } from "./novelties";
-import { captureError } from "./capture-error";
 
 export class StepScope<
   TText extends string,
@@ -53,51 +52,48 @@ export class StepScope<
     return [];
   }
   @Bind
-  buildArgs(
-    gherkin: Step,
-    args: unknown[],
-    app: App
-  ): AutomationError | undefined {
+  async execute(gherkin: Step, app: App) {
+    const args: unknown[] = [];
     // const args = this.getArgs(gherkin.text);
-    const title = this.stepText(gherkin.text);
+    const title = this.stepText(gherkin.keyword, gherkin.text);
     const gotArgs = this.getArgs(gherkin.text);
     args.push(...gotArgs);
     if (gherkin.table) {
+      this.handleMissingTable(title, args, gherkin);
+    }
+    args.push(app);
+    const error = await safe(this.stepAction, ...args);
+    if (error instanceof Error) {
+      const message = `Step '${title}' failed with error
+  
+  ${error.message}`;
+      throw new AutomationError(message, { cause: error });
+    }
+  }
 
-      if (!this.tablePrototype) {
-        const msg = `Step '${title}' has a table but no table prototype was provided.
+  private handleMissingTable(title: string, args: unknown[], gherkin: Step) {
+    if (!this.tablePrototype) {
+      const msg = `Step '${title}' has a table but no table prototype was provided.
 
   To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
   definition as the last argument
 
   Given('text', (table, app)=>{}, HTable)`;
-        throw new AutomationError(msg);
-      }
-      if (this.tablePrototype.prototype instanceof DataTable) {
-        args.push(new this.tablePrototype(gherkin.table));
-      } else if (this.tablePrototype.prototype instanceof DataTableDocument) {
-        const type = this.tablePrototype.prototype;
-        const tableType = getDocumentTable(type);
-        const table = new tableType(gherkin.table);
-        args.push(new this.tablePrototype(table));
-        throw new AutomationError(
-          "FIX: this should be an array of documents in the end"
-        );
-      } else {
-        const message = `Step '${title}' has a table but the table prototype provided is not a DataTable or DataTableDocument`;
-        throw new AutomationError(message);
-      }
+      throw new AutomationError(msg);
     }
-    args.push(app);
-    const error = captureError(this.stepAction, ...args);
-    if (error instanceof Error) {
-      const message = `Step '${this.title}' failed with error
-  
-  ${error.message}`;
-      const newError = new AutomationError(message);
-      newError.opts = { cause: error };
-      newError.stack = error.stack;
-      return newError;
+    if (this.tablePrototype.prototype instanceof DataTable) {
+      args.push(new this.tablePrototype(gherkin.table));
+    } else if (this.tablePrototype.prototype instanceof DataTableDocument) {
+      const type = this.tablePrototype.prototype;
+      const tableType = getDocumentTable(type);
+      const table = new tableType(gherkin.table);
+      args.push(new this.tablePrototype(table));
+      throw new AutomationError(
+        "FIX: this should be an array of documents in the end"
+      );
+    } else {
+      const message = `Step '${title}' has a table but the table prototype provided is not a DataTable or DataTableDocument`;
+      throw new AutomationError(message);
     }
   }
 
@@ -110,8 +106,8 @@ export class StepScope<
     return `${this.keyword} ${this.expression.source}`;
   }
   @Bind
-  stepText(gherkinText: string) {
-    return `${this.keyword} ${gherkinText}`;
+  stepText(keyword: string, gherkinText: string) {
+    return `${keyword} ${gherkinText}`;
   }
   get title() {
     return this.idString;

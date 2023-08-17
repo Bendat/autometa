@@ -41,6 +41,7 @@
     "@autometa/asserters": "workspace:^",
     "@autometa/errors": "workspace:^",
     "@autometa/types": "workspace:^",
+    "error-cause": "^1.0.5",
     "zod": "^3.21.4"
   }
 }

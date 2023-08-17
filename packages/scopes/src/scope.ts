@@ -10,6 +10,7 @@ import {
 } from "@autometa/overloaded";
 import { CachedStep, StepCache } from "./caches";
 import { StepKeyword, StepType } from "@autometa/gherkin";
+import { AutomationError } from "@autometa/errors";
 
 export abstract class Scope {
   abstract readonly action:
@@ -87,7 +88,7 @@ export abstract class Scope {
     }
     const result = this.action() as unknown as void | Promise<void>;
     if (!this.canHandleAsync && result instanceof Promise) {
-      throw new Error(
+      throw new AutomationError(
         `${this.constructor.name} cannot be run asynchronously or return a promise.`
       );
     }
@@ -130,7 +131,7 @@ export abstract class Scope {
         instance(Hook),
         instance(Scope, undefined, { optional: true })
       ).matches(() => {
-        throw new Error(
+        throw new AutomationError(
           `Cannot attach hooks to ${this.constructor.name}. Only 'Feature', 'Rule', 'ScenarioOutline' and global scopes can have hooks`
         );
       }),

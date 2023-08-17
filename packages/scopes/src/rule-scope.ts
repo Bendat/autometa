@@ -6,6 +6,8 @@ import { HookCache } from "./caches/hook-cache";
 import { StepCache } from "./caches";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
 import { BackgroundScope } from "./background-scope";
+import { Rule } from "@autometa/gherkin";
+import { AutomationError } from "@autometa/errors";
 export class RuleScope extends Scope {
   canHandleAsync = false;
   constructor(
@@ -22,6 +24,9 @@ export class RuleScope extends Scope {
     return this.name;
   }
 
+  title(gherkin: Rule) {
+    return `${gherkin.keyword}: ${this.name}`;
+  }
   canAttach<T extends Scope>(childScope: T): boolean {
     return (
       childScope instanceof ScenarioScope ||
@@ -32,7 +37,7 @@ export class RuleScope extends Scope {
 
   attach<T extends Scope>(childScope: T): void {
     if (!this.canAttach(childScope)) {
-      throw new Error(
+      throw new AutomationError(
         `A Rule can only execute a ${ScenarioScope.name}, ${ScenarioOutlineScope.name} or ${StepScope.name}. ${childScope.constructor.name} is not valid`
       );
     }

@@ -1,4 +1,4 @@
-import { Builder, Property } from "@autometa/dto-builder";
+ import { Builder, Property } from "@autometa/dto-builder";
 import { GherkinNode } from "../gherkin-node";
 import { Scenario } from "../scenario";
 

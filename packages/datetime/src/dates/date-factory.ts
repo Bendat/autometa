@@ -1,6 +1,6 @@
 import { TimeUnit, camel, convertPhrase, collapse } from "@autometa/phrases";
 import { midnight } from "./midnight";
-import { raise } from "@autometa/errors";
+import { AutomationError, raise } from "@autometa/errors";
 import { ConfirmDefined, ConfirmLengthAtLeast } from "@autometa/asserters";
 
 export class DateFactory {
@@ -54,7 +54,7 @@ export class DateFactory {
       case "minutes":
         return this.#addMinutes(timeOffset);
       default:
-        throw new Error(
+        throw new AutomationError(
           `Invalid timeunit ${timeunit}, options are 'days', 'seconds', 'milliseconds', 'hours', 'minutes'. Non plural equivalents such as 'day' or 'week' are also accepted.`
         );
     }

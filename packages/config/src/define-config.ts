@@ -21,16 +21,21 @@ export function defineConfig(config: Config, ...configs: TestExecutorConfig[]) {
       envs.push("default");
       config.environment = "default";
     }
+    if (config.shim) {
+      if ("error-cause" in config.shim && config.shim["error-cause"] === true) {
+        require("error-cause/auto");
+      }
+    }
   }
-  // if (envs.length > 1 && !envs.includes("default")) {
-  //   throw new AutomationError(
-  //     `A default environment must be defined first. At one config must not have an environment defined or define a default environment explicitly with 'environement="default"`
-  //   );
-  // }
+  if (envs.length > 1 && !envs.includes("default")) {
+    throw new AutomationError(
+      `A default environment must be defined first. At one config must not have an environment defined or define a default environment explicitly with 'environement="default"`
+    );
+  }
   const setters = config.environments as {
     byLiteral: (literal: string) => EnvironmentReader;
-    byEnvironmentVariable: (literal: string) => EnvironmentReader;
-    byFactory: (literal: () => string) => EnvironmentReader;
+    byEnvironmentVariable: (name: string) => EnvironmentReader;
+    byFactory: (action: () => string) => EnvironmentReader;
   };
   return {
     env: setters

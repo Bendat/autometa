@@ -6,7 +6,7 @@ import {
   Tag,
   StepKeywordType,
   FeatureChild,
-  RuleChild,
+  RuleChild
 } from "@cucumber/messages";
 import { FeatureBuilder } from "../groups/feature";
 import { Rule, RuleBuilder } from "../groups/rule";
@@ -21,10 +21,11 @@ import {
   isRule,
   isScenarioOutline,
   isScenario,
-  notEmpty,
+  notEmpty
 } from "./validators";
 import { FeatureChildType, RuleChildType } from "./child-types";
 import { ExampleBuilder } from "../example";
+import { AutomationError } from "@autometa/errors";
 
 export function convertToClass(feature: GherkinFeature, filePath: string) {
   return new FeatureBuilder()
@@ -139,7 +140,9 @@ export function buildBackground(child: { background: GherkinBackground }) {
 
 function makeSteps(background: GherkinBackground | GherkinScenario) {
   return background.steps.map((step) => {
-    const doc = step.docString ? new GherkinDocString(step.docString) : undefined;
+    const doc = step.docString
+      ? new GherkinDocString(step.docString)
+      : undefined;
     return new StepBuilder()
       .text(step.text)
       .docstring(doc)
@@ -231,9 +234,8 @@ export function interpolateExamples(
   values: string[]
 ) {
   if (titles.length !== values.length) {
-    throw new Error(
-      "Titles must have the same length as values in an example Table"
-    );
+    const message = `Titles must have the same length as values in an example Table but there was ${titles.length} titles and ${values.length} values.`;
+    throw new AutomationError(message);
   }
   for (let i = 0; i > titles.length; ) {
     const title = titles[i];
