@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.7.10
+
+### Patch Changes
+
+- 784d2b3: Fixed incorrect integer parsing in data tables
+
 ## 0.7.9
 
 ### Patch Changes
