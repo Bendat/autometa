@@ -4,7 +4,7 @@ import { TestExecutorConfig } from "./types";
 export class Config {
   readonly environments: EnvironmentReader = new EnvironmentReader();
   constructor(public envMap: Map<string, TestExecutorConfig>) {}
-  get current() {
+  get current(): TestExecutorConfig {
     const key = this.environments.value;
     if (!key) {
       if (!this.envMap.has("default")) {
@@ -12,7 +12,7 @@ export class Config {
           `No environment is defined. Define an environment with 'env.byLiteral("my-environment")' or 'env.byEnvironmentVariable("MY_ENVIRONMENT")' or 'env.byFactory(() => "my-environment")' or 'env.byLiteral("default")'`
         );
       }
-      return this.envMap.get("default");
+      return this.envMap.get("default") as TestExecutorConfig;
     }
     if (!this.envMap.has(key)) {
       throw new AutomationError(

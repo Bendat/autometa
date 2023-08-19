@@ -1,11 +1,13 @@
 import { AutomationError } from "@autometa/errors";
 
 export function AssertDefined<TObj>(
-  item: TObj | null | undefined
+  item: TObj | null | undefined,
+  context?: string
 ): asserts item is TObj {
+  const prefix = context ? `${context}: ` : "";
   if (item === null || item === undefined) {
     throw new AutomationError(
-      `Item was expected to be defined but was ${item}. Full Item: ${JSON.stringify(
+      `${prefix}Item was expected to be defined but was ${item}. Full Item: ${JSON.stringify(
         item,
         null,
         2

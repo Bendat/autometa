@@ -16,26 +16,34 @@ const extensions = [
   ".before.ts",
   ".after.ts",
   ".setup.ts",
-  ".teardown.ts",
+  ".teardown.ts"
 ];
 abstract class FileSystem {
-  abstract get path(): string;
-  declare stepDefRoot: string;
+  abstract get path(): string | string[];
+  declare stepDefRoots: string[];
 
   getFeatureFile() {
+    if (Array.isArray(this.path)) {
+      return this.path.map((path) => {
+        const text = readFileSync(path, "utf-8");
+        return parseGherkin(text, path);
+      });
+    }
     const text = readFileSync(this.path, "utf-8");
     return parseGherkin(text, this.path);
   }
 
   loadStepDefinitions() {
-    const globalsDirs = this.stepDefRoot;
+    const globalsDirs = this.stepDefRoots;
     if (globalsDirs !== undefined) {
-      const resolved = path.resolve(globalsDirs);
-      const paths = extensions.flatMap((ext) =>
-        glob.sync(`${resolved}/**/*${ext}`)
-      );
-      for (const path of paths) {
-        require(path);
+      for (const globalsDir of globalsDirs) {
+        const resolved = path.resolve(globalsDir);
+        const paths = extensions.flatMap((ext) =>
+          glob.sync(`${resolved}/**/*${ext}`)
+        );
+        for (const path of paths) {
+          require(path);
+        }
       }
     }
   }
@@ -45,7 +53,7 @@ export class RelativeFileSystem extends FileSystem {
   constructor(
     private caller: string,
     private uri: string,
-    readonly stepDefRoot: string
+    readonly stepDefRoots: string[]
   ) {
     super();
     if (!this.caller) {
@@ -59,7 +67,7 @@ export class RelativeFileSystem extends FileSystem {
   }
 }
 export class HomeDirectoryFileSystem extends FileSystem {
-  constructor(private uri: string, readonly stepDefRoot: string) {
+  constructor(private uri: string, readonly stepDefRoots: string[]) {
     super();
     if (!uri.startsWith("~")) {
       throw new AutomationError(
@@ -82,42 +90,60 @@ export class AbsoluteFileSystem extends FileSystem {
 
 export class FeatureRootFileSystem extends FileSystem {
   constructor(
-    private featureRoot: string,
+    private featureRoot: string[],
     private uri: string,
-    readonly stepDefRoot: string
+    readonly stepDefRoots: string[]
   ) {
     super();
-    if (!this.featureRoot) {
+    if (
+      this.featureRoot.length == 0 ||
+      !Array.isArray(this.featureRoot) ||
+      featureRoot.includes(undefined as unknown as string) ||
+      featureRoot.includes("") ||
+      featureRoot.includes(null as unknown as string)
+    ) {
       throw new AutomationError(
         `Cannot use Feature Root path without feature root. Stub was ${uri}`
       );
     }
   }
   get path() {
-    return path.resolve(this.featureRoot, this.uri.replace("^/", ""));
+    return this.featureRoot.map((root) =>
+      path.resolve(root, this.uri.replace("^/", ""))
+    );
   }
 }
 export class Files {
-  featureRoot: string;
+  featureRoot: string[];
   callerFile: string;
-  stepDefRoot: string;
+  stepDefRoot: string[];
 
   @Bind
-  withFeatureRoot(featureRoot: string) {
+  withFeatureRoot(featureRoot: string | string[]) {
+    if (typeof featureRoot === "string") {
+      this.featureRoot = [featureRoot];
+      return this;
+    }
     this.featureRoot = featureRoot;
     return this;
   }
+
   @Bind
   withCallerFile(callerFile: string) {
     this.callerFile = callerFile;
     return this;
   }
+
   @Bind
-  withGlobalRoot(globalsRootDir: string) {
+  withStepsRoot(globalsRootDir: string | string[]) {
+    if (typeof globalsRootDir === "string") {
+      this.stepDefRoot = [globalsRootDir];
+      return this;
+    }
     this.stepDefRoot = globalsRootDir;
     return this;
   }
-  
+
   @Bind
   fromUrlPattern(uriPattern: string) {
     const global = this.stepDefRoot;

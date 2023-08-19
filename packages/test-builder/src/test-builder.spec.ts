@@ -48,7 +48,7 @@ describe("TestBuilder", () => {
       steps,
       Empty_Function
     );
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -66,7 +66,7 @@ describe("TestBuilder", () => {
       steps,
       Empty_Function
     );
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -87,7 +87,7 @@ describe("TestBuilder", () => {
       steps,
       Empty_Function
     );
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -112,7 +112,7 @@ describe("TestBuilder", () => {
       steps,
       Empty_Function
     );
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -142,7 +142,7 @@ describe("TestBuilder", () => {
       steps,
       Empty_Function
     );
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -173,7 +173,7 @@ describe("TestBuilder", () => {
       steps,
       Empty_Function
     );
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -208,7 +208,7 @@ describe("TestBuilder", () => {
       vi.fn()
     );
     scope.attach(stepScope);
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -249,7 +249,7 @@ describe("TestBuilder", () => {
     );
     scenarioScope.attach(stepScope);
     scope.attach(scenarioScope);
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -297,7 +297,7 @@ describe("TestBuilder", () => {
     );
     outlineScope.attach(stepScope);
     scope.attach(outlineScope);
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -357,7 +357,7 @@ describe("TestBuilder", () => {
     examplesScope.attach(stepScope);
     outlineScope.attach(examplesScope);
     scope.attach(outlineScope);
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
     expect(bridge.data.scope).toBe(scope);
@@ -400,7 +400,7 @@ describe("TestBuilder", () => {
     );
     bgScope.attach(stepScope);
     scope.attach(bgScope);
-    const builder = new TestBuilder(global, feature);
+    const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     const background = bridge.background;
     expect(background.data.gherkin.name).toEqual("my background");
