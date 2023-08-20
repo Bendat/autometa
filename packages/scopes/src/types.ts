@@ -28,10 +28,17 @@ export type HookArguments = [App];
 export interface Types {
   [key: string]: unknown;
   string: string;
+  word: string;
   number: number;
+  float: number,
+  int: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any: any,
+  unknown: unknown
   boolean: boolean;
   bool: boolean;
   date: Date;
+  primitive: string | number | boolean | Date;
 }
 
 interface ExpressionFn<TAccumulator extends unknown[], TTable> {

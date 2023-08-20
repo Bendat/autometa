@@ -19,6 +19,7 @@ export const ShimSchema = object({
   errorCause: boolean().optional()
 }).optional();
 
+export const EventsSchema = string().array();
 // Use decorators
 // export const AppSchema = z.instanceof(AutometaApp);
 // export const WorldSchema = z.instanceof(AutometaWorld);
@@ -33,5 +34,6 @@ export const TestExecutorConfigSchema = object({
   environment: EnvironmentSchema,
   test: TestSchema,
   roots: RootSchema,
-  shim: ShimSchema
+  shim: ShimSchema,
+  events: EventsSchema
 });

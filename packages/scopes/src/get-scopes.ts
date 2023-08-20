@@ -3,15 +3,25 @@ import { GlobalScope } from "./global-scope";
 import { Scope } from "./scope";
 import { Scopes } from "./scopes";
 
-export function GetCucumberFunctions(
-  registry: ParameterTypeRegistry
-)  {
-  const global = new GlobalScope( registry);
+export function GetCucumberFunctions(registry: ParameterTypeRegistry) {
+  const global = new GlobalScope(registry);
   return addAlternatives(global, global);
 }
 
 function addAlternatives(
-  { Feature, Scenario, ScenarioOutline, Rule, Given, When, Then }: Scopes,
+  {
+    Feature,
+    Scenario,
+    ScenarioOutline,
+    Rule,
+    Given,
+    When,
+    Then,
+    Before,
+    After,
+    Teardown,
+    Setup
+  }: Omit<Scopes, 'Global'>,
   Global: GlobalScope
 ) {
   addGroupAlternatives(Feature);
@@ -26,7 +36,11 @@ function addAlternatives(
     Given,
     When,
     Then,
-    Global,
+    Before,
+    After,
+    Teardown,
+    Setup,
+    Global
   };
 }
 
@@ -55,6 +69,6 @@ function configureSkipOption<K extends Scope, T extends (...args: any) => K>(
   Object.defineProperty(group, key, {
     configurable: true,
     writable: true,
-    value: value.bind(group),
+    value: value.bind(group)
   });
 }

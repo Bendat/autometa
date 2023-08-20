@@ -115,7 +115,7 @@ function registerParameterType(
       const param = new ParameterType(name, regexp, primitive, wrapper);
       registry.defineParameterType(param);
     }),
-    def`encapuslatePrimitive`(
+    def`encapsulatePrimitive`(
       string(),
       instance(RegExp),
       func("type"),

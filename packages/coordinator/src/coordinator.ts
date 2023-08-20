@@ -7,33 +7,57 @@ import { FeatureScope, Files } from "@autometa/scopes";
 import { AutomationError } from "@autometa/errors";
 import { AssertDefined } from "@autometa/asserters";
 import { CoordinatorOpts } from "./types";
+import { Feature } from "@autometa/gherkin";
 export class Coordinator {
   #fs: Files;
   #builder: TestBuilder;
   #bridge: FeatureBridge;
   constructor(
     readonly configs: Config,
-    readonly feature: FeatureScope,
-    readonly callerFile: string,
-    readonly events: TestEventEmitter,
-    readonly opts: CoordinatorOpts,
-    readonly executor: (
+    readonly opts: Record<string, CoordinatorOpts>
+  ) {
+    AssertDefined(configs, "Config");
+  }
+
+  run(
+    feature: FeatureScope,
+    caller: string,
+    events: TestEventEmitter,
+    executor: (
       { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
       bridge: FeatureBridge,
       events: TestEventEmitter
     ) => void
   ) {
-    AssertDefined(configs, "Config");
-    AssertDefined(feature, "Feature");
     AssertDefined(executor, "Executor");
-    const fs = this.fileSystem();
+
+    const fs = this.fileSystem(caller);
     const path = fs.fromUrlPattern(feature.path);
     const gherkin = path.getFeatureFile();
+    if (!Array.isArray(gherkin)) {
+      this.start(gherkin, feature, events, executor);
+    } else {
+      for (const featGherkin of gherkin) {
+        this.start(featGherkin, feature, events, executor);
+      }
+    }
+  }
+
+  private start(
+    gherkin: Feature,
+    feature: FeatureScope,
+    events: TestEventEmitter,
+    executor: (
+      { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+      bridge: FeatureBridge,
+      events: TestEventEmitter
+    ) => void
+  ) {
     this.#builder = new TestBuilder(gherkin);
     this.#bridge = this.#builder.onFeatureExecuted(feature);
     this.loadSteps();
-    const { app, world } = this.opts;
-    executor({ app, world }, this.#bridge, this.events);
+    const { app, world } = this.opts[this.config.environment ?? "default"];
+    executor({ app, world }, this.#bridge, events);
   }
 
   get fs() {
@@ -47,7 +71,7 @@ export class Coordinator {
     return this.configs.current;
   }
 
-  fileSystem() {
+  fileSystem(caller: string) {
     const { roots } = this.config;
     const {
       steps,
@@ -56,7 +80,7 @@ export class Coordinator {
 
     this.#fs = new Files()
       .withFeatureRoot(features)
-      .withCallerFile(this.callerFile)
+      .withCallerFile(caller)
       .withStepsRoot(steps);
     return this.fs;
   }

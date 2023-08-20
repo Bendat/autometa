@@ -1,18 +1,13 @@
 import { AutomationError } from "./automation-error";
 import { Class } from "@autometa/types";
 
-export function raise(message: string): never;
-export function raise<T extends Class<Error>>(
-  message: string,
-  errorType: T
-): never;
 export function raise(
   message: string,
-  errorType?: Class<AutomationError>,
-  opts?: { cause: Error }
+  opts?: { cause?: Error; type?: Class<AutomationError> }
 ): never {
-  if (errorType) {
-    throw new errorType(message, opts);
+  const actual = opts ?? {};
+  if (actual.type && actual.type.prototype instanceof Error) {
+    throw new actual.type(message, { cause: actual.cause });
   }
-  throw new AutomationError(message, opts);
+  throw new AutomationError(message, { cause: actual.cause });
 }

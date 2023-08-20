@@ -4,9 +4,18 @@ import { FeatureScope } from "./feature-scope";
 import { RuleScope } from "./rule-scope";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
 import { ScenarioScope } from "./scenario-scope";
-import type { FeatureAction, RuleAction, ScenarioAction, StepAction, StepTableArg } from "./types";
+import type {
+  FeatureAction,
+  HookAction,
+  RuleAction,
+  ScenarioAction,
+  StepAction,
+  StepTableArg
+} from "./types";
+import { GlobalScope } from "./global-scope";
 
 export interface Scopes {
+  Global: GlobalScope;
   Feature(filepath: string): FeatureScope;
   Feature(testDefinition: FeatureAction, filepath: string): FeatureScope;
   Feature(...args: (FeatureAction | string)[]): FeatureScope;
@@ -27,5 +36,25 @@ export interface Scopes {
     title: TText,
     action: StepAction<TText, TTable>,
     tableType?: Class<TTable>
+  ): void;
+  Before(
+    description: string,
+    action: HookAction,
+    tagFilterExpression?: string
+  ): void;
+  After(
+    description: string,
+    action: HookAction,
+    tagFilterExpression?: string
+  ): void;
+  Setup(
+    description: string,
+    action: HookAction,
+    tagFilterExpression?: string
+  ): void;
+  Teardown(
+    description: string,
+    action: HookAction,
+    tagFilterExpression?: string
   ): void;
 }
