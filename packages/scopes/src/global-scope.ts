@@ -88,7 +88,7 @@ export class GlobalScope extends Scope implements Scopes {
         }
       ),
       def(
-        "makes a Feature scope which only executed globally defined steps.",
+        "makes a Feature scope which only executes globally defined steps.",
         string("filePath")
       ).matches((filePath) => {
         const feature = new FeatureScope(

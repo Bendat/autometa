@@ -1,7 +1,4 @@
-import {
-  FeatureScope,
-  GlobalScope,
-  RuleScope} from "@autometa/scopes";
+import { FeatureScope, RuleScope } from "@autometa/scopes";
 import {
   BackgroundBridge,
   ExamplesBridge,
@@ -19,9 +16,7 @@ import { Feature } from "@autometa/gherkin";
 import { raise } from "@autometa/errors";
 
 export class TestBuilder {
-  constructor(global: GlobalScope, readonly feature: Feature) {
-    global.onFeatureExecuted = this.onFeatureExecuted;
-  }
+  constructor(readonly feature: Feature) {}
   @Bind
   onFeatureExecuted(featureScope: FeatureScope) {
     const bridge = new FeatureBridge();

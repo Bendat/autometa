@@ -839,6 +839,79 @@ importers:
         specifier: ^0.29.8
         version: 0.29.8
 
+  packages/coordinator:
+    dependencies:
+      '@autometa/app':
+        specifier: workspace:^
+        version: link:../app
+      '@autometa/asserters':
+        specifier: workspace:^
+        version: link:../asserters
+      '@autometa/config':
+        specifier: workspace:^
+        version: link:../config
+      '@autometa/errors':
+        specifier: workspace:^
+        version: link:../errors
+      '@autometa/events':
+        specifier: workspace:^
+        version: link:../events
+      '@autometa/gherkin':
+        specifier: workspace:^
+        version: link:../gherkin
+      '@autometa/jest-executor':
+        specifier: workspace:^
+        version: link:../jest-executor
+      '@autometa/scopes':
+        specifier: workspace:^
+        version: link:../scopes
+      '@autometa/test-builder':
+        specifier: workspace:^
+        version: link:../test-builder
+      '@autometa/types':
+        specifier: workspace:^
+        version: link:../types
+      tsyringe:
+        specifier: ^4.8.0
+        version: 4.8.0
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.11.18
+      '@types/uuid':
+        specifier: ^9.0.1
+        version: 9.0.1
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.54.1
+        version: 5.54.1(@typescript-eslint/parser@5.54.1)(eslint@8.44.0)(typescript@4.9.5)
+      '@typescript-eslint/parser':
+        specifier: ^5.54.1
+        version: 5.54.1(eslint@8.44.0)(typescript@4.9.5)
+      eslint:
+        specifier: ^8.37.0
+        version: 8.44.0
+      eslint-config-custom:
+        specifier: workspace:*
+        version: link:../../configuration/eslint-config-custom
+      eslint-config-prettier:
+        specifier: ^8.3.0
+        version: 8.6.0(eslint@8.44.0)
+      rimraf:
+        specifier: ^4.1.2
+        version: 4.1.2
+      tsconfig:
+        specifier: 'workspace: *'
+        version: link:../../configuration/tsconfig
+      tsup:
+        specifier: ^6.7.0
+        version: 6.7.0(ts-node@10.9.1)(typescript@4.9.5)
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
+      vitest:
+        specifier: ^0.29.8
+        version: 0.29.8
+
   packages/cucumber-expressions:
     dependencies:
       '@autometa/asserters':
