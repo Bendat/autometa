@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "changesets": "changesets",
-    "preinstall": "npx only-allow pnpm",
+    "____spreinstall": "npx only-allow pnpm",
     "build": "pnpm nx run-many -t build",
     "build:runner": "turbo run build:runner",
     "build:filter": "turbo run build",

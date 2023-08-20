@@ -28,7 +28,8 @@ import type {
 import { AutomationError } from "@autometa/errors";
 import { DataTable } from "@autometa/gherkin";
 import { Class } from "@autometa/types";
-export class GlobalScope extends Scope implements Scopes {
+import getCaller from "get-caller-file";
+export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   canHandleAsync = false;
   private _onFeatureExecuted: OnFeatureExecuted;
 
@@ -72,6 +73,7 @@ export class GlobalScope extends Scope implements Scopes {
   Feature(...args: (FeatureAction | string)[]): FeatureScope;
   @Bind
   Feature(...args: (FeatureAction | string)[]) {
+    const caller = getCaller();
     return overloads(
       def(func("featureAction"), string("filepath")).matches(
         (featureAction, filePath) => {
@@ -83,7 +85,7 @@ export class GlobalScope extends Scope implements Scopes {
             this.buildStepCache
           );
           this.attach(feature);
-          this._onFeatureExecuted(feature);
+          this._onFeatureExecuted(feature, caller);
           return feature;
         }
       ),
@@ -99,7 +101,7 @@ export class GlobalScope extends Scope implements Scopes {
           this.buildStepCache
         );
         this.attach(feature);
-        this._onFeatureExecuted(feature);
+        this._onFeatureExecuted(feature, caller);
         return feature;
       }),
       fallback((...args) => {

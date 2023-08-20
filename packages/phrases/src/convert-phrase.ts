@@ -29,8 +29,8 @@ export function convertPhrase<
   TMutations extends StringTransformers
 >(phrase: TPhrase, ...mutations: TMutations) {
   const constructed = mutations.map((cls) => cls());
-  const ordered = constructed.sort((a, b) => a.order - b.order);
-  return ordered.reduce((acc, transformer) => {
+  // const ordered = constructed.sort((a, b) => a.order - b.order);
+  return constructed.reduce((acc, transformer) => {
     return transformer.transform(acc);
   }, phrase as string);
 }

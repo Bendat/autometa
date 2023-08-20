@@ -24,7 +24,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "outDir": "dist/esm",
-    "declarationDir": "dist/types"
+    "declarationDir": "dist/types",
+    "strictBindCallApply": true
   },
   "ts-node": {
     "esm": true,

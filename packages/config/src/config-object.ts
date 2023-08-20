@@ -23,4 +23,7 @@ export class Config {
     }
     return this.envMap.get(key) ?? raise(`Environment ${key} is not defined`);
   }
+  get currentEnvironment() {
+    return this.environments.value;
+  }
 }

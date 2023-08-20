@@ -12,5 +12,11 @@ export {
   lower,
   collapse
 } from "./string-transformer";
-export * from './types'
-export { FromPhrase, IsPhrase } from "./from-phrase";
+export * from "./types";
+export {
+  PhraseParser,
+  IsPhrase,
+  From,
+  IFromPhrase,
+  AssertPhrase
+} from "./from-phrase";

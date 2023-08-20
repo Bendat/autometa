@@ -1,13 +1,7 @@
 import "reflect-metadata";
 
 import { Class } from "@autometa/types";
-import {
-  scoped,
-  inject,
-  Lifecycle,
-  injectable,
-  InjectionToken
-} from "tsyringe";
+import { scoped, inject, Lifecycle, injectable } from "tsyringe";
 import { AutometaWorld } from "..";
 /**
  * Marks a class as an injectable fixture. Constructor parameters
@@ -55,24 +49,15 @@ export function Fixture(scope = Lifecycle.ContainerScoped) {
   };
 }
 
-export function Inject() {
-  return (target: InjectionToken<unknown>) => {
-    inject(target);
-  };
-}
-
-export const AppSymbol = Symbol("App");
-export const WorldSymbol = Symbol("World");
-export const EnvironmentSymbol = Symbol("AppTypeOptions");
+export const Inject = inject;
 
 export function AppType(
-  container: Record<string | symbol, unknown>,
+  container: Record<string, { app: unknown; world: unknown }>,
   world: AutometaWorld,
   environment?: string
 ) {
+  const env = environment ?? "default";
   return (target: Class<unknown>) => {
-    container[AppSymbol] = target;
-    container[EnvironmentSymbol] = environment ?? "default";
-    container[WorldSymbol] = world;
+    container[env] = { app: target, world };
   };
 }
