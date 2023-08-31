@@ -1,3 +1,4 @@
+import { transformTableValue } from './transform-table-value';
 import { ParsedDataTable } from "./datatable";
 import { JsonTableRow } from "./json-table-row";
 import { CompiledDataTable } from "./table-type";
@@ -23,6 +24,17 @@ interface IHTable {
    */
   get(header: string, index: number): TableValue;
   get(header: string, index?: number): TableValue | TableValue[];
+  /**
+   * @param header The column title to collect
+   * @param raw Recover raw data without type transformation.
+   */
+  get(header: string, raw?: boolean): TableValue | TableValue[];
+  /**
+   * @param header The column title to collect
+   * @param index The cells row-index of that column to retrieve.
+   * @param raw Recover raw data without type transformation.
+   */
+  get(header: string, index?: number, raw?: boolean): TableValue | TableValue[];
 }
 /**
  * Datatable Transformer that produces a
@@ -59,17 +71,25 @@ export class HTable extends ParsedDataTable implements IHTable {
    */
   constructor(protected raw: CompiledDataTable) {
     super();
-    [this.headers, ...this.rows] = raw as [string[], TableValue[]];
+    [this.headers, ...this.rows] = raw;
     const mapHeaders = (header: string, idx: number) => {
       this.headerMapping[header] = idx;
     };
     this.headers.forEach(mapHeaders);
     const [_headers, ...rows] = [...raw];
-    this.rows = rows;
+    this.rows = rows.map(row => row.map(transformTableValue));
   }
-  get = (header: string, index?: number) => {
+  get = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
+    let index: number | null | undefined;
+    let getRaw = raw;
+    if (typeof indexOrRaw === 'boolean') {
+      getRaw = indexOrRaw;
+    } else {
+      index = indexOrRaw;
+    }
+    const rows = getRaw ? this.raw.slice(1) : this.rows;
     const colIdx = this.headerMapping[header];
-    const col = this.rows.map((row) => row[colIdx]);
+    const col = rows.map((row) => row[colIdx]);
     if (index !== null && index != undefined) {
       const found = col.at(index);
       if (!found) {
@@ -81,9 +101,17 @@ export class HTable extends ParsedDataTable implements IHTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return col as any;
   };
-  tryGet = (header: string, index?: number) => {
+  tryGet = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
+    let index: number | null | undefined;
+    let getRaw = raw;
+    if (typeof indexOrRaw === 'boolean') {
+      getRaw = indexOrRaw;
+    } else {
+      index = indexOrRaw;
+    }
+    const rows = getRaw ? this.raw.slice(1) : this.rows;
     const colIdx = this.headerMapping[header];
-    const col = this.rows.map((row) => row[colIdx]);
+    const col = rows.map((row) => row[colIdx]);
     if (index !== null && index != undefined) {
       return col.at(index);
     }
@@ -97,10 +125,12 @@ export class HTable extends ParsedDataTable implements IHTable {
    * table.row(0); // ['John', 46, 'farmer']
    * ```
    * @param number The index of the row to retrieve
+   * @param raw Recover raw data without type transformation.
    * @returns A Tuple-like array of the values of a row
    */
-  row(number: number): TableValue[] {
-    const row = this.rows.at(number);
+  row(number: number, raw?: boolean): TableValue[] {
+    const rows = raw ? this.raw.slice(1) : this.rows
+    const row = rows.at(number);
     if (!row) {
       throw new Error(`Row ${number} does not exist. This table has ${this.rows.length} rows.`);
     }
@@ -113,10 +143,12 @@ export class HTable extends ParsedDataTable implements IHTable {
    * table.col(0); // ['John', 'Burt']
    * ```
    * @param number The index of the column to retrieve
+   * @param raw Recover raw data without type transformation.
    * @returns A Tuple-like array of the values of a column
    */
-  col(number: number): TableValue[] {
-    return this.rows.map((row) => {
+  col(number: number, raw?: boolean): TableValue[] {
+    const rows = raw ? this.raw.slice(1) : this.rows
+    return rows.map((row) => {
       const col = row.at(number);
       if (!col) {
         throw new Error(`Column ${number} does not exist. This table has ${row.length} rows.`);
@@ -129,10 +161,11 @@ export class HTable extends ParsedDataTable implements IHTable {
    * by it's x,y (row,col) coordinate
    * @param rowIdx the index of the row the cell is in
    * @param columnIdx the index of the column the cell is in
+   * @param raw Recover raw data without type transformation.
    * @returns the value of the selected cell.
    */
-  cell(rowIdx: number, columnIdx: number): TableValue {
-    const cols = this.row(rowIdx);
+  cell(rowIdx: number, columnIdx: number, raw?: boolean): TableValue {
+    const cols = this.row(rowIdx, raw);
     const cell = cols.at(columnIdx);
     if (!cell) {
       throw new Error(
@@ -148,10 +181,11 @@ export class HTable extends ParsedDataTable implements IHTable {
    *
    * Numbers and bools will be parsed if possible.
    * @param rowIndex
+   * @param raw Recover raw data without type transformation.
    * @returns
    */
-  json<T extends JsonTableRow = JsonTableRow>(rowIndex: number): T {
-    return this.toList()[rowIndex] as T;
+  json<T extends JsonTableRow = JsonTableRow>(rowIndex: number, raw?: boolean): T {
+    return this.toList(raw)[rowIndex] as T;
   }
 
   /**
@@ -164,10 +198,12 @@ export class HTable extends ParsedDataTable implements IHTable {
    *   { name: 'Burt', age: 24, job: 'doctor' },
    * ]
    * ```
+   * @param raw Recover raw data without type transformation.
    * @returns the converted object array
    */
-  toList(): JsonTableRow[] {
-    return this.rows.map((values) => {
+  toList(raw?: boolean): JsonTableRow[] {
+    const rows = raw ? this.raw.slice(1) : this.rows
+    return rows.map((values) => {
       return values
         .map((value, idx) => {
           return { [this.headers[idx]]: value };

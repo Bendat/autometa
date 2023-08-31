@@ -1,6 +1,4 @@
 import { Background, Scenario } from "@cucumber/messages";
-import type { TableValue } from "./datatables/table-value";
-import { transformTableValue } from "./datatables/transform-table-value";
 import { GherkinNode } from "./gherkin-node";
 import { GherkinScenario } from "./gherkin-scenario";
 import type { Examples } from "./parser.types";
@@ -14,7 +12,7 @@ export class GherkinExamples extends GherkinNode {
   readonly tags: string[] = [];
 
   readonly headers: string[];
-  readonly rows: TableValue[][];
+  readonly rows: string[][];
   readonly scenarios: GherkinScenario[] = [];
 
   constructor(
@@ -26,9 +24,7 @@ export class GherkinExamples extends GherkinNode {
     super();
     this.takeTags([...message.examples.tags], ...inheritedTags);
     this.headers = this.message.examples.tableHeader?.cells.map((it) => it.value) ?? [];
-    this.rows = this.message.examples.tableBody.map((it) =>
-      it.cells.map((cell) => transformTableValue(cell.value))
-    );
+    this.rows = this.message.examples.tableBody.map(({ cells }) => cells.map(({ value }) => value));
     for (const row of this.rows) {
       const scenarioExample = row.map((it, idx) => ({
         key: this.headers[idx],

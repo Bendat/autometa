@@ -8,7 +8,6 @@ import { Background, DocString, StepKeywordType } from "@cucumber/messages";
 import { getTableOrDocstring } from "./datatables/get-table-or-docstring";
 import { compileDatatable, type CompiledDataTable } from "./datatables/table-type";
 import type { Modifiers } from "./types";
-import type { TableValue } from "./datatables/table-value";
 import { Docstring } from "./doc-string";
 import crypto from "crypto";
 export type ScenarioMessage = { scenario: Scenario; backgrounds?: { background: Background }[] };
@@ -21,7 +20,7 @@ export class GherkinScenario extends GherkinNode {
     readonly message: ScenarioMessage,
     readonly stepCache: StepCache,
     inheritedTags?: string[],
-    readonly example?: { readonly key: string; readonly value: TableValue }[],
+    readonly example?: { readonly key: string; readonly value: string }[],
     private exampleIdx?: number
   ) {
     super();
@@ -59,7 +58,7 @@ export class GherkinScenario extends GherkinNode {
 
   private loadFromGherkin(
     message: ScenarioMessage,
-    example: { readonly key: string; readonly value: TableValue }[] | undefined
+    example: { readonly key: string; readonly value: string }[] | undefined
   ) {
     const backgrounds = message.backgrounds ?? [];
     for (const background of backgrounds) {
@@ -128,12 +127,12 @@ export class GherkinScenario extends GherkinNode {
 
 function interpolateStepText(
   text: string,
-  example: { readonly key: string; readonly value: TableValue }[] | undefined
+  example: { readonly key: string; readonly value: string }[] | undefined
 ) {
   let realText = text;
   if (example) {
     for (const { key, value } of example) {
-      realText = realText.replace(`<${key}>`, `${value}`);
+      realText = realText.replace(`<${key}>`, value);
     }
   }
   return realText;
@@ -141,7 +140,7 @@ function interpolateStepText(
 
 function interpolateStepDatatable(
   table?: CompiledDataTable,
-  example?: { readonly key: string; readonly value: TableValue }[]
+  example?: { readonly key: string; readonly value: string }[]
 ) {
   if (!table) {
     return undefined;
