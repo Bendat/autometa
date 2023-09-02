@@ -38,7 +38,7 @@
   "devDependencies": {
     "@jest/globals": "^29.4.3",
     "@jest/types": "^29.4.3",
-    "@types/babel__core": "^7.20.0",
+    "@types/babel__core": "^7.20.1",
     "@types/glob": "^8.0.1",
     "@types/lodash": "^4.14.195",
     "@types/node": "^18.11.18",
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@autometa/cucumber-runner": "workspace:^0.7.3",
-    "@babel/core": "^7.21.4",
+    "@babel/core": "^7.22.11",
     "vitest": "0.33.0"
   }
 }
