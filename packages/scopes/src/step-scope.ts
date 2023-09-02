@@ -1,8 +1,10 @@
-import type { StepAction, StepTableArg } from "./types";
 import { Scope } from "./scope";
 import {
+  Background,
   DataTable,
   DataTableDocument,
+  Example,
+  Scenario,
   Step,
   StepKeyword,
   StepType,
@@ -15,10 +17,12 @@ import { Class } from "@autometa/types";
 import { Expression } from "@cucumber/cucumber-expressions";
 import { HookCache } from "./caches/hook-cache";
 import { Empty_Function } from "./novelties";
+import { StepActionFn } from "./types";
+import { interpolateStepText } from "@autometa/gherkin";
 
 export class StepScope<
   TText extends string,
-  TTable extends StepTableArg | undefined
+  TTable extends DataTable | undefined
 > extends Scope {
   canHandleAsync = true;
   action = Empty_Function;
@@ -27,11 +31,11 @@ export class StepScope<
     readonly keyword: StepKeyword,
     readonly type: StepType,
     public readonly expression: Expression,
-    public readonly stepAction: StepAction<TText, TTable>,
+    public readonly stepAction: StepActionFn<TText, TTable>,
     readonly tablePrototype?: Class<TTable>
   ) {
     const name = `${keyword} ${expression.source}`;
-    super(new HookCache(), name, Empty_Function);
+    super(new HookCache(), name);
   }
 
   @Bind
@@ -51,12 +55,19 @@ export class StepScope<
     }
     return [];
   }
+
   @Bind
-  async execute(gherkin: Step, app: App) {
+  async execute(scenario: Scenario | Background, gherkin: Step, app: App) {
     const args: unknown[] = [];
-    // const args = this.getArgs(gherkin.text);
     const title = this.stepText(gherkin.keyword, gherkin.text);
-    const gotArgs = this.getArgs(gherkin.text);
+    let gotArgs: unknown[];
+    if (scenario instanceof Example) {
+      const realText = interpolateStepText(gherkin.text, scenario.table);
+      gotArgs = this.getArgs(realText);
+    } else {
+      gotArgs = this.getArgs(gherkin.text);
+    }
+
     args.push(...gotArgs);
     if (gherkin.table) {
       this.handleMissingTable(title, args, gherkin);
@@ -103,7 +114,10 @@ export class StepScope<
   }
 
   get idString() {
-    return `${this.keyword} ${this.expression.source}`;
+    if (this.expression) {
+      return `${this.keyword} ${this.expression.source}`;
+    }
+    return "You shouldn't be seeing this";
   }
   @Bind
   stepText(keyword: string, gherkinText: string) {

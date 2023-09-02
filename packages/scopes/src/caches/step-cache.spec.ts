@@ -39,6 +39,20 @@ describe("StepCache", () => {
       );
     });
   });
+  describe("findByExample", () => {
+    it("finds a cached step which is part of a gherkin Example", () => {
+      const sut = new StepCache("test");
+      const step = makeStep("Given", "Context", "hello {word}");
+      sut.add(step);
+      const found = sut.findByExample(
+        "Context",
+        "Given",
+        "hello <thing>",
+        { thing: "world" },
+      );
+      expect(found?.step).toEqual(step);
+    });
+  });
   describe("find", () => {
     it("should throw an error if no step can be found", () => {
       const sut = new StepCache("test");

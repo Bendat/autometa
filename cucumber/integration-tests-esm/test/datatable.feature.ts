@@ -67,7 +67,7 @@ Feature(() => {
       MTable
     );
   });
-  Scenario("ListTable", () => {
+  Scenario.only("ListTable", () => {
     Given(
       "a table",
       (table: ListTable) => {

@@ -79,7 +79,7 @@ export function refineDiff(diff: Change[]) {
 }
 
 export function isExpressionCandidate(change1: Change, change2: Change) {
-  if (change1.removed && change2.added) {
+  if (change1 && change1.removed && change2 && change2.added) {
     const scopeText = change2.value;
     return /{.*}/.test(scopeText);
   }

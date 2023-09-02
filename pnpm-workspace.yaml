@@ -1,11 +1,7 @@
 packages:
+  - "__integration__/*"
   - "configuration/*"
   - "packages/*"
   - "cucumber/*"
   - "libraries/*"
   - "documentation/*"
-  # - "playwright/*"
-
-  # - "selenium/*"
-  # - "cucumber/*"
-  # - "libraries/*"

@@ -20,10 +20,38 @@ export const NumberParam: AutoParamTypeDefinition = {
   primitive: Number
 };
 
+export const AnyParam: AutoParamTypeDefinition = {
+  name: "any",
+  regexpPattern: /.*/
+};
+export const UnknownParam: AutoParamTypeDefinition = {
+  name: "unknown",
+  regexpPattern: /.*/
+};
+export const TextParam: ParamTypeDefinition = {
+  name: "text",
+  regexpPattern: /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/,
+  primitive: String,
+  transform: (value: string) => {
+    const asStr = value as string;
+    return asStr.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+  }
+};
+
 export const BooleanParam: AutoParamTypeDefinition = {
   name: "boolean",
   regexpPattern: /true|false/,
   primitive: Boolean
+};
+export const BoolParam: AutoParamTypeDefinition = {
+  name: "bool",
+  regexpPattern: /true|false/,
+  primitive: Boolean
+};
+export const DateParam: AutoParamTypeDefinition = {
+  name: "date",
+  regexpPattern: [isodateRegexp, shortDateRegex],
+  type: Date
 };
 
 export const PrimitiveParam: ParamTypeDefinition = {
@@ -64,7 +92,7 @@ export const PrimitiveParam: ParamTypeDefinition = {
         if (fromPhrase && !isNaN(fromPhrase.getTime())) {
           return fromPhrase;
         }
-        return val;
+        return val.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
       })
     ).use([value]);
   }

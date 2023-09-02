@@ -13,10 +13,14 @@ export abstract class Hook {
   abstract get canFilter(): boolean;
 
   constructor(readonly tagFilterExpression?: string) {}
-   canExecute(...tagExpressions: string[]): boolean {
-    return   this.canFilter &&
-    !isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
+
+  canExecute(...tagExpressions: string[]): boolean {
+    return (
+      this.canFilter &&
+      !isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
+    );
   }
+  
   async execute(app: App, ...tagExpressions: string[]) {
     const report = new HookReportBuilder()
       .name(this.name)
@@ -33,7 +37,6 @@ export abstract class Hook {
 
     return report.status("PASSED").build();
   }
-
 }
 
 export class BeforeHook extends Hook {

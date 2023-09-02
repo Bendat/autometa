@@ -1,3 +1,3 @@
-import e from "@autometa/jest-executor";
+import { execute } from "@autometa/jest-executor";
 
-export const executor = e;
+export const executor = execute;

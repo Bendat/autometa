@@ -43,11 +43,11 @@ export function execute(
     });
 
     bootstrapSetupHooks(bridge, staticApp, events);
-    bootstrapBeforeHooks(bridge, () => localApp, events);
-    bootstrapBackground(bridge, () => localApp, events);
-    bootstrapScenarios(bridge, () => localApp, staticApp, events);
+    bootstrapBeforeHooks(bridge, bridge, () => localApp, events);
+    bootstrapBackground(bridge, bridge, () => localApp, events);
+    bootstrapScenarios(bridge, bridge, () => localApp, staticApp, events);
     bootstrapRules(bridge, () => localApp, staticApp, events);
-    bootstrapAfterHooks(bridge, () => localApp, events);
+    bootstrapAfterHooks(bridge, bridge, () => localApp, events);
     bootstrapTeardownHooks(bridge, staticApp, events);
   });
   afterAll(() => {
@@ -68,23 +68,25 @@ export function execute(
 }
 
 export function bootstrapBackground(
+  root: FeatureBridge,
   bridge: FeatureBridge | RuleBridge,
   localApp: () => App,
   events: TestEventEmitter
 ) {
   const background = bridge.background;
   if (!background) return;
-  const testName = expect.getState().currentTestName;
-  if (!testName) throw new AutomationError("A Scenario must have a title");
-  const scenarioBridge = find(bridge, testName);
-  if (!scenarioBridge) {
-    throw new AutomationError(
-      `No matching scenario bridge was found matching the test name: ${testName}`
-    );
-  }
+
   const tags = bridge?.data?.gherkin?.tags ?? [];
   if (tags.has("@skip") || tags.has("@skipped")) return;
   beforeEach(async () => {
+    const testName = expect.getState().currentTestName;
+    if (!testName) throw new AutomationError("A Scenario must have a title");
+    const scenarioBridge = find(root, testName);
+    if (!scenarioBridge) {
+      throw new AutomationError(
+        `No matching scenario bridge was found matching the test name: ${testName}`
+      );
+    }
     const title = background.data.scope.title(background.data.gherkin);
     events.before.emitStart({
       title: title,
@@ -93,7 +95,11 @@ export function bootstrapBackground(
     const steps = background.steps;
     try {
       for (const step of steps) {
-        await step.data.scope.execute(step.data.gherkin, localApp());
+        await step.data.scope.execute(
+          background.data.gherkin,
+          step.data.gherkin,
+          localApp()
+        );
       }
     } catch (e) {
       events.before.emitEnd({
@@ -109,6 +115,7 @@ Test: ${testName}`;
   });
 }
 export function bootstrapScenarios(
+  root: FeatureBridge,
   bridge: FeatureBridge | RuleBridge | ExamplesBridge,
   localApp: () => App,
   staticApp: App,
@@ -117,7 +124,7 @@ export function bootstrapScenarios(
   const { scenarios } = bridge;
   scenarios.forEach((scenario) => {
     if (isOutline(scenario)) {
-      bootstrapScenarioOutline(scenario, localApp, staticApp, events);
+      bootstrapScenarioOutline(root, scenario, localApp, staticApp, events);
       return;
     }
     bootstrapScenario(scenario, localApp, events);
@@ -139,7 +146,11 @@ export function bootstrapScenario(
     });
     try {
       for (const step of bridge.steps) {
-        await step.data.scope.execute(step.data.gherkin, localApp());
+        await step.data.scope.execute(
+          bridge.data.gherkin,
+          step.data.gherkin,
+          localApp()
+        );
       }
     } catch (e) {
       events.scenario.emitEnd({
@@ -162,6 +173,7 @@ function isOutline(
 }
 
 export function bootstrapScenarioOutline(
+  root: FeatureBridge,
   bridge: ScenarioOutlineBridge,
   localApp: () => App,
   staticApp: App,
@@ -182,11 +194,11 @@ export function bootstrapScenarioOutline(
       });
     });
     bootstrapSetupHooks(bridge, staticApp, events);
-    bootstrapBeforeHooks(bridge, localApp, events);
+    bootstrapBeforeHooks(root, bridge, localApp, events);
     examples.forEach((example) => {
-      bootstrapExamples(example, localApp, staticApp, events);
+      bootstrapExamples(root, example, localApp, staticApp, events);
     });
-    bootstrapAfterHooks(bridge, localApp, events);
+    bootstrapAfterHooks(root, bridge, localApp, events);
     bootstrapTeardownHooks(bridge, staticApp, events);
     afterAll(() => {
       const failures = Query.find.failed(bridge);
@@ -206,6 +218,7 @@ export function bootstrapScenarioOutline(
   });
 }
 export function bootstrapExamples(
+  root: FeatureBridge,
   example: ExamplesBridge,
   localApp: () => App,
   staticApp: App,
@@ -214,7 +227,7 @@ export function bootstrapExamples(
   const title = example.data.scope.title(example.data.gherkin);
   const [group] = getGroupOrModifier(example);
   group(title, () => {
-    bootstrapScenarios(example, localApp, staticApp, events);
+    bootstrapScenarios(root, example, localApp, staticApp, events);
   });
 }
 
@@ -224,7 +237,8 @@ export function bootstrapRules(
   staticApp: App,
   events: TestEventEmitter
 ) {
-  bridge.rules.forEach(({ data }) => {
+  bridge.rules.forEach((rule) => {
+    const { data } = rule;
     const ruleName = data.scope.title(data.gherkin);
     const [group, modifier] = getGroupOrModifier(bridge);
 
@@ -236,15 +250,15 @@ export function bootstrapRules(
           tags: [...data.gherkin.tags]
         });
       });
-      bootstrapSetupHooks(bridge, staticApp, events);
-      bootstrapBeforeHooks(bridge, localApp, events);
-      bootstrapBackground(bridge, localApp, events);
-      bootstrapScenarios(bridge, localApp, staticApp, events);
-      bootstrapAfterHooks(bridge, localApp, events);
-      bootstrapTeardownHooks(bridge, staticApp, events);
+      bootstrapSetupHooks(rule, staticApp, events);
+      bootstrapBeforeHooks(bridge, rule, localApp, events);
+      bootstrapBackground(bridge, rule, localApp, events);
+      bootstrapScenarios(bridge, rule, localApp, staticApp, events);
+      bootstrapAfterHooks(bridge, rule, localApp, events);
+      bootstrapTeardownHooks(rule, staticApp, events);
 
       afterAll(() => {
-        const failures = Query.find.failed(bridge);
+        const failures = Query.find.failed(rule);
         const status =
           modifier === "skip"
             ? "SKIPPED"
@@ -285,21 +299,25 @@ function getTestOrModifier({ data }: ScenarioBridge) {
 }
 
 export function bootstrapBeforeHooks(
+  root: FeatureBridge,
   bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   localApp: () => App,
   events: TestEventEmitter
 ) {
   bridge.data.scope.hooks.before.forEach((hook) => {
-    const testName = expect.getState().currentTestName;
-    if (!testName) throw new AutomationError("A Scenario must have a title");
-    const scenarioBridge = find(bridge, testName);
-    if (!scenarioBridge) {
-      throw new AutomationError(
-        `No matching scenario was found matching the test name: ${testName}`
-      );
-    }
-    const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
     beforeEach(async () => {
+      const testName = expect.getState().currentTestName;
+      if (!testName) throw new AutomationError("A Scenario must have a title");
+      const scenarioBridge = find(root, testName);
+      if (!scenarioBridge) {
+        throw new AutomationError(
+          `No matching scenario was found matching the test name: ${testName}`
+        );
+      }
+      if (!hook.canExecute(...bridge.data.gherkin.tags)) {
+        return;
+      }
+      const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
       events.before.emitStart({
         title: hook.name,
         tags: [...tags]
@@ -347,21 +365,25 @@ export function bootstrapSetupHooks(
 }
 
 export function bootstrapAfterHooks(
+  root: FeatureBridge,
   bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   localApp: () => App,
   events: TestEventEmitter
 ) {
   bridge.data.scope.hooks.after.forEach((hook) => {
-    const testName = expect.getState().currentTestName;
-    if (!testName) throw new AutomationError("A Scenario must have a title");
-    const scenarioBridge = find(bridge, testName);
-    if (!scenarioBridge) {
-      throw new AutomationError(
-        `No matching scenario bridge was found matching the test name: ${testName}`
-      );
-    }
-    const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
     afterEach(async () => {
+      const testName = expect.getState().currentTestName;
+      if (!testName) throw new AutomationError("A Scenario must have a title");
+      const scenarioBridge = find(root, testName);
+      if (!scenarioBridge) {
+        throw new AutomationError(
+          `No matching scenario bridge was found matching the test name: ${testName}`
+        );
+      }
+      if (!hook.canExecute(...bridge.data.gherkin.tags)) {
+        return;
+      }
+      const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
       events.after.emitStart({
         title: hook.name,
         tags: [...tags]

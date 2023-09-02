@@ -4,6 +4,7 @@ import { CachedStep } from "./types";
 import { AutomationError } from "@autometa/errors";
 import { getDiffs, limitDiffs } from "./search/step-matcher";
 import { FuzzySearchReport, buildFuzzySearchReport } from "./search";
+import { interpolateStepText } from "@autometa/gherkin";
 export class StepCache {
   private Context: CachedStep[] = [];
   private Action: CachedStep[] = [];
@@ -36,11 +37,20 @@ export class StepCache {
     this[keywordType].push(step as CachedStep);
     this.stepCount++;
   }
+  findByExample(
+    keywordType: StepType,
+    keyword: StepKeyword,
+    text: string,
+    table: Record<string, string>
+  ) {
+    const str = interpolateStepText(text, table);
+    return this.find(keywordType, keyword, str, true);
+  }
 
   find(
     keywordType: StepType,
-    keyword: string,
-    text: StepKeyword
+    keyword: StepKeyword,
+    text: string
   ): { step: CachedStep; args: unknown[] };
   find(
     keywordType: StepType,
@@ -70,7 +80,6 @@ export class StepCache {
       step = bucket.find((it) => it.matches(text));
       args = step?.getArgs(text) ?? [];
     }
-    this.throwOnNotFound(step, throwOnNotFound, keywordType, keyword, text);
 
     ({ found: step, args } = this.searchParent(
       keywordType,
@@ -82,17 +91,18 @@ export class StepCache {
 
     if (step) {
       return { step: step, args };
+    } else {
+      this.throwOnNotFound(throwOnNotFound, keywordType, keyword, text);
     }
   }
 
   private throwOnNotFound(
-    step: CachedStep | undefined,
     throwOnNotFound: boolean,
     keywordType: StepType,
     keyword: string,
     text: string
   ) {
-    if (!step && !this.parent && throwOnNotFound) {
+    if (throwOnNotFound) {
       const report = this.startFuzzySearch(keywordType, text);
       const fmt = formatReport(report);
       throw new AutomationError(
@@ -100,13 +110,17 @@ export class StepCache {
       );
     }
   }
-  private startFuzzySearch(keywordType: StepType, text: string) {
+  private startFuzzySearch(
+    keywordType: StepType,
+    text: string
+  ): FuzzySearchReport {
     const closestMatches = this.findClosest(keywordType, text);
     const report = buildFuzzySearchReport(closestMatches);
     if (this.scopeName) report.addHeading(this.scopeName);
     if (this.parent) {
       const parentReport = this.parent.startFuzzySearch(keywordType, text);
       parentReport.addChild(report);
+      return parentReport;
     }
     return report;
   }

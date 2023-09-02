@@ -9,7 +9,6 @@ import { RuleScope } from "./rule-scope";
 import { ScenarioOutlineScope } from "./scenario-outline-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { StepScope } from "./step-scope";
-import { Empty_Function } from "./novelties";
 /*
     Create unit tests for ScenarioScope
     Focus on the following methods:
@@ -25,8 +24,7 @@ describe("ScenarioScope", () => {
         "My Scenario",
         vi.fn(),
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       );
       // Act
       const result = sut.canAttach(
@@ -34,8 +32,7 @@ describe("ScenarioScope", () => {
           "My Scenario",
           vi.fn(),
           new HookCache(),
-          new StepCache(),
-          Empty_Function
+          new StepCache()
         )
       );
       // Assert
@@ -47,8 +44,7 @@ describe("ScenarioScope", () => {
         "My Scenario",
         vi.fn(),
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       );
       // Act
       const result = sut.canAttach(
@@ -56,8 +52,7 @@ describe("ScenarioScope", () => {
           "My Scenario Outline",
           vi.fn(),
           new HookCache(),
-          new StepCache(),
-          Empty_Function
+          new StepCache()
         )
       );
       // Assert
@@ -68,17 +63,10 @@ describe("ScenarioScope", () => {
         "My Scenario",
         vi.fn(),
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       );
       const result = sut.canAttach(
-        new RuleScope(
-          "My Rule",
-          vi.fn(),
-          new HookCache(),
-          new StepCache(),
-          Empty_Function
-        )
+        new RuleScope("My Rule", vi.fn(), new HookCache(), new StepCache())
       );
       expect(result).toBe(false);
     });
@@ -87,16 +75,14 @@ describe("ScenarioScope", () => {
         "My Scenario",
         vi.fn(),
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       );
       const result = sut.canAttach(
         new FeatureScope(
           "My Feature",
           vi.fn(),
           new HookCache(),
-          new StepCache(),
-          Empty_Function
+          new StepCache()
         )
       );
       expect(result).toBe(false);
@@ -106,8 +92,7 @@ describe("ScenarioScope", () => {
         "My Scenario",
         vi.fn(),
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       );
       const expression = new CucumberExpression(
         "my step",

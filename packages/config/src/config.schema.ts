@@ -1,4 +1,4 @@
-import { object, string, literal, number, boolean, array } from "zod";
+import { object, string, literal, number, boolean } from "zod";
 
 export const RunnerSchema = literal("jest").or(literal("vitest"));
 export const EnvironmentSchema = string().optional();
@@ -24,9 +24,13 @@ export const EventsSchema = string().array();
 // export const AppSchema = z.instanceof(AutometaApp);
 // export const WorldSchema = z.instanceof(AutometaWorld);
 // export const CucumberSchema = object({ app: AppSchema, world: WorldSchema });
+export const PathSchema = string().array();
+//string().array().or(string());
 export const RootSchema = object({
-  features: string().or(array(string())),
-  steps: string().or(array(string()))
+  features: PathSchema,
+  steps: PathSchema,
+  app: PathSchema,
+  parameterTypes: PathSchema.optional()
 });
 
 export const TestExecutorConfigSchema = object({
@@ -34,6 +38,6 @@ export const TestExecutorConfigSchema = object({
   environment: EnvironmentSchema,
   test: TestSchema,
   roots: RootSchema,
-  shim: ShimSchema,
-  events: EventsSchema
+  shim: ShimSchema.optional(),
+  events: EventsSchema.optional()
 });

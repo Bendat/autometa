@@ -15,9 +15,8 @@ export class RuleScope extends Scope {
     readonly action: FeatureAction,
     parentHookCache: HookCache,
     parentStepCache: StepCache,
-    buildStepCache: () => unknown
   ) {
-    super(new HookCache(parentHookCache), parentStepCache, buildStepCache);
+    super(new HookCache(parentHookCache), parentStepCache);
   }
 
   get idString() {

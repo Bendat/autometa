@@ -50,11 +50,11 @@ export class TestExecutor {
 
     beforeAll(async () => {
       events.feature.emitStart({ title, path, tags, modifier });
-      const setup = [...globalScope.hooks?.setup, ...this.feature.hooks?.setup];
+      const setup = [...globalScope.hooks.setup, ...this.feature.hooks.setup];
       await runSetupHooks(setup, this.#globalApp, failFeature);
     });
     afterAll(async () => {
-      const teardown = [...globalScope.hooks?.teardown, ...this.feature.hooks?.teardown];
+      const teardown = [...globalScope.hooks.teardown, ...this.feature.hooks.teardown];
       await runTeardownHooks(teardown, this.#globalApp, failFeature);
     });
     afterAll(() => {

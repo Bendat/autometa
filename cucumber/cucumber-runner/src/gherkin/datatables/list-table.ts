@@ -35,15 +35,24 @@ export class ListTable extends ParsedDataTable implements IListTable {
     this.rows = raw;
   }
 
-  get = (rowIndex: number, columnIndex?: number) => {
-    const row = this.rows.at(rowIndex);
+  get = (rowIndex: number, columnIndexOrRaw?: number | boolean, raw?: boolean) => {
+    let index: number | null | undefined;
+    let getRaw = raw;
+    if (typeof columnIndexOrRaw === 'boolean') {
+      getRaw = columnIndexOrRaw;
+    } else {
+      index = columnIndexOrRaw;
+    }
+    const row = getRaw ? this.raw : this.rows.at(rowIndex);
+
     if (!row) {
       throw new Error(`No table row found at index ${rowIndex}`);
     }
-    if (columnIndex) {
-      const cell = row.at(columnIndex);
+
+    if (typeof index === 'number') {
+      const cell = row.at(index);
       if (!cell) {
-        throw new Error(`No table cell found at index ${rowIndex}, ${columnIndex}`);
+        throw new Error(`No table cell found at index ${rowIndex}, ${columnIndexOrRaw}`);
       }
       return cell;
     }

@@ -11,8 +11,8 @@ import {
 import { CachedStep, StepCache } from "./caches";
 import { StepKeyword, StepType } from "@autometa/gherkin";
 import { AutomationError } from "@autometa/errors";
-
 export abstract class Scope {
+  id: string;
   abstract readonly action:
     | undefined
     | (() => void | Promise<void>)
@@ -25,14 +25,10 @@ export abstract class Scope {
   readonly closedScopes: Scope[] = [];
   readonly hooks: HookCache;
   isBuilt = false;
-  constructor(
-    parentHookCache: HookCache,
-    parentStepCache: StepCache | string,
-    readonly parentBuildCache: () => unknown
-  ) {
+  constructor(parentHookCache: HookCache, parentStepCache: StepCache | string) {
     this.hooks = new HookCache(parentHookCache);
     this.steps =
-      parentStepCache instanceof StepCache
+      parentStepCache && parentStepCache instanceof StepCache
         ? new StepCache(this.toString(), parentStepCache)
         : new StepCache(parentStepCache);
   }
@@ -71,13 +67,17 @@ export abstract class Scope {
       .filter((it) => it.isStepScope)
       .map((it) => it as CachedStep);
     filtered.forEach(this.steps.add);
-    this.isBuilt = true;
-    this.parentBuildCache();
+    this.closedScopes
+      .filter((it) => !it.isStepScope)
+      .forEach((child) => child.buildStepCache());
+    if (filtered.length > 0) {
+      this.isBuilt = true;
+    }
     return this.steps;
   }
 
   @Bind
-  getStep(keywordType: StepType, keyword: string, text: StepKeyword) {
+  getStep(keywordType: StepType, keyword: StepKeyword, text: string) {
     return this.buildStepCache().find(keywordType, keyword, text);
   }
 

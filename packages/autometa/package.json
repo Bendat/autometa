@@ -39,6 +39,7 @@
   "dependencies": {
     "@autometa/app": "workspace:^",
     "@autometa/asserters": "workspace:^",
+    "@autometa/bind-decorator": "workspace:^",
     "@autometa/config": "workspace:^",
     "@autometa/coordinator": "workspace:^",
     "@autometa/cucumber-expressions": "workspace:^",

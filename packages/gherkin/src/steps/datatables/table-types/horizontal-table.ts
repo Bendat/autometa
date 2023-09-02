@@ -1,9 +1,9 @@
 import { TableValue } from "../table-value";
 import { CompiledDataTable } from "../compiled-data-table";
-import { Bind } from "@autometa/bind-decorator";
-import { DataTable, mapHeaders } from "./data-table";
 import { overloads, def, string, number, boolean } from "@autometa/overloaded";
 import { AutomationError } from "@autometa/errors";
+import { Bind } from "@autometa/bind-decorator";
+import { DataTable, mapHeaders } from "./data-table";
 export class HTable extends DataTable {
   private headers: { [header: string]: number };
   private rows: readonly TableValue[][];

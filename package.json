@@ -10,6 +10,7 @@
     "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
     "test": "turbo run test --filter='!@autometa/documentation'",
+    "test:types": "turbo run test:types --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "lint": "nx run-many -t lint -- --max-warnings=0",
     "lint:fix": "turbo run lint:fix -- --max-warnings=0",

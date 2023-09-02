@@ -22,13 +22,13 @@ import type {
   RuleAction,
   ScenarioAction,
   HookAction,
-  StepAction,
-  StepTableArg
+  StepActionFn
 } from "./types";
 import { AutomationError } from "@autometa/errors";
 import { DataTable } from "@autometa/gherkin";
 import { Class } from "@autometa/types";
 import getCaller from "get-caller-file";
+import path from "path";
 export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   canHandleAsync = false;
   private _onFeatureExecuted: OnFeatureExecuted;
@@ -37,7 +37,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   action: (...args: unknown[]) => void;
 
   constructor(readonly parameterRegistry: ParameterTypeRegistry) {
-    super(new HookCache(), new StepCache(), Empty_Function);
+    super(new HookCache(), new StepCache());
   }
   set onFeatureExecuted(value: OnFeatureExecuted) {
     this._onFeatureExecuted = value;
@@ -73,7 +73,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   Feature(...args: (FeatureAction | string)[]): FeatureScope;
   @Bind
   Feature(...args: (FeatureAction | string)[]) {
-    const caller = getCaller();
+    const caller = path.dirname(getCaller());
     return overloads(
       def(func("featureAction"), string("filepath")).matches(
         (featureAction, filePath) => {
@@ -81,8 +81,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
             filePath,
             featureAction,
             this.hookCache,
-            this.stepCache,
-            this.buildStepCache
+            this.steps
           );
           this.attach(feature);
           this._onFeatureExecuted(feature, caller);
@@ -97,8 +96,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
           filePath,
           Empty_Function,
           this.hookCache,
-          this.stepCache,
-          this.buildStepCache
+          this.steps
         );
         this.attach(feature);
         this._onFeatureExecuted(feature, caller);
@@ -139,8 +137,7 @@ ${JSON.stringify(args, null, 2)}`);
       title,
       action,
       this.hookCache,
-      this.stepCache,
-      this.buildStepCache
+      this.steps
     );
     return this.attach(scenario);
   }
@@ -151,28 +148,21 @@ ${JSON.stringify(args, null, 2)}`);
       title,
       action,
       this.hookCache,
-      this.stepCache,
-      this.buildStepCache
+      this.steps
     );
     return this.attach(scenario);
   }
 
   @Bind
   Rule(title: string, action: RuleAction) {
-    const scenario = new RuleScope(
-      title,
-      action,
-      this.hookCache,
-      this.stepCache,
-      this.buildStepCache
-    );
+    const scenario = new RuleScope(title, action, this.hookCache, this.steps);
     return this.attach(scenario);
   }
 
   @Bind
   Given<TText extends string, TTable extends DataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ) {
     const expression = toExpression(title, this.parameterRegistry);
@@ -189,9 +179,9 @@ ${JSON.stringify(args, null, 2)}`);
   }
 
   @Bind
-  When<TText extends string, TTable extends StepTableArg>(
+  When<TText extends string, TTable extends DataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ) {
     const expression = toExpression(title, this.parameterRegistry);
@@ -202,9 +192,9 @@ ${JSON.stringify(args, null, 2)}`);
   }
 
   @Bind
-  Then<TText extends string, TTable extends StepTableArg>(
+  Then<TText extends string, TTable extends DataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ) {
     const expression = toExpression(title, this.parameterRegistry);
