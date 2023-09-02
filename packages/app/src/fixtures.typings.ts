@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import type { AutometaApp } from "./autometa-app";
-import type { AutometaWorld } from "./autometa-world";
-
-export interface World extends AutometaWorld {}
-export interface App extends AutometaApp {
+export interface World {}
+export interface App {
+    world: World;
 }

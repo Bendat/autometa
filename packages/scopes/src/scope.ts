@@ -8,10 +8,11 @@ import {
   overloads,
   def
 } from "@autometa/overloaded";
-import { StepCache } from "./caches";
+import { CachedStep, StepCache } from "./caches";
 import { StepKeyword, StepType } from "@autometa/gherkin";
-
+import { AutomationError } from "@autometa/errors";
 export abstract class Scope {
+  id: string;
   abstract readonly action:
     | undefined
     | (() => void | Promise<void>)
@@ -24,9 +25,12 @@ export abstract class Scope {
   readonly closedScopes: Scope[] = [];
   readonly hooks: HookCache;
   isBuilt = false;
-  constructor(parentHookCache: HookCache, parentStepCache: StepCache) {
+  constructor(parentHookCache: HookCache, parentStepCache: StepCache | string) {
     this.hooks = new HookCache(parentHookCache);
-    this.steps = new StepCache(parentStepCache);
+    this.steps =
+      parentStepCache && parentStepCache instanceof StepCache
+        ? new StepCache(this.toString(), parentStepCache)
+        : new StepCache(parentStepCache);
   }
 
   abstract get idString(): string;
@@ -34,7 +38,12 @@ export abstract class Scope {
     return true;
   }
   get [Symbol.toStringTag]() {
-    return `${this.constructor.name}#${this.idString}`;
+    const name = this.constructor.name.replace("Scope", "");
+    return `${name}#${this.idString}`;
+  }
+  toString() {
+    const name = this.constructor.name.replace("Scope", "");
+    return `${name}#${this.idString}`;
   }
   get hookCache() {
     return this.openChild ? this.openChild.hooks : this.hooks;
@@ -45,29 +54,30 @@ export abstract class Scope {
   get alts() {
     return {
       skip: this.skip,
-      only: this.only,
+      only: this.only
     };
   }
-  // abstract canAttach<T extends Scope>(childScope: T): boolean;
-  // abstract onStartdelete(gherkin: GherkinNode): void;
-  // abstract onEnddelete(error?: Error): void;
 
   @Bind
   buildStepCache() {
     if (this.isBuilt) {
       return this.steps;
     }
-    this.closedScopes
+    const filtered = this.closedScopes
       .filter((it) => it.isStepScope)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((it) => it as any)
-      .forEach(this.steps.add);
-    this.isBuilt = true;
+      .map((it) => it as CachedStep);
+    filtered.forEach(this.steps.add);
+    this.closedScopes
+      .filter((it) => !it.isStepScope)
+      .forEach((child) => child.buildStepCache());
+    if (filtered.length > 0) {
+      this.isBuilt = true;
+    }
     return this.steps;
   }
 
   @Bind
-  getStep(keywordType: StepType, keyword: string, text: StepKeyword) {
+  getStep(keywordType: StepType, keyword: StepKeyword, text: string) {
     return this.buildStepCache().find(keywordType, keyword, text);
   }
 
@@ -78,7 +88,7 @@ export abstract class Scope {
     }
     const result = this.action() as unknown as void | Promise<void>;
     if (!this.canHandleAsync && result instanceof Promise) {
-      throw new Error(
+      throw new AutomationError(
         `${this.constructor.name} cannot be run asynchronously or return a promise.`
       );
     }
@@ -121,7 +131,7 @@ export abstract class Scope {
         instance(Hook),
         instance(Scope, undefined, { optional: true })
       ).matches(() => {
-        throw new Error(
+        throw new AutomationError(
           `Cannot attach hooks to ${this.constructor.name}. Only 'Feature', 'Rule', 'ScenarioOutline' and global scopes can have hooks`
         );
       }),
@@ -130,7 +140,7 @@ export abstract class Scope {
         boolean(),
         instance(Hook),
         instance(Scope)
-      ).matches((_,  hook, openChild) => openChild.attachHook(hook)),
+      ).matches((_, hook, openChild) => openChild.attachHook(hook)),
       fallback(
         "When no open child is available, add the hook directly to this scope",
         () => this.hooks.addHook(hook)
@@ -142,4 +152,3 @@ export abstract class Scope {
     return this.toString();
   }
 }
-

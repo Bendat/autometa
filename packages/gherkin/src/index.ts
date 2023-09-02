@@ -11,3 +11,4 @@ export * from "./steps";
 export * from "./types";
 export * from "./background";
 export * from './tags'
+export * from './example'

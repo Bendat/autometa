@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { Class } from "@autometa/types";
-import { scoped, inject, Lifecycle, injectable, InjectionToken } from "tsyringe";
+import { scoped, inject, Lifecycle, injectable } from "tsyringe";
 /**
  * Marks a class as an injectable fixture. Constructor parameters
  * which are also injectable will be automatically constructed
@@ -48,8 +48,6 @@ export function Fixture(scope = Lifecycle.ContainerScoped) {
   };
 }
 
-export function Inject() {
-  return (target: InjectionToken<unknown>) => {
-    inject(target);
-  };
-}
+export const Inject = inject;
+
+

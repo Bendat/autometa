@@ -4,7 +4,7 @@ import {
   FeatureRootFileSystem,
   Files,
   HomeDirectoryFileSystem,
-  RelativeFileSystem,
+  RelativeFileSystem
 } from "./filesystem";
 import os from "os";
 
@@ -17,7 +17,7 @@ describe("FileSystem", () => {
         const caller = "/home/user/project/src";
         const uri = "features";
         const stepDefRoot = "step_definitions";
-        const fs = new RelativeFileSystem(caller, uri, stepDefRoot);
+        const fs = new RelativeFileSystem(caller, uri, [stepDefRoot]);
         expect(fs.path).toBe("/home/user/project/src/features");
       });
     });
@@ -27,7 +27,7 @@ describe("FileSystem", () => {
       it("should throw an error when the uri does not start with ~", () => {
         const uri = "features";
         const stepDefRoot = "step_definitions";
-        expect(() => new HomeDirectoryFileSystem(uri, stepDefRoot)).toThrow(
+        expect(() => new HomeDirectoryFileSystem(uri, [stepDefRoot])).toThrow(
           "Cannot use home directory path without ~. Stub was features"
         );
       });
@@ -35,7 +35,7 @@ describe("FileSystem", () => {
       it("should return the path relative to the home directory", () => {
         const uri = "~/features";
         const stepDefRoot = "step_definitions";
-        const fs = new HomeDirectoryFileSystem(uri, stepDefRoot);
+        const fs = new HomeDirectoryFileSystem(uri, [stepDefRoot]);
         expect(fs.path).toBe(`${homeDirectory}/features`);
       });
     });
@@ -57,7 +57,7 @@ describe("FileSystem", () => {
           const uri = "^/my-feature.feature";
           const stepDefRoot = "step_definitions";
           expect(
-            () => new FeatureRootFileSystem(featureRoot, uri, stepDefRoot)
+            () => new FeatureRootFileSystem([featureRoot], uri, [stepDefRoot], [])
           ).toThrowError(
             "Cannot use Feature Root path without feature root. Stub was ^/my-feature.feature"
           );
@@ -68,7 +68,7 @@ describe("FileSystem", () => {
         const uri = "^/my-feature.feature";
         const stepDefRoot = "step_definitions";
         expect(
-          () => new FeatureRootFileSystem(featureRoot, uri, stepDefRoot)
+          () => new FeatureRootFileSystem([featureRoot], uri, [stepDefRoot], [])
         ).toThrowError(
           "Cannot use Feature Root path without feature root. Stub was ^/my-feature.feature"
         );
@@ -78,8 +78,12 @@ describe("FileSystem", () => {
         const featureRoot = "/home/user/project/features";
         const uri = "^/my-feature.feature";
         const stepDefRoot = "step_definitions";
-        const fs = new FeatureRootFileSystem(featureRoot, uri, stepDefRoot);
-        expect(fs.path).toBe("/home/user/project/features/my-feature.feature");
+        const fs = new FeatureRootFileSystem([featureRoot], uri, [
+          stepDefRoot
+        ], []);
+        expect(fs.path).toEqual([
+          "/home/user/project/features/my-feature.feature"
+        ]);
       });
     });
   });
@@ -91,7 +95,7 @@ describe("Files", () => {
       const files = new Files();
       const featureRoot = "/home/user/project/features";
       const newFiles = files.withFeatureRoot(featureRoot);
-      expect(newFiles.featureRoot).toBe(featureRoot);
+      expect(newFiles.featureRoot).toEqual([featureRoot]);
       expect(newFiles).toEqual(files);
     });
   });
@@ -105,12 +109,12 @@ describe("Files", () => {
       expect(newFiles).toEqual(files);
     });
   });
-  describe("withGlobalRoot", () => {
+  describe("withStepRoot", () => {
     it("should return a new instance of Files with the global root set", () => {
       const files = new Files();
       const globalRoot = "/home/user/project";
-      const newFiles = files.withGlobalRoot(globalRoot);
-      expect(newFiles.stepDefRoot).toBe(globalRoot);
+      const newFiles = files.withStepsRoot(globalRoot);
+      expect(newFiles.stepDefRoot).toEqual([globalRoot]);
       expect(newFiles).toEqual(files);
     });
   });

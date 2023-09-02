@@ -4,7 +4,7 @@ export function transformTableValue(value: string): TableValue;
 export function transformTableValue(cell: TableCell): TableValue;
 export function transformTableValue(data: TableCell | string) {
   const value = typeof data === "string" ? data : data.value;
-  const asNum = Number(value);
+  const asNum = parseFloat(value);
   if (!isNaN(asNum)) {
     return asNum;
   }

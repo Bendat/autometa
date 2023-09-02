@@ -1,5 +1,23 @@
 # @autometa/cucumber-runner
 
+## 0.7.10
+
+### Patch Changes
+
+- 784d2b3: Fixed incorrect integer parsing in data tables
+
+## 0.7.9
+
+### Patch Changes
+
+- 825ebca: Fixed booleans not returning from datatables
+
+## 0.7.8
+
+### Patch Changes
+
+- 9339c48: Fixed table cells being incorrectly interpolated when not strings
+
 ## 0.7.7
 
 ### Patch Changes

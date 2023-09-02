@@ -1,8 +1,9 @@
 import { TableValue } from "../table-value";
 import { CompiledDataTable } from "../compiled-data-table";
+import { overloads, def, string, number, boolean } from "@autometa/overloaded";
+import { AutomationError } from "@autometa/errors";
 import { Bind } from "@autometa/bind-decorator";
 import { DataTable, mapHeaders } from "./data-table";
-import { overloads, def, string, number, boolean } from "@autometa/overloaded";
 export class HTable extends DataTable {
   private headers: { [header: string]: number };
   private rows: readonly TableValue[][];
@@ -56,7 +57,7 @@ export class HTable extends DataTable {
     if (colIdx > source.length) {
       const maxLength = source.length - 1;
       const msg = `Could not find column ${header} row ${row}. Max length for row is ${maxLength} on ${source}.`;
-      throw new Error(msg);
+      throw new AutomationError(msg);
     }
   }
 
@@ -77,7 +78,7 @@ export class HTable extends DataTable {
       const maxSize = Math.max(...this.rows.map((row) => row.length));
       const maxSizeSlug = ` (max size ${maxSize})`;
       const message = `Could not find column ${header}${rowSug}${maxSizeSlug}}`;
-      throw new Error(message);
+      throw new AutomationError(message);
     }
     return result;
   }

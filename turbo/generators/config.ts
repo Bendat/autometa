@@ -1,6 +1,5 @@
 import type { PlopTypes } from "@turbo/gen";
 import _ from "lodash";
-import { exec } from "child_process";
 export default function (plop: PlopTypes.NodePlopAPI) {
   plop.setGenerator("library", {
     description: "creates a new build-able, publishable library",
@@ -19,7 +18,7 @@ export default function (plop: PlopTypes.NodePlopAPI) {
         type: "list",
         name: "root",
         message: "What is the root of the library?",
-        choices: ["packages", "libraries"]
+        choices: ["packages", "libraries", "__integration__"]
       }
     ],
     actions: [

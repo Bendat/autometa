@@ -4,19 +4,16 @@ import {
   CucumberExpression,
   ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
-import { CompiledDataTable, HTable, StepBuilder } from "@autometa/gherkin";
+import {
+  CompiledDataTable,
+  HTable,
+  ScenarioBuilder,
+  StepBuilder
+} from "@autometa/gherkin";
 import { AutometaApp, AutometaWorld } from "@autometa/app";
-import { StringTransformers } from "@autometa/phrases";
-import { FromPhrase } from "@autometa/phrases";
-import { Bind } from "@autometa/bind-decorator";
 import { AutomationError } from "@autometa/errors";
 import { Class } from "@autometa/types";
-class World extends AutometaWorld {
-  @Bind
-  fromPhrase(phrase: string, ...transformers: StringTransformers) {
-    return FromPhrase(this, phrase, ...transformers);
-  }
-}
+class World extends AutometaWorld {}
 class App extends AutometaApp {
   world = new World();
 }
@@ -35,6 +32,8 @@ describe("step-scope", () => {
     );
     const match = scope.matches("I have 42 cukes in my 'belly' now");
     expect(match).toBe(true);
+    const args = scope.getArgs("I have 42 cukes in my 'belly' now");
+    expect(args).toEqual([42, "belly"]);
   });
   it("it should get the args of a text string", () => {
     const text = "I have {int} cukes in my {string} now";
@@ -71,8 +70,10 @@ describe("step-scope", () => {
         .keywordType("Context")
         .text("I have 42 cukes in my belly now")
         .build();
-      const error = await scope.buildArgs(gherkin, [], new App());
-      expect(error).toBeUndefined();
+      const scenario = new ScenarioBuilder().build();
+
+      scope.execute(scenario, gherkin, new App());
+      expect(fn).toHaveBeenCalled();
     });
 
     it("should fail to execute with a gherkin table and no prototype", async () => {
@@ -104,15 +105,16 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const error = await scope.buildArgs(gherkin, [], new App());
-      expect(error).toBeInstanceOf(AutomationError);
-      expect(error?.message)
-        .toBe(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
+      const scenario = new ScenarioBuilder().build();
+      const error = () => scope.execute(scenario, gherkin, new App());
+      await expect(error).rejects.toThrow(AutomationError);
+      await expect(error).rejects
+        .toThrow(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
 
-To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
-definition as the last argument
+  To define a table for this step, add a class reference to one of the tables, like HTable or VTable, to your step
+  definition as the last argument
 
-Given('text', (table, app)=>{}, HTable)`);
+  Given('text', (table, app)=>{}, HTable)`);
     });
 
     it("should fail to execute with a gherkin table and an invalid prototype", async () => {
@@ -145,8 +147,10 @@ Given('text', (table, app)=>{}, HTable)`);
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const error = scope.buildArgs(gherkin, [], new App());
-      await expect(error).rejects.toThrow(
+      const scenario = new ScenarioBuilder().build();
+
+      const error = () => scope.execute(scenario, gherkin, new App());
+      expect(error).rejects.toThrow(
         `Step 'Given I have 42 cukes in my belly now' has a table but the table prototype provided is not a DataTable or DataTableDocument`
       );
     });
@@ -180,8 +184,10 @@ Given('text', (table, app)=>{}, HTable)`);
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const error = await scope.buildArgs(gherkin, [], new App());
-      expect(error).toBeUndefined();
+      const scenario = new ScenarioBuilder().build();
+
+      const args = await scope.execute(scenario, gherkin, new App());
+      expect(args).toBeUndefined();
     });
 
     it("should execute with a gherkin table and a HTable prototype", async () => {
@@ -214,10 +220,10 @@ Given('text', (table, app)=>{}, HTable)`);
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const args: unknown[] = [];
-      const error = await scope.buildArgs(gherkin, args, new App());
-      expect(error).toBeUndefined();
-      expect(args).toEqual([42, 'belly', new HTable(table), new App()]);
+      const scenario = new ScenarioBuilder().build();
+
+      await scope.execute(scenario, gherkin, new App());
+      expect(fn).toHaveBeenCalled();
     });
   });
 });

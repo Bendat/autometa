@@ -50,11 +50,11 @@ export class TestExecutor {
 
     beforeAll(async () => {
       events.feature.emitStart({ title, path, tags, modifier });
-      const setup = [...globalScope.hooks?.setup, ...this.feature.hooks?.setup];
+      const setup = [...globalScope.hooks.setup, ...this.feature.hooks.setup];
       await runSetupHooks(setup, this.#globalApp, failFeature);
     });
     afterAll(async () => {
-      const teardown = [...globalScope.hooks?.teardown, ...this.feature.hooks?.teardown];
+      const teardown = [...globalScope.hooks.teardown, ...this.feature.hooks.teardown];
       await runTeardownHooks(teardown, this.#globalApp, failFeature);
     });
     afterAll(() => {
@@ -158,8 +158,8 @@ export class TestExecutor {
     testFn(scenario.getScenarioTitle(), async () => {
       events.scenarioWrapper.emitStart();
       await runBeforeHooks(befores, scenario.tags, app, onFailure);
-      await runBackgrounds(scenario, app);
       try {
+        await runBackgrounds(scenario, app);
         events.scenario.emitStart({
           title,
           tags,
@@ -198,6 +198,7 @@ async function runBackgrounds(scenario: GherkinScenario, app: unknown) {
       events.before.emitEnd({ status: Status.PASSED });
     } catch (e) {
       events.before.emitEnd({ status: Status.FAILED, error: e as Error });
+      throw e;
     }
   }
 }

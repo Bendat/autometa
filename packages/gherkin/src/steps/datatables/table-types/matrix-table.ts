@@ -1,6 +1,7 @@
 import { TableValue } from "../table-value";
 import { CompiledDataTable } from "../compiled-data-table";
 import { DataTable, mapHeaders } from "./data-table";
+import { AutomationError } from "@autometa/errors";
 
 export class MTable extends DataTable {
   private vheaders: { [header: string]: number };
@@ -55,11 +56,11 @@ export class MTable extends DataTable {
     const hIdx = this.hheaders[String(hheader)];
     const vert = this.rows[vIdx];
     if (vert === undefined) {
-      throw new Error(`Could not find vertical title ${vheader}`);
+      throw new AutomationError(`Could not find vertical title ${vheader}`);
     }
     const hor = vert[hIdx] as TReturn;
     if (hor === undefined) {
-      throw new Error(
+      throw new AutomationError(
         `Could not find horizontal title ${hheader} from vertical title ${vheader}`
       );
     }

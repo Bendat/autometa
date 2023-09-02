@@ -101,7 +101,7 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
     if (
       typeof str === "string" &&
       pattern instanceof RegExp &&
-      pattern.test(str)
+      !pattern.test(str)
     ) {
       const message = `Expected ${pattern} to match pattern ${pattern.source} but it did not`;
       this.accumulator.push(this.fmt(message));
@@ -133,6 +133,7 @@ export class StringArgument<T extends string> extends BaseArgument<T> {
     this.assertStringGreaterThanMin(value);
     this.assertinArray(value);
     this.assertStringIncludes(value);
+    this.assertStringMatches(value);
     return this.accumulator.length === 0;
   }
 }

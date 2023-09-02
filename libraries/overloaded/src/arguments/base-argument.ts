@@ -6,11 +6,11 @@ export const BaseArgumentSchema = object({
     .or(
       object({
         undefined: boolean().optional(),
-        null: boolean().optional(),
+        null: boolean().optional()
       })
     )
     .optional(),
-  test: unknown().optional(),
+  test: unknown().optional()
 });
 
 export type ArgTestFunction<TArgType> = {
@@ -62,6 +62,8 @@ export abstract class BaseArgument<TType> {
     }
   }
   assertTestSucceeds(value: unknown, test = this.options?.test) {
+    // https://i.imgflip.com/5my6xa.jpg
+    // todo: what the hell is this
     if (value === undefined || value === null) {
       return;
     }
@@ -71,7 +73,7 @@ export abstract class BaseArgument<TType> {
       if (result === true) {
         return;
       }
-      const message = `Expected ${value} to to evaluate to true but was ${result}.`;
+      const message = `Expected ${value} to evaluate to true but was ${result}.`;
       this.accumulator.push(this.fmt(message));
     }
   }
@@ -95,4 +97,49 @@ export abstract class BaseArgument<TType> {
     const pad = " ".repeat(padDepth);
     return `${pad}${this.argCategory}[${this.identifier}]: ${message}`;
   }
+  or<K>(second: BaseArgument<K>): BaseArgument<TType | K> {
+    return or(this, second);
+  }
+}
+
+export class UnionArgument<T, K> extends BaseArgument<T | K> {
+  get typeName() {
+    return this.first ? this.first.typeName : this.second.typeName;
+  }
+
+  constructor(
+    readonly first: BaseArgument<T>,
+    readonly second: BaseArgument<K>
+  ) {
+    super();
+  }
+  assertUnion(actual: T | K) {
+    if (!this.first.isTypeMatch(actual) && !this.second.isTypeMatch(actual)) {
+      this.accumulator.push(
+        `Arg[${this.identifier}]:Expected ${actual} to be one of ${this.first.typeName} or ${this.second.typeName}.`
+      );
+    }
+  }
+
+  isTypeMatch(type: unknown): boolean {
+    return typeof type === this.typeName;
+  }
+
+  validate(value: T | K): boolean {
+    this.assertUnion(value);
+    if (this.first) {
+      this.first.validate(value);
+    }
+    if (this.second && !this.first) {
+      this.second.validate(value);
+    }
+    return this.accumulator.length === 0;
+  }
+}
+
+export function or<T, K>(
+  first: BaseArgument<T>,
+  second: BaseArgument<K>
+): BaseArgument<T | K> {
+  return new UnionArgument(first, second);
 }

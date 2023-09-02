@@ -32,19 +32,21 @@
     "eslint-config-prettier": "^8.3.0",
     "rimraf": "^5.0.1",
     "tsconfig": "workspace: *",
-    "tsup": "^6.7.0",
+    "tsup": "^7.2.0",
     "typescript": "^4.9.5",
-    "vitest": "^0.29.8"
+    "vitest": "0.33.0"
   },
   "dependencies": {
     "@autometa/app": "workspace:^",
     "@autometa/asserters": "workspace:^",
+    "@autometa/bind-decorator": "workspace:^",
     "@autometa/dto-builder": "workspace:^",
     "@autometa/errors": "workspace:^",
     "@autometa/gherkin": "workspace:^",
     "@autometa/phrases": "workspace:^",
     "@autometa/scopes": "workspace:^",
     "@autometa/types": "workspace:^",
+    "@cucumber/cucumber-expressions": "^16.1.2",
     "zod": "^3.21.4"
   }
 }

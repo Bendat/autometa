@@ -4,7 +4,7 @@ const config: Options = {
   entry: ["src/index.ts", "e2e/**/*.spec.ts"],
   dts: true,
   outDir: "dist",
-  
+  sourcemap:true, // generate sourcemaps
   format: ["iife", "cjs", "esm"],
   shims: true,
   clean: true,

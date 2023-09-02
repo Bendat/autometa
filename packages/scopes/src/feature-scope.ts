@@ -5,7 +5,9 @@ import { Scope } from "./scope";
 import { RuleScope } from "./rule-scope";
 import { HookCache } from "./caches/hook-cache";
 import { StepCache } from "./caches";
-import { Feature } from "@autometa/gherkin";
+import {  Feature } from "@autometa/gherkin";
+import { BackgroundScope } from "./background-scope";
+import { AutomationError } from "@autometa/errors";
 
 export class FeatureScope extends Scope {
   canHandleAsync = true;
@@ -13,7 +15,7 @@ export class FeatureScope extends Scope {
     readonly path: string,
     readonly action: FeatureAction | undefined,
     parentHookCache: HookCache,
-    parentStepCache: StepCache
+    parentStepCache: StepCache,
   ) {
     super(parentHookCache, parentStepCache);
     this.path = path;
@@ -31,13 +33,14 @@ export class FeatureScope extends Scope {
     return (
       childScope instanceof ScenarioScope ||
       childScope instanceof StepScope ||
-      childScope instanceof RuleScope
+      childScope instanceof RuleScope ||
+      childScope instanceof BackgroundScope
     );
   }
 
   attach<T extends Scope>(childScope: T): void {
     if (!this.canAttach(childScope)) {
-      throw new Error(
+      throw new AutomationError(
         `A Feature can only execute a 'Scenario', 'Scenario Outline', 'Rule' or 'Step'(Given, When etc). ${childScope.constructor.name} is not valid`
       );
     }

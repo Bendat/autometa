@@ -14,15 +14,22 @@ import { Scopes } from "./scopes";
 import {
   CucumberExpression,
   ParameterTypeRegistry,
-  RegularExpression,
+  RegularExpression
 } from "@cucumber/cucumber-expressions";
 import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "./hook";
-import type{ FeatureAction, RuleAction, ScenarioAction, HookAction, StepAction, StepTableArg } from "./types";
+import type {
+  FeatureAction,
+  RuleAction,
+  ScenarioAction,
+  HookAction,
+  StepActionFn
+} from "./types";
 import { AutomationError } from "@autometa/errors";
-import { GherkinNode } from "@autometa/gherkin";
 import { DataTable } from "@autometa/gherkin";
 import { Class } from "@autometa/types";
-export class GlobalScope extends Scope implements Scopes {
+import getCaller from "get-caller-file";
+import path from "path";
+export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   canHandleAsync = false;
   private _onFeatureExecuted: OnFeatureExecuted;
 
@@ -53,7 +60,7 @@ export class GlobalScope extends Scope implements Scopes {
       !(childScope instanceof FeatureScope) &&
       !(childScope instanceof StepScope)
     ) {
-      throw new Error(
+      throw new AutomationError(
         `Only ${FeatureScope.name} and ${StepScope.name} can be executed globally. Scenarios, Outlines and Rules must exist inside a Feature`
       );
     }
@@ -62,10 +69,11 @@ export class GlobalScope extends Scope implements Scopes {
   }
 
   Feature(filepath: string): FeatureScope;
-  Feature(testDefinition: FeatureAction, filepath: string): FeatureScope;
+  Feature(featureAction: FeatureAction, filepath: string): FeatureScope;
   Feature(...args: (FeatureAction | string)[]): FeatureScope;
   @Bind
   Feature(...args: (FeatureAction | string)[]) {
+    const caller = path.dirname(getCaller());
     return overloads(
       def(func("featureAction"), string("filepath")).matches(
         (featureAction, filePath) => {
@@ -73,25 +81,25 @@ export class GlobalScope extends Scope implements Scopes {
             filePath,
             featureAction,
             this.hookCache,
-            this.stepCache
+            this.steps
           );
           this.attach(feature);
-          this._onFeatureExecuted(feature);
+          this._onFeatureExecuted(feature, caller);
           return feature;
         }
       ),
       def(
-        "makes a Feature scope which only executed globally defined steps.",
+        "makes a Feature scope which only executes globally defined steps.",
         string("filePath")
       ).matches((filePath) => {
         const feature = new FeatureScope(
           filePath,
           Empty_Function,
           this.hookCache,
-          this.stepCache
+          this.steps
         );
         this.attach(feature);
-        this._onFeatureExecuted(feature);
+        this._onFeatureExecuted(feature, caller);
         return feature;
       }),
       fallback((...args) => {
@@ -123,21 +131,13 @@ ${JSON.stringify(args, null, 2)}`);
     ).use(args);
   }
 
-  onStart(_gherkin: GherkinNode) {
-    throw new AutomationError(`GlobalScope.onStart is not implemented`);
-  }
-
-  onEnd(_error?: Error) {
-    throw new AutomationError(`GlobalScope.onEnd is not implemented`);
-  }
-
   @Bind
   Scenario(title: string, action: ScenarioAction) {
     const scenario = new ScenarioScope(
       title,
       action,
       this.hookCache,
-      this.stepCache
+      this.steps
     );
     return this.attach(scenario);
   }
@@ -148,26 +148,21 @@ ${JSON.stringify(args, null, 2)}`);
       title,
       action,
       this.hookCache,
-      this.stepCache
+      this.steps
     );
     return this.attach(scenario);
   }
 
   @Bind
   Rule(title: string, action: RuleAction) {
-    const scenario = new RuleScope(
-      title,
-      action,
-      this.hookCache,
-      this.stepCache
-    );
+    const scenario = new RuleScope(title, action, this.hookCache, this.steps);
     return this.attach(scenario);
   }
 
   @Bind
   Given<TText extends string, TTable extends DataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ) {
     const expression = toExpression(title, this.parameterRegistry);
@@ -184,9 +179,9 @@ ${JSON.stringify(args, null, 2)}`);
   }
 
   @Bind
-  When<TText extends string, TTable extends StepTableArg>(
+  When<TText extends string, TTable extends DataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ) {
     const expression = toExpression(title, this.parameterRegistry);
@@ -197,9 +192,9 @@ ${JSON.stringify(args, null, 2)}`);
   }
 
   @Bind
-  Then<TText extends string, TTable extends StepTableArg>(
+  Then<TText extends string, TTable extends DataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ) {
     const expression = toExpression(title, this.parameterRegistry);

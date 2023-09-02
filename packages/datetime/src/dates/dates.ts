@@ -15,6 +15,11 @@ export class DatesObject {
     return this.#fmt;
   }
 
+  get now(){
+    return this.#factory.phraseMap.get("now");
+
+  }
+
   get beforeYesterday() {
     return this.#factory.phraseMap.get("beforeYesterday");
   }
@@ -58,8 +63,14 @@ export class DatesObject {
   fromPhrase(phrase: string) {
     return this.#factory.fromPhrase(phrase);
   }
+  
+  fromPhraseSafe(phrase: string) {
+    return this.#factory.fromPhraseSafe(phrase);
+  }
+
   make(timeOffset: number, timeUnit: TimeUnit) {
     return this.#factory.make(timeOffset, timeUnit);
   }
 }
+
 export const Dates = new DatesObject();

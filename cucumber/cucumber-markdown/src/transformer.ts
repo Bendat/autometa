@@ -15,7 +15,7 @@ import {
   Tag,
 } from "@cucumber/messages";
 import sanitize from "xss";
-import prettier from "prettier";
+// import prettier from "prettier";
 const uuidFn = IdGenerator.uuid();
 const builder = new AstBuilder(uuidFn);
 const matcher = new GherkinClassicTokenMatcher();
@@ -218,7 +218,9 @@ ${formatTags(gherkin.feature?.tags)}
 ${formatMultiline(gherkin.feature?.description ?? "")}
 ${parseChildren(gherkin.feature)}
 `;
-  return prettier.format(template, { parser: "markdown" });
+  // return prettier.format(template, { parser: "markdown" });
+  return template
+
 }
 export function convertFeatureToMarkdown(feature: Feature) {
   const gherkin = {feature}
@@ -228,7 +230,8 @@ ${formatTags(gherkin.feature?.tags)}
 ${formatMultiline(gherkin.feature?.description ?? "")}
 ${parseChildren(gherkin.feature)}
 `;
-  return prettier.format(template, { parser: "markdown" });
+  // return prettier.format(template, { parser: "markdown" });
+  return template
 }
 export function serialize(featureString: string) {
   return parser.parse(featureString);

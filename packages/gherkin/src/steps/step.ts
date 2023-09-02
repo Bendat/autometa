@@ -1,4 +1,3 @@
-import { Expression } from "@cucumber/cucumber-expressions";
 import { GherkinDocString } from "./doc-string";
 import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
 import { Class } from "@autometa/types";
@@ -25,10 +24,6 @@ export class Step extends GherkinNode{
   get hasTable() {
     return this.table !== undefined;
   }
-
-  matches = (expression: Expression) => {
-    return expression.match(this.text);
-  };
 }
 
 export const StepBuilder: Class<DtoBuilder<Step>> = Builder(Step);

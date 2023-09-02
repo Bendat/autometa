@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-runner",
-  "version": "0.7.7",
+  "version": "0.7.10",
   "description": "Run cucumber with jest or vitest, with superpowers",
   "type": "module",
   "main": "dist/cjs/index.js",
@@ -52,7 +52,7 @@
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^7.23.0",
+    "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "jest": "^29.5.0",
     "node": "^19.6.0",
@@ -62,11 +62,11 @@
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.2",
     "tsconfig": "workspace:*",
-    "tsup": "^6.7.0",
+    "tsup": "^7.2.0",
     "tsyringe": "^4.7.0",
     "typescript": "^4.9.5",
     "vite-tsconfig-paths": "^4.0.5",
-    "vitest": "^0.27.3"
+    "vitest": "0.33.0"
   },
   "dependencies": {
     "@autometa/dto-builder": "workspace:*",

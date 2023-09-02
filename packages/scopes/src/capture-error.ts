@@ -1,11 +1,13 @@
-export async function captureError(
+import { AutomationError } from "@autometa/errors";
+
+export function safe(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (...args: any[]) => any | Promise<any>,
   ...args: unknown[]
-): Promise<Error | undefined> {
+): AutomationError | undefined | Promise<AutomationError | undefined> {
   try {
-    await action(...args);
+    return action(...args);
   } catch (e) {
-    return e as Error;
+    return e as AutomationError;
   }
 }

@@ -4,7 +4,7 @@ import {
   snakeCase,
   constantCase,
   capitalCase,
-  paramCase,
+  paramCase
 } from "change-case-all";
 export abstract class StringTransformer {
   abstract order: number;
@@ -68,6 +68,39 @@ export class PrefixTransformer extends StringTransformer {
   }
 }
 
+export class LowerTransformer extends CaseTransformer {
+  transform(value: string): string {
+    return value.toLowerCase();
+  }
+}
+
+export class UpperTransformer extends CaseTransformer {
+  transform(value: string): string {
+    return value.toUpperCase();
+  }
+}
+export class TrimTransformer extends CaseTransformer {
+  transform(value: string): string {
+    return value.replace(/\s/g, "");
+  }
+}
+
+export class CollapseTransformer extends StringTransformer {
+  order = 5;
+  transform(value: string): string {
+    return value.replace(/\s+/g, "");
+  }
+}
+export function collapse() {
+  return new CollapseTransformer();
+}
+export function upper() {
+  return new UpperTransformer();
+}
+
+export function lower() {
+  return new LowerTransformer();
+}
 export function camel() {
   return new CamelCaseTransformer();
 }
@@ -86,11 +119,25 @@ export function capital() {
 export function kebab() {
   return new KebabCaseTransformer();
 }
-export function sfx(suffix: TemplateStringsArray) {
-  const [val] = suffix;
+export function trim() {
+  return new TrimTransformer();
+}
+export function sfx(prefix: string): () => SuffixTransformer;
+export function sfx(prefix: TemplateStringsArray): () => SuffixTransformer;
+export function sfx(suffix: TemplateStringsArray | string) {
+  const val = getTemplateOrString(suffix);
   return () => new SuffixTransformer(val);
 }
-export function pfx(prefix: TemplateStringsArray) {
-  const [val] = prefix;
+export function pfx(prefix: string): () => PrefixTransformer;
+export function pfx(prefix: TemplateStringsArray): () => PrefixTransformer;
+export function pfx(prefix: TemplateStringsArray | string) {
+  const val = getTemplateOrString(prefix);
   return () => new PrefixTransformer(val);
+}
+
+function getTemplateOrString(value: TemplateStringsArray | string): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return value[0];
 }

@@ -1,8 +1,6 @@
 import { DataTable } from "@cucumber/messages";
 import { ParsedDataTable } from "./datatable";
-import { TableValue } from "./table-value";
-import { transformTableValue } from "./transform-table-value";
-export type CompiledDataTable = TableValue[][];
+export type CompiledDataTable = string[][];
 
 export type TableType<T extends ParsedDataTable> = {
   new (table: CompiledDataTable): T;
@@ -12,5 +10,5 @@ export function compileDatatable(table?: DataTable): CompiledDataTable | undefin
   if (!table) {
     return undefined;
   }
-  return table.rows.map(({ cells }) => cells.map(transformTableValue));
+  return table.rows.map(({ cells }) => cells.map(cell => cell.value));
 }
