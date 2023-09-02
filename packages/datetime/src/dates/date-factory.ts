@@ -18,7 +18,7 @@ export class DateFactory {
     ["midnight", midnight]
   ]);
 
-  fromPhrase(phrase: string) {
+  fromPhraseSafe(phrase: string) {
     const name = convertPhrase(phrase, camel);
     if (this.phraseMap.has(name)) {
       return this.phraseMap.get(name)?.call(this);
@@ -33,7 +33,17 @@ export class DateFactory {
     }
     return parsed;
   }
-
+  fromPhrase(phrase: string) {
+    const result = this.fromPhraseSafe(phrase);
+    if (result) {
+      return result;
+    }
+    raise(
+      `Could not parse date from phrase ${phrase}. Please use a valid date string or a phrase from the following list: ${Array.from(
+        this.phraseMap.keys()
+      ).join(", ")}`
+    );
+  }
   make(timeOffset: number, timeunit: TimeUnit) {
     const unit = timeunit.endsWith("s") ? timeunit : `${timeunit}s`;
     switch (unit) {
@@ -62,8 +72,7 @@ export class DateFactory {
   #extractTimeFromPhrase(phrase: string) {
     return (
       this.#extractFutureFromPhrase(phrase) ??
-      this.#extractPastFromPhrase(phrase) ??
-      raise("Could not extract ")
+      this.#extractPastFromPhrase(phrase)
     );
   }
   #extractFutureFromPhrase(phrase: string) {

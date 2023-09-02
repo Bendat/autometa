@@ -9,8 +9,7 @@ import type {
   HookAction,
   RuleAction,
   ScenarioAction,
-  StepAction,
-  StepTableArg
+  StepActionFn
 } from "./types";
 import { GlobalScope } from "./global-scope";
 
@@ -24,17 +23,17 @@ export interface Scopes {
   Rule(title: string, action: RuleAction): RuleScope;
   Given<TText extends string, TTable extends DataTable = NeverDataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ): void;
-  When<TText extends string, TTable extends StepTableArg = NeverDataTable>(
+  When<TText extends string, TTable extends DataTable = NeverDataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ): void;
-  Then<TText extends string, TTable extends StepTableArg = NeverDataTable>(
+  Then<TText extends string, TTable extends DataTable = NeverDataTable>(
     title: TText,
-    action: StepAction<TText, TTable>,
+    action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ): void;
   Before(

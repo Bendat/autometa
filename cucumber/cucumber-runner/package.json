@@ -52,7 +52,7 @@
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^7.23.0",
+    "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "jest": "^29.5.0",
     "node": "^19.6.0",

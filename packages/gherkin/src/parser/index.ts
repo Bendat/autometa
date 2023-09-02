@@ -1,2 +1,3 @@
 export { parseGherkin } from "./load";
-export { convertToClass } from "./parse";
+export * from "./parse";
+export * from "./interpolate-step-text";

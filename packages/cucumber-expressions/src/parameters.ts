@@ -13,13 +13,22 @@ import {
   nil,
   array
 } from "@autometa/overloaded";
-Argument.prototype.getValue = function (thisObj: unknown) {
+// todo - this has a bug when dealing with {string} - does not remove quotes
+Argument.prototype.getValue = function () {
+  if (this.group.children.length > 0) {
+    const value = this.group.children
+      .filter((it) => it.value !== undefined)
+      .map((child) => child.value);
+    if (value.length > 0) {
+      return this.parameterType.transform(this.parameterType, value);
+    }
+  }
   const groupValues = this.group
     ? this.group.value
       ? [this.group.value]
       : this.group.values
     : null;
-  return this.parameterType.transform(thisObj, groupValues);
+  return this.parameterType.transform(this.parameterType, groupValues);
 };
 type PrimitiveConstructor =
   | typeof Number
@@ -30,9 +39,15 @@ type PrimitiveConstructor =
 export type ParamTypeDefinition = {
   name: string;
   regexpPattern: RegExp | RegExp[];
-  transform?: (value: unknown) => unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transform?: (value: any) => unknown;
   type?: Class<unknown>;
-  primitive?: typeof String | typeof Number | typeof Boolean | typeof BigInt;
+  primitive?:
+    | typeof String
+    | typeof Number
+    | typeof Boolean
+    | typeof BigInt
+    | typeof Date;
 };
 
 const regexp = instance(RegExp).or(array([instance(RegExp)]));
@@ -65,6 +80,7 @@ function registerParameterType(
     | StringConstructor
     | BooleanConstructor
     | BigIntConstructor
+    | DateConstructor
     | undefined
 ): void {
   return overloads(
@@ -87,7 +103,7 @@ function registerParameterType(
     }),
     def`allTransforms`(
       string(),
-      instance(RegExp),
+      regexp,
       func("type"),
       func("transform"),
       nil("primitive")
@@ -102,7 +118,7 @@ function registerParameterType(
     }),
     def`transformPrimitive`(
       string(),
-      instance(RegExp),
+      regexp,
       nil("type"),
       func("transform"),
       func("primitive")
@@ -117,7 +133,7 @@ function registerParameterType(
     }),
     def`encapsulatePrimitive`(
       string(),
-      instance(RegExp),
+      regexp,
       func("type"),
       nil("transform"),
       func("primitive")
@@ -131,21 +147,17 @@ function registerParameterType(
       const param = new ParameterType(name, regexp, type, wrapper);
       registry.defineParameterType(param);
     }),
-    def`makeType`(
-      string(),
-      instance(RegExp),
-      func("type"),
-      nil(),
-      nil()
-    ).matches((name, pattern, type) => {
-      const prototype = type as unknown as Class<unknown>;
-      const transform = (val: unknown) => new prototype(val);
-      const param = new ParameterType(name, pattern, null, transform);
-      registry.defineParameterType(param);
-    }),
+    def`makeType`(string(), regexp, func("type"), nil(), nil()).matches(
+      (name, pattern, type) => {
+        const prototype = type as unknown as Class<unknown>;
+        const transform = (val: unknown) => new prototype(val);
+        const param = new ParameterType(name, pattern, null, transform);
+        registry.defineParameterType(param);
+      }
+    ),
     def`makePrimitive`(
       string(),
-      instance(RegExp),
+      regexp,
       nil(),
       nil(),
       func("primitive")
@@ -157,7 +169,7 @@ function registerParameterType(
     }),
     def`transformValue`(
       string(),
-      instance(RegExp),
+      regexp,
       nil(),
       func("transform"),
       nil()

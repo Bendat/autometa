@@ -1,2 +1,5 @@
-import { StepScope, StepTableArg } from "..";
-export type CachedStep = StepScope<string, StepTableArg | undefined>;
+import { StepScope } from "..";
+import { StepCache } from ".";
+import { DataTable } from "@autometa/gherkin";
+export type CachedStep = StepScope<string, DataTable | undefined>;
+export type CurriedStepCache = new (parent: StepCache) => StepCache;

@@ -9,9 +9,8 @@ export class BackgroundScope extends Scope {
     public readonly action: BackgroundAction,
     parentHooksCache: HookCache,
     parentStepCache: StepCache,
-    buildStepCache: () => unknown
   ) {
-    super(parentHooksCache, parentStepCache, buildStepCache);
+    super(parentHooksCache, parentStepCache);
   }
   get idString(): string {
     return this.name ?? "";

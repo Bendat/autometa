@@ -10,12 +10,20 @@
     "build:runner":{
       "inputs": ["**/*/cucumber-runner/**/*.ts"]
     },
-    "integrate": {},
+    "integrate": {
+      "inputs": ["**/*.feature.ts"]
+
+    },
     "clean": {
       "inputs": ["dist/**"],
       "outputs": []
     },
     "test": {
+      "inputs": ["**/*.spec.ts", "**/*.test.ts"]
+
+    },
+    "test:types": {
+      "inputs": ["**/*.test-d.ts"]
     },
     "lint": {
       "inputs": ["**/*.ts"]

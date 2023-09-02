@@ -16,9 +16,8 @@ export class FeatureScope extends Scope {
     readonly action: FeatureAction | undefined,
     parentHookCache: HookCache,
     parentStepCache: StepCache,
-    buildStepCache: () => unknown
   ) {
-    super(parentHookCache, parentStepCache, buildStepCache);
+    super(parentHookCache, parentStepCache);
     this.path = path;
   }
 

@@ -13,9 +13,8 @@ export class ScenarioOutlineScope extends ScenarioScope {
     public readonly action: ScenarioAction,
     parentHookCache: HookCache,
     parentStepCache: StepCache,
-    buildStepCache: () => unknown
   ) {
-    super(name, action, parentHookCache, parentStepCache, buildStepCache);
+    super(name, action, parentHookCache, parentStepCache);
   }
   protected override get canAttachHook(): boolean {
     return true;

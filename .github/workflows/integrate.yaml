@@ -1,4 +1,4 @@
-name: Merge Workflow
+name: Integration Workflow
 
 on:
   push:
@@ -38,6 +38,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build Runner
-        run: pnpm build:runner
+        run: pnpm build
       - name: Integration tests
         run: pnpm run integrate

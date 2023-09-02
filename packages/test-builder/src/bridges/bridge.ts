@@ -1,5 +1,7 @@
 import {
   Background,
+  DataTable,
+  Example,
   Examples,
   Feature,
   GherkinNode,
@@ -8,7 +10,6 @@ import {
   ScenarioOutline,
   Step
 } from "@autometa/gherkin";
-import { StepTableArg } from "@autometa/scopes";
 import { BackgroundScope } from "@autometa/scopes";
 import {
   FeatureScope,
@@ -49,7 +50,14 @@ export class ScenarioBridge extends GherkinCodeBridge {
     error?: Error;
   } = {};
 }
-
+export class ExampleBridge extends GherkinCodeBridge {
+  data: { gherkin: Example; scope: ScenarioScope };
+  steps: StepBridge[] = [];
+  report: {
+    passed?: boolean;
+    error?: Error;
+  } = {};
+}
 export class ScenarioOutlineBridge extends GherkinCodeBridge {
   data: { gherkin: ScenarioOutline; scope: ScenarioOutlineScope };
   examples: ExamplesBridge[] = [];
@@ -65,7 +73,7 @@ export class ExamplesBridge extends GherkinCodeBridge {
 export class StepBridge extends GherkinCodeBridge {
   data: {
     gherkin: Step;
-    scope: StepScope<string, StepTableArg | undefined>;
+    scope: StepScope<string, DataTable | undefined>;
     args: unknown[];
   };
 }

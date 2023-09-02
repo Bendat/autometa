@@ -31,7 +31,7 @@ export function convertToClass(feature: GherkinFeature, filePath: string) {
   return new FeatureBuilder()
     .name(feature.name)
     .description(feature.description)
-    .keyword(feature.keyword)
+    .keyword(feature.keyword.trim())
     .tags(new Set(buildTags(feature.tags)))
     .uri(filePath)
     .language(feature.language)
@@ -120,7 +120,7 @@ export function buildOutline(scenario: GherkinScenario, tags: string[]) {
   const outline = new ScenarioOutlineBuilder()
     .name(scenario.name)
     .tags(new Set(tags))
-    .keyword(scenario.keyword)
+    .keyword(scenario.keyword.trim())
     .children(examples)
     .build();
   return outline;
@@ -132,7 +132,7 @@ export function buildBackground(child: { background: GherkinBackground }) {
   const bg = new BackgroundBuilder()
     .name(background.name)
     .description(background.description)
-    .keyword(background.keyword)
+    .keyword(background.keyword.trim())
     .children(steps)
     .build();
   return bg;
@@ -147,8 +147,8 @@ function makeSteps(background: GherkinBackground | GherkinScenario) {
       .text(step.text)
       .docstring(doc)
       .table(compileDataTable(step.dataTable))
-      .keyword(step.keyword as StepKeyword)
-      .keywordType(step.keywordType as StepKeywordType)
+      .keyword(step.keyword.trim() as StepKeyword)
+      .keywordType(step.keywordType?.trim() as StepKeywordType)
       .build();
   });
 }
@@ -162,7 +162,7 @@ export function buildRule(
   const tagsNew = [...(tags ?? []), ...buildTags(rule.tags)];
   const ruleObject: Rule = new RuleBuilder()
     .name(rule?.name)
-    .keyword(rule?.keyword)
+    .keyword(rule?.keyword.trim())
     .description(rule.description)
     .tags(new Set(tagsNew))
     .children(buildChildren(rule, tagsNew, backgrounds))
@@ -177,7 +177,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
       example.tableBody.map((row) => row.cells.map((cell) => cell.value)) ?? [];
 
     const scenarios = values.map((row) => {
-      const name = scenarioExampleTitle(titles, scenario, row);
+      const name = scenarioExampleTitle(titles, scenario.name, row);
       const exampleValues = titles
         .map((title, index) => {
           return { [title]: row[index] };
@@ -198,7 +198,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
     return new ExamplesBuilder()
       .name(example.name)
       .description(example.description)
-      .keyword(example.keyword)
+      .keyword(example.keyword.trim())
       .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
       .titles(titles)
       .values(values)
@@ -207,19 +207,19 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
   });
 }
 
-function scenarioExampleTitle(
-  titles: string[],
-  scenario: GherkinScenario,
+export function scenarioExampleTitle(
+  titleSegments: string[],
+  scenarioName: string,
   row: string[]
 ) {
-  const hasVariables = titles.map((title) =>
-    scenario.name.includes(`<${title}>`)
+  const hasVariables = titleSegments.map((title) =>
+    scenarioName.includes(`<${title}>`)
   );
-  let name: string = scenario.name;
+  let name: string = scenarioName;
   if (hasVariables.length > 0 && !hasVariables.includes(false)) {
-    name = interpolateExamples(scenario.name, titles, row);
+    name = interpolateExamples(scenarioName, titleSegments, row);
   } else {
-    const suffixVars = titles
+    const suffixVars = titleSegments
       .map((title, idx) => `${title}: ${row[idx]}`)
       .join(", ");
     const suffix = `<${suffixVars}>`;

@@ -18,9 +18,8 @@ export class ScenarioScope extends Scope {
     public readonly action: ScenarioAction,
     parentHooksCache: HookCache,
     parentStepCache: StepCache,
-    buildStepCache: () => unknown
   ) {
-    super(parentHooksCache, parentStepCache, buildStepCache);
+    super(parentHooksCache, parentStepCache);
   }
   protected get canAttachHook(): boolean {
     return false;

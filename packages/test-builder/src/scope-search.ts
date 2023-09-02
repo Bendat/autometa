@@ -21,8 +21,7 @@ export function scope(value: Scope) {
           name,
           Empty_Function,
           value.hooks,
-          value.steps,
-          value.buildStepCache
+          value.steps
         );
         value.attach(rule);
         return rule;
@@ -42,8 +41,7 @@ export function scope(value: Scope) {
           name,
           Empty_Function,
           value.hooks,
-          value.steps,
-          value.buildStepCache
+          value.steps
         );
         value.attach(scenario);
         return scenario;
@@ -54,8 +52,10 @@ export function scope(value: Scope) {
       const found = value.closedScopes.find((child) => {
         return child instanceof BackgroundScope;
       }) as BackgroundScope | undefined;
-      if(found && found.name !== name){
-        throw new AutomationError(`Could not find background matching ${name} but found ${found?.name}`)
+      if (found && found.name !== name) {
+        throw new AutomationError(
+          `Could not find background matching ${name} but found ${found?.name}`
+        );
       }
       if (found) {
         value.attach(found);
@@ -66,23 +66,21 @@ export function scope(value: Scope) {
         name,
         Empty_Function,
         value.hooks,
-        value.steps,
-        value.buildStepCache
+        value.steps
       );
       value.attach(bgScope);
       return bgScope;
     },
     findScenarioOutline: (name: string): ScenarioOutlineScope => {
       const found = value.closedScopes.find((child) => {
-        return child instanceof ScenarioScope && child.name === name;
+        return child instanceof ScenarioOutlineScope && child.name === name;
       }) as ScenarioOutlineScope | undefined;
       if (!found) {
         const scenarioOutline = new ScenarioOutlineScope(
           name,
           Empty_Function,
           value.hooks,
-          value.steps,
-          value.buildStepCache
+          value.steps
         );
         value.attach(scenarioOutline);
         return scenarioOutline;
@@ -92,15 +90,17 @@ export function scope(value: Scope) {
     },
     findExample(name: string): ScenarioScope {
       const found = value.closedScopes.find((child) => {
-        return child instanceof ScenarioScope && child.name === name;
+        if (!(child instanceof ScenarioScope)) {
+          return false;
+        }
+        return child.name === name;
       }) as ScenarioScope;
       if (!found) {
         const scenario = new ScenarioScope(
           name,
           Empty_Function,
           value.hooks,
-          value.steps,
-          value.buildStepCache
+          value.steps
         );
         value.attach(scenario);
         return scenario;
@@ -108,11 +108,7 @@ export function scope(value: Scope) {
       value.attach(found);
       return found;
     },
-    findStep: (
-      keywordType: StepType,
-      keyword: StepKeyword,
-      name: string
-    ) => {
+    findStep: (keywordType: StepType, keyword: StepKeyword, name: string) => {
       return value.stepCache.find(keywordType, keyword, name);
     }
   };

@@ -6,8 +6,7 @@ import {
   RuleScope,
   ScenarioScope,
   ScenarioOutlineScope,
-  StepScope,
-  Empty_Function
+  StepScope
 } from "@autometa/scopes";
 import {
   CucumberExpression,
@@ -21,16 +20,14 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     featureScope.closedScopes.push(
       new RuleScope(
         "test rule",
         () => undefined,
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       )
     );
     const rule = scope(featureScope).findRule("test rule");
@@ -43,16 +40,14 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     featureScope.closedScopes.push(
       new ScenarioScope(
         "test scenario",
         () => undefined,
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       )
     );
     const foundScenario = scope(featureScope).findScenario("test scenario");
@@ -65,22 +60,19 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const ruleScope = new RuleScope(
       "test rule",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const scenarioScope = new ScenarioScope(
       "test scenario",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     ruleScope.closedScopes.push(scenarioScope);
     featureScope.closedScopes.push(ruleScope);
@@ -93,22 +85,19 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const ruleScope = new RuleScope(
       "test rule",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const outlineScope = new ScenarioOutlineScope(
       "test scenario outline",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     ruleScope.closedScopes.push(outlineScope);
     featureScope.closedScopes.push(ruleScope);
@@ -123,16 +112,14 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     featureScope.closedScopes.push(
       new ScenarioOutlineScope(
         "test scenario outline",
         () => undefined,
         new HookCache(),
-        new StepCache(),
-        Empty_Function
+        new StepCache()
       )
     );
     const foundScenario = scope(featureScope).findScenarioOutline(
@@ -141,13 +128,37 @@ describe("ScopeSearch", () => {
     expect(foundScenario).toBeDefined();
     expect(foundScenario).toBeInstanceOf(ScenarioScope);
   });
+  it("should find an example by name in a scenario outline", () => {
+    const featureScope = new FeatureScope(
+      "",
+      () => undefined,
+      new HookCache(),
+      new StepCache()
+    );
+    const outlineScope = new ScenarioOutlineScope(
+      "test scenario outline",
+      () => undefined,
+      new HookCache(),
+      new StepCache()
+    );
+    const exampleScope = new ScenarioScope(
+      "test example",
+      () => undefined,
+      new HookCache(),
+      new StepCache()
+    );
+    outlineScope.closedScopes.push(exampleScope);
+    featureScope.closedScopes.push(outlineScope);
+    const foundScenario = scope(featureScope).findExample("test example");
+    expect(foundScenario).toBeDefined();
+    expect(foundScenario).toBeInstanceOf(ScenarioScope);
+  });
   it("should find a step in the feature", () => {
     const featureScope = new FeatureScope(
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const stepScope = new StepScope(
       "Given",
@@ -171,15 +182,13 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const ruleScope = new RuleScope(
       "test rule",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const stepScope = new StepScope(
       "Given",
@@ -199,15 +208,13 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const scenarioScope = new ScenarioScope(
       "test scenario",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const stepScope = new StepScope(
       "Given",
@@ -231,15 +238,13 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const outlineScope = new ScenarioOutlineScope(
       "test outline",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const stepScope = new StepScope(
       "Given",
@@ -263,15 +268,13 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const outlineScope = new ScenarioOutlineScope(
       "test outline",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const stepScope = new StepScope(
       "Given",
@@ -295,22 +298,19 @@ describe("ScopeSearch", () => {
       "",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const ruleScope = new RuleScope(
       "test rule",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const outlineScope = new ScenarioOutlineScope(
       "test outline",
       () => undefined,
       new HookCache(),
-      new StepCache(),
-      Empty_Function
+      new StepCache()
     );
     const stepScope = new StepScope(
       "Given",

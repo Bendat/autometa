@@ -10,18 +10,20 @@ export function getApp<T extends AutometaApp, K extends AutometaWorld>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...instances: { token: any; instance?: any; cls?: Class<any> }[]
 ) {
-  if (!appType || !(appType instanceof AutometaApp)) {
+  if (!appType) {
     throw new AutomationError(`A reference to an 'app' and 'world' is required to run tests.
 
 Configure the app by extending 'AutometaApp' and adding it to your
 'autometa.config.ts' file:
+
+@AppType(MyWorld)
 export class MyAutometaApp extends AutometaApp {
     ...
 }
 defineConfig({
-    app: MyAutometaApp,
-    world: MyWorldApp
-    ...
+   roots: {
+    app: './src/apps'
+   }
 })`);
   }
   container.registerType(worldType, worldType);

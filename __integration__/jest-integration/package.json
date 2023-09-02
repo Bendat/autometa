@@ -1,0 +1,51 @@
+{
+  "name": "@autometa/jest-integration",
+  "version": "0.0.0",
+  "description": "",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "integrate": "jest __integration__",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "clean": "rimraf dist",
+    "build": "exit 0",
+    "build:watch": "tsup --watch"
+  },
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "default": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@jest/globals": "^29.6.2",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^18.11.18",
+    "@types/uuid": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "rimraf": "^4.1.2",
+    "tsconfig": "workspace: *",
+    "tsup": "^7.2.0",
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.8"
+  },
+  "dependencies": {
+    "@autometa/app": "workspace:^",
+    "@autometa/bind-decorator": "workspace:^",
+    "autometa-runner": "workspace:^",
+    "jest": "^29.5.0",
+    "reflect-metadata": "^0.1.13",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1"
+  }
+}
