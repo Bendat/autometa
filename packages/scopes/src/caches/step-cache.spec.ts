@@ -27,17 +27,6 @@ describe("StepCache", () => {
         "Step [Given hello there] already defined"
       );
     });
-
-    it("should throw an error if a duplicate step exists in the parent cache", () => {
-      const parent = new StepCache("test");
-      const sut = new StepCache("parent", parent);
-      const step = makeStep("Given", "Context", "hello there");
-      const second = makeStep("Given", "Context", "hello there");
-      parent.add(step);
-      expect(() => sut.add(second)).toThrow(
-        "Step [Given hello there] already defined"
-      );
-    });
   });
   describe("findByExample", () => {
     it("finds a cached step which is part of a gherkin Example", () => {

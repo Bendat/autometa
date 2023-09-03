@@ -70,6 +70,9 @@ export function refineDiff(diff: Change[]) {
       index++;
       continue;
     }
+    if (gherkinChange.removed === true) {
+      continue;
+    }
     if (gherkinChange.value) {
       strings.push(gherkinChange.value);
       continue;

@@ -35,8 +35,7 @@ export class Coordinator {
     const fs = this.fileSystem(caller);
     const path = fs.fromUrlPattern(feature.path);
     path.loadApps();
-    path.loadStepDefinitions();
-    this.global.buildStepCache();
+
     const gherkin = path.getFeatureFile();
     if (!Array.isArray(gherkin)) {
       this.start(gherkin, feature, events, executor);
@@ -57,7 +56,9 @@ export class Coordinator {
       events: TestEventEmitter
     ) => void
   ) {
-    // this.loadSteps();
+    this.global.unlock();
+    this.loadSteps();
+    this.global.lock();
     this.#builder = new TestBuilder(gherkin);
     this.#bridge = this.#builder.onFeatureExecuted(feature);
     const { app, world } = this.opts[this.config.environment ?? "default"];
@@ -77,11 +78,7 @@ export class Coordinator {
 
   fileSystem(caller: string) {
     const { roots } = this.config;
-    const {
-      steps,
-      features,
-      app
-    } = roots;
+    const { steps, features, app } = roots;
 
     this.#fs = new Files()
       .withFeatureRoot(features)

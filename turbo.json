@@ -22,6 +22,9 @@
       "inputs": ["**/*.spec.ts", "**/*.test.ts"]
 
     },
+    "coverage": {
+      "inputs": ["**/*.spec.ts", "**/*.test.ts"]
+    },
     "test:types": {
       "inputs": ["**/*.test-d.ts"]
     },

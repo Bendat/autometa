@@ -8,6 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "vitest run",
+    "coverage": "vitest run --coverage",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -29,6 +30,7 @@
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
+    "@vitest/coverage-istanbul": "^0.31.0",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
@@ -40,11 +42,11 @@
     "vitest": "0.33.0"
   },
   "dependencies": {
-    "@autometa/types": "workspace:*",
     "@autometa/bind-decorator": "workspace:^",
     "@autometa/dto-builder": "workspace:*",
     "@autometa/errors": "workspace:^",
     "@autometa/overloaded": "workspace:^",
+    "@autometa/types": "workspace:*",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",

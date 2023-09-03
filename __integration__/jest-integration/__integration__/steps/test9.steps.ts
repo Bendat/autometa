@@ -12,7 +12,7 @@ Given("the outer scenario 2 executed", ({ report }) => {
   report.outterscenario2step = true;
 });
 
-Given("I execute the outter scenario with {int}", (num, { report }) => {
+Given("I execute the outer scenario with {int}", (num, { report }) => {
   report.outerscenariooutlinestep += num;
 });
 
@@ -40,7 +40,7 @@ Given("the rule2 skipped scenario executed", ({ report }) => {
   report.rule2skippedscenario = true;
 });
 
-Given('a rule scenario outline', Pass)
+Given("a rule scenario outline", Pass);
 After(
   "verify outerscenario",
   ({ report }) => {

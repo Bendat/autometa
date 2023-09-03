@@ -1,5 +1,5 @@
 import { PARAM_REGISTRY } from "./parameters";
-import { GetCucumberFunctions, Scopes, Pass } from "@autometa/scopes";
+import { GetCucumberFunctions, Pass } from "@autometa/scopes";
 import { Coordinator } from "@autometa/coordinator";
 import { CONFIG } from "./config";
 import { makeTestEmitter } from "./events";
@@ -18,10 +18,8 @@ const {
   Teardown,
   Setup,
   Global
-}: Scopes = GetCucumberFunctions(PARAM_REGISTRY);
-
+} = GetCucumberFunctions(PARAM_REGISTRY);
 const coordinator = new Coordinator(Global, CONFIG, OPTS);
-
 Global.onFeatureExecuted = (feature, caller) => {
   const events = makeTestEmitter();
   coordinator.run(feature, caller, events, executor);

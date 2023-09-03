@@ -36,6 +36,13 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   // readonly stepCache: StepCache = new StepCache();
   action: (...args: unknown[]) => void;
 
+  lock() {
+    this.isOpen = false;
+  }
+  unlock() {
+    this.isOpen = true;
+  }
+
   constructor(readonly parameterRegistry: ParameterTypeRegistry) {
     super(new HookCache(), new StepCache());
   }
@@ -133,30 +140,61 @@ ${JSON.stringify(args, null, 2)}`);
 
   @Bind
   Scenario(title: string, action: ScenarioAction) {
+    const parent = this.openChild;
+    const parentHookCache =
+      parent instanceof FeatureScope ||
+      parent instanceof RuleScope ||
+      parent instanceof ScenarioOutlineScope
+        ? parent.hookCache
+        : this.hookCache;
+    const parentStepCache =
+      parent instanceof FeatureScope ||
+      parent instanceof RuleScope ||
+      parent instanceof ScenarioOutlineScope
+        ? parent.steps
+        : this.steps;
     const scenario = new ScenarioScope(
       title,
       action,
-      this.hookCache,
-      this.steps
+      parentHookCache,
+      parentStepCache
     );
     return this.attach(scenario);
   }
 
   @Bind
   ScenarioOutline(title: string, action: ScenarioAction) {
+    const parent = this.openChild;
+    const parentHookCache =
+      parent instanceof FeatureScope ||
+      parent instanceof RuleScope ||
+      parent instanceof ScenarioOutlineScope
+        ? parent.hookCache
+        : this.hookCache;
+    const parentStepCache =
+      parent instanceof FeatureScope ||
+      parent instanceof RuleScope ||
+      parent instanceof ScenarioOutlineScope
+        ? parent.steps
+        : this.steps;
     const scenario = new ScenarioOutlineScope(
       title,
       action,
-      this.hookCache,
-      this.steps
+      parentHookCache,
+      parentStepCache
     );
     return this.attach(scenario);
   }
 
   @Bind
   Rule(title: string, action: RuleAction) {
-    const scenario = new RuleScope(title, action, this.hookCache, this.steps);
-    return this.attach(scenario);
+    const parent = this.openChild;
+    const parentHookCache =
+      parent instanceof FeatureScope ? parent.hookCache : this.hookCache;
+    const parentStepCache =
+      parent instanceof FeatureScope ? parent.steps : this.steps;
+    const rule = new RuleScope(title, action, parentHookCache, parentStepCache);
+    return this.attach(rule);
   }
 
   @Bind

@@ -22,6 +22,7 @@ import {
   Example,
   Feature,
   GherkinNode,
+  Scenario,
   scenarioExampleTitle
 } from "@autometa/gherkin";
 import { raise } from "@autometa/errors";
@@ -34,7 +35,6 @@ export class TestBuilder {
     GherkinWalker.walk<GherkinCodeBridge>(
       {
         onFeature: (feature, accumulator) => {
-          featureScope.buildStepCache();
           accumulator.data = { gherkin: feature, scope: featureScope };
           return accumulator;
         },
@@ -75,8 +75,10 @@ export class TestBuilder {
           return bridge;
         },
         onExample(gherkin, accumulator) {
-          if(gherkin.table === undefined){
-            raise(`Example ${gherkin.name} has no Example Table data. A Row of data is required.`);
+          if (gherkin.table === undefined) {
+            raise(
+              `Example ${gherkin.name} has no Example Table data. A Row of data is required.`
+            );
           }
           const titleSegments = Object.keys(gherkin.table);
           const values = Object.values(gherkin.table);
@@ -108,7 +110,7 @@ export class TestBuilder {
             data: { scope: parentScope, gherkin }
           } = accumulator;
           const { keyword, keywordType, text } = step;
-          const cache = parentScope.stepCache;
+          const cache = parentScope.steps;
           const existing = getStep(
             accumulator,
             gherkin,
@@ -152,11 +154,20 @@ function getStep(
   keyword: StepKeyword,
   text: string
 ) {
-  if (accumulator instanceof ExampleBridge) {
-    const scenario = gherkin as Example;
-    if (scenario.table) {
-      return cache.findByExample(keywordType, keyword, text, scenario.table);
+  try {
+    if (accumulator instanceof ExampleBridge) {
+      const scenario = gherkin as Example;
+      if (scenario.table) {
+        return cache.findByExample(keywordType, keyword, text, scenario.table);
+      }
     }
+    return cache.find(keywordType, keyword, text);
+  } catch (e) {
+    const cause = e as Error;
+    const { title } = gherkin as Scenario;
+    raise(
+      `'${title}' could not find a step definition`,
+      { cause }
+    );
   }
-  return cache.find(keywordType, keyword, text);
 }

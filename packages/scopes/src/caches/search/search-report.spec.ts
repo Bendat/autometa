@@ -12,7 +12,7 @@ import {
   CucumberExpression,
   ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
-const registery = new ParameterTypeRegistry();
+const registry = new ParameterTypeRegistry();
 describe("StepMatch", () => {
   describe("SameStepTypeMatch", () => {
     it("should format the match", () => {
@@ -23,7 +23,7 @@ describe("StepMatch", () => {
         step: new StepScope(
           "Given",
           "Context",
-          new CucumberExpression("", registery),
+          new CucumberExpression("", registry),
           Empty_Function
         )
       };
@@ -42,7 +42,7 @@ describe("StepMatch", () => {
         step: new StepScope(
           "When",
           "Action",
-          new CucumberExpression("", registery),
+          new CucumberExpression("", registry),
           Empty_Function
         )
       };
@@ -62,7 +62,7 @@ describe("SearchReport", () => {
       step: new StepScope(
         "Given",
         "Action",
-        new CucumberExpression("", registery),
+        new CucumberExpression("", registry),
         Empty_Function
       )
     };
@@ -80,7 +80,7 @@ describe("SearchReport", () => {
       step: new StepScope(
         "When",
         "Action",
-        new CucumberExpression("", registery),
+        new CucumberExpression("", registry),
         Empty_Function
       )
     };
@@ -98,7 +98,7 @@ describe("SearchReport", () => {
       step: new StepScope(
         "Given",
         "Action",
-        new CucumberExpression("", registery),
+        new CucumberExpression("", registry),
         Empty_Function
       )
     };
@@ -110,7 +110,7 @@ describe("SearchReport", () => {
       step: new StepScope(
         "When",
         "Action",
-        new CucumberExpression("", registery),
+        new CucumberExpression("", registry),
         Empty_Function
       )
     };
@@ -129,7 +129,7 @@ describe("SearchReport", () => {
       step: new StepScope(
         "Given",
         "Action",
-        new CucumberExpression("", registery),
+        new CucumberExpression("", registry),
         Empty_Function
       )
     };
@@ -141,7 +141,7 @@ describe("SearchReport", () => {
       step: new StepScope(
         "When",
         "Action",
-        new CucumberExpression("", registery),
+        new CucumberExpression("", registry),
         Empty_Function
       )
     };

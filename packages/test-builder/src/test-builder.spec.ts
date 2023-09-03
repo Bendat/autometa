@@ -362,7 +362,6 @@ describe("TestBuilder", () => {
     scope.attach(outlineScope);
     outlineScope.attach(exampleScope);
     exampleScope.attach(stepScope);
-    scope.buildStepCache();
     const builder = new TestBuilder(feature);
     const bridge = builder.onFeatureExecuted(scope);
     expect(bridge.data.gherkin).toBe(feature);
