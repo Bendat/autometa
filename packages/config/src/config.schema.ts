@@ -20,12 +20,8 @@ export const ShimSchema = object({
 }).optional();
 
 export const EventsSchema = string().array();
-// Use decorators
-// export const AppSchema = z.instanceof(AutometaApp);
-// export const WorldSchema = z.instanceof(AutometaWorld);
-// export const CucumberSchema = object({ app: AppSchema, world: WorldSchema });
+
 export const PathSchema = string().array();
-//string().array().or(string());
 export const RootSchema = object({
   features: PathSchema,
   steps: PathSchema,

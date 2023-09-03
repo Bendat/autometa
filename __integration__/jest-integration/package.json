@@ -8,7 +8,9 @@
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "integrate": "jest __integration__",
+    "integrate:impl": "jest __integration__/impl",
+    "integrate:transform": "jest __integration__/transform",
+    "integrate": "pnpm integrate:impl && pnpm integrate:transform",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -42,6 +44,7 @@
   "dependencies": {
     "@autometa/app": "workspace:^",
     "@autometa/bind-decorator": "workspace:^",
+    "@autometa/jest-transformer": "workspace:^",
     "autometa-runner": "workspace:^",
     "jest": "^29.5.0",
     "reflect-metadata": "^0.1.13",

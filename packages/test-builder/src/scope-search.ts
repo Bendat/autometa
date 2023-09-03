@@ -58,7 +58,6 @@ export function scope(value: Scope) {
         );
       }
       if (found) {
-        value.attach(found);
         return found;
       }
 
@@ -85,7 +84,6 @@ export function scope(value: Scope) {
         value.attach(scenarioOutline);
         return scenarioOutline;
       }
-      value.attach(found);
       return found;
     },
     findExample(name: string): ScenarioScope {
@@ -105,11 +103,10 @@ export function scope(value: Scope) {
         value.attach(scenario);
         return scenario;
       }
-      value.attach(found);
       return found;
     },
     findStep: (keywordType: StepType, keyword: StepKeyword, name: string) => {
-      return value.stepCache.find(keywordType, keyword, name);
+      return value.steps.find(keywordType, keyword, name);
     }
   };
 }

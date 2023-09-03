@@ -1,12 +1,9 @@
 import {
-  CucumberExpression,
   ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { describe, expect, it, vi } from "vitest";
 import { GlobalScope } from "./global-scope";
 import { Scope } from "./scope";
-import { StepScope } from "./step-scope";
-const registry = new ParameterTypeRegistry();
 describe("Global Scope", () => {
   describe("attach", () => {
     it("should fail to attach an unknown scope", () => {
@@ -16,25 +13,6 @@ describe("Global Scope", () => {
       expect(() => sut.attach(Object.create(Scope))).toThrow(
         "Only FeatureScope and StepScope can be executed globally. Scenarios, Outlines and Rules must exist inside a Feature"
       );
-    });
-  });
-
-  describe("getStepCache", () => {
-    it("should compile attached steps a cache", () => {
-      const action = vi.fn();
-      const sut = new GlobalScope(new ParameterTypeRegistry());
-      sut.onFeatureExecuted = action;
-      sut.closedScopes.push(
-        new StepScope(
-          "Given",
-          "Context",
-          new CucumberExpression("hi", registry),
-          vi.fn()
-        )
-      );
-      const cache = sut.buildStepCache();
-      expect(cache).toBeDefined();
-      expect(cache.size).toBe(1);
     });
   });
   describe("Feature", () => {

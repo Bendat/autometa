@@ -10,10 +10,12 @@ export default {
 
   testMatch: [
     '**/?(*.)+(spec|test|feature).[tj]s?(x)',
+    '**/*/*.feature',
   ],
 
   transform: {
     '^.+\\.ts$': 'ts-jest',
+    '^.+\\.feature$': '@autometa/jest-transformer',
   },
 
   setupFilesAfterEnv: [

@@ -6,7 +6,8 @@ import {
   RuleScope,
   ScenarioScope,
   ScenarioOutlineScope,
-  StepScope
+  StepScope,
+  CachedStep
 } from "@autometa/scopes";
 import {
   CucumberExpression,
@@ -166,9 +167,10 @@ describe("ScopeSearch", () => {
       new CucumberExpression("my step", new ParameterTypeRegistry()),
       () => undefined,
       HTable
-    );
+    ) as CachedStep;
     featureScope.closedScopes.push(stepScope);
-    featureScope.buildStepCache();
+    featureScope.steps.add(stepScope);
+
     const foundStep = scope(featureScope).findStep(
       "Context",
       "Given",
@@ -196,8 +198,9 @@ describe("ScopeSearch", () => {
       new CucumberExpression("my step", new ParameterTypeRegistry()),
       () => undefined,
       HTable
-    );
+    ) as CachedStep;
     ruleScope.closedScopes.push(stepScope);
+    ruleScope.steps.add(stepScope);
     featureScope.closedScopes.push(ruleScope);
     const foundStep = scope(ruleScope).findStep("Context", "Given", "my step");
     expect(foundStep).toBeDefined();
@@ -222,8 +225,9 @@ describe("ScopeSearch", () => {
       new CucumberExpression("my step", new ParameterTypeRegistry()),
       () => undefined,
       HTable
-    );
+    ) as CachedStep;
     scenarioScope.closedScopes.push(stepScope);
+    scenarioScope.steps.add(stepScope);
     featureScope.closedScopes.push(scenarioScope);
     const foundStep = scope(scenarioScope).findStep(
       "Context",
@@ -252,8 +256,9 @@ describe("ScopeSearch", () => {
       new CucumberExpression("my step", new ParameterTypeRegistry()),
       () => undefined,
       HTable
-    );
+    ) as CachedStep;
     outlineScope.closedScopes.push(stepScope);
+    outlineScope.steps.add(stepScope);
     featureScope.closedScopes.push(outlineScope);
     const foundStep = scope(outlineScope).findStep(
       "Context",
@@ -282,8 +287,9 @@ describe("ScopeSearch", () => {
       new CucumberExpression("my step", new ParameterTypeRegistry()),
       () => undefined,
       HTable
-    );
+    ) as CachedStep;
     outlineScope.closedScopes.push(stepScope);
+    outlineScope.steps.add(stepScope);
     featureScope.closedScopes.push(outlineScope);
     const foundStep = scope(outlineScope).findStep(
       "Context",
@@ -318,9 +324,10 @@ describe("ScopeSearch", () => {
       new CucumberExpression("my step", new ParameterTypeRegistry()),
       () => undefined,
       HTable
-    );
+    ) as CachedStep;
     ruleScope.closedScopes.push(outlineScope);
     outlineScope.closedScopes.push(stepScope);
+    outlineScope.steps.add(stepScope);
     featureScope.closedScopes.push(ruleScope);
     const foundStep = scope(outlineScope).findStep(
       "Context",

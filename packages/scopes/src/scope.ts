@@ -12,6 +12,7 @@ import { CachedStep, StepCache } from "./caches";
 import { StepKeyword, StepType } from "@autometa/gherkin";
 import { AutomationError } from "@autometa/errors";
 export abstract class Scope {
+  protected isOpen = false;
   id: string;
   abstract readonly action:
     | undefined
@@ -30,7 +31,7 @@ export abstract class Scope {
     this.steps =
       parentStepCache && parentStepCache instanceof StepCache
         ? new StepCache(this.toString(), parentStepCache)
-        : new StepCache(parentStepCache);
+        : new StepCache(this.toString());
   }
 
   abstract get idString(): string;
@@ -48,9 +49,9 @@ export abstract class Scope {
   get hookCache() {
     return this.openChild ? this.openChild.hooks : this.hooks;
   }
-  get stepCache() {
-    return this.buildStepCache();
-  }
+  // get stepCache() {
+  //   return this.buildStepCache();
+  // }
   get alts() {
     return {
       skip: this.skip,
@@ -58,27 +59,27 @@ export abstract class Scope {
     };
   }
 
-  @Bind
-  buildStepCache() {
-    if (this.isBuilt) {
-      return this.steps;
-    }
-    const filtered = this.closedScopes
-      .filter((it) => it.isStepScope)
-      .map((it) => it as CachedStep);
-    filtered.forEach(this.steps.add);
-    this.closedScopes
-      .filter((it) => !it.isStepScope)
-      .forEach((child) => child.buildStepCache());
-    if (filtered.length > 0) {
-      this.isBuilt = true;
-    }
-    return this.steps;
-  }
+  // @Bind
+  // buildStepCache() {
+  //   if (this.isBuilt) {
+  //     return this.steps;
+  //   }
+  //   const filtered = this.closedScopes
+  //     .filter((it) => it.isStepScope)
+  //     .map((it) => it as CachedStep);
+  //   filtered.forEach(this.steps.add);
+  //   this.closedScopes
+  //     .filter((it) => !it.isStepScope)
+  //     .forEach((child) => child.buildStepCache());
+  //   if (filtered.length > 0) {
+  //     this.isBuilt = true;
+  //   }
+  //   return this.steps;
+  // }
 
   @Bind
   getStep(keywordType: StepType, keyword: StepKeyword, text: string) {
-    return this.buildStepCache().find(keywordType, keyword, text);
+    return this.steps.find(keywordType, keyword, text);
   }
 
   @Bind
@@ -108,6 +109,10 @@ export abstract class Scope {
         "Attach incoming scopes to the currently open child scope",
         instance(Scope)
       ).matches((scope) => {
+        if (this.isOpen && childScope.isStepScope) {
+          this.attach(scope);
+          return;
+        }
         scope.attach(childScope);
       }),
       fallback(
@@ -115,7 +120,10 @@ export abstract class Scope {
         () => {
           this.openChild = childScope;
           childScope.run();
-          this.closedScopes.push(this.openChild);
+          this.closedScopes.push(childScope);
+          if (childScope.isStepScope) {
+            this.steps.add(childScope as unknown as CachedStep);
+          }
           this.openChild = undefined;
         }
       )

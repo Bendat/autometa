@@ -9,7 +9,7 @@ Feature: A Representitive feature
         Given the outer scenario executed
     @test2
     Scenario Outline: outerscenariooutline
-        * I execute the outter scenario with <param>
+        * I execute the outer scenario with <param>
 
         Examples:
             | param |

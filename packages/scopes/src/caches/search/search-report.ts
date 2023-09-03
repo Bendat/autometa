@@ -37,9 +37,12 @@ export class FuzzySearchReport {
   headingText: string;
   matches: (SameStepTypeMatch | DifferentStepTypeMatch)[] = [];
   children: FuzzySearchReport[] = [];
-
+  constructor(readonly depth: number) {}
   get length() {
-    return this.matches.length + this.children.length;
+    const childLength: number = this.children
+      .map((it) => it.length)
+      .reduce<number>((a: number, b: number) => a + b, 0);
+    return this.matches.length + childLength;
   }
   addHeading(headingText: string) {
     this.headingText = headingText;
@@ -65,35 +68,46 @@ export class FuzzySearchReport {
   }
 
   toString() {
-    const same = this.#sameMatchTypes.map((it) => it.toString()).join("\n");
-    const sameMessage = same.length > 0 ? `Steps with matching step type:` : "";
+    if (this.length === 0) {
+      return "";
+    }
+    const same = this.#sameMatchTypes
+      .filter((it) => it.distance < 10)
+      .map((it) => it.toString())
+      .join("\n");
+    const sameMessage =
+      same.length > 0 ? chalk.italic(`Steps with matching step type:`) : "";
     const different = this.#differentMatchTypes
+      .filter((it) => it.distance < 10)
       .map((it) => it.toString())
       .join("\n");
     const differentMessage =
-      different.length > 0 ? `Steps with different step type:` : "";
+      different.length > 0
+        ? chalk.italic(`Steps with different step type:`)
+        : "";
+
     const messageArray: string[] = [];
     appendSubMessage(messageArray, sameMessage);
-    appendSubMessage(messageArray, same, TAB);
+    appendSubMessage(messageArray, same);
     appendSubMessage(messageArray, differentMessage);
-    appendSubMessage(messageArray, different, TAB);
+    appendSubMessage(messageArray, different);
     const children: FuzzySearchReport[] = [];
     this.children.forEach((child) => {
       appendChild(children, child);
     });
     const formatChildren: string = children
-      .map((it) => it.toString().replace(/^/gm, " "))
-      .join("\n");
-    const message = messageArray.join(`\n${TAB}`);
+      .map((it) => it.toString())
+      .join("\n")
+    const message = messageArray.join(`\n`).trim();
     const heading = chalk.black(this.headingText);
-    return `${heading}
-${TAB}${message}
-${formatChildren}`;
+    return `${heading ?? ""}
+${message.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}
+${formatChildren.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}`;
   }
 }
 function appendSubMessage(arr: string[], message: string, prefix?: string) {
   if (message && message.length > 0) {
-    const str = prefix ? `${prefix}${message}` : message;
+    const str = prefix ? `${prefix ?? ""}${message}` : message;
     arr.push(str);
   }
 }
@@ -105,8 +119,11 @@ function appendChild(arr: FuzzySearchReport[], message: FuzzySearchReport) {
 const SPACE = " ";
 const TAB = SPACE.repeat(2);
 
-export function buildFuzzySearchReport({ same, other }: LimitedStepDiffs) {
-  const report = new FuzzySearchReport();
+export function buildFuzzySearchReport(
+  { same, other }: LimitedStepDiffs,
+  depth: number
+) {
+  const report = new FuzzySearchReport(depth);
   same.forEach((diff) => {
     report.addMatch(new SameStepTypeMatch(diff));
   });

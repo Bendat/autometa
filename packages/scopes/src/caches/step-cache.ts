@@ -30,8 +30,9 @@ export class StepCache {
   add(step: CachedStep) {
     const { type: keywordType, keyword, expression: text } = step as CachedStep;
     const textStr = text.source;
-    if (this.find(keywordType, keyword, textStr, false)) {
-      throw new AutomationError(`Step [${keyword} ${textStr}] already defined`);
+    if (this.findLocal(keywordType, textStr).step) {
+      const msg = `Step [${keyword} ${textStr}] already defined in scope ${this.scopeName}`;
+      throw new AutomationError(msg);
     }
     this.keySet.get(keywordType)?.add(textStr);
     this[keywordType].push(step as CachedStep);
@@ -45,6 +46,24 @@ export class StepCache {
   ) {
     const str = interpolateStepText(text, table);
     return this.find(keywordType, keyword, str, true);
+  }
+
+  findLocal(keywordType: StepType, text: string) {
+    let bucket = this[keywordType];
+    let step = bucket.find((it) => it.matches(text));
+    let args: unknown[] = [];
+
+    if (step) {
+      args = step.getArgs(text);
+      return { step: step, args: args ?? [] };
+    }
+
+    if (!step && (keywordType === "Conjunction" || keywordType === "Unknown")) {
+      bucket = [...this.Context, ...this.Action, ...this.Outcome];
+      step = bucket.find((it) => it.matches(text));
+      args = step?.getArgs(text) ?? [];
+    }
+    return { step: step, args };
   }
 
   find(
@@ -112,13 +131,14 @@ export class StepCache {
   }
   private startFuzzySearch(
     keywordType: StepType,
-    text: string
+    text: string,
+    depth = 0
   ): FuzzySearchReport {
     const closestMatches = this.findClosest(keywordType, text);
-    const report = buildFuzzySearchReport(closestMatches);
+    const report = buildFuzzySearchReport(closestMatches, depth);
     if (this.scopeName) report.addHeading(this.scopeName);
     if (this.parent) {
-      const parentReport = this.parent.startFuzzySearch(keywordType, text);
+      const parentReport = this.parent.startFuzzySearch(keywordType, text, depth + 1);
       parentReport.addChild(report);
       return parentReport;
     }
@@ -174,6 +194,7 @@ export class StepCache {
 }
 
 function formatReport(report: FuzzySearchReport) {
+  
   if (report.length <= 0) {
     return "";
   }
