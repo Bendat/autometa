@@ -1,8 +1,8 @@
 import { TestEventEmitter } from "@autometa/events";
 import { CONFIG } from "./config";
 export * from "@autometa/events";
-
-export function makeTestEmitter() {
+import { GroupLogEvents } from "./event-logger";
+export function makeTestEmitter(opts: { groupLogger: boolean }) {
   const events = CONFIG.current.events;
   const emitter = new TestEventEmitter();
   if (!events) {
@@ -13,5 +13,8 @@ export function makeTestEmitter() {
     const listener = require(event);
     emitter.load(listener);
   }
-  return emitter;  
+  if (opts.groupLogger) {
+    emitter.load(new GroupLogEvents());
+  }
+  return emitter;
 }

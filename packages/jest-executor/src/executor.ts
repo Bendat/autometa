@@ -101,9 +101,14 @@ export function bootstrapBackground(
           localApp()
         );
       }
+      events.before.emitEnd({
+        title: title,
+        tags: [...tags],
+        status: "PASSED"
+      });
     } catch (e) {
       events.before.emitEnd({
-        title: background.data.scope.title(background.data.gherkin),
+        title: title,
         tags: [...tags],
         status: "FAILED",
         error: e as Error
@@ -152,6 +157,12 @@ export function bootstrapScenario(
           localApp()
         );
       }
+      bridge.report = { passed: true };
+      events.scenario.emitEnd({
+        title: scenarioName,
+        tags: [...data.gherkin.tags],
+        status: "PASSED"
+      });
     } catch (e) {
       events.scenario.emitEnd({
         title: scenarioName,
@@ -159,7 +170,7 @@ export function bootstrapScenario(
         status: "FAILED",
         error: e as Error
       });
-
+      bridge.report = { passed: false, error: e as Error };
       const message = `${scenarioName} failed to execute.`;
       throw new AutomationError(message, { cause: e as Error });
     }
@@ -345,6 +356,9 @@ export function bootstrapSetupHooks(
     const tags = bridge.data.gherkin.tags ?? [];
 
     beforeAll(async () => {
+      if (!hook.canExecute(...tags)) {
+        return;
+      }
       events.setup.emitStart({
         title: hook.name
       });

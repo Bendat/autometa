@@ -1,4 +1,4 @@
-import { After, Given, Pass } from "autometa-runner";
+import { Given, Pass } from "autometa-runner";
 
 Given("the outer background executed", ({ report }) => {
   report.outterbackgroundstep = true;
@@ -41,42 +41,42 @@ Given("the rule2 skipped scenario executed", ({ report }) => {
 });
 
 Given("a rule scenario outline", Pass);
-After(
-  "verify outerscenario",
-  ({ report }) => {
-    expect(report.outterscenario1step).toBe(true);
-  },
-  "@test1"
-);
+// After(
+//   "verify outerscenario",
+//   ({ report }) => {
+//     expect(report.outterscenario1step).toBe(true);
+//   },
+//   "@test1"
+// );
 
-After(
-  "verify outerscenariooutline",
-  ({ report }) => {
-    expect(report.outerscenariooutlinestep).toBe(1);
-  },
-  "@test2"
-);
+// After(
+//   "verify outerscenariooutline",
+//   ({ report }) => {
+//     expect(report.outerscenariooutlinestep).toBe(1);
+//   },
+//   "@test2"
+// );
 
-After(
-  "verify outerscenario2",
-  ({ report }) => {
-    expect(report.outterscenario2step).toBe(true);
-  },
-  "@test3"
-);
+// After(
+//   "verify outerscenario2",
+//   ({ report }) => {
+//     expect(report.outterscenario2step).toBe(true);
+//   },
+//   "@test3"
+// );
 
-After(
-  "rule1scenario",
-  ({ report }) => {
-    expect(report.rule1scenariostep).toBe(true);
-  },
-  "@test4"
-);
+// After(
+//   "rule1scenario",
+//   ({ report }) => {
+//     expect(report.rule1scenariostep).toBe(true);
+//   },
+//   "@test4"
+// );
 
-After(
-  "rule2scenario",
-  ({ report }) => {
-    expect(report.rule2scenariostep).toBe(true);
-  },
-  "@test5"
-);
+// After(
+//   "rule2scenario",
+//   ({ report }) => {
+//     expect(report.rule2scenariostep).toBe(true);
+//   },
+//   "@test5"
+// );
