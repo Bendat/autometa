@@ -2,6 +2,9 @@ import { defineConfig } from "autometa-runner";
 defineConfig({
   runner: "jest",
   environment: "default",
+  test: {
+    groupLogging: true
+  },
   events: [],
   roots: {
     features: ["__integration__/features"],

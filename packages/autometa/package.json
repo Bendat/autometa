@@ -52,6 +52,7 @@
     "@autometa/scopes": "workspace:^",
     "@autometa/test-builder": "workspace:^",
     "@autometa/types": "workspace:^",
-    "@cucumber/cucumber-expressions": "^16.1.2"
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "colors-cli": "^1.0.32"
   }
 }

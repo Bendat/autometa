@@ -25,7 +25,7 @@ export abstract class Hook {
     const report = new HookReportBuilder()
       .name(this.name)
       .description(this.description);
-    if (this.canExecute(...tagExpressions)) {
+    if (!this.canExecute(...tagExpressions)) {
       return report.status("SKIPPED").build();
     }
     const result = await safe(this.action, app);

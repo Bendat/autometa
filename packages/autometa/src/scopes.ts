@@ -21,7 +21,8 @@ const {
 } = GetCucumberFunctions(PARAM_REGISTRY);
 const coordinator = new Coordinator(Global, CONFIG, OPTS);
 Global.onFeatureExecuted = (feature, caller) => {
-  const events = makeTestEmitter();
+  const groupLogger = CONFIG.current.test?.groupLogging ?? false;
+  const events = makeTestEmitter({ groupLogger });
   coordinator.run(feature, caller, events, executor);
 };
 

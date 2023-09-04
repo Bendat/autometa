@@ -12,7 +12,8 @@ export const TagFilterSchema = string()
 
 export const TestSchema = object({
   timeout: TimeoutSchema,
-  tagFilter: TagFilterSchema
+  tagFilter: TagFilterSchema,
+  groupLogging: boolean().optional()
 }).optional();
 
 export const ShimSchema = object({
