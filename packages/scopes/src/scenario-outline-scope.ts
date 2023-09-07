@@ -1,20 +1,22 @@
-import type { ScenarioAction } from "./types";
+import type { ScenarioAction, TimedScope } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { ScenarioScope } from "./scenario-scope";
 import { HookCache } from "./caches/hook-cache";
 import { StepCache } from "./caches";
 import { AutomationError } from "@autometa/errors";
+import { Timeout } from "./timeout";
 
-export class ScenarioOutlineScope extends ScenarioScope {
+export class ScenarioOutlineScope extends ScenarioScope implements TimedScope {
   canHandleAsync = false;
   constructor(
     public readonly name: string,
     public readonly action: ScenarioAction,
+    timeout: Timeout | undefined,
     parentHookCache: HookCache,
-    parentStepCache: StepCache,
+    parentStepCache: StepCache
   ) {
-    super(name, action, parentHookCache, parentStepCache);
+    super(name, action, timeout, parentHookCache, parentStepCache);
   }
   protected override get canAttachHook(): boolean {
     return true;

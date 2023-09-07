@@ -14,3 +14,4 @@ export * from "./novelties";
 export * from "./background-scope";
 export * from "./filesystem";
 export * from "./pass";
+export * from "./timeout";

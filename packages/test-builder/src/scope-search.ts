@@ -20,6 +20,7 @@ export function scope(value: Scope) {
         const rule = new RuleScope(
           name,
           Empty_Function,
+          undefined,
           value.hooks,
           value.steps
         );
@@ -40,6 +41,7 @@ export function scope(value: Scope) {
         const scenario = new ScenarioScope(
           name,
           Empty_Function,
+          undefined,
           value.hooks,
           value.steps
         );
@@ -78,6 +80,7 @@ export function scope(value: Scope) {
         const scenarioOutline = new ScenarioOutlineScope(
           name,
           Empty_Function,
+          undefined,
           value.hooks,
           value.steps
         );
@@ -97,6 +100,7 @@ export function scope(value: Scope) {
         const scenario = new ScenarioScope(
           name,
           Empty_Function,
+          undefined,
           value.hooks,
           value.steps
         );

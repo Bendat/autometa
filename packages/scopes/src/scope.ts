@@ -49,33 +49,13 @@ export abstract class Scope {
   get hookCache() {
     return this.openChild ? this.openChild.hooks : this.hooks;
   }
-  // get stepCache() {
-  //   return this.buildStepCache();
-  // }
+
   get alts() {
     return {
       skip: this.skip,
       only: this.only
     };
   }
-
-  // @Bind
-  // buildStepCache() {
-  //   if (this.isBuilt) {
-  //     return this.steps;
-  //   }
-  //   const filtered = this.closedScopes
-  //     .filter((it) => it.isStepScope)
-  //     .map((it) => it as CachedStep);
-  //   filtered.forEach(this.steps.add);
-  //   this.closedScopes
-  //     .filter((it) => !it.isStepScope)
-  //     .forEach((child) => child.buildStepCache());
-  //   if (filtered.length > 0) {
-  //     this.isBuilt = true;
-  //   }
-  //   return this.steps;
-  // }
 
   @Bind
   getStep(keywordType: StepType, keyword: StepKeyword, text: string) {
@@ -130,7 +110,7 @@ export abstract class Scope {
     ).use([this.openChild]);
   }
 
-  attachHook<T extends Hook>(hook: T): void {
+  attachHook<T extends Hook>(hook: T): T {
     const pattern = [this.canAttachHook, hook, this.openChild];
     return overloads(
       def`handleHooksNotAllowed`(
@@ -153,7 +133,7 @@ export abstract class Scope {
         "When no open child is available, add the hook directly to this scope",
         () => this.hooks.addHook(hook)
       )
-    ).use(pattern);
+    ).use(pattern) as T;
   }
 
   [Symbol.toPrimitive](): string {

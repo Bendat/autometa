@@ -1,8 +1,13 @@
-import { object, string, literal, number, boolean } from "zod";
-
+import { object, string, literal, number, boolean, tuple } from "zod";
+export const TimeunitSchema = literal("ms")
+  .or(literal("s"))
+  .or(literal("m"))
+  .or(literal("h"));
 export const RunnerSchema = literal("jest").or(literal("vitest"));
 export const EnvironmentSchema = string().optional();
-export const TimeoutSchema = number().optional();
+export const TimeoutSchema = number()
+  .or(tuple([number(), TimeunitSchema]))
+  .optional();
 export const TagFilterSchema = string()
   .refine(
     (it) => it.startsWith("@") || it.startsWith("not @"),

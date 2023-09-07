@@ -22,3 +22,4 @@ export {
 } from "./function-argument";
 export { nil, NilValidatorOpts } from "./nil-argument";
 export * from "./types";
+export * from "./type-argument";
