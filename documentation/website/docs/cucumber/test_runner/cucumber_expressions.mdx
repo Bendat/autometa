@@ -1,0 +1,235 @@
+---
+sidebar_position: 4
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Cucumber Expressions
+
+[Cucumber Expressions](https://github.com/cucumber/cucumber-expressions) are a templating format to create dynamic
+step definitions, without the burden of Regular Expressions.
+
+A Cucumber Expression is essentially a string which matches a step
+defined in a gherkin `.feature` file.
+
+They could match literally:
+
+<Tabs groupId='gherkin-expression'>
+  <TabItem value="gherkin" label="Gherkin">
+
+```gherkin
+Given I have navigated to my profile
+
+```
+
+  </TabItem>
+  <TabItem value="expression" label="Expression">
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("I have navigated to my profile", () => {
+  // ...
+});
+```
+
+  </TabItem>
+
+</Tabs>
+
+Or they could match against an expression variable:
+
+<Tabs groupId='gherkin-expression'>
+  <TabItem value="gherkin" label="Gherkin">
+
+```gherkin
+Given I have 4 dogs
+```
+
+  </TabItem>
+  <TabItem value="expression" label="Expression">
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("I have {int} dogs", (dogCount) => {
+  // ...
+});
+```
+
+  </TabItem>
+
+</Tabs>
+
+When a step definition contains an expression variable (or several),
+the corresponding value is extracted from the Gherkin step, and
+passed as an argument to the step definition function.
+
+In this example, `dogCount` will be `4`. For the following standard expression
+formats, the type of the variable will be inferred and an explicit type annotdation (`dogCount: number`) is not required:
+
+- `{int}`
+- `{float}`
+- `{string}`
+- `{word}`
+
+Additionally, the following custom types are supported out of the box:
+
+- `{number}`
+  - accepts integer or float numbers
+- `{boolean}`
+  - accepts `true` or `false`. Does not require quotes around the value
+- `{bool}`
+  - alias for `{boolean}`
+- `{date}`
+  - Converts a literate date string, or human readable date string like `'1 hour from now'`
+    or `'tomorrow'` to a `Date` object with that value
+  - Requires the value to be wrapped in quotes
+- `{any}`
+  - wildcard
+- `{unknown}`
+  - type enforced wildcard
+- `{primitive}`
+  - Attempts to convert the value to a primitive type
+  - string, number, boolean, or date
+
+## Defining Custom Types
+
+Custom types can be defined with the `defineParameterType` function. This function
+accepts a collection of ParameterType objects with the following structure:
+
+```ts
+{
+  name: string;
+  regexp: RegExp;
+  transformer?: (arg: string) => any;
+  useForSnippets?: boolean;
+  preferForRegexpMatch?: boolean;
+  pattern?: string;
+  typeName?: string;
+}
+```
+
+Which represent the following details:
+
+- `name` - the name of the type. This is used to reference the type in the expression
+- `regexp` - a regular expression to match against the value in the expression
+- `primitive` - the primitive value the result represents, if any. I.e for a primitive `Number` and a string `'1'`, the result would be the parsed number `1`
+- `type` - the type Constructor the result represents, if any. I.e for a type `Date` and a string `'1 hour from now'`, the result would be a `Date` object with the value of 1 hour from now
+  - Accepts any class constructor as long as it accepts a single string or primitive (see below) argument
+  - If a `primitive` is also defined, the value will first **be converted to the specified primitive type** before being passed to the constructor
+- `transform` - a function to transform the value from the expression to the desired type
+  - If a `primitive` is also defined, the value will first **be converted to the specified primitive type** before being passed to the transformer
+  - If a `type` is also defined, the value will first **be converted to the specified type** before being passed to the transformer
+  - If both a `primitive` and `type` are defined, the value will first be converted to the specified primitive type, then passed to the constructor and finally the constructed object will be passed to the transformer
+
+### Example
+
+#### With transform
+
+```ts
+import { defineParameterType } from "autometa-runner";
+import { getUserByUsername } from "./user-service";
+
+defineParameterType({
+  name: "user",
+  regexp: /@([a-zA-Z]+)/,
+  transformer: (username) => {
+    return getUserByUsername(username);
+  }
+});
+```
+
+#### With primitive
+
+```ts
+import { defineParameterType } from "autometa-runner";
+
+defineParameterType({
+  name: "int",
+  regexp: /[+-]?\d+/,
+  primitive: Number
+});
+```
+
+#### With type
+
+<Tabs>
+  <TabItem value="parameters" label="Defining Parameters">
+
+```ts
+import { defineParameterType } from "autometa-runner";
+import { MyDto } from "./dtos";
+
+defineParameterType({
+  name: "myDto",
+  regexp: /@([a-zA-Z]+)/,
+  type: MyDto
+});
+```
+
+  </TabItem>
+
+  <TabItem value="dto" label="dtos.ts">
+
+```ts
+// dtos.ts
+export class MyDto {
+  constructor(public name: string) {}
+  age: number;
+}
+```
+
+  </TabItem>
+</Tabs>
+
+#### Declaring Custom Types
+
+By default, any custom types you define cannot be inferred in step definitions and will be typed
+as `unknown`, which must be handled inside the step.
+
+```ts
+Given("I have a {myDto}", (myDto) => {
+  myDtoFunction(myDto); // Error, expected MyDto but was unknown
+  // myDto is typed as unknown
+  const casted = myDto as MyDto;
+  myDtoFunction(casted)
+}
+```
+
+However it is possible to override the `@autometa/scopes` module in a declaration file with your own
+custom types, which will be used to infer the type of the step definition.
+
+For example, if you have a custom type `MyDto` defined in `dtos.ts`:
+
+```ts
+// typings/app.d.ts
+import type { MyDto } from "./dtos";
+
+declare module "@autometa/scopes" {
+  export interface CustomTypes {
+    myDto: MyDto;
+  }
+}
+```
+
+Next, tell TypeScript about your custom types by adding the following to your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["typings/app.d.ts"]
+  }
+}
+```
+
+Then in your step definition, the type of the `myDto` parameter will be inferred as `MyDto`:
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("I have a {myDto}", (myDto) => {
+  // myDto is inferred as MyDto
+});
+```

@@ -1,0 +1,132 @@
+---
+sidebar_position: 2
+---
+
+# Step Definitions
+
+Autometa steps resemble Cucumber JS steps and should be identifiable to
+most Gherkin IDE plugins.
+
+The largest difference is that Autometa step callbacks are not bound
+to the `World` object. Instead, `World` is a property of the `App` object,
+which will passed as the last argument to the step callback.
+
+Because the step is not bound, it is safe to use fat arrow (`=>`) functions.
+
+## Defining a step
+
+Steps can be defined using the `Given`, `When`, or `Then` functions. If the gherkin
+file includes `And`, `But` or `*` steps, they can be matched against any of those main 3.
+It is advised to define them against the step they follow.
+
+I.e for the steps
+
+```gherkin
+Given a foo
+And a bar
+```
+
+The step `And a bar` should be defined as a `Given`, however this is not enforced.
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("a foo", () => {
+  // ...
+});
+
+Given("a bar", () => {
+  // ...
+});
+```
+
+If no matching steps are found, a report will be generated from a fuzzy search,
+helping to identify typos.
+
+## App
+
+The `App` object is passed as the last argument to the step callback. If there are no tables
+or Cucumber Expressions, it will be the only argument. Apps type must be defined by you (see [Getting Started](./getting_started)),
+or else it will be an empty object containing an empty world at the type level.
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("a foo", (app) => {
+  app.webdriver.clickFoo();
+});
+```
+
+## Async
+
+Step callbacks can be synchronous or asynchronous. If you do not want to store
+the result and define the function as `async` you can simply return the promise
+of the underlying action:
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("a foo", (app) => {
+  return app.http.createFoo({ foo: "test-bar" });
+});
+```
+
+However if, for example, you want to store the result on the World, you can
+await the promise and then store the result:
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("a foo", async (app) => {
+  const foo = await app.http.createFoo({ foo: "test-bar" });
+  app.world.foo = foo;
+});
+```
+
+## Tables
+
+Autometa tables are inspired by the [Java](https://www.baeldung.com/cucumber-data-tables) implementation
+which allows tables to be parsed differently according to step.
+
+See [Data Tables](./datatables) for more information on tables.
+
+To use a table in a step, simply append the table type as the last argument to the step definition,
+which can be accessed as the first or second to last argument before App in the definition callback.
+
+```gherkin
+Given a foo
+| foo | bar    | baz   |
+| 1   | true   | bobby |
+```
+
+This represents a 'Horizontal Table' or `HTable`, where the first row represents the headers
+and the rest the data. This can be accessed as follows:
+
+```ts
+import { Given, HTable } from "autometa-runner";
+
+Given(
+  "a foo",
+  (table: HTable, app) => {
+    const fooNum = table.get("foo", 0) as number;
+    const fooBool = table.get("bar", 0) as boolean;
+    const fooStr = table.get("baz", 0) as string;
+    const fooNumString = table.get("foo", 0, true) as string;
+  },
+  HTable
+);
+```
+
+:::tip
+Datatable values will be converted to their javascript type where possible
+
+i.e strings that represent numbers will be converted to a number, 'true' and 'false'
+will be treated as bools while the rest will be parsed as strings.
+
+The original raw value can be accessed by passing `true` as the third argument to `table.get`
+
+```ts
+const fooNumString = table.get("foo", 0, true) as string;
+```
+
+:::
