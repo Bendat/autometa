@@ -1,4 +1,4 @@
-import type { FeatureAction } from "./types";
+import type { FeatureAction, TimedScope } from "./types";
 import { ScenarioScope } from "./scenario-scope";
 import { StepScope } from "./step-scope";
 import { Scope } from "./scope";
@@ -8,12 +8,14 @@ import { StepCache } from "./caches";
 import {  Feature } from "@autometa/gherkin";
 import { BackgroundScope } from "./background-scope";
 import { AutomationError } from "@autometa/errors";
+import { Timeout } from "./timeout";
 
-export class FeatureScope extends Scope {
+export class FeatureScope extends Scope implements TimedScope{
   canHandleAsync = true;
   constructor(
     readonly path: string,
     readonly action: FeatureAction | undefined,
+    readonly timeout: Timeout | undefined,
     parentHookCache: HookCache,
     parentStepCache: StepCache,
   ) {

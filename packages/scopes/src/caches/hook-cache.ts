@@ -20,6 +20,7 @@ export class HookCache {
     } else {
       throw new AutomationError("unrecognized hook " + hook);
     }
+    return hook;
   };
 
   get before(): BeforeHook[] {

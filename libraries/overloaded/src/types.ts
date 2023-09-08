@@ -25,7 +25,9 @@ export type ArgumentTypes<T> = {
 
 export type ReturnTypeTuple<T> = {
   [K in keyof T]: T[K] extends Overload<infer _TArgs, infer TAction>
-    ? ReturnType<TAction>
+    ? ReturnType<TAction> extends [infer THead, ...infer TTail]
+      ? [THead, ...TTail]
+      : ReturnType<TAction>
     : never;
 };
 

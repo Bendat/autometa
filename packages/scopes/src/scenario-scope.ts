@@ -1,4 +1,4 @@
-import type { ScenarioAction } from "./types";
+import type { ScenarioAction, TimedScope } from "./types";
 import { Scope } from "./scope";
 import { StepScope } from "./step-scope";
 import { HookCache } from "./caches/hook-cache";
@@ -10,12 +10,14 @@ import {
   ScenarioOutline
 } from "@autometa/gherkin";
 import { AutomationError } from "@autometa/errors";
+import { Timeout } from "./timeout";
 
-export class ScenarioScope extends Scope {
+export class ScenarioScope extends Scope implements TimedScope {
   canHandleAsync = false;
   constructor(
     public readonly name: string,
     public readonly action: ScenarioAction,
+    public readonly timeout: Timeout | undefined,
     parentHooksCache: HookCache,
     parentStepCache: StepCache,
   ) {

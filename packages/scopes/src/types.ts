@@ -1,5 +1,6 @@
 import { App } from "@autometa/app";
 import { DataTable, NeverDataTable } from "@autometa/gherkin";
+import { Timeout } from "./timeout";
 export type FeatureAction = () => void;
 export type RuleAction = () => void;
 export type ScenarioAction = () => void;
@@ -47,3 +48,11 @@ export type StepActionFn<
   TText extends string,
   TTable extends DataTable | undefined
 > = (...args: StepArgs<TText, TTable>) => unknown | Promise<unknown>;
+
+export type TimedScope = {
+  readonly timeout: Timeout | undefined;
+};
+
+export type TimeoutUnit = "ms" | "s" | "m" | "h";
+export type SizedTimeout = [number, TimeoutUnit];
+export type TestTimeout = number | SizedTimeout;

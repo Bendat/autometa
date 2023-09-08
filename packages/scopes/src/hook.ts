@@ -4,6 +4,7 @@ import { isTagsMatch } from "@autometa/gherkin";
 import { Builder } from "@autometa/dto-builder";
 import { AutomationError, safe } from "@autometa/errors";
 import { HookReport } from "./hook-report";
+import { Timeout } from "./timeout";
 
 const HookReportBuilder = Builder(HookReport);
 export abstract class Hook {
@@ -12,7 +13,10 @@ export abstract class Hook {
   abstract readonly action: HookAction;
   abstract get canFilter(): boolean;
 
-  constructor(readonly tagFilterExpression?: string) {}
+  constructor(
+    readonly timeout?: Timeout,
+    readonly tagFilterExpression?: string
+  ) {}
 
   canExecute(...tagExpressions: string[]): boolean {
     return (
@@ -20,7 +24,7 @@ export abstract class Hook {
       !isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
     );
   }
-  
+
   async execute(app: App, ...tagExpressions: string[]) {
     const report = new HookReportBuilder()
       .name(this.name)
@@ -44,9 +48,10 @@ export class BeforeHook extends Hook {
   constructor(
     readonly description: string | undefined,
     readonly action: HookAction,
+    timeout: Timeout,
     tagFilterExpression?: string
   ) {
-    super(tagFilterExpression);
+    super(timeout, tagFilterExpression);
   }
   get canFilter(): boolean {
     return true;
@@ -58,9 +63,10 @@ export class AfterHook extends Hook {
   constructor(
     readonly description: string | undefined,
     readonly action: HookAction,
+    timeout?: Timeout,
     tagFilterExpression?: string
   ) {
-    super(tagFilterExpression);
+    super(timeout, tagFilterExpression);
   }
   get canFilter(): boolean {
     return true;
@@ -72,9 +78,10 @@ export class SetupHook extends Hook {
   constructor(
     readonly description: string | undefined,
     readonly action: HookAction,
+    timeout: Timeout,
     tagFilterExpression?: string
   ) {
-    super(tagFilterExpression);
+    super(timeout, tagFilterExpression);
   }
   get canFilter(): boolean {
     return false;
@@ -86,9 +93,10 @@ export class TeardownHook extends Hook {
   constructor(
     readonly description: string | undefined,
     readonly action: HookAction,
+    timeout: Timeout,
     tagFilterExpression?: string
   ) {
-    super(tagFilterExpression);
+    super(timeout, tagFilterExpression);
   }
   get canFilter(): boolean {
     return false;

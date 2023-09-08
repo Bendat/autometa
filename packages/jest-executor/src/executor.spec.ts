@@ -23,6 +23,8 @@ import {
   bootstrapScenarioOutline,
   bootstrapScenarios
 } from "./executor";
+import { Config } from "@autometa/config";
+import { Timeout } from "@autometa/scopes";
 vi.mock("@jest/globals", () => {
   const it = vi.fn();
   attachMock(it, "skip");
@@ -41,6 +43,14 @@ vi.mock("@jest/globals", () => {
     expect: vi.fn()
   };
 });
+const configMap = new Map();
+configMap.set("default", {
+  test: {
+    timeout: [1, "s"]
+  }
+});
+const config = new Config(configMap);
+const timeout: [Config, Timeout] = [config, Timeout.from(1)];
 const events = new TestEventEmitter() as unknown as TestEventEmitter;
 function attachMock(fn: (...args: unknown[]) => unknown, property: string) {
   const asDict = fn as unknown as Record<string, unknown>;
@@ -69,7 +79,7 @@ describe("boostrapBackground", () => {
     const background = makeBackground("My Background");
     feature.background = background;
     feature.scenarios = [scenario];
-    bootstrapBackground(feature, feature, localApp, events);
+    bootstrapBackground(feature, feature, localApp, events, timeout);
     assert(before).toHaveBeenCalled();
   });
   it("should bootstrap a Background in a Rule", () => {
@@ -82,7 +92,7 @@ describe("boostrapBackground", () => {
     const background = makeBackground("My Background");
     rule.background = background;
     rule.scenarios = [scenario];
-    bootstrapBackground(feature, rule, localApp, events);
+    bootstrapBackground(feature, rule, localApp, events, timeout);
     assert(before).toHaveBeenCalled();
   });
   it('should skip a Background with the "@skip" tag in the Feature', () => {
@@ -96,7 +106,7 @@ describe("boostrapBackground", () => {
     feature.background = background;
     feature.scenarios = [scenario];
     feature.data.gherkin.tags.add("@skip");
-    bootstrapBackground(feature, feature, localApp, events);
+    bootstrapBackground(feature, feature, localApp, events, timeout);
     assert(before).not.toHaveBeenCalled();
   });
   it('should skip a Background with the "@skip" tag', () => {
@@ -111,7 +121,7 @@ describe("boostrapBackground", () => {
     rule.background = background;
     rule.scenarios = [scenario];
     rule.data.gherkin.tags.add("@skip");
-    bootstrapBackground(feature, rule, localApp, events);
+    bootstrapBackground(feature, rule, localApp, events, timeout);
     assert(before).not.toHaveBeenCalled();
   });
   it('should skip a Background with the "@skipped" tag', () => {
@@ -126,40 +136,8 @@ describe("boostrapBackground", () => {
     rule.background = background;
     rule.scenarios = [scenario];
     rule.data.gherkin.tags.add("@skipped");
-    bootstrapBackground(feature, rule, localApp, events);
+    bootstrapBackground(feature, rule, localApp, events, timeout);
     assert(before).not.toHaveBeenCalled();
-  });
-  it.skip("should throw an error if testName is undefined", () => {
-    getExpect().getState = vi.fn(() => ({
-      currentTestName: undefined as unknown as string
-    }));
-
-    const feature = makeFeature("My Feature");
-    const rule = makeRule("My Rule");
-    const scenario = makeScenario("My Scenario");
-    const background = makeBackground("My Background");
-    rule.background = background;
-    rule.scenarios = [scenario];
-    assert(() =>
-      bootstrapBackground(feature, rule, localApp, events)
-    ).toThrowError("A Scenario must have a title");
-  });
-  it.skip("should throw an error if a matching Scenario cannot be found", () => {
-    getExpect().getState = vi.fn(() => ({
-      currentTestName: "Rule: My Rule2 Scenario: My Scenario"
-    }));
-    const feature = makeFeature("My Feature");
-
-    const rule = makeRule("My Rule");
-    const scenario = makeScenario("My Scenario");
-    const background = makeBackground("My Background");
-    rule.background = background;
-    rule.scenarios = [scenario];
-    assert(() =>
-      bootstrapBackground(feature, rule, localApp, events)
-    ).toThrowError(
-      "No matching scenario bridge was found matching the test name: Rule: My Rule2 Scenario: My Scenario"
-    );
   });
 });
 
@@ -168,14 +146,14 @@ describe("bootstrapScenario", () => {
     const feature = makeFeature("My Feature");
     const scenario = makeScenario("My Scenario");
     feature.scenarios = [scenario];
-    bootstrapScenario(scenario, localApp, events);
+    bootstrapScenario(scenario, localApp, events, timeout);
     assert(test).toHaveBeenCalled();
   });
   it("should bootstrap a Scenario in a Rule", () => {
     const rule = makeRule("My Rule");
     const scenario = makeScenario("My Scenario");
     rule.scenarios = [scenario];
-    bootstrapScenario(scenario, localApp, events);
+    bootstrapScenario(scenario, localApp, events, timeout);
     assert(test).toHaveBeenCalled();
   });
   it("should bootstrap a Scenario in a Scenario Outline", () => {
@@ -184,13 +162,13 @@ describe("bootstrapScenario", () => {
     const scenario = makeScenario("My Scenario");
     scenarioOutline.examples = [examples];
     examples.scenarios = [scenario];
-    bootstrapScenario(scenario, localApp, events);
+    bootstrapScenario(scenario, localApp, events, timeout);
     assert(test).toHaveBeenCalled();
   });
   it('should skip a Scenario with the "@skip" tag in the Feature', () => {
     const scenario = makeScenario("My Scenario");
     scenario.data.gherkin.tags.add("@skip");
-    bootstrapScenario(scenario, localApp, events);
+    bootstrapScenario(scenario, localApp, events, timeout);
     assert(test.skip).toHaveBeenCalled();
   });
 });
@@ -200,7 +178,7 @@ describe("bootstrapScenarios & bootstrapExamples", () => {
     const feature = makeFeature("My Feature");
     const scenario = makeScenario("My Scenario");
     feature.scenarios = [scenario];
-    bootstrapScenarios(feature, feature, localApp, staticApp, events);
+    bootstrapScenarios(feature, feature, localApp, staticApp, events, timeout);
     assert(test).toHaveBeenCalled();
   });
   it("should bootstrap a Scenario in a Rule", () => {
@@ -208,7 +186,7 @@ describe("bootstrapScenarios & bootstrapExamples", () => {
     const rule = makeRule("My Rule");
     const scenario = makeScenario("My Scenario");
     rule.scenarios = [scenario];
-    bootstrapScenarios(feature, rule, localApp, staticApp, events);
+    bootstrapScenarios(feature, rule, localApp, staticApp, events, timeout);
     assert(test).toHaveBeenCalled();
   });
   it("should bootstrap a Scenario in a Scenario Outline", () => {
@@ -216,7 +194,7 @@ describe("bootstrapScenarios & bootstrapExamples", () => {
     const examples = makeExamples("My Examples");
     const scenario = makeScenario("My Scenario");
     examples.scenarios = [scenario];
-    bootstrapScenarios(feature, examples, localApp, staticApp, events);
+    bootstrapScenarios(feature, examples, localApp, staticApp, events, timeout);
     assert(test).toHaveBeenCalled();
   });
   it('should skip a Scenario with the "@skip"', () => {
@@ -226,7 +204,7 @@ describe("bootstrapScenarios & bootstrapExamples", () => {
     examples.scenarios = [scenario];
     examples.data.gherkin.tags.add("@skip");
     scenario.data.gherkin.tags.add("@skip");
-    bootstrapExamples(feature, examples, localApp, staticApp, events);
+    bootstrapExamples(feature, examples, localApp, staticApp, events, timeout);
     assert(group.skip).toHaveBeenCalled();
   });
 });
@@ -244,7 +222,8 @@ describe("bootstrapScenarioOutline", () => {
       scenarioOutline,
       localApp,
       staticApp,
-      events
+      events,
+      timeout
     );
     assert(group).toHaveBeenCalled();
   });
@@ -258,7 +237,8 @@ describe("bootstrapScenarioOutline", () => {
       scenarioOutline,
       localApp,
       staticApp,
-      events
+      events,
+      timeout
     );
     assert(group.skip).toHaveBeenCalled();
   });
