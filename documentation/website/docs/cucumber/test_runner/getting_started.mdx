@@ -1,0 +1,665 @@
+---
+sidebar_position: 1
+---
+
+import TOCInline from "@theme/TOCInline";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Getting started
+
+<TOCInline toc={toc} />
+
+This guide assumes you are at least familiar with authoring tests in [Cucumber.js](https://cucumber.io/docs/installation/javascript/)
+and gherkin format.
+
+Autometa is primarily a runner for gherkin tests which leverages the functionality
+and performance of Jest.
+
+Implementing step definitions should feel familiar, however Autometa offers a difference
+perspective of the `World` object, and uses dependency injection with [tsyringe](https://github.com/microsoft/tsyringe)
+to reduce the need for boilerplate and and allow you to worry less about bootstrapping your environment.
+
+## Install
+
+To begin, add Autometa to your project:
+
+```bash
+npm install --save-dev autometa
+```
+
+If your test framework is it's own standalone project or repo, you may want to save it as a dependency
+rather than a dev-dependency, so you can make use of convencience libraries from your `src/` folder or equivalent.
+This will depend on your typescript setup.
+
+### Style
+
+There are two ways of authoring tests (more below):
+
+- Gherkin
+- jest-cucumber
+
+If using the jest-cucumber style that's all you need. If wish to execute `.feature` files directly, you will
+need to install the [jest-transformer](https://www.npmjs.com/package/@autometa/jest-transformer)
+
+```bash
+npm install --save-dev @autometa/jest-transformer
+```
+
+You will need to add this to your jest config under `transform`.
+
+To use some features, you must have a reflection metadata shim, like [`reflect-metadata`](https://www.npmjs.com/package/reflect-metadata)
+
+## Config
+
+To start, create a file in your project root called `autometa.config.ts`, and point to it
+in the `jest.config` files `setupFilesAfterEnv` - which is also a good location to import `reflect-metadata`.
+
+```json
+{
+  "...": "...",
+  "setupFilesAfterEnv": ["reflect-metadata", "./autometa.config.ts"]
+}
+```
+
+:::tip
+You can call the config file whatever you want as long as jest loads it
+:::
+
+Now you can add configuation to your `autometa.config.ts` file using the `defineConfig` function.
+
+```ts
+import { defineConfig } from "autometa";
+
+defineConfig({});
+```
+
+In order to run our tests we need a path to the directory containing Step Definitions,
+and to the directory where the `App` and `World` are contained. These are necessary
+to automatically load Autometa at test time. Alternatively you can add these paths
+to your `jest.config` file as `setupFilesAfterEnv`.
+
+```ts
+import { defineConfig } from "autometa";
+
+defineConfig({
+  roots: {
+    steps: ["test/steps"],
+    app: ["src/app"]
+  }
+});
+```
+
+## App & World
+
+The `App` and `World` are the entry points to your application. A new instance of `App` is
+passed to each step definition as the last (or only) argument. App is a container for
+dependency injected service classes, such as HTTP clients, database clients, etc.
+
+The app instance is unique to each executing test, and is accessible to `Before` and
+`After` hooks. This way tests cannot interfere with one anothers state.
+
+World, as in standard Cucumber, is a container for the current state of your application
+and is automatically injected into the App. Like the App, each World is unique to A
+given test and its corresponding hooks.
+
+Using the structure defined above, our App and World have the following file structure:
+
+```
+./
+├── src/
+│   ├── app/
+│   │   ├── app.ts
+│   │   └── world.ts
+|   |   └── index.ts
+├── test/
+│   ├── steps/
+│   │   └── ...
+├── autometa.config.ts
+```
+
+To define an App class, decorate it with the `@AppType` decorator and pass it a reference
+to the World class.
+
+```ts
+import { AppType } from "autometa-runner";
+import { World } from "./World";
+
+@AppType(World)
+export class App {
+  // ...
+}
+```
+
+The App will not be available in step callbacks.
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("my simple step", (app) => {
+  app.world.foo = 2;
+});
+```
+
+You can also safely destructure app properties
+
+```ts
+import { Given } from "autometa-runner";
+
+Given("my simple step", ({ World }) => {
+  app.world.foo = 2;
+});
+```
+
+### World
+
+The world is a simple container object. You can declare properties on it that
+you believe will be relevant to your tests for autocompletion. They do not
+have to been defined with the world. They can be left empty until a test fills
+their values.
+
+Depending on your Typescript settings, you can use any of the following declaration styles:
+
+<Tabs groupId='gherkin-expression'>
+  <TabItem value="Define" label="Define">
+
+```ts
+import { MyComplexObject } from "../objects";
+
+export class World {
+  [key: string]: unknown;
+  foo: number;
+  bar: string;
+  baz: MyComplexObjectType;
+}
+```
+
+  </TabItem>
+  <TabItem value="Assert" label="Assert">
+
+```ts
+import { MyComplexObject } from "../objects";
+
+export class World {
+  [key: string]: unknown;
+  foo!: number;
+  bar!: string;
+  baz!: MyComplexObjectType;
+}
+```
+
+  </TabItem>
+  <TabItem value="Declare" label="Declare">
+
+```ts
+import { MyComplexObject } from "../objects";
+
+export class World {
+  [key: string]: unknown;
+  declare foo: number;
+  declare bar: string;
+  declare baz: MyComplexObjectType;
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## Declaration files
+
+We've defined our App and our World, and they're now available in our tests - however
+we cannot see any of the type information we created in either. This is because
+App is represented by an Empty interface internally. We can fix this by creating
+a declaration file and overriding the `@autometa/app` package using our new classes
+
+This file can be placed anywhere, for now we'll place it next to our app. Our directory
+structure now looks like:
+
+```
+./
+├── src/
+│   ├── app/
+│   │   ├── app.ts
+│   │   ├── autometa.d.ts
+│   │   └── world.ts
+|   |   └── index.ts
+├── test/
+│   ├── steps/
+│   │   └── ...
+├── autometa.config.ts
+```
+
+To make these types active, we must add them as a type root in `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "...": "...",
+    "types": ["jest", "./autometa.d.ts"]
+  }
+}
+```
+
+To override the interfaces, declare the module and implement your classes as below:
+
+```ts
+import type { App as OurApp, World as OurWorld } from "./src";
+
+declare module "@autometa/app" {
+  export interface App extends OurApp {}
+  export interface World extends OurWorld {}
+}
+```
+
+## Step Definitions
+
+With our App and World available, we can make use of them in Step Definitions.
+Step definitions follow the same structure as `Cucumber.JS` however they have a major
+distinction: The `World` object in Autometa is accessed as an argument, not through
+the `this` keyword. As a result, fat arrow functions are valid for step definitions.
+
+```ts
+// fully type inferred
+Given("a step", ({ world }) => {
+  world.foo = 2;
+});
+```
+
+Step Definitions must exist in files under the configred `stepDefinitionsRoot` directory,
+and must have one of the following filename patterns:
+
+- `*.steps.ts`
+- `*.given.ts`
+- `*.when.ts`
+- `*.then.ts`
+
+There is no requirement that a `*.given.ts` must contain only givens etc. Steps can be mixed
+in a single file to your liking.
+
+### Arguments
+
+Step definitions can accept arguments generated through Cucumber Expressions. When Autometa
+detects a cucumber expression in a step definition, it will automatically infer it as
+an argument in the callback.
+
+```ts
+// src/app/world.ts
+
+export class World {
+  [key: string]: unknown;
+  dogCount: number;
+  dogName: string;
+}
+
+// test/steps/dogs.steps.ts
+Given("I own {int} dogs", (dogCount, { world }) => {
+  world.dogCount = dogCount; // OK
+  world.dogName = dogCount; // ERROR - string is not assignable to number
+});
+```
+
+This avoids the need to manually type your arguments, which can lead to confusing
+errors when the wrong type is assumed and passed to a function.
+
+### Custom Expression Types
+
+The standard Cucumber expression types are already mapped, however if you
+create your own custom types, which will be inferred by your callback. If none
+is provided, it will be typed `unknown`.
+
+Like before, we override the `@autometa/scopes` module with a `Types`
+interface. The default interface is as follows:
+
+```ts
+export interface Types {
+  [key: string]: unknown;
+  text: string;
+  word: string;
+  string: string;
+  number: number;
+  float: number;
+  int: number;
+  any: any;
+  unknown: unknown;
+  boolean: boolean;
+  date: Date;
+  primitive: string | number | boolean | Date;
+}
+```
+
+Now append a custom type (existing types will be persisted)
+
+```ts title='autometa.d.ts'
+declare module "@autometa/scopes" {
+  export interface Types {
+    myCustomType: MyCustomType;
+  }
+}
+```
+
+Now this type will be automatically inferred when your step contains the expression `{myCustomType}`. To learn
+how to create custom types, see the [Custom Types](./cucumber_expressions) guide.
+
+### Tables
+
+Autometa adds more sophisticated table support than Cucumber.js, taking
+inspiration from Javas variadic table types.
+
+Autometa supports the following table types by default:
+
+- Horizontal - first row treated as headers
+- Vertical - first column treated as headers
+- Matrix - first row and column treated as headers
+- List - Wrapper over an array of string arrays (string[][])
+  - Can represent a raw table or a table without headers
+
+Additionally, Autometa tables automatically parse the contents of each table cell,
+converting them to primitive types where applicable. This means that if you have a
+table cell with the number `2` in it, it will be parsed into the Javascript `number` type,
+rather than represented by the string '2'. This will also apply to booleans.
+
+It is possible to access the raw string value also.
+
+To use a table, pass it as the last argument in your step definition. The type will
+automatically picked up and inferred by the step callback. When a table is present,
+it will always be the argument before the app. I.e if there are no expressions,
+the table will be the first argument. If there are expression arguments, it will
+be the second to last argument
+
+```ts title='No Expressions'
+import { Given, HTable } from "autometa-runner";
+
+Given(
+  "I have the following dogs",
+  (table, { world }) => {
+    const firstRow = table.get("header1");
+    const firstCell = table.get("header1", 0) as number;
+  },
+  HTable
+);
+```
+
+```ts title='With Expressions'
+Given(
+  "I have {int} dogs",
+  (dogCount, table, { world }) => {
+    // ...
+  },
+  HTable
+);
+```
+
+### Hooks
+
+The following hooks are supported:
+
+- Before
+- After
+- setup
+- Teardown
+
+Hooks can be defined in files with the following extensions, and should be located under the `stepDefinitionsRoot`
+
+- `*.before.ts`
+- `*.after.ts`
+- `*.setup.ts`
+- `*.teardown.ts`
+
+#### Setup
+
+The setup hook is executed before any tests are run. It is useful for bootstrapping the environment.
+The setup call back recieves a special copy of the app which is shared between all `Setup` and `TearDown`
+calls but not tests or other hooks.
+
+```ts
+import { Setup } from "autometa-runner";
+
+Setup("Setup the services 'foo'", (app) => {
+  app.world.foo = 2;
+});
+```
+
+#### Before
+
+The before hook is executed before each test. It is useful for setting up the world in advance
+of a test, setting up data from the service or preparing data base entries.
+
+Before recieves the same copy of the `App` that the test it preceeds will have.
+
+```ts
+import { Before } from "autometa-runner";
+import { setupFooObject } from "../objects";
+
+Before("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+});
+```
+
+#### After
+
+The after hook is executed after each test. It is useful for cleaning up data from the service
+or database, or resetting the environment to a known state.
+
+After recieves the same copy of the `App` that the test it succeeds will have.
+
+```ts
+import { After } from "autometa-runner";
+
+After("Reset the services 'foo'", (app) => {
+  return app.myHttpClient.delete("/foo", app.world.someId);
+});
+```
+
+#### Teardown
+
+The teardown hook is executed after all tests have run. It is useful for cleaning up the environment
+after all tests have run. It shares the same copy of the `App` as the `Setup` hook.
+
+```ts
+import { Teardown } from "autometa-runner";
+
+Teardown("Reset the services 'foo'", (app) => {
+  return app.myHttpClient.delete("/foo?type=testType");
+});
+```
+
+## Running a test
+
+FInally, we can set up the files neede to run our tests. We have several approaches for this.
+
+### Test file
+
+The simplest approach is to create a test file using the `Feature` function to reference
+a gherkin file.
+
+To begin, add `.feature.ts` as a test pattern in your jest.config
+
+```json
+{
+  "testMatch": ["**/*.steps.ts", "test/impl/**/*.feature.ts"]
+}
+```
+
+This example will look for `*.feature.ts` files under the `test/impl` directory.
+
+Now create a file `test/impl/my.feature.ts`, importing `Feature` and passing
+a path to a feature file.
+
+```ts
+import { Feature } from "autometa-runner";
+
+Feature("../features/my.feature");
+```
+
+If you've setup a `featuresRoot` you can use the `^/` prefix to reference a file.
+
+<Tabs>
+  <TabItem value="Relative" label="Relative">
+
+```ts
+import { Feature } from "autometa-runner";
+
+Feature("../impl/my.feature");
+```
+
+  </TabItem>
+  <TabItem value="FeatureRoot" label="Feature Root">
+
+```ts
+import { Feature } from "autometa-runner";
+
+Feature("^/my.feature");
+```
+
+  </TabItem>
+  <TabItem value="Config" label="Config">
+
+```ts
+import { defineFeature } from "autometa-runner";
+
+defineFeature({
+  roots: {
+    feature: "./test/impl"
+  }
+});
+```
+
+This will construct scenarios from globally defined steps.
+
+  </TabItem>
+</Tabs>
+
+### Spec-like
+
+Spec-like is set up the same way as a test file, however it allows nested functions, which
+allow steps that are shared between scenarios, but also uniquely implemented per scenario (or rule, or outline)
+when desireable. This approach resembles the `jest-cucumber` libraries approach.
+
+Like test file, it requires a `feature.ts` file but accepts a callback before the path.
+
+```ts
+import {
+  Feature,
+  Given,
+  Scenario,
+  Rule,
+  ScenarioOutline
+} from "autometa-runner";
+// test/steps/foo.steps.ts
+Given("a globally defined step", () => {
+  // ...
+});
+
+// test/impl/my.feature.ts
+Feature(() => {
+  Given("a step shared between all scenarios in this feature", () => {
+    // ...
+  });
+
+  Scenario("my scenario", () => {
+    Given("a step unique to this scenario", () => {
+      // ...
+    });
+  });
+
+  ScenarioOutline("my scenario outline", () => {
+    Given("a step unique to this scenario outline", () => {
+      // ...
+    });
+  });
+  Rule("my rule", () => {
+    Given("a step unique to this rule", () => {
+      // ...
+    });
+
+    Scenario("my scenario", () => {
+      Given("a step unique to this scenario", () => {
+        // ...
+      });
+    });
+  });
+});
+```
+
+It is not necessary to define all steps, scenarios, etc. within the `Feature` - missing scenarios
+or groups will be automatically constructed provided all the steps exist in any higher scope, including
+those globally defined by the step definition root.
+
+### Gherkin
+
+To run Gherkin `.feature` files directly against globally defined steps, then `@autometa/jest-transformer`
+package is needed, and must be added to `jest.config` under `transform`.
+
+```sh
+npm install --save-dev @autometa/jest-transformer
+```
+
+```json
+{
+  "transform": {
+    "^.+\\.feature$": "@autometa/jest-transformer"
+  }
+}
+```
+
+And `.feature` must be added to the `testMatch` pattern.
+
+```json
+{
+  "testMatch": ["**/*.feature"]
+}
+```
+
+Now gherkin files can be run directly
+
+```sh
+npx jest test/features/my.feature
+```
+
+## Fixtures
+
+Fixtures are classes which can be dependency injected automatically into each other,
+and the App. Where the app maintains the state of the application, fixtures attached to
+the app represent behaviors you want to perform, such as HTTP or GraphQL clients, database
+connections etc.
+
+Fixtures are defined as classes decorated with the `@Fixture` decorator. They can be
+injected into each other, and the App, by adding them as arguments to the constructor.
+This functionality depends on `reflect-metadata` and `experimentalDecorators` being enabled
+in your `tsconfig.json`.
+
+```ts
+// src/clients/http.ts
+import { Fixture, Inject } from "autometa-runner";
+
+@Fixture
+export class MyHttpClient {
+  async get(path: string) {
+    return this.app.httpClient.get(path);
+  }
+}
+
+// src/app/app.ts
+import { AppType } from "autometa-runner";
+import { MyHttpClient } from "../clients/http";
+import { World } from "./world";
+
+@AppType(World)
+export class App {
+  constructor(readonly httpClient: MyHttpClient) {}
+}
+```
+
+If for some reason automatic injection is not working, it can be specified with the `Inject` decorator.
+
+```ts title='src/app/app.ts'
+import { AppType, Inject } from "autometa-runner";
+import { MyHttpClient } from "../clients/http";
+import { World } from "./world";
+
+@AppType(World)
+export class App {
+  @Inject(MyHttpClient)
+  readonly httpClient!: MyHttpClient;
+}
+```

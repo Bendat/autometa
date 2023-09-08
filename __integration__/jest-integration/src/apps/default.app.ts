@@ -3,7 +3,7 @@ import { World } from "./default.world";
 import { TestContainer } from "../test-container";
 
 @AppType(World)
-export class DefaultApp {
+export class App {
   constructor(readonly container: TestContainer) {}
   report: {
     outterbackgroundstep: boolean;

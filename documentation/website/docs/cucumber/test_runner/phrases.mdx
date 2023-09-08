@@ -1,0 +1,183 @@
+---
+sidebar_position: 5
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Phrases
+
+Phrases, or 'Human Readable Phrases' are a pattern of obscuring implementation
+details when writing gherkin, by creating phrases that can be transformed into
+index keys of some object.
+
+Imagine are performing an API test and we have 2 relevant steps:
+
+- `When I create the user`
+  - Makes a HTTP call to our APIs POST /user endpoint with the DTO { name: "John", email: "john@bobmail.com" }
+  - Stores the response in the World object under the key `createUserResponse`
+- `Then 'createUserResponse' result is 'OK'`
+  - Asserts that the response stored in the World object under the key `createUserResponse` has a status code of 200
+  - Generic step that can be reused across any API test
+  - We want to use a more abstracted key, `'Create User'` instead of implementation detail `'createUserResponse'`
+
+### Using Phrases
+
+<Tabs>
+  <TabItem value="exposed" label="Exposed Details">
+
+```gherkin title=Gherkin
+Scenario: Creating a user
+  Given I have a user with the name "John"
+  And the users email is "john@bobmail.com"
+  When I create the user
+  Then 'createUserResponse' result is 'OK'
+```
+
+```ts title=Steps
+import { Given, When, Then } from "autometa-runner";
+import { StatusCodes } from "@autometa/status-codes";
+
+Given("I have a user with the name {string}", ({ world }, name) => {
+  world.createUserDto = { name };
+});
+
+Given("the users email is {string}", ({ world }, email) => {
+  world.createUserDto.email = email;
+});
+
+When("I create the user", async ({ world, http }) => {
+  world.createUserResponse = await http.post("/user", world.createUserDto);
+});
+
+Then(
+  "{string} result is {string}",
+  (property, status, { world }, key, value: keyof StatusCodes) => {
+    // assert status to equal { status: 200, statusText: "OK" }
+    expect(world[key].status).toEqual(StatusCodes[value]);
+  }
+);
+```
+
+  </TabItem>
+  <TabItem value="phrase" label="Human Friendly Phrase">
+
+```gherkin title=Gherkin
+Scenario: Creating a user
+  Given I have a user with the name "John"
+  And the users email is "john@bobmail.com"
+  When I create the user
+  Then 'Create User' result is 'OK'
+```
+
+This removes the code-style camelCased variable, but no longer represents a property of the world.
+To accomplish this, we can access the `World.fromPhrase` method, which will process the gherkin
+string with some rules we can define, such as making it `camelCase` or `snake_case`, or adding a
+prefix or suffix
+
+```ts title=Steps
+import { Given, When, Then, sfx, camelCase } from "autometa-runner";
+import { StatusCodes } from "@autometa/status-codes";
+
+Given("I have a user with the name {string}", ({ world }, name) => {
+  world.createUserDto = { name };
+});
+
+Given("the users email is {string}", ({ world }, email) => {
+  world.createUserDto.email = email;
+});
+
+When("I create the user", async ({ world, http }) => {
+  world.createUserResponse = await http.post("/user", world.createUserDto);
+});
+
+Then(
+  "{string} result is {string}",
+  (property, status, { world }, key, value: keyof StatusCodes) => {
+    // 'Create User' -> 'Create User Response' -> 'createUserResponse'
+    const key = world.fromPhrase(property, sfx`Response`, camel);
+    expect(world[key].status).toEqual(StatusCodes[value]);
+  }
+);
+```
+
+  </TabItem>
+
+</Tabs>
+
+```ts title=World
+import { AutometaWorld } from "autometa-runner";
+import { HTTPResponse } from "http-library";
+
+export class World extends AutometaWorld {
+  declare createUserDto: CreateUserDto;
+  declare createUserResponse: HTTPResponse;
+}
+```
+
+### Transformers
+
+Phrases are controlled by transformer or `mutation` actions which are appended
+to the phrase. They are applied in the order they are defined. Some, like the case-mutations (camel, upper) will
+override previous.
+
+- `camel` - converts the phrase to camelCase
+- `snake` - converts the phrase to snake_case
+- `kebab` - converts the phrase to kebab-case
+- `pascal` - converts the phrase to PascalCase
+- `sfx` - adds a suffix to the phrase with a space
+- `pfx` - adds a prefix to the phrase with a space
+- `trim` - trims the phrase, removing all white leading and trailing space
+- `lower` - converts the phrase to lower case
+- `upper` - converts the phrase to upper case
+
+---
+
+It's also possible to use phrases generically, in your steps or in other parts of your
+supporting code
+
+```ts
+import { camel, sfx, From } from "autometa-runner";
+
+const dummyObject = {
+  statusCode: 200
+  statusText: 'OK'
+};
+
+const status = From(dummyObject).byPhrase("status", sfx`text`, camel) as string;
+```
+
+You can also attach a phrase parser to classes with a decorator:
+
+```ts
+import { camel, sfx, From, IFromPhrase PhraseParser } from "autometa-runner";
+
+@PhraseParser
+class DummyObject {
+  statusCode: number;
+  statusText: string;
+  declare fromPhrase: IFromPhrase
+}
+
+```
+
+A phrase parser will be injected into instances of the class and can be used directly:
+
+```ts
+const dummyObject = new DummyObject();
+
+const status = dummyObject.fromPhrase("status", sfx`text`, camel) as string;
+```
+
+---
+
+Only one `case` mutation can be succesfully applied to a phrase, however some custom
+output formats should be achievable.
+
+For example the format `dbCollection__Users` could be achieved with
+
+```ts
+From(foo).byPhrase("Db Connection", camel, sfx`__Users`, trim);
+```
+
+Which camel cases the phrase, adds a suffix of `__Users` and trims white space between them.

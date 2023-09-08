@@ -1,141 +1,167 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
 # Data Tables
 
-Datatables are tables attached to a gherkin step
+Autometa sports a more sophisticated data table model than the default
+`Cucumber.js `implementation. Specifically, there are multiple table types
+which can be configured on a per step basis.
+
+When a step contains a table, it will be passed to the matching definition
+callback according to the following rules:
+
+- If the Gherkin step contains a table, and none is defined in the matching definition
+  an error will be thrown
+- If no [expressions](./cucumber_expressions) exist, then the Data Table will
+  be injected as the first argument in the definition callback
+- If at least one expression exists, the Data Table will be the next argument
+  passed after all expressions
+
+The currently supported table types are:
+
+## HTable
+
+A standard 'horizontal' table, where the first row of the table is
+treated as a header cell, and values can be accessed by indexing against that header
+
+<Tabs>
+  <TabItem value="gherkin" label="Gherkin Datatable">
 
 ```gherkin
 Given a step with a table
-    | name | age |
-    | John | 24  |
+  | Username | Is Admin |
+  | Bob      | true    |
+  | Jill     | false   |
 ```
 
-If one is defined, it will always be the second to last argument passed
-to a step definition callback function. If there are no cucumber expression
-arguments, it will be the first argument.
-
-This library includes extended handling of data tables inspired by
-the [Java Implementation](https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-java#data-tables)
-
-Tables can be defined with multiple different structual formats.
-By default, tables will be converted to `HTable`, for....
-
-## Horizontal Table
-
-class: `HTable`
-
-The horizontal table assumes that the first row of the table structure
-is a list of headings or titles that describe the purpose of the column
-below it.
-
-```gherkin
-Given a step with a table
-    | name | age |
-    | John | 24  |
-    | Bill | 25  |
-```
-
-The HTable accesses data using this header.
-
-```ts
-Given("a table", (table: HTable) => {
-  expect(table.get("name")).toEqual(["John", "Bill"]);
-  expect(table.get("name", 0)).toEqual("John");
-  expect(table.get("age")).toEqual([24, 25]);
-  expect(table.get("age", 0)).toEqual(24);
-});
-```
-
-## Vertical Table
-
-class: `VTable`
-
-The vertical table assumes that the first column of the table structure
-is a list of headings or titles that describe the purpose of the row
-to the right of it.
-
-```gherkin
-Given a step with a table
-    | name | John | Bill |
-    | age  | 24   | 25   |
-```
-
-The VTable accesses data using this header.
-
-```ts
-Given("a table", (table: VTable) => {
-  expect(table.get("name")).toEqual(["John", "Bill"]);
-  expect(table.get("name", 0)).toEqual("John");
-  expect(table.get("age")).toEqual([24, 25]);
-  expect(table.get("age", 0)).toEqual(24);
-});
-```
-
-:::tip
-By default all tables will be converted to `HTable`. This can
-be overwritten in `autometa.config.ts`, or configured on a step by
-step bases. Taking the above step as an example, to tell Autometa that
-we want to use a VTable specifically for this step, we pass the VTable
-class prototype as the third step definition argument:
+  </TabItem>
+  <TabItem value="definition" label="Step Definition">
 
 ```ts
 Given(
-  "a table",
-  (table: VTable) => {
-    expect(table.get("name")).toEqual(["John", "Bill"]);
-    expect(table.get("name", 0)).toEqual("John");
-    expect(table.get("age")).toEqual([24, 25]);
-    expect(table.get("age", 0)).toEqual(24);
+  "a step with a table",
+  (table) => {
+    const bob = table.get<string>("Username", 0);
+    const bobIsAdmin = table.get<number>("Is Admin", 0);
+    const allUsers = table.get<string[]>("Username");
+  },
+  HTable
+);
+```
+
+  </TabItem>
+</Tabs>
+
+# VTable
+
+A standard 'vertical' whose header cells are stacked vertically on the leftmost column
+
+<Tabs>
+  <TabItem value="gherkin" label="Gherkin Datatable">
+
+```gherkin
+Given a step with a table
+  | Username | Bob  | Jill  |
+  | Is Admin | true | false |
+```
+
+  </TabItem>
+  <TabItem value="definition" label="Step Definition">
+
+```ts
+Given(
+  "a step with a table",
+  (table) => {
+    const bob = table.get<string>("Username", 0);
+    const bobIsAdmin = table.get<number>("Is Admin", 0);
+    const allUsers = table.get<string[]>("Username");
   },
   VTable
 );
 ```
 
-This step will now be constructed with a VTable.
-:::
+  </TabItem>
+  
+</Tabs>
 
-## Matrix Table
+# MTable
 
-class: `MTable`
+A Matrix tyle table, where the first row and first column are both treated as headers,
+indexing against both will return the value of a single cell.
 
-The matrix table is similar to a HTable _and_ a VTable at the same time.
-It assumes the first row is a list of titles for the columns below it,
-while the first colum is a list of titles for the row cells to the right
-of it. A cell is then an intersection of these two values.
+<Tabs>
 
-The first cell (0,0) is discarded and ignored. You may use it
-to hold metatext about the table such as it's axis
+  <TabItem value="gherkin" label="Gherkin Datatable">
 
 ```gherkin
 Given a step with a table
-    | size/color | large | small   |
-    | blue       | ocean | gumball |
-    | green      | hill  | grass   |
+  |       | Big     | Small   |
+  | Blue  | Ocean   | Puddle  |
+  | Green | Ireland | Cabbage |
 ```
 
-The HTable accesses data using this header.
+  </TabItem>
+  <TabItem value="definition" label="Step Definition">
 
 ```ts
-Given("a table", (table: MTable) => {
-  expect(table.get("blue", "large")).toEqual("ocean");
-  expect(table.get("green", "small")).toEqual("grass");
+Given(
+  "a step with a table",
+  (table) => {
+    const ocean = table.get<string>("Blue", "Big");
+    const cabbage = table.get<string>("Green", "Small");
+  },
+  MTable
+);
+```
+
+  </TabItem>
+  
+</Tabs>
+## Table Value Types
+
+By default, tables will attempt to convert their cell values into a primitive type.
+I.e. `| 2 |` will attempt to parse this cell as a number, `true` will become a bool etc.
+
+To access the unconverted raw value, pass true to the end of the `.get` method
+
+```ts
+Given("step with table", (table) => {
+  const firstUsername = table.get<string>("Username", 0);
+  const firstAge = table.get<string>("Age", 0, true);
+  // ...
 });
 ```
 
-## List Table
+## Custom Tables
 
-class: `ListTable`
+It is possible to implement your own table. Simply create a class which accepts as a constructor parameter
+and instance of [CompiledDataTable](https://github.com/Bendat/autometa/blob/main/packages/gherkin/src/steps/datatables/compiled-data-table.ts).
 
-A list table assumes there are no special rows or columns which act
-as headers. Effectively a wrapper over a `string[][]`.
+The compiled table contains two 2d arrays:
 
-# Type Casting
+- `table`
+    - List of converted types. I.e `| 2 |` will become `2` not `"2"`
+- `rawTable`
+    - List of unconverted types. I.e `| 2 |` will remain `"2"` not `2`
 
-Autometa will attempt to parse table values into javascript primitives
-if they are applicable. Currently supported are `boolean` and `number`.
+```ts
+import { CompiledDataTable } from "autometa-runner";
 
-That is to say, if a table cell contains the string `2`, it will be cast
-to an number. Likewise `true` will be a bool. This does not apply if they are
-surrounded by quotation marks, i.e `"2"` will not parse to a number.
+export class MyTable {
+    constructor(private readonly compiledTable: CompiledDataTable) {}
+
+    get<T>(header: string, row: number, raw = false): T {
+        // Your get logic here
+    }
+}
+
+```
+
+_________________________________________________________
+
+There is no common interface for what methods can be on a table, so you will need to
+decide your own.

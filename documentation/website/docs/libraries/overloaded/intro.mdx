@@ -1,5 +1,7 @@
 # Overloaded
 
+# Overloaded
+
 Overloads as easy to make as they are to use.
 
 Inspired by [zod](https://zod.dev/) and [myzod](https://github.com/davidmdm/myzod)
@@ -11,6 +13,7 @@ of pattern matching or argument validation.
 
 Overloaded accepts a parameter list pattern using a ZOD like syntax which is mapped
 to an anonymous function, however the syntax somewhat resembles a function definition.
+
 
 ### Contrived Example:
 
@@ -187,7 +190,7 @@ Using overloaded to build your function and method overloads is simple.
 Call the `overloads` function with your `def` overloads, then pass
 the real arguments.
 
-Overloaded functions are defined by the function pair `def` and it's child function `match`. Def accepts a rest param array of `BaseArguments`.
+Overloaded functions are defined by the function `def` and it's child function `match`. Def accepts a rest param array of `BaseArguments`.
 A `BaseArgument` can be created by it's corresponding function. So `StringArgument` has a `string()` factory function, while `BooleanArgument`
 has the factory function `boolean()`. `def` returns an object
 containing a `match` function. `match` accepts a function who's parameter

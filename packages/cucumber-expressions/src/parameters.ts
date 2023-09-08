@@ -34,7 +34,7 @@ type PrimitiveConstructor =
   | typeof Number
   | typeof String
   | typeof Boolean
-  | typeof BigInt;
+  | typeof Date;
 
 export type ParamTypeDefinition = {
   name: string;
@@ -46,7 +46,6 @@ export type ParamTypeDefinition = {
     | typeof String
     | typeof Number
     | typeof Boolean
-    | typeof BigInt
     | typeof Date;
 };
 
@@ -79,7 +78,6 @@ function registerParameterType(
     | NumberConstructor
     | StringConstructor
     | BooleanConstructor
-    | BigIntConstructor
     | DateConstructor
     | undefined
 ): void {
@@ -94,7 +92,7 @@ function registerParameterType(
       const primitivePrototype = primitive as unknown as PrimitiveConstructor;
       const typePrototype = type as unknown as Class<unknown>;
       const wrapper = (val: unknown) => {
-        const asPrimitive = primitivePrototype(val);
+        const asPrimitive = fromPrimitive(primitivePrototype, val);
         const asType = new typePrototype(asPrimitive);
         return transform(asType);
       };
@@ -185,4 +183,20 @@ function registerParameterType(
       }
     )
   ).use([name, regexpPattern, type, transform, primitive]);
+}
+
+function fromPrimitive(type: PrimitiveConstructor, value: unknown) {
+  if (type === String) {
+    return String(value);
+  }
+  if (type === Number) {
+    return parseFloat(value as string);
+  }
+  if (type === Boolean) {
+    return value === "true" ? true : false;
+  }
+  if (type === Date) {
+    return new Date(value as string);
+  }
+  return value;
 }

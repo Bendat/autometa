@@ -1,251 +1,116 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 ---
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Introduction
+# Autometa
 
-Autometa Cucumber Runner is a wrapper for multiple established
-test runners like [jest](https://jestjs.io/) and [vitest](https://vitest.dev/) that enables support for testing `.feature` files.
+Autometa is a toolkit of libraries to supercharge automation testing
+in [Cucumber](https://cucumber.io/docs/installation/javascript/), built
+to work with [Jest](https://jestjs.io/) and in future [Vitest](https://vitest.dev/).
 
-## Features
+Primarily Autometa is centered around it's cucumber runner, however it also maintains
+a number of standalone libraries that might be useful in various projects:
 
-- Utilize you or your teams favorite testing framework with Cucumber
-- Steps are defined globally and scenarios are self assembling
-- Steps can be overridden for specific features or scenarios with edge behavior
-- Per-Scenario dependency injection of tester-defined classes.
-- Cucumber expressions
-- Extensive handling of data tables
-- CommonJs and ESM compatible
+- [**Builder Pattern**](https://www.npmjs.com/package/@autometa/dto-builder) - Automatically
+  generate Builder pattern classes from a DTO class using decorators
+- [**Status Codes**](https://www.npmjs.com/package/@autometa/status-codes) - Object containing
+  HTTP status codes and standard text
+- [**Overloaded**](https://www.npmjs.com/package/@autometa/overloaded) - Easily handle variadic arguments
+  in overloaded or pattern based functions and methods
 
+## Cucumber Runner
 
-## Install
+Autometa's Cucumber Runner brings gherkin to Jest. Inspired by [Jest Cucumber](https://www.npmjs.com/package/jest-cucumber) Autometa supports 3 styles of writing tests, which can be mix and match
 
-<Tabs>
-  <TabItem value="npm" label="NPM">
+- Nested function callbacks
+  - This option strongly resembles both Jests `describe -> it` pattern and jest-cucumbers nested
+    structure
+- Global steps
+  - This option more closely resembles `cucumberjs`, using globally defined steps that
+    are assembled into scenarios at runtime
+  - Global steps can be used as shared steps when using nested callbacks, so common steps
+    are defined globally while test specific steps are defined only where they're needed
+- Gherkin Only
+  - Very similar to cucumberjs, executing `.feature` files with globally defined steps,
+    bypassing the need to create intermediary testfiles.
 
-    npm add -D @autometa/cucumber-runner
+### Features
 
-  </TabItem>
+#### Automatic inference for Step Definition arguments
 
-  <TabItem value="yarn" label="YARN">
+Leverages Typescripts type system to automatically infer Cucumber Expression arguments
+from its string literal
 
-    yarn add -D @autometa/cucumber-runner
-
-  </TabItem>
-  
-  <TabItem value="pnpm" label="PNPM">
-
-    pnpm add -D @autometa/cucumber-runner
-
-  </TabItem>
-
-</Tabs>
-
-
-## Quick Start
-
-### Configure
-
-To begin, add `*.feature.ts` as a test file pattern to your
-test library config if needed. Also, add `autometa.config.ts`
-to the setup files option
-
-<Tabs>
-  <TabItem value="vitest" label="Vitest">
-
-```js title='vitest.config.js'
-import { defineConfig } from 'vitest/config'
-
-defineConfig({
-  ...
-  setupFiles: ['autometa.config.ts']
-  include: ['**/*.{test,spec,feature}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']
-  ...
-})
-
+```ts
+// Given I have 5 cats
+Given("I have {int} {word}", (count, animal) => {
+  // -- inferred as 'number' ---^     |
+  // ----- inferred as 'string' ------┘
+});
 ```
 
-  </TabItem>
+#### Dependency Injection
 
-  <TabItem value="jest" label="Jest">
+Dependency Injection wires together your complex behaviors simply.
 
-```js title='jest.config.js'
-export default {
-  ...
-  setupFilesAfterEnv: ['autometa.config.ts']
-  testMatch: ['**/?(*.)+(spec|test|feature).[jt]s?(x)']
-  ...
+<Tabs>
+<TabItem value="fixture" label="Fixture">
+
+```ts title="src/http/client.ts"
+import { Fixture } from "autometa-runner";
+
+@Fixture
+export class HttpClient {
+  async get(...args) {}
+  async post(...args) {}
+  async put(...args) {}
+  async delete(...args) {}
 }
 ```
 
-  </TabItem>
+</TabItem>
+<TabItem value="app" label="App">
 
+```ts title="src/app/app.ts"
+import { AppType } from "autometa-runner";
+import { HttpClient } from "../http/client";
+import { World } from "../world/world";
+
+@AppType(World)
+export class App {
+  // http is automatically injected
+  constructor(readonly http: HttpClient) {}
+}
+```
+
+</TabItem>
+<TabItem value="step" label="Step Definition">
+
+```ts title="src/steps/given.ts"
+import { Given } from "autometa-runner";
+
+Given("I have a {user}", async (user, { world, http }) => {
+  world.getUserResponse = await http.get(`/users/${user}`);
+});
+```
+
+  </TabItem>
 </Tabs>
 
-Next, create the `autometa.config.ts`. To use globally available
-step files, add a `globals` option, and provide the test functions
-of your test framework. It's also a good idea to import `reflect-metadata`
-from this file. `reflect-metadata` is a required dependency of this library.
+#### Custom Cucumber Expressions
 
-<Tabs>
-  <TabItem value="vitest" label="Vitest">
+Improved support for custom Cucumber Expressions.
 
-```ts
-import "reflect-metadata";
-import { defineConfig } from "@autometa/cucumber-runner";
-import {
-  describe,
-  test,
-  beforeEach,
-  beforeAll,
-  afterEach,
-  afterAll,
-} from "vitest";
+See [Cucumber Expressions](./cucumber-expressions) section.
 
-defineConfig({
-  globals: "globals",
-  runner: {
-    name: "vitest",
-    describe,
-    test,
-    beforeEach,
-    beforeAll,
-    afterEach,
-    afterAll,
-  },
-});
-```
+#### Fuzzy Search for Missing Step Definitions
 
-  </TabItem>
+Easily identify typos in step definitions using fuzzy search error reporting.
 
-  <TabItem value="jest" label="Jest">
+#### Flexible
 
-```ts
-import "reflect-metadata";
-import { defineConfig } from "@autometa/cucumber-runner";
-
-defineConfig({
-  globals: "globals",
-  runner: {
-    name: "jest",
-    describe,
-    test,
-    beforeEach,
-    beforeAll,
-    afterEach,
-    afterAll,
-  },
-});
-```
-
-  </TabItem>
-
-</Tabs>
-
-### Use
-
-<Tabs>
-
-  <TabItem value="gherkin" label="Gherkin">
-
-```gherkin title='<project-root>/features/my-feature.feature'
-Feature: A User Can Log In
-  Background: Set up a new User
-    Given a new registered User
-      | username | name | age | password |
-      | johnny5  | John | 45  | paS5091! |
-
-  Scenario: A User logs in with valid credentials
-    When they log in
-     | username | password |
-     | johnny5  | paS5091! |
-    Then they see their profile
-
-  Scenario: A User logs in with a bad password
-      When they log in
-     | username | password |
-     | johnny5  | oops     |
-    Then they are informed their password is incorrect
-```
-
-  </TabItem>
-
-  <TabItem value="ts" label="Typescript">
-
-```ts title='<project-root>/tests/my-feature.feature.ts'
-import {
-  Given,
-  When,
-  Then,
-  Feature,
-  Before,
-  Scenario,
-} from "@autometa/cucumber-runner";
-import { App } from "../src/app";
-
-Before("Launch browser", async ({ world, myDriver }) => {
-  world.page = await myDriver.start(process.env.API_URL);
-});
-
-Given(
-  "a new registered User",
-  async (data: HTable, { world, httpClient }: App) => {
-    const userDetails = data.json(0);
-    await httpClient.createUser(userDetails);
-  }
-);
-
-When("they log in", async (userDetails: HTable, { world: { page } }: App) => {
-  const { username, password } = userDetails.json(0);
-  await page.logUserIn(username, password);
-});
-
-Then("they see their profile", async ({ world: { page } }: App) => {
-  await page.verifyProfileOpen();
-});
-
-Then(
-  "they are informed their {word} is incorrect",
-  async (field: string, { world: { page } }: App) => {
-    await page.verifyBadLoginField(field);
-  }
-);
-
-Feature("../features/my-feature.feature");
-
-// override Steps
-
-Feature(() => {
-  Given(
-    "a new registered User",
-    async (data: HTable, { world: { page } }: App) => {
-      const userDetails = data.json(0);
-      await page.gotoRegistration();
-      await page.registerWith(userDetails);
-    }
-  );
-
-  Scenario("A User logs in with a bad password", () => {
-    Then(
-      "they are informed their password is incorrect",
-      async ({ world: { page } }: App) => {
-        await page.verifyBadPassword();
-      }
-    );
-  });
-}, "../features/my-feature.feature");
-
-// load multiple feature files
-
-Feature(
-  "../features/my-feature.feature",
-  "../features/my-other-feature.feature"
-);
-```
-
-  </TabItem>
-
-</Tabs>
+Write your tests like jest-cucumber, or by executing gherkin `.feature` files using
+Jest transformations. 

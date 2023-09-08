@@ -1,6 +1,6 @@
 import { defineConfig } from "autometa-runner";
 defineConfig({
-  runner: "jest",
+  // runner: "jest",
   environment: "default",
   test: {
     groupLogging: true

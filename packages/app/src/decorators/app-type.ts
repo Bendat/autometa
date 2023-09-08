@@ -1,12 +1,11 @@
 import { Class } from "@autometa/types";
 import { Lifecycle } from "tsyringe";
-import { AutometaWorld } from "..";
 import { Fixture } from "./fixture";
 
 
 export function AppType(
   container: Record<string, { app: unknown; world: unknown; }>,
-  world: Class<AutometaWorld>,
+  world: Class<Record<string, unknown>>,
   environment = "default"
 ) {
   const env = environment ?? "default";

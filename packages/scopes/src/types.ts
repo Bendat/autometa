@@ -12,6 +12,7 @@ export type HookAction = (...args: HookArguments) => unknown | Promise<unknown>;
 
 export type StepArguments = [...unknown[], App] | [App];
 
+// todo move to Cucumber-expressions package
 export interface Types {
   [key: string]: unknown;
   text: string;

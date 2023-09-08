@@ -7,6 +7,7 @@ When("the when step is executed", (app) => {
   app.container.steps.push(2);
 });
 Then("the then step is executed", (app) => {
+  app.world.
   app.container.steps.push(3);
 });
 Then("the and step is executed", (app) => {
