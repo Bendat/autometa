@@ -44,7 +44,7 @@
     "strip-color": "^0.1.0",
     "tsconfig": "workspace: *",
     "tsup": "^7.2.0",
-    "typescript": "^4.9.5",
+    "typescript": "^5.2.2",
     "vitest": "0.33.0"
   },
   "dependencies": {
