@@ -1,0 +1,40 @@
+---
+sidebar_position: 6
+---
+
+# Date Time
+
+Autometa provides some utilities for working with dates and times during automation tests.
+
+The `Dates` object contains handy helpers to create common dynamic dates like 'tomorrow',
+'next week', 'yesterday' etc.
+
+```ts
+const dto = {
+    dateCreated: Dates.yesterday(),
+}
+```
+
+The Dates object also supports phrases such as '5 days from now'
+
+```gherkin title=Gherkin
+Given a promotion starting '5 days from now'
+```
+
+Date phrases can be extracted from steps using the `{date}` expression parameter type.
+```ts
+Given('a promotion starting {date} from now', (date: Date) => {
+    // --------- dates type is automatically inferred ^
+    // explicit type can be avoided.
+})
+```
+
+However iso date strings and short date strings are also accepted:
+
+```gherkin title=Gherkin
+Given a promotion starting '2021-01-01'
+Given a promotion starting '2021-01-01T00:00:00.000Z'
+```
+
+The Date expression must be wrapped in quotation marks.
+

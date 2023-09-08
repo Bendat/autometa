@@ -1,0 +1,141 @@
+---
+sidebar_position: 4
+---
+
+# Data Tables
+
+Datatables are tables attached to a gherkin step
+
+```gherkin
+Given a step with a table
+    | name | age |
+    | John | 24  |
+```
+
+If one is defined, it will always be the second to last argument passed
+to a step definition callback function. If there are no cucumber expression
+arguments, it will be the first argument.
+
+This library includes extended handling of data tables inspired by
+the [Java Implementation](https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-java#data-tables)
+
+Tables can be defined with multiple different structual formats.
+By default, tables will be converted to `HTable`, for....
+
+## Horizontal Table
+
+class: `HTable`
+
+The horizontal table assumes that the first row of the table structure
+is a list of headings or titles that describe the purpose of the column
+below it.
+
+```gherkin
+Given a step with a table
+    | name | age |
+    | John | 24  |
+    | Bill | 25  |
+```
+
+The HTable accesses data using this header.
+
+```ts
+Given("a table", (table: HTable) => {
+  expect(table.get("name")).toEqual(["John", "Bill"]);
+  expect(table.get("name", 0)).toEqual("John");
+  expect(table.get("age")).toEqual([24, 25]);
+  expect(table.get("age", 0)).toEqual(24);
+});
+```
+
+## Vertical Table
+
+class: `VTable`
+
+The vertical table assumes that the first column of the table structure
+is a list of headings or titles that describe the purpose of the row
+to the right of it.
+
+```gherkin
+Given a step with a table
+    | name | John | Bill |
+    | age  | 24   | 25   |
+```
+
+The VTable accesses data using this header.
+
+```ts
+Given("a table", (table: VTable) => {
+  expect(table.get("name")).toEqual(["John", "Bill"]);
+  expect(table.get("name", 0)).toEqual("John");
+  expect(table.get("age")).toEqual([24, 25]);
+  expect(table.get("age", 0)).toEqual(24);
+});
+```
+
+:::tip
+By default all tables will be converted to `HTable`. This can
+be overwritten in `autometa.config.ts`, or configured on a step by
+step bases. Taking the above step as an example, to tell Autometa that
+we want to use a VTable specifically for this step, we pass the VTable
+class prototype as the third step definition argument:
+
+```ts
+Given(
+  "a table",
+  (table: VTable) => {
+    expect(table.get("name")).toEqual(["John", "Bill"]);
+    expect(table.get("name", 0)).toEqual("John");
+    expect(table.get("age")).toEqual([24, 25]);
+    expect(table.get("age", 0)).toEqual(24);
+  },
+  VTable
+);
+```
+
+This step will now be constructed with a VTable.
+:::
+
+## Matrix Table
+
+class: `MTable`
+
+The matrix table is similar to a HTable _and_ a VTable at the same time.
+It assumes the first row is a list of titles for the columns below it,
+while the first colum is a list of titles for the row cells to the right
+of it. A cell is then an intersection of these two values.
+
+The first cell (0,0) is discarded and ignored. You may use it
+to hold metatext about the table such as it's axis
+
+```gherkin
+Given a step with a table
+    | size/color | large | small   |
+    | blue       | ocean | gumball |
+    | green      | hill  | grass   |
+```
+
+The HTable accesses data using this header.
+
+```ts
+Given("a table", (table: MTable) => {
+  expect(table.get("blue", "large")).toEqual("ocean");
+  expect(table.get("green", "small")).toEqual("grass");
+});
+```
+
+## List Table
+
+class: `ListTable`
+
+A list table assumes there are no special rows or columns which act
+as headers. Effectively a wrapper over a `string[][]`.
+
+# Type Casting
+
+Autometa will attempt to parse table values into javascript primitives
+if they are applicable. Currently supported are `boolean` and `number`.
+
+That is to say, if a table cell contains the string `2`, it will be cast
+to an number. Likewise `true` will be a bool. This does not apply if they are
+surrounded by quotation marks, i.e `"2"` will not parse to a number.

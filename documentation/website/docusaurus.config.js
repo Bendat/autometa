@@ -81,6 +81,11 @@ const config = {
               },
               {
                 type: "doc",
+                docId: "cucumber/test_runner_legacy/intro",
+                label: "Test Runner (Legacy)",
+              },
+              {
+                type: "doc",
                 docId: "cucumber/cucumber_markdown/intro",
                 label: "Cucumber Markdown",
               },
@@ -94,6 +99,11 @@ const config = {
                 type: "doc",
                 docId: "libraries/dto-builder/intro",
                 label: "DTO and Builder Pattern",
+              },
+              {
+                type: "doc",
+                docId: "libraries/overloaded/intro",
+                label: "Overloaded",
               },
             ],
           },
