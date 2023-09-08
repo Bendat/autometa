@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@cucumber/gherkin": "^26.0.3",
-    "@cucumber/messages": "^21.0.1",
+    "@cucumber/messages": "^22.0.0",
     "cd": "^0.3.3",
     "commander": "^10.0.0",
     "glob": "^8.1.0",

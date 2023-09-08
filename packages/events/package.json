@@ -53,7 +53,7 @@
     "@autometa/errors": "workspace:^",
     "@autometa/gherkin": "workspace:*",
     "@autometa/types": "workspace:*",
-    "@cucumber/messages": "^21.0.1",
+    "@cucumber/messages": "^22.0.0",
     "@cucumber/tag-expressions": "^5.0.1",
     "tsyringe": "^4.7.0",
     "uuid": "^9.0.0",

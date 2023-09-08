@@ -48,7 +48,7 @@
     "@autometa/overloaded": "workspace:^",
     "@autometa/types": "workspace:*",
     "@cucumber/gherkin": "^26.0.3",
-    "@cucumber/messages": "^21.0.1",
+    "@cucumber/messages": "^22.0.0",
     "@cucumber/tag-expressions": "^5.0.1",
     "uuid": "^9.0.0"
   }

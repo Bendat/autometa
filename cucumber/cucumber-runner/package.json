@@ -73,7 +73,7 @@
     "@cucumber/cucumber": "^9.0.0",
     "@cucumber/cucumber-expressions": "^16.1.2",
     "@cucumber/gherkin": "^26.0.3",
-    "@cucumber/messages": "^21.0.1",
+    "@cucumber/messages": "^22.0.0",
     "@cucumber/tag-expressions": "^5.0.1",
     "@types/convert-array-to-csv": "^2.0.0",
     "allure-js-commons": "^2.1.0",
