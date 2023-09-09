@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.5.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
 ## 0.4.1
 
 ### Patch Changes

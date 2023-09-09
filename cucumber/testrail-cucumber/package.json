@@ -1,6 +1,6 @@
 {
   "name": "@autometa/testrail-cucumber",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "bin": {
     "testrail-cucumber": "dist/cjs/src/lib/cli.js"

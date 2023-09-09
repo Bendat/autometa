@@ -1,5 +1,11 @@
 # @autometa/testrail-cucumber
 
+## 0.6.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
 ## 0.5.1
 
 ### Patch Changes

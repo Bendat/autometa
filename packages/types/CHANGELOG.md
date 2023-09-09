@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.4.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
 ## 0.3.1
 
 ### Patch Changes

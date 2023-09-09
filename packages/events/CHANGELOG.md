@@ -1,5 +1,18 @@
 # Gherkin
 
+## 0.1.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
+### Patch Changes
+
+- Updated dependencies [554b77e]
+  - @autometa/errors@0.1.0
+  - @autometa/gherkin@0.4.0
+  - @autometa/types@0.4.0
+
 ## 0.0.10
 
 ### Patch Changes
