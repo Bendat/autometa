@@ -40,7 +40,7 @@
     "@babel/core": "^7.21.4",
     "@jest/types": "^29.4.3",
     "@types/babel__core": "^7.20.0",
-    "autometa-runner": "workspace:^",
+    "@autometa/runner": "workspace:^",
     "babel-preset-jest": "^29.5.0"
   }
 }

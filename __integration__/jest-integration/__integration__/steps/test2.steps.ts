@@ -1,4 +1,4 @@
-import { Given, Then, When } from "autometa-runner";
+import { Given, Then, When } from "@autometa/runner";
 
 Given("the given step is executed", (app) => {
   app.container.steps = [1];

@@ -35,7 +35,7 @@ Scenario: Creating a user
 ```
 
 ```ts title=Steps
-import { Given, When, Then } from "autometa-runner";
+import { Given, When, Then } from "@autometa/runner";
 import { StatusCodes } from "@autometa/status-codes";
 
 Given("I have a user with the name {string}", ({ world }, name) => {
@@ -76,7 +76,7 @@ string with some rules we can define, such as making it `camelCase` or `snake_ca
 prefix or suffix
 
 ```ts title=Steps
-import { Given, When, Then, sfx, camelCase } from "autometa-runner";
+import { Given, When, Then, sfx, camelCase } from "@autometa/runner";
 import { StatusCodes } from "@autometa/status-codes";
 
 Given("I have a user with the name {string}", ({ world }, name) => {
@@ -106,7 +106,7 @@ Then(
 </Tabs>
 
 ```ts title=World
-import { AutometaWorld } from "autometa-runner";
+import { AutometaWorld } from "@autometa/runner";
 import { HTTPResponse } from "http-library";
 
 export class World extends AutometaWorld {
@@ -137,7 +137,7 @@ It's also possible to use phrases generically, in your steps or in other parts o
 supporting code
 
 ```ts
-import { camel, sfx, From } from "autometa-runner";
+import { camel, sfx, From } from "@autometa/runner";
 
 const dummyObject = {
   statusCode: 200
@@ -150,7 +150,7 @@ const status = From(dummyObject).byPhrase("status", sfx`text`, camel) as string;
 You can also attach a phrase parser to classes with a decorator:
 
 ```ts
-import { camel, sfx, From, IFromPhrase PhraseParser } from "autometa-runner";
+import { camel, sfx, From, IFromPhrase PhraseParser } from "@autometa/runner";
 
 @PhraseParser
 class DummyObject {

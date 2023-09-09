@@ -9,4 +9,4 @@
 ### Patch Changes
 
 - Updated dependencies [554b77e]
-  - autometa-runner@0.1.0
+  - @autometa/runner@0.1.0

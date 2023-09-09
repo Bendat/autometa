@@ -25,7 +25,7 @@ The setup call back recieves a special copy of the app which is shared between a
 calls but not tests or other hooks.
 
 ```ts
-import { Setup } from "autometa-runner";
+import { Setup } from "@autometa/runner";
 
 Setup("Setup the services 'foo'", (app) => {
   app.world.foo = 2;
@@ -40,7 +40,7 @@ of a test, setting up data from the service or preparing data base entries.
 Before recieves the same copy of the `App` that the test it preceeds will have.
 
 ```ts
-import { Before } from "autometa-runner";
+import { Before } from "@autometa/runner";
 import { setupFooObject } from "../objects";
 
 Before("Setup the services 'foo'", (app) => {
@@ -56,7 +56,7 @@ or database, or resetting the environment to a known state.
 After recieves the same copy of the `App` that the test it succeeds will have.
 
 ```ts
-import { After } from "autometa-runner";
+import { After } from "@autometa/runner";
 
 After("Reset the services 'foo'", (app) => {
   return app.myHttpClient.delete("/foo", app.world.someId);
@@ -69,7 +69,7 @@ The teardown hook is executed after all tests have run. It is useful for cleanin
 after all tests have run. It shares the same copy of the `App` as the `Setup` hook.
 
 ```ts
-import { Teardown } from "autometa-runner";
+import { Teardown } from "@autometa/runner";
 
 Teardown("Reset the services 'foo'", (app) => {
   return app.myHttpClient.delete("/foo?type=testType");

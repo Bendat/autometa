@@ -1,4 +1,4 @@
-import { AppType } from "autometa-runner";
+import { AppType } from "@autometa/runner";
 import { World } from "./default.world";
 import { TestContainer } from "../test-container";
 

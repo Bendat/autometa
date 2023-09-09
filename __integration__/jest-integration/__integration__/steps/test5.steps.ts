@@ -1,4 +1,4 @@
-import { Given, Teardown, When } from "autometa-runner";
+import { Given, Teardown, When } from "@autometa/runner";
 import { expect } from "@jest/globals";
 const things = ["one", "three"];
 const counts = [1, 3];

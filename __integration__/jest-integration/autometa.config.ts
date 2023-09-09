@@ -1,4 +1,4 @@
-import { defineConfig } from "autometa-runner";
+import { defineConfig } from "@autometa/runner";
 defineConfig({
   runner: "jest",
   environment: "default",
