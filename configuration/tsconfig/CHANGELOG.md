@@ -1,5 +1,11 @@
 # tsconfig
 
+## 0.7.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
 ## 0.6.1
 
 ### Patch Changes

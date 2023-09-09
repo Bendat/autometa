@@ -1,5 +1,16 @@
 # @autometa/cucumber-runner
 
+## 0.8.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
+### Patch Changes
+
+- Updated dependencies [554b77e]
+  - @autometa/dto-builder@0.10.0
+
 ## 0.7.10
 
 ### Patch Changes

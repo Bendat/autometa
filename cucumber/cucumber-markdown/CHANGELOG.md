@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.8.0
+
+### Minor Changes
+
+- 554b77e: Releasing packages
+
 ## 0.7.1
 
 ### Patch Changes
