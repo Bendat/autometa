@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.5.1
+
+### Patch Changes
+
+- 531b421: Fix for runner not publishing to NPM
+
 ## 0.5.0
 
 ### Minor Changes
