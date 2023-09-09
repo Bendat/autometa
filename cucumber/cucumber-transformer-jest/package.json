@@ -57,7 +57,7 @@
     "tsc-alias": "^1.8.2",
     "tsup": "^7.2.0",
     "typescript": "^4.9.5",
-    "vite-tsconfig-paths": "^4.0.5"
+    "vite-tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
     "@autometa/cucumber-runner": "workspace:^0.8.0",
