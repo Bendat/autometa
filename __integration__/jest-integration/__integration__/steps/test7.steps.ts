@@ -1,4 +1,4 @@
-import { Given, Teardown } from "autometa-runner";
+import { Given, Teardown } from "@autometa/runner";
 
 Given("a rule background step", () => {
   expect(true).toBe(true);

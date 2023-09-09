@@ -1,4 +1,4 @@
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("I have a background", ({ container }) => {
   container.steps = [1];

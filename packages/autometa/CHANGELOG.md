@@ -1,4 +1,4 @@
-# autometa-runner
+# @autometa/runner
 
 ## 0.1.0
 

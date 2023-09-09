@@ -4,7 +4,7 @@ import {
   Rule,
   Scenario,
   ScenarioOutline
-} from "autometa-runner";
+} from "@autometa/runner";
 
 Feature(() => {
   Given("the outer background executed", ({ report }) => {

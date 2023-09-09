@@ -1,5 +1,5 @@
 {
-  "name": "autometa-runner",
+  "name": "@autometa/runner",
   "version": "0.1.0",
   "description": "",
   "type": "module",
