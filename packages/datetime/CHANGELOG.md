@@ -1,5 +1,13 @@
 # @autometa/datetime
 
+## 0.1.1
+
+### Patch Changes
+
+- bf23fc4: Date properties returning functions instead of Dates
+- Updated dependencies [bf23fc4]
+  - @autometa/phrases@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

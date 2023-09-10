@@ -1,5 +1,14 @@
 # @autometa/jest-integration
 
+## 0.1.2
+
+### Patch Changes
+
+- bf23fc4: small fixes and cleanup
+  - @autometa/app@0.1.1
+  - @autometa/runner@0.1.2
+  - @autometa/jest-transformer@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

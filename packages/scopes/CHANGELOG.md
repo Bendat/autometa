@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [bf23fc4]
+  - @autometa/phrases@0.1.1
+  - @autometa/app@0.1.1
+
 ## 0.2.0
 
 ### Minor Changes

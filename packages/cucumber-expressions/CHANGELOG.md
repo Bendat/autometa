@@ -1,5 +1,12 @@
 # @autometa/cucumber-expressions
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [bf23fc4]
+  - @autometa/datetime@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
