@@ -1,5 +1,21 @@
 # @autometa/runner
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [bf23fc4]
+- Updated dependencies [bf23fc4]
+  - @autometa/phrases@0.1.1
+  - @autometa/datetime@0.1.1
+  - @autometa/app@0.1.1
+  - @autometa/scopes@0.2.1
+  - @autometa/test-builder@0.1.1
+  - @autometa/cucumber-expressions@0.1.1
+  - @autometa/config@0.1.1
+  - @autometa/coordinator@0.1.1
+  - @autometa/jest-executor@0.1.1
+
 ## 0.1.1
 
 ### Patch Changes

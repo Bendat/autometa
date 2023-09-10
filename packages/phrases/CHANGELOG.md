@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.1.1
+
+### Patch Changes
+
+- bf23fc4: small fixes and cleanup
+
 ## 0.1.0
 
 ### Minor Changes
