@@ -1,3 +1,6 @@
-import { AutometaWorld } from "@autometa/runner";
+import { AutometaWorld, IFromPhrase, PhraseParser } from "@autometa/runner";
 
-export class World extends AutometaWorld {}
+@PhraseParser
+export class World extends AutometaWorld {
+    declare fromPhrase: IFromPhrase
+}

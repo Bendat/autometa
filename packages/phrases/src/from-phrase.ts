@@ -65,6 +65,7 @@ export function AddPhraseImpl<T extends Record<string, unknown> | AnyFunction>(
     }
   }) as unknown as T & { fromPhrase: PhraseConverter };
 }
+
 export function PhraseParser<T>(target: Class<T>) {
   target.prototype.fromPhrase = function (
     key: string,
