@@ -3,8 +3,40 @@ import { midnight } from "./midnight";
 import { AutomationError, raise } from "@autometa/errors";
 import { ConfirmDefined, ConfirmLengthAtLeast } from "@autometa/asserters";
 
+type TimeShortcut =
+  | "now"
+  | "beforeYesterday"
+  | "yesterday"
+  | "today"
+  | "tomorrow"
+  | "afterTomorrow"
+  | "midnight"
+  | "lastWeek"
+  | "nextWeek"
+  | "lastFortnight"
+  | "nextFortnight";
+
+function isTimeShortcut(text: string): text is TimeShortcut {
+  const includes = [
+    "now",
+    "beforeYesterday",
+    "yesterday",
+    "today",
+    "tomorrow",
+    "afterTomorrow",
+    "midnight",
+    "lastWeek",
+    "nextWeek",
+    "lastFortnight",
+    "nextFortnight"
+  ].includes(text);
+  if (!includes) {
+    return false
+  }
+  return true
+}
 export class DateFactory {
-  phraseMap = new Map<string, () => Date>([
+  phraseMap = new Map<TimeShortcut, () => Date>([
     ["now", () => this.make(0, "days")],
     ["beforeYesterday", () => this.make(-2, "days")],
     ["yesterday", () => this.make(-1, "days")],
@@ -18,11 +50,27 @@ export class DateFactory {
     ["midnight", midnight]
   ]);
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  find(name: TimeShortcut): Date {
+    const result = this.phraseMap.get(name);
+    if (result) {
+      return result();
+    }
+    raise(
+      `Could not find date shortcut ${name}. Please use a valid date shortcut from the following list: ${Array.from(
+        this.phraseMap.keys()
+      ).join(", ")}`
+    );
+  }
+
   fromPhraseSafe(phrase: string) {
     const name = convertPhrase(phrase, camel);
-    if (this.phraseMap.has(name)) {
-      return this.phraseMap.get(name)?.call(this);
+    if (isTimeShortcut(name)) {
+      if (this.phraseMap.has(name)) {
+        return this.phraseMap.get(name)?.call(this);
+      }
     }
+
     const matchDay = this.#extractTimeFromPhrase(phrase);
     if (matchDay) {
       return matchDay;

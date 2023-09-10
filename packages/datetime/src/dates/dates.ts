@@ -16,47 +16,47 @@ export class DatesObject {
   }
 
   get now() {
-    return this.#factory.phraseMap.get("now");
+    return this.#factory.find("now");
   }
 
-  get beforeYesterday() {
-    return this.#factory.phraseMap.get("beforeYesterday")?.call(null);
+  get beforeYesterday(): Date {
+    return this.#factory.find("beforeYesterday");
   }
 
-  get yesterday() {
-    return this.#factory.phraseMap.get("yesterday")?.call(null);
+  get yesterday(): Date {
+    return this.#factory.find("yesterday");
   }
 
-  get today() {
-    return this.#factory.phraseMap.get("today")?.call(null);
+  get today(): Date {
+    return this.#factory.find("today");
   }
 
-  get tomorrow() {
-    return this.#factory.phraseMap.get("tomorrow")?.call(null);
+  get tomorrow(): Date {
+    return this.#factory.find("tomorrow");
   }
 
-  get afterTomorrow() {
-    return this.#factory.phraseMap.get("afterTomorrow")?.call(null);
+  get afterTomorrow(): Date {
+    return this.#factory.find("afterTomorrow");
   }
 
-  get midnight() {
-    return this.#factory.phraseMap.get("midnight")?.call(null);
+  get midnight(): Date {
+    return this.#factory.find("midnight");
   }
 
-  get lastWeek() {
-    return this.#factory.phraseMap.get("lastWeek")?.call(null);
+  get lastWeek(): Date {
+    return this.#factory.find("lastWeek");
   }
 
-  get nextWeek() {
-    return this.#factory.phraseMap.get("nextWeek")?.call(null);
+  get nextWeek(): Date {
+    return this.#factory.find("nextWeek");
   }
 
-  get lastFortnight() {
-    return this.#factory.phraseMap.get("lastFortnight")?.call(null);
+  get lastFortnight(): Date {
+    return this.#factory.find("lastFortnight");
   }
 
-  get nextFortnight() {
-    return this.#factory.phraseMap.get("nextFortnight")?.call(null);
+  get nextFortnight(): Date {
+    return this.#factory.find("nextFortnight");
   }
 
   fromPhrase(phrase: string) {
