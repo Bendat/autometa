@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.1.4
+
+### Patch Changes
+
+- fa4401e: fix: fixture decorator missing from runner exports
+
 ## 0.1.3
 
 ### Patch Changes
