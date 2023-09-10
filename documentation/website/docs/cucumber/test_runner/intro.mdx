@@ -60,7 +60,7 @@ Dependency Injection wires together your complex behaviors simply.
 <TabItem value="fixture" label="Fixture">
 
 ```ts title="src/http/client.ts"
-import { Fixture } from "autometa-runner";
+import { Fixture } from "@autometa/runner";
 
 @Fixture
 export class HttpClient {
@@ -75,7 +75,7 @@ export class HttpClient {
 <TabItem value="app" label="App">
 
 ```ts title="src/app/app.ts"
-import { AppType } from "autometa-runner";
+import { AppType } from "@autometa/runner";
 import { HttpClient } from "../http/client";
 import { World } from "../world/world";
 
@@ -90,7 +90,7 @@ export class App {
 <TabItem value="step" label="Step Definition">
 
 ```ts title="src/steps/given.ts"
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("I have a {user}", async (user, { world, http }) => {
   world.getUserResponse = await http.get(`/users/${user}`);

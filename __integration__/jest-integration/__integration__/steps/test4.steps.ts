@@ -1,4 +1,4 @@
-import { Given, Then, When } from "autometa-runner";
+import { Given, Then, When } from "@autometa/runner";
 
 Given("a step with the number {number}", (a) => {
   expect(a).toBe(4);

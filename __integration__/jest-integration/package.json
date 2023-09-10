@@ -1,6 +1,6 @@
 {
   "name": "@autometa/jest-integration",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "private": true,
   "type": "commonjs",
@@ -46,7 +46,7 @@
     "@autometa/bind-decorator": "workspace:^",
     "@autometa/jest-transformer": "workspace:^",
     "@jest/reporters": "^29.6.4",
-    "autometa-runner": "workspace:^",
+    "@autometa/runner": "workspace:^",
     "jest": "^29.5.0",
     "reflect-metadata": "^0.1.13",
     "ts-jest": "^29.1.1",

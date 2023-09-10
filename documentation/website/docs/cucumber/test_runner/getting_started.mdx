@@ -122,7 +122,7 @@ To define an App class, decorate it with the `@AppType` decorator and pass it a 
 to the World class.
 
 ```ts
-import { AppType } from "autometa-runner";
+import { AppType } from "@autometa/runner";
 import { World } from "./World";
 
 @AppType(World)
@@ -134,7 +134,7 @@ export class App {
 The App will not be available in step callbacks.
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("my simple step", (app) => {
   app.world.foo = 2;
@@ -144,7 +144,7 @@ Given("my simple step", (app) => {
 You can also safely destructure app properties
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("my simple step", ({ World }) => {
   app.world.foo = 2;
@@ -367,7 +367,7 @@ the table will be the first argument. If there are expression arguments, it will
 be the second to last argument
 
 ```ts title='No Expressions'
-import { Given, HTable } from "autometa-runner";
+import { Given, HTable } from "@autometa/runner";
 
 Given(
   "I have the following dogs",
@@ -412,7 +412,7 @@ The setup call back recieves a special copy of the app which is shared between a
 calls but not tests or other hooks.
 
 ```ts
-import { Setup } from "autometa-runner";
+import { Setup } from "@autometa/runner";
 
 Setup("Setup the services 'foo'", (app) => {
   app.world.foo = 2;
@@ -427,7 +427,7 @@ of a test, setting up data from the service or preparing data base entries.
 Before recieves the same copy of the `App` that the test it preceeds will have.
 
 ```ts
-import { Before } from "autometa-runner";
+import { Before } from "@autometa/runner";
 import { setupFooObject } from "../objects";
 
 Before("Setup the services 'foo'", (app) => {
@@ -443,7 +443,7 @@ or database, or resetting the environment to a known state.
 After recieves the same copy of the `App` that the test it succeeds will have.
 
 ```ts
-import { After } from "autometa-runner";
+import { After } from "@autometa/runner";
 
 After("Reset the services 'foo'", (app) => {
   return app.myHttpClient.delete("/foo", app.world.someId);
@@ -456,7 +456,7 @@ The teardown hook is executed after all tests have run. It is useful for cleanin
 after all tests have run. It shares the same copy of the `App` as the `Setup` hook.
 
 ```ts
-import { Teardown } from "autometa-runner";
+import { Teardown } from "@autometa/runner";
 
 Teardown("Reset the services 'foo'", (app) => {
   return app.myHttpClient.delete("/foo?type=testType");
@@ -486,7 +486,7 @@ Now create a file `test/impl/my.feature.ts`, importing `Feature` and passing
 a path to a feature file.
 
 ```ts
-import { Feature } from "autometa-runner";
+import { Feature } from "@autometa/runner";
 
 Feature("../features/my.feature");
 ```
@@ -497,7 +497,7 @@ If you've setup a `featuresRoot` you can use the `^/` prefix to reference a file
   <TabItem value="Relative" label="Relative">
 
 ```ts
-import { Feature } from "autometa-runner";
+import { Feature } from "@autometa/runner";
 
 Feature("../impl/my.feature");
 ```
@@ -506,7 +506,7 @@ Feature("../impl/my.feature");
   <TabItem value="FeatureRoot" label="Feature Root">
 
 ```ts
-import { Feature } from "autometa-runner";
+import { Feature } from "@autometa/runner";
 
 Feature("^/my.feature");
 ```
@@ -515,7 +515,7 @@ Feature("^/my.feature");
   <TabItem value="Config" label="Config">
 
 ```ts
-import { defineFeature } from "autometa-runner";
+import { defineFeature } from "@autometa/runner";
 
 defineFeature({
   roots: {
@@ -544,7 +544,7 @@ import {
   Scenario,
   Rule,
   ScenarioOutline
-} from "autometa-runner";
+} from "@autometa/runner";
 // test/steps/foo.steps.ts
 Given("a globally defined step", () => {
   // ...
@@ -630,7 +630,7 @@ in your `tsconfig.json`.
 
 ```ts
 // src/clients/http.ts
-import { Fixture, Inject } from "autometa-runner";
+import { Fixture, Inject } from "@autometa/runner";
 
 @Fixture
 export class MyHttpClient {
@@ -640,7 +640,7 @@ export class MyHttpClient {
 }
 
 // src/app/app.ts
-import { AppType } from "autometa-runner";
+import { AppType } from "@autometa/runner";
 import { MyHttpClient } from "../clients/http";
 import { World } from "./world";
 
@@ -653,7 +653,7 @@ export class App {
 If for some reason automatic injection is not working, it can be specified with the `Inject` decorator.
 
 ```ts title='src/app/app.ts'
-import { AppType, Inject } from "autometa-runner";
+import { AppType, Inject } from "@autometa/runner";
 import { MyHttpClient } from "../clients/http";
 import { World } from "./world";
 

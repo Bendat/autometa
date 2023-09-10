@@ -1,5 +1,14 @@
 # @autometa/jest-integration
 
+## 0.1.1
+
+### Patch Changes
+
+- 531b421: Fix for runner not publishing to NPM
+- Updated dependencies [531b421]
+  - @autometa/jest-transformer@0.1.1
+  - @autometa/runner@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
@@ -11,5 +20,5 @@
 - Updated dependencies [554b77e]
   - @autometa/bind-decorator@0.5.0
   - @autometa/app@0.1.0
-  - autometa-runner@0.1.0
+  - @autometa/runner@0.1.0
   - @autometa/jest-transformer@0.1.0

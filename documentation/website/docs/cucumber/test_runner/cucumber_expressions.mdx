@@ -27,7 +27,7 @@ Given I have navigated to my profile
   <TabItem value="expression" label="Expression">
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("I have navigated to my profile", () => {
   // ...
@@ -51,7 +51,7 @@ Given I have 4 dogs
   <TabItem value="expression" label="Expression">
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("I have {int} dogs", (dogCount) => {
   // ...
@@ -129,7 +129,7 @@ Which represent the following details:
 #### With transform
 
 ```ts
-import { defineParameterType } from "autometa-runner";
+import { defineParameterType } from "@autometa/runner";
 import { getUserByUsername } from "./user-service";
 
 defineParameterType({
@@ -144,7 +144,7 @@ defineParameterType({
 #### With primitive
 
 ```ts
-import { defineParameterType } from "autometa-runner";
+import { defineParameterType } from "@autometa/runner";
 
 defineParameterType({
   name: "int",
@@ -159,7 +159,7 @@ defineParameterType({
   <TabItem value="parameters" label="Defining Parameters">
 
 ```ts
-import { defineParameterType } from "autometa-runner";
+import { defineParameterType } from "@autometa/runner";
 import { MyDto } from "./dtos";
 
 defineParameterType({
@@ -227,7 +227,7 @@ Next, tell TypeScript about your custom types by adding the following to your `t
 Then in your step definition, the type of the `myDto` parameter will be inferred as `MyDto`:
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("I have a {myDto}", (myDto) => {
   // myDto is inferred as MyDto

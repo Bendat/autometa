@@ -1,6 +1,6 @@
 {
   "name": "@autometa/jest-transformer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "type": "commonjs",
   "main": "dist/index.js",
@@ -40,7 +40,7 @@
     "@babel/core": "^7.21.4",
     "@jest/types": "^29.4.3",
     "@types/babel__core": "^7.20.0",
-    "autometa-runner": "workspace:^",
+    "@autometa/runner": "workspace:^",
     "babel-preset-jest": "^29.5.0"
   }
 }

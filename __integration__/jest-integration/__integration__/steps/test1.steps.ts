@@ -1,4 +1,4 @@
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("a very simple step", () => {
   console.log("success");

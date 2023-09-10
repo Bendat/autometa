@@ -29,7 +29,7 @@ And a bar
 The step `And a bar` should be defined as a `Given`, however this is not enforced.
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("a foo", () => {
   // ...
@@ -50,7 +50,7 @@ or Cucumber Expressions, it will be the only argument. Apps type must be defined
 or else it will be an empty object containing an empty world at the type level.
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("a foo", (app) => {
   app.webdriver.clickFoo();
@@ -64,7 +64,7 @@ the result and define the function as `async` you can simply return the promise
 of the underlying action:
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("a foo", (app) => {
   return app.http.createFoo({ foo: "test-bar" });
@@ -75,7 +75,7 @@ However if, for example, you want to store the result on the World, you can
 await the promise and then store the result:
 
 ```ts
-import { Given } from "autometa-runner";
+import { Given } from "@autometa/runner";
 
 Given("a foo", async (app) => {
   const foo = await app.http.createFoo({ foo: "test-bar" });
@@ -103,7 +103,7 @@ This represents a 'Horizontal Table' or `HTable`, where the first row represents
 and the rest the data. This can be accessed as follows:
 
 ```ts
-import { Given, HTable } from "autometa-runner";
+import { Given, HTable } from "@autometa/runner";
 
 Given(
   "a foo",

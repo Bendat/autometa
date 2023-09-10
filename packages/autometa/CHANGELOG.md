@@ -1,4 +1,10 @@
-# autometa-runner
+# @autometa/runner
+
+## 0.1.1
+
+### Patch Changes
+
+- 531b421: Fix for runner not publishing to NPM
 
 ## 0.1.0
 
