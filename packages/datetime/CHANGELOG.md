@@ -1,5 +1,11 @@
 # @autometa/datetime
 
+## 0.1.2
+
+### Patch Changes
+
+- a50e99e: Fixed Dates properties returning undefine
+
 ## 0.1.1
 
 ### Patch Changes
