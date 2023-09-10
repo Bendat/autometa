@@ -15,47 +15,47 @@ export class DatesObject {
     return this.#fmt;
   }
 
-  get now() {
-    return this.#factory.phraseMap.get("now");
+  get now(): Date {
+    return this.#factory.phraseMap.get("now").call(null);
   }
 
-  get beforeYesterday() {
+  get beforeYesterday(): Date {
     return this.#factory.phraseMap.get("beforeYesterday")?.call(null);
   }
 
-  get yesterday() {
+  get yesterday(): Date {
     return this.#factory.phraseMap.get("yesterday")?.call(null);
   }
 
-  get today() {
+  get today(): Date {
     return this.#factory.phraseMap.get("today")?.call(null);
   }
 
-  get tomorrow() {
+  get tomorrow(): Date {
     return this.#factory.phraseMap.get("tomorrow")?.call(null);
   }
 
-  get afterTomorrow() {
+  get afterTomorrow(): Date {
     return this.#factory.phraseMap.get("afterTomorrow")?.call(null);
   }
 
-  get midnight() {
+  get midnight(): Date {
     return this.#factory.phraseMap.get("midnight")?.call(null);
   }
 
-  get lastWeek() {
+  get lastWeek(): Date {
     return this.#factory.phraseMap.get("lastWeek")?.call(null);
   }
 
-  get nextWeek() {
+  get nextWeek(): Date {
     return this.#factory.phraseMap.get("nextWeek")?.call(null);
   }
 
-  get lastFortnight() {
+  get lastFortnight(): Date {
     return this.#factory.phraseMap.get("lastFortnight")?.call(null);
   }
 
-  get nextFortnight() {
+  get nextFortnight(): Date {
     return this.#factory.phraseMap.get("nextFortnight")?.call(null);
   }
 
