@@ -17,7 +17,7 @@ export {
 
 export * from "@autometa/phrases";
 export { App, World, AutometaApp, AutometaWorld } from "@autometa/app";
-export { AppType } from "./app";
+export { AppType, Fixture } from "./app";
 export { Dates, Time } from "@autometa/datetime";
 export { AutomationError, raise } from "@autometa/errors";
 export { DataTable, HTable, VTable, MTable } from "@autometa/gherkin";
