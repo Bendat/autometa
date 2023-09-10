@@ -122,8 +122,8 @@ export function kebab() {
 export function trim() {
   return new TrimTransformer();
 }
-export function sfx(prefix: string): () => SuffixTransformer;
-export function sfx(prefix: TemplateStringsArray): () => SuffixTransformer;
+export function sfx(suffix: string): () => SuffixTransformer;
+export function sfx(suffix: TemplateStringsArray): () => SuffixTransformer;
 export function sfx(suffix: TemplateStringsArray | string) {
   const val = getTemplateOrString(suffix);
   return () => new SuffixTransformer(val);
