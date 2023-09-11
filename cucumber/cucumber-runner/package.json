@@ -86,7 +86,7 @@
     "joi": "^17.10.1",
     "json-colorizer": "^2.2.2",
     "lodash": "^4.17.21",
-    "myzod": "^1.10.0",
+    "myzod": "^1.10.1",
     "reflect-metadata": "^0.1.13",
     "uuid": "^9.0.0"
   }

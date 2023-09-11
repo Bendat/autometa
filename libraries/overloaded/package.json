@@ -43,7 +43,7 @@
   "dependencies": {
     "colors-cli": "^1.0.32",
     "git-diff": "^2.0.6",
-    "myzod": "^1.10.0",
+    "myzod": "^1.10.1",
     "tsyringe": "^4.7.0"
   }
 }
