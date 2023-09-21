@@ -1,5 +1,16 @@
 # @autometa/jest-integration
 
+## 0.1.5
+
+### Patch Changes
+
+- e8f02f3a: Small bug fixes, unit test coverage, tag expressions
+- Updated dependencies [e8f02f3a]
+- Updated dependencies [e8f02f3a]
+  - @autometa/runner@0.1.5
+  - @autometa/app@0.1.2
+  - @autometa/jest-transformer@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

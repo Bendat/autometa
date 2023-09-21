@@ -1,5 +1,17 @@
 # @autometa/test-builder
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [e8f02f3a]
+  - @autometa/gherkin@0.4.1
+  - @autometa/phrases@0.1.2
+  - @autometa/errors@0.1.1
+  - @autometa/scopes@0.2.2
+  - @autometa/app@0.1.2
+  - @autometa/asserters@0.1.1
+
 ## 0.1.1
 
 ### Patch Changes

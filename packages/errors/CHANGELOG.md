@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.1.1
+
+### Patch Changes
+
+- e8f02f3a: Small bug fixes, unit test coverage, tag expressions
+
 ## 0.1.0
 
 ### Minor Changes
