@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "@autometa/dto-builder": "workspace:*",
-    "@cucumber/cucumber": "^9.0.0",
+    "@cucumber/cucumber": "^9.5.1",
     "@cucumber/cucumber-expressions": "^16.1.2",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
