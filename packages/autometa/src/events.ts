@@ -5,6 +5,9 @@ import { GroupLogEvents } from "./event-logger";
 export function makeTestEmitter(opts: { groupLogger: boolean }) {
   const events = CONFIG.current.events;
   const emitter = new TestEventEmitter();
+  if (opts.groupLogger) {
+    emitter.load(new GroupLogEvents());
+  }
   if (!events) {
     return emitter;
   }
@@ -13,8 +16,6 @@ export function makeTestEmitter(opts: { groupLogger: boolean }) {
     const listener = require(event);
     emitter.load(listener);
   }
-  if (opts.groupLogger) {
-    emitter.load(new GroupLogEvents());
-  }
+
   return emitter;
 }
