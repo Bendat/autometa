@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.1.7
+
+### Patch Changes
+
+- 020527bd: bump package version
+
 ## 0.1.6
 
 ### Patch Changes
