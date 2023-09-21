@@ -1,5 +1,26 @@
 # @autometa/runner
 
+## 0.1.5
+
+### Patch Changes
+
+- e8f02f3a: Small bug fixes, unit test coverage, tag expressions
+- e8f02f3a: fix: fixture decorator missing from runner exports
+- Updated dependencies [e8f02f3a]
+  - @autometa/gherkin@0.4.1
+  - @autometa/phrases@0.1.2
+  - @autometa/errors@0.1.1
+  - @autometa/scopes@0.2.2
+  - @autometa/app@0.1.2
+  - @autometa/coordinator@0.1.2
+  - @autometa/events@0.1.1
+  - @autometa/jest-executor@0.1.2
+  - @autometa/test-builder@0.1.2
+  - @autometa/datetime@0.1.3
+  - @autometa/asserters@0.1.1
+  - @autometa/config@0.1.2
+  - @autometa/cucumber-expressions@0.1.3
+
 ## 0.1.4
 
 ### Patch Changes

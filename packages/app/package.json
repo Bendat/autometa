@@ -1,6 +1,6 @@
 {
   "name": "@autometa/app",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "App and World container for Autometa",
   "type": "module",
   "main": "dist/index.js",

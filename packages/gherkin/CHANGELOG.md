@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.4.1
+
+### Patch Changes
+
+- e8f02f3a: Small bug fixes, unit test coverage, tag expressions
+- Updated dependencies [e8f02f3a]
+  - @autometa/errors@0.1.1
+
 ## 0.4.0
 
 ### Minor Changes
