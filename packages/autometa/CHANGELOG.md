@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.1
+
+### Patch Changes
+
+- 44307a8f: Fixed incorrect build published
+
 ## 0.2.0
 
 ### Minor Changes
