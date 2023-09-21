@@ -224,8 +224,8 @@ importers:
         specifier: workspace:*
         version: link:../../libraries/dto-builder
       '@cucumber/cucumber':
-        specifier: ^9.0.0
-        version: 9.0.0
+        specifier: ^9.5.1
+        version: 9.5.1
       '@cucumber/cucumber-expressions':
         specifier: ^16.1.2
         version: 16.1.2
@@ -4850,38 +4850,33 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  /@cucumber/ci-environment@9.1.0:
-    resolution: {integrity: sha512-jdnF6APXP3GawMue8kdMxhu6TBhyRUO4KDRxTowf06NtclLjIw2Ybpo9IcIOMvE8kHukvJyM00uxWX+CfS7JgQ==}
-
-  /@cucumber/cucumber-expressions@16.1.1:
-    resolution: {integrity: sha512-Ugsb9qxfgrgfUKsGvbx0awVk+69NIFjWfxNT+dnm62YrF2gdTHYxAOzOLuPgvE0yqYTh+3otrFLDDfkHGThM1g==}
-    dependencies:
-      regexp-match-indices: 1.0.2
+  /@cucumber/ci-environment@9.2.0:
+    resolution: {integrity: sha512-jLzRtVwdtNt+uAmTwvXwW9iGYLEOJFpDSmnx/dgoMGKXUWRx1UHT86Q696CLdgXO8kyTwsgJY0c6n5SW9VitAA==}
 
   /@cucumber/cucumber-expressions@16.1.2:
     resolution: {integrity: sha512-CfHEbxJ5FqBwF6mJyLLz4B353gyHkoi6cCL4J0lfDZ+GorpcWw4n2OUAdxJmP7ZlREANWoTFlp4FhmkLKrCfUA==}
     dependencies:
       regexp-match-indices: 1.0.2
 
-  /@cucumber/cucumber@9.0.0:
-    resolution: {integrity: sha512-toJI6Y0PxshCKoKpSFZ+P5BURVui9UWnJx90x6cvlVkjdL6oFdb3Dg7rcErXJ27cs/sEXXYmzGFCRNwuKdqqzg==}
+  /@cucumber/cucumber@9.5.1:
+    resolution: {integrity: sha512-9fRRxbRRkXxRB4D7C21ZjmEvBWI3Su7yNQDvRPfgHnd+xVKaOTvfPs/lZWN1TOiwYlnW5nupRaaCx5xV+fzurw==}
     engines: {node: 14 || 16 || >=18}
     hasBin: true
     dependencies:
-      '@cucumber/ci-environment': 9.1.0
-      '@cucumber/cucumber-expressions': 16.1.1
-      '@cucumber/gherkin': 26.0.3
-      '@cucumber/gherkin-streams': 5.0.1(@cucumber/gherkin@26.0.3)(@cucumber/message-streams@4.0.1)(@cucumber/messages@21.0.1)
+      '@cucumber/ci-environment': 9.2.0
+      '@cucumber/cucumber-expressions': 16.1.2
+      '@cucumber/gherkin': 26.2.0
+      '@cucumber/gherkin-streams': 5.0.1(@cucumber/gherkin@26.2.0)(@cucumber/message-streams@4.0.1)(@cucumber/messages@22.0.0)
       '@cucumber/gherkin-utils': 8.0.2
-      '@cucumber/html-formatter': 20.2.1(@cucumber/messages@21.0.1)
-      '@cucumber/message-streams': 4.0.1(@cucumber/messages@21.0.1)
-      '@cucumber/messages': 21.0.1
+      '@cucumber/html-formatter': 20.4.0(@cucumber/messages@22.0.0)
+      '@cucumber/message-streams': 4.0.1(@cucumber/messages@22.0.0)
+      '@cucumber/messages': 22.0.0
       '@cucumber/tag-expressions': 5.0.1
       assertion-error-formatter: 3.0.0
       capital-case: 1.0.4
       chalk: 4.1.2
       cli-table3: 0.6.3
-      commander: 9.5.0
+      commander: 10.0.0
       debug: 4.3.4(supports-color@8.1.1)
       error-stack-parser: 2.1.4
       figures: 3.2.0
@@ -4894,10 +4889,11 @@ packages:
       lodash.merge: 4.6.2
       lodash.mergewith: 4.6.2
       luxon: 3.2.1
+      mkdirp: 2.1.6
       mz: 2.7.0
       progress: 2.0.3
       resolve-pkg: 2.0.0
-      semver: 7.3.8
+      semver: 7.5.3
       string-argv: 0.3.1
       strip-ansi: 6.0.1
       supports-color: 8.1.1
@@ -4905,10 +4901,10 @@ packages:
       util-arity: 1.1.0
       verror: 1.10.1
       xmlbuilder: 15.1.1
-      yaml: 1.10.2
-      yup: 0.32.11
+      yaml: 2.3.2
+      yup: 1.2.0
 
-  /@cucumber/gherkin-streams@5.0.1(@cucumber/gherkin@26.0.3)(@cucumber/message-streams@4.0.1)(@cucumber/messages@21.0.1):
+  /@cucumber/gherkin-streams@5.0.1(@cucumber/gherkin@26.2.0)(@cucumber/message-streams@4.0.1)(@cucumber/messages@22.0.0):
     resolution: {integrity: sha512-/7VkIE/ASxIP/jd4Crlp4JHXqdNFxPGQokqWqsaCCiqBiu5qHoKMxcWNlp9njVL/n9yN4S08OmY3ZR8uC5x74Q==}
     hasBin: true
     peerDependencies:
@@ -4916,9 +4912,9 @@ packages:
       '@cucumber/message-streams': '>=4.0.0'
       '@cucumber/messages': '>=17.1.1'
     dependencies:
-      '@cucumber/gherkin': 26.0.3
-      '@cucumber/message-streams': 4.0.1(@cucumber/messages@21.0.1)
-      '@cucumber/messages': 21.0.1
+      '@cucumber/gherkin': 26.2.0
+      '@cucumber/message-streams': 4.0.1(@cucumber/messages@22.0.0)
+      '@cucumber/messages': 22.0.0
       commander: 9.1.0
       source-map-support: 0.5.21
 
@@ -4947,20 +4943,26 @@ packages:
     resolution: {integrity: sha512-xwJHi//bLFEU1drIyw2yswwUHnnVWO4XcyVBbCTDs6DkSh262GkogFI/IWwChZqJfOXnPglzLGxR1DibcZsILA==}
     dependencies:
       '@cucumber/messages': 21.0.1
+    dev: false
 
-  /@cucumber/html-formatter@20.2.1(@cucumber/messages@21.0.1):
-    resolution: {integrity: sha512-bwwyr1WjlOJ5dEFOLGbtYWbUprloB2eymqXBmmTC10s0xapZXkFn4VfHgMshaH91XiCIY/MoabWNAau3AeMHkQ==}
+  /@cucumber/gherkin@26.2.0:
+    resolution: {integrity: sha512-iRSiK8YAIHAmLrn/mUfpAx7OXZ7LyNlh1zT89RoziSVCbqSVDxJS6ckEzW8loxs+EEXl0dKPQOXiDmbHV+C/fA==}
+    dependencies:
+      '@cucumber/messages': 22.0.0
+
+  /@cucumber/html-formatter@20.4.0(@cucumber/messages@22.0.0):
+    resolution: {integrity: sha512-TnLSXC5eJd8AXHENo69f5z+SixEVtQIf7Q2dZuTpT/Y8AOkilGpGl1MQR1Vp59JIw+fF3EQSUKdf+DAThCxUNg==}
     peerDependencies:
       '@cucumber/messages': '>=18'
     dependencies:
-      '@cucumber/messages': 21.0.1
+      '@cucumber/messages': 22.0.0
 
-  /@cucumber/message-streams@4.0.1(@cucumber/messages@21.0.1):
+  /@cucumber/message-streams@4.0.1(@cucumber/messages@22.0.0):
     resolution: {integrity: sha512-Kxap9uP5jD8tHUZVjTWgzxemi/0uOsbGjd4LBOSxcJoOCRbESFwemUzilJuzNTB8pcTQUh8D5oudUyxfkJOKmA==}
     peerDependencies:
       '@cucumber/messages': '>=17.1.1'
     dependencies:
-      '@cucumber/messages': 21.0.1
+      '@cucumber/messages': 22.0.0
 
   /@cucumber/messages@19.1.4:
     resolution: {integrity: sha512-Pksl0pnDz2l1+L5Ug85NlG6LWrrklN9qkMxN5Mv+1XZ3T6u580dnE6mVaxjJRdcOq4tR17Pc0RqIDZMyVY1FlA==}
@@ -4974,6 +4976,15 @@ packages:
     resolution: {integrity: sha512-pGR7iURM4SF9Qp1IIpNiVQ77J9kfxMkPOEbyy+zRmGABnWWCsqMpJdfHeh9Mb3VskemVw85++e15JT0PYdcR3g==}
     dependencies:
       '@types/uuid': 8.3.4
+      class-transformer: 0.5.1
+      reflect-metadata: 0.1.13
+      uuid: 9.0.0
+    dev: false
+
+  /@cucumber/messages@22.0.0:
+    resolution: {integrity: sha512-EuaUtYte9ilkxcKmfqGF9pJsHRUU0jwie5ukuZ/1NPTuHS1LxHPsGEODK17RPRbZHOFhqybNzG2rHAwThxEymg==}
+    dependencies:
+      '@types/uuid': 9.0.1
       class-transformer: 0.5.1
       reflect-metadata: 0.1.13
       uuid: 9.0.0
@@ -7806,7 +7817,7 @@ packages:
     resolution: {integrity: sha512-cr5NN8/jmbw3vDKTQfGW0cSzDtkvxixu9bUD6po9U6OEF04XLuukTDldFG34ccDscLkA8bYnZ7VjxP79cIC7tg==}
     deprecated: This is a stub types definition. @cucumber/cucumber provides its own type definitions, so you do not need this installed.
     dependencies:
-      '@cucumber/cucumber': 9.0.0
+      '@cucumber/cucumber': 9.5.1
     dev: true
 
   /@types/diff@5.0.3:
@@ -7968,6 +7979,7 @@ packages:
 
   /@types/lodash@4.14.195:
     resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
+    dev: true
 
   /@types/luxon@3.3.1:
     resolution: {integrity: sha512-XOS5nBcgEeP2PpcqJHjCWhUCAzGfXIU8ILOSLpx2FhxqMW9KdxgCGXNOEKGVBfveKtIpztHzKK5vSRVLyW/NqA==}
@@ -8130,7 +8142,6 @@ packages:
 
   /@types/uuid@9.0.1:
     resolution: {integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==}
-    dev: true
 
   /@types/ws@8.5.4:
     resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
@@ -10007,6 +10018,7 @@ packages:
   /commander@9.5.0:
     resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==}
     engines: {node: ^12.20.0 || >=14}
+    dev: true
 
   /commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
@@ -14049,9 +14061,6 @@ packages:
     dependencies:
       p-locate: 5.0.0
 
-  /lodash-es@4.17.21:
-    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-
   /lodash.curry@4.1.1:
     resolution: {integrity: sha512-/u14pXGviLaweY5JI0IUzgzF2J6Ne8INyzAZjImcryjgkZ+ebruBxy2/JaOOkTqScddcYtakjhSaeemV8lR0tA==}
     dev: false
@@ -14446,6 +14455,11 @@ packages:
     hasBin: true
     dev: true
 
+  /mkdirp@2.1.6:
+    resolution: {integrity: sha512-+hEnITedc8LAtIP9u3HJDFIdcLV2vXP33sqLLIzkv1Db1zO/1OxbvYf0Y1OC/S/Qo5dxHXepofhmxL02PsKe+A==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   /mlly@1.4.0:
     resolution: {integrity: sha512-ua8PAThnTwpprIaU47EPeZ/bPUVp2QYBbWMphUQpVdBI3Lgqzm5KZQ45Agm3YJedHXaIHl6pBGabaLSUPPSptg==}
     dependencies:
@@ -14499,9 +14513,6 @@ packages:
       any-promise: 1.3.0
       object-assign: 4.1.1
       thenify-all: 1.6.0
-
-  /nanoclone@0.2.1:
-    resolution: {integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==}
 
   /nanoid@3.3.4:
     resolution: {integrity: sha512-MqBkQh/OHTS2egovRtLk45wEyNXwF+cokD+1YPf9u5VfJiRdAiRwB2froX5Co9Rh20xs4siNPm8naNotSD6RBw==}
@@ -16684,6 +16695,7 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+    dev: true
 
   /semver@7.5.3:
     resolution: {integrity: sha512-QBlUtyVk/5EeHbi7X0fw6liDZc7BBmEaSYn01fMU1OUYbf6GPsbTtd8WmnqbI20SeycoHSeiybkE/q1Q+qlThQ==}
@@ -17498,6 +17510,9 @@ packages:
     resolution: {integrity: sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==}
     dev: false
 
+  /tiny-case@1.0.3:
+    resolution: {integrity: sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==}
+
   /tiny-invariant@1.3.1:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: false
@@ -18070,7 +18085,6 @@ packages:
   /type-fest@2.19.0:
     resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
     engines: {node: '>=12.20'}
-    dev: false
 
   /type-fest@3.6.1:
     resolution: {integrity: sha512-htXWckxlT6U4+ilVgweNliPqlsVSSucbxVexRYllyMVJDtf5rTjv6kF/s+qAd4QSL1BZcnJPEJavYBPQiWuZDA==}
@@ -19208,7 +19222,6 @@ packages:
   /yaml@2.3.2:
     resolution: {integrity: sha512-N/lyzTPaJasoDmfV7YTrYCI0G/3ivm/9wdG0aHuheKowWQwGTsK0Eoiw6utmzAnI6pkJa0DUVygvp3spqqEKXg==}
     engines: {node: '>= 14'}
-    dev: true
 
   /yargs-parser@18.1.3:
     resolution: {integrity: sha512-o50j0JeToy/4K6OZcaQmW6lyXXKhq7csREXcDwk2omFPJEwUNOVtJKvmDr9EI1fAJZUyZcRF7kxGBWmRXudrCQ==}
@@ -19294,17 +19307,13 @@ packages:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
 
-  /yup@0.32.11:
-    resolution: {integrity: sha512-Z2Fe1bn+eLstG8DRR6FTavGD+MeAwyfmouhHsIUgaADz8jvFKbO/fXc2trJKZg+5EBjh4gGm3iU/t3onKlXHIg==}
-    engines: {node: '>=10'}
+  /yup@1.2.0:
+    resolution: {integrity: sha512-PPqYKSAXjpRCgLgLKVGPA33v5c/WgEx3wi6NFjIiegz90zSwyMpvTFp/uGcVnnbx6to28pgnzp/q8ih3QRjLMQ==}
     dependencies:
-      '@babel/runtime': 7.22.6
-      '@types/lodash': 4.14.195
-      lodash: 4.17.21
-      lodash-es: 4.17.21
-      nanoclone: 0.2.1
       property-expr: 2.0.5
+      tiny-case: 1.0.3
       toposort: 2.0.2
+      type-fest: 2.19.0
 
   /zod@3.21.4:
     resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
