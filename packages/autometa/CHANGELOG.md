@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.1.6
+
+### Patch Changes
+
+- c7e2e26d: fix: group logger skipped if not other event listeners defined
+
 ## 0.1.5
 
 ### Patch Changes
