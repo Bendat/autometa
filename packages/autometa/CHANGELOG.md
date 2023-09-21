@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.0
+
+### Minor Changes
+
+- 1d5f5ae3: Bump version
+
 ## 0.1.7
 
 ### Patch Changes
