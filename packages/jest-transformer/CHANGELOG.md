@@ -1,5 +1,13 @@
 # @autometa/jest-transformer
 
+## 0.1.10
+
+### Patch Changes
+
+- 656f9575: Fix: Time.fromPhrase returned unbound functions
+- Updated dependencies [656f9575]
+  - @autometa/runner@0.2.2
+
 ## 0.1.9
 
 ### Patch Changes

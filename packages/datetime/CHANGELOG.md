@@ -1,5 +1,11 @@
 # @autometa/datetime
 
+## 0.1.4
+
+### Patch Changes
+
+- 656f9575: Fix: Time.fromPhrase returned unbound functions
+
 ## 0.1.3
 
 ### Patch Changes

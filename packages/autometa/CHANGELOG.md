@@ -1,5 +1,14 @@
 # @autometa/runner
 
+## 0.2.2
+
+### Patch Changes
+
+- 656f9575: Fix: Time.fromPhrase returned unbound functions
+- Updated dependencies [656f9575]
+  - @autometa/datetime@0.1.4
+  - @autometa/cucumber-expressions@0.1.4
+
 ## 0.2.1
 
 ### Patch Changes
