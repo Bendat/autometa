@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { parse } from "./tag-expressions";
 export function isTagsMatch(tags: string[], filter?: string): boolean {
-  if ("@skip" in tags || "@ignore" in tags || "@skpped" in tags) {
+  if (tags.includes("@skip") || tags.includes("@ignore")  || tags.includes("@skipped") ) {
     return false;
   }
   if (filter) {

@@ -7,7 +7,7 @@
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "coverage": "vitest run --coverage",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
@@ -42,6 +42,7 @@
     "eslint-config-prettier": "^8.3.0",
     "events": "link:packages/events",
     "gherkin": "link:packages/gherkin",
+    "istanbul": "^0.4.5",
     "jest-executor": "link:packages/jest-executor",
     "jest-transformer": "link:packages/jest-transformer",
     "phrases": "link:packages/phrases",
