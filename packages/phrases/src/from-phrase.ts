@@ -22,10 +22,10 @@ export function AssertPhrase<
   AssertKey(item, asVariable);
 }
 
-export type IFromPhrase = (
+export type IFromPhrase<TDefault = unknown> = <T = TDefault>(
   key: string,
   ...mutations: (() => StringTransformer)[]
-) => unknown;
+) => T;
 export function FromPhrase(target: Class<unknown>) {
   target.prototype.fromPhrase = function (
     key: string,
