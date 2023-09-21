@@ -26,6 +26,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@autometa/scopes": "workspace:^",
     "@jest/globals": "^29.6.2",
     "@types/jest": "^29.5.2",
     "@types/node": "^18.11.18",

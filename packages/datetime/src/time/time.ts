@@ -1,5 +1,5 @@
 import { AssertKey } from "@autometa/asserters";
-import { camel, convertPhrase } from "@autometa/phrases";
+import { camel, convertPhrase, lower } from "@autometa/phrases";
 type TimeDiffFn = (date1: Date, date2: Date) => number;
 
 export class TimeDiff {
@@ -23,18 +23,17 @@ export class TimeDiff {
   weeks(date1: Date, date2: Date) {
     return this.millis(date1, date2) / 604800000;
   }
+  fromPhrase(phrase: string): TimeDiffFn {
+    const propertyKey = convertPhrase(phrase, lower);
+    AssertKey(this, propertyKey);
+    return (this[propertyKey] as TimeDiffFn).bind(this);
+  }
 }
 
 export class TimeObject {
   #diff = new TimeDiff();
   get diff() {
     return this.#diff;
-  }
-
-  fromPhrase(phrase: string): TimeDiffFn {
-    const propertyKey = convertPhrase(phrase, camel);
-    AssertKey(this.diff, propertyKey);
-    return Time.diff[propertyKey];
   }
 }
 
