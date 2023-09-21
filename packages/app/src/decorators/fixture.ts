@@ -45,6 +45,7 @@ export function Fixture(arg: LC | undefined | Class<unknown>) {
   if (arg && typeof arg !== "number") {
     injectable()(arg);
     scoped(LC.ContainerScoped)(arg);
+    return;
   }
   return (target: Class<unknown>) => {
     injectable()(target);

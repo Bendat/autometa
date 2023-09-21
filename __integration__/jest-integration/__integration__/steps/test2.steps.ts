@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@autometa/runner";
 
-Given("the given step is executed 2", (app) => {
+Given("the given step is executed", (app) => {
   app.container.steps = [1];
 });
 When("the when step is executed", (app) => {

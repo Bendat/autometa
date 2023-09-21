@@ -107,7 +107,7 @@ ${formatChildren.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}`;
 }
 function appendSubMessage(arr: string[], message: string, prefix?: string) {
   if (message && message.length > 0) {
-    const str = prefix ? `${prefix ?? ""}${message}` : message;
+    const str = prefix ? `${prefix ?? ""}${message ?? ""}` : message ?? "";
     arr.push(str);
   }
 }

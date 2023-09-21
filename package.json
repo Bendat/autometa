@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "changesets": "changesets",
-    "____spreinstall": "npx only-allow pnpm",
+    "preinstall": "npx only-allow pnpm",
+    "coverage": "vitest run --coverage.provider istanbul --coverage.enabled true",
     "build": "pnpm nx run-many -t build",
     "build:runner": "turbo run build:runner",
     "build:filter": "turbo run build",
     "build:docs": "turbo run build:docs",
     "test": "turbo run test --filter='!@autometa/documentation'",
     "test:types": "turbo run test:types --filter='!@autometa/documentation'",
-    "coverage": "turbo run coverage  --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "lint": "nx run-many -t lint -- --max-warnings=0",
     "lint:fix": "turbo run lint:fix -- --max-warnings=0",
@@ -46,6 +46,7 @@
     "node": "16.20.0"
   },
   "dependencies": {
-    "@nrwl/linter": "^16.6.0"
+    "@nrwl/linter": "^16.6.0",
+    "@vitest/coverage-istanbul": "^0.31.0"
   }
 }

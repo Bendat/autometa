@@ -34,6 +34,7 @@
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
+    "istanbul": "^0.4.5",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^4.1.2",
     "tsconfig": "workspace: *",
