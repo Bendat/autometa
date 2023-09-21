@@ -1,5 +1,11 @@
 # @autometa/jest-transformer
 
+## 0.1.10
+
+### Patch Changes
+
+- @autometa/runner@0.2.2
+
 ## 0.1.9
 
 ### Patch Changes
@@ -7,6 +13,7 @@
 - 44307a8f: Fixed incorrect build published
 - Updated dependencies [44307a8f]
   - @autometa/runner@0.2.1
+
 ## 0.1.8
 
 ### Patch Changes
