@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.1.3
+
+### Patch Changes
+
+- 0cc7f6aa: fix: IFromPhrase should be generic
+
 ## 0.1.2
 
 ### Patch Changes
