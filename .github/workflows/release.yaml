@@ -17,6 +17,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.PR_TOKEN }}
+          path: main
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6.32.2
