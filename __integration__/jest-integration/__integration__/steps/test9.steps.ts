@@ -1,6 +1,6 @@
 import { Given, Pass } from "@autometa/runner";
 
-Given("the outer background executed", ({ report }) => {
+Given("the outer background executed 2", ({ report }) => {
   report.outterbackgroundstep = true;
 });
 

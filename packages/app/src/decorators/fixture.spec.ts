@@ -3,18 +3,24 @@ import { Fixture } from "./fixture";
 import { test, expect } from "vitest";
 import { container as base, inject } from "tsyringe";
 
-@Fixture()
+@Fixture
 export class InnerFixture {
   myValue = 0;
 }
-@Fixture()
+@Fixture
 export class MyFixture {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - auto inject doesn't seem to be working here
   constructor(@inject(InnerFixture) readonly inner: InnerFixture) {}
 }
-@Fixture()
+@Fixture
 export class MyFixture2 {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore - auto inject doesn't seem to be working here
+  constructor(@inject(InnerFixture) readonly inner: InnerFixture) {}
+}
+@Fixture()
+export class MyFixture3 {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - auto inject doesn't seem to be working here
   constructor(@inject(InnerFixture) readonly inner: InnerFixture) {}

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { Class } from "@autometa/types";
-import { scoped, inject, Lifecycle, injectable } from "tsyringe";
+import { scoped, inject, Lifecycle as LC, injectable } from "tsyringe";
 /**
  * Marks a class as an injectable fixture. Constructor parameters
  * which are also injectable will be automatically constructed
@@ -39,15 +39,18 @@ import { scoped, inject, Lifecycle, injectable } from "tsyringe";
  * }
  * ```
  */
-export function Fixture(scope = Lifecycle.ContainerScoped) {
+export function Fixture(target: Class<unknown>): void;
+export function Fixture(scope?: LC): (target: Class<unknown>) => void;
+export function Fixture(arg: LC | undefined | Class<unknown>) {
+  if (arg && typeof arg !== "number") {
+    injectable()(arg);
+    scoped(LC.ContainerScoped)(arg);
+  }
   return (target: Class<unknown>) => {
     injectable()(target);
-    scoped(scope as Lifecycle.ContainerScoped | Lifecycle.ResolutionScoped)(
-      target
-    );
+    scoped(arg as LC.ContainerScoped | LC.ResolutionScoped)(target);
   };
 }
 
 export const Inject = inject;
-
-
+export const Lifecycle = LC;

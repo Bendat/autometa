@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@autometa/asserters": "workspace:^",
+    "@autometa/bind-decorator": "workspace:^",
     "@autometa/errors": "workspace:^",
     "change-case-all": "^1.0.15"
   }

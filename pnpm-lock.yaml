@@ -1656,6 +1656,9 @@ importers:
       '@autometa/asserters':
         specifier: workspace:^
         version: link:../asserters
+      '@autometa/bind-decorator':
+        specifier: workspace:^
+        version: link:../../libraries/bind-decorator
       '@autometa/errors':
         specifier: workspace:^
         version: link:../errors
