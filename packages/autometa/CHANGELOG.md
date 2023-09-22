@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.4
+
+### Patch Changes
+
+- 90ac3d9c: Bumping runner version
+
 ## 0.2.3
 
 ### Patch Changes
