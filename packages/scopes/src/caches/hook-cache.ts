@@ -35,9 +35,7 @@ export class HookCache {
   }
 
   get after(): AfterHook[] {
-    if (this.parent) {
-      return [...this.parent.after, ...this.afterEach];
-    }
+
     return [...this.afterEach];
   }
 

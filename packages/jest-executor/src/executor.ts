@@ -4,7 +4,8 @@ import {
   RuleBridge,
   ScenarioBridge,
   ScenarioOutlineBridge,
-  find
+  find,
+  GlobalBridge
 } from "@autometa/test-builder";
 import {
   describe,
@@ -22,14 +23,15 @@ import { TestEventEmitter } from "@autometa/events";
 import { Query } from "@autometa/test-builder";
 import { Config } from "@autometa/config";
 import { chooseTimeout } from "./timeout-selector";
-import { NullTimeout, Timeout } from "@autometa/scopes";
+import { GlobalScope, NullTimeout, Timeout } from "@autometa/scopes";
 export function execute(
   { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+  global: GlobalScope,
   bridge: FeatureBridge,
   events: TestEventEmitter,
   config: Config
 ) {
-  config.current;
+  const globalBridge = new GlobalBridge(global);
   const featureTitle = bridge.data.scope.title(bridge.data.gherkin);
   const [group, modifier] = getGroupOrModifier(bridge);
   const chosenTimeout = chooseTimeout(
@@ -51,7 +53,15 @@ export function execute(
       localApp = getApp(app, world);
     });
 
+    bootstrapSetupHooks(globalBridge, staticApp, events, [
+      config,
+      chosenTimeout
+    ]);
     bootstrapSetupHooks(bridge, staticApp, events, [config, chosenTimeout]);
+    bootstrapBeforeHooks(bridge, globalBridge, () => localApp, events, [
+      config,
+      chosenTimeout
+    ]);
     bootstrapBeforeHooks(bridge, bridge, () => localApp, events, [
       config,
       chosenTimeout
@@ -69,6 +79,14 @@ export function execute(
       chosenTimeout
     ]);
     bootstrapAfterHooks(bridge, bridge, () => localApp, events, [
+      config,
+      chosenTimeout
+    ]);
+    bootstrapAfterHooks(bridge, globalBridge, () => localApp, events, [
+      config,
+      chosenTimeout
+    ]);
+    bootstrapTeardownHooks(globalBridge, staticApp, events, [
       config,
       chosenTimeout
     ]);
@@ -384,7 +402,7 @@ function getTestOrModifier({ data }: ScenarioBridge) {
 
 export function bootstrapBeforeHooks(
   root: FeatureBridge,
-  bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
+  bridge: GlobalBridge | FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   localApp: () => App,
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -413,12 +431,12 @@ export function bootstrapBeforeHooks(
       }
       const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
       events.before.emitStart({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         tags: [...tags]
       });
       const report = await hook.execute(localApp(), ...tags);
       events.before.emitEnd({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
         status: report.status,
         error: report.error
@@ -431,7 +449,7 @@ export function bootstrapBeforeHooks(
   });
 }
 export function bootstrapSetupHooks(
-  bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
+  bridge: GlobalBridge | FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   staticApp: App,
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -440,6 +458,7 @@ export function bootstrapSetupHooks(
     timeout,
     bridge.data.scope.timeout
   ).getTimeout(config).milliseconds;
+
   bridge.data.scope.hooks.setup.forEach((hook) => {
     const hookTimeout = chooseTimeout(
       Timeout.from(chosenTimeout),
@@ -452,12 +471,12 @@ export function bootstrapSetupHooks(
         return;
       }
       events.setup.emitStart({
-        title: hook.name
+        title: `${hook.name}: ${hook.description}`
       });
       const report = await hook.execute(staticApp, ...tags);
 
       events.setup.emitEnd({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         status: report.status,
         error: report.error
       });
@@ -472,7 +491,7 @@ export function bootstrapSetupHooks(
 
 export function bootstrapAfterHooks(
   root: FeatureBridge,
-  bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
+  bridge: GlobalBridge | FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   localApp: () => App,
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -500,13 +519,13 @@ export function bootstrapAfterHooks(
       }
       const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
       events.after.emitStart({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         tags: [...tags]
       });
 
       const report = await hook.execute(localApp(), ...tags);
       events.after.emitEnd({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
         status: report.status,
         error: report.error
@@ -520,7 +539,7 @@ export function bootstrapAfterHooks(
 }
 
 export function bootstrapTeardownHooks(
-  bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge,
+  bridge: GlobalBridge | FeatureBridge | RuleBridge | ScenarioOutlineBridge,
   staticApp: App,
   event: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -535,13 +554,16 @@ export function bootstrapTeardownHooks(
       config
     ).milliseconds;
     afterAll(async () => {
+      if(!hook.canExecute(...tags)) {
+        return;
+      }
       event.teardown.emitStart({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         tags: [...tags]
       });
       const report = await hook.execute(staticApp, ...tags);
       event.teardown.emitEnd({
-        title: hook.name,
+        title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
         status: report.status,
         error: report.error

@@ -10,7 +10,7 @@ import {
   ScenarioOutline,
   Step
 } from "@autometa/gherkin";
-import { BackgroundScope } from "@autometa/scopes";
+import { BackgroundScope, GlobalScope } from "@autometa/scopes";
 import {
   FeatureScope,
   RuleScope,
@@ -22,6 +22,19 @@ import {
 
 export abstract class GherkinCodeBridge {
   abstract data: { gherkin: GherkinNode; scope: Scope };
+}
+export class GlobalBridge extends GherkinCodeBridge {
+  readonly data: { gherkin: GherkinNode; scope: GlobalScope };
+  constructor(scope: GlobalScope) {
+    super();
+    const nullNode = class extends GherkinNode {
+      keyword = "none";
+    };
+    this.data = {
+      scope,
+      gherkin: new nullNode()
+    };
+  }
 }
 export class FeatureBridge extends GherkinCodeBridge {
   data: { gherkin: Feature; scope: FeatureScope };

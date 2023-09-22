@@ -14,7 +14,6 @@ of pattern matching or argument validation.
 Overloaded accepts a parameter list pattern using a ZOD like syntax which is mapped
 to an anonymous function, however the syntax somewhat resembles a function definition.
 
-
 ### Contrived Example:
 
 ```ts
@@ -216,12 +215,17 @@ import { overloads, def, string, number } from "@autometa/overloaded";
 function add(a: string, b: string): [string, string];
 function add(a: number, b: number): number;
 function add(
-    // 'unknown' instead of union is also fine here
+  // 'unknown' instead of union is also fine here
   ...args: (string | number)[]
-){
+) {
   return overloads(
     def(string(), string()).match((a, b) => [a, b]),
-    def(number(), number()).match((a, b) => a + b)
+    def(number(), number()).match((a, b) => a + b),
+    fallback((a, b) => {
+      const types = [typeof a, typeof b];
+      const message = `Expected "a" and "b" to be of the same type, either string or number. Found: ${types}`;
+      throw new Error(message);
+    })
   ).use(args);
 }
 ```
@@ -254,7 +258,7 @@ function add(
   return overloads(
     def(string('a'), string('b')).match((a, b) => [a, b])
     def(number('a'), number('b')).match((a, b) => a + b)
-    // if using individual def pass an array [a, b] to `use`
+    // if using individual args like (a: string, b: string) pass an array [a, b] to `use`
   ).use(args);
 }
 ```
@@ -349,14 +353,14 @@ function makeMyClass(name: string, widgets: string[]): MyObject;
 function makeMyClass(...args: (string | string[])[]) {
   return overloads(
     // Create an instance with only a name
-    def(string("name")).matches((name) => new MyObject(name)),
+    def(string("name")).matches((name) => new MyObject(name, undefined)),
     // Create an instance with only its list of widgets
     def(array("widgets", [string()])).matches(
       (name, widgets) => new MyObject(undefined, widgets)
     ),
     // Create an instance with both a name and its list of widgets
     def(string("name"), array("widgets", [string()])).matches(
-      (name, widgets) => new MyObject(undefined, widgets)
+      (name, widgets) => new MyObject(name, widgets)
     ),
     // No match - Throw an error
     fallback((...args) => {
@@ -424,7 +428,7 @@ function myOverloadedFunction(...args: unknown[]) {
       instance(FooWidget)
     ).matches((widget) => {
       // ... do stuff
-      return return myNewFooWidgetWrapper;
+      return myNewFooWidgetWrapper;
     })
   ).use(args);
 }
@@ -552,7 +556,7 @@ def(number("a", { max: 0 })).matches((a) => throw new Error(`'a' must be positiv
 _in_: Asserts that a number is part of an array.
 
 ```ts
-def(string("a", { in: [101, 102] })).matches((a) =>
+def(number("a", { in: [101, 102] })).matches((a) =>
   this.courses.enroll.math(a)
 );
 ```
@@ -560,15 +564,15 @@ def(string("a", { in: [101, 102] })).matches((a) =>
 _equals_: Asserts that the provided number is exactly equal to the expected.
 
 ```ts
-def(string("a", { equals: 101 })).matches((a) => DalmatianCoatFactory);
+def(number("a", { equals: 101 })).matches((a) => DalmatianCoatFactory);
 ```
 
 _types_: Asserts that the provided value is either an integer
 or a float value.
 
 ```ts
-def(string("a", { type: "float" })).matches((a) => a * MY_CONST);
-def(string("a", { type: "int" })).matches((a) => MY_ENUM[a]);
+def(number("a", { type: "float" })).matches((a) => a * MY_CONST);
+def(number("a", { type: "int" })).matches((a) => MY_ENUM[a]);
 ```
 
 **boolean** assertions

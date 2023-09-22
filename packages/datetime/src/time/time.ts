@@ -1,5 +1,5 @@
 import { AssertKey } from "@autometa/asserters";
-import { camel, convertPhrase, lower } from "@autometa/phrases";
+import { convertPhrase, lower } from "@autometa/phrases";
 type TimeDiffFn = (date1: Date, date2: Date) => number;
 
 export class TimeDiff {

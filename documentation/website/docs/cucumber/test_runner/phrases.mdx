@@ -177,7 +177,7 @@ output formats should be achievable.
 For example the format `dbCollection__Users` could be achieved with
 
 ```ts
-From(foo).byPhrase("Db Connection", camel, sfx`__Users`, trim);
+From(foo).byPhrase("Db Collection", camel, sfx`__Users`, trim);
 ```
 
 Which camel cases the phrase, adds a suffix of `__Users` and trims white space between them.

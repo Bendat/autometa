@@ -199,6 +199,8 @@ def(string(), string()).match((a: string, b: string)=>}{});
 def(string(), string()).match((a: string, b: number)=>}{});
 ```
 
+Overloads can also have a fallback which is executed if no match is found.
+
 Sticking with our original 2 overloads:
 
 ```ts
@@ -212,7 +214,12 @@ function add(
 ){
   return overloads(
     def(string(), string()).match((a, b) => [a, b]),
-    def(number(), number()).match((a, b) => a + b)
+    def(number(), number()).match((a, b) => a + b),
+    fallback((a, b) => {
+      const types = [typeof a, typeof b];
+      const message = `Expected "a" and "b" to be of the same type, either string or number. Found: ${types}`;
+      throw new Error(message);
+    })
   ).use(args);
 }
 ```
@@ -245,7 +252,7 @@ function add(
   return overloads(
     def(string('a'), string('b')).match((a, b) => [a, b])
     def(number('a'), number('b')).match((a, b) => a + b)
-    // if using individual def pass an array [a, b] to `use`
+    // // if using individual args like (a: string, b: string) pass an array [a, b] to `use`
   ).use(args);
 }
 ```
@@ -340,14 +347,14 @@ function makeMyClass(name: string, widgets: string[]): MyObject;
 function makeMyClass(...args: (string | string[])[]) {
   return overloads(
     // Create an instance with only a name
-    def(string("name")).matches((name) => new MyObject(name)),
+    def(string("name")).matches((name) => new MyObject(name, undefined)),
     // Create an instance with only its list of widgets
     def(array("widgets", [string()])).matches(
       (name, widgets) => new MyObject(undefined, widgets)
     ),
     // Create an instance with both a name and its list of widgets
     def(string("name"), array("widgets", [string()])).matches(
-      (name, widgets) => new MyObject(undefined, widgets)
+      (name, widgets) => new MyObject(name, widgets)
     ),
     // No match - Throw an error
     fallback((...args) => {
@@ -415,7 +422,7 @@ function myOverloadedFunction(...args: unknown[]) {
       instance(FooWidget)
     ).matches((widget) => {
       // ... do stuff
-      return return myNewFooWidgetWrapper;
+      return myNewFooWidgetWrapper;
     })
   ).use(args);
 }

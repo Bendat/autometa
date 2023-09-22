@@ -19,8 +19,12 @@ export abstract class Hook {
   ) {}
 
   canExecute(...tagExpressions: string[]): boolean {
+    if(!this.canFilter){
+      return true
+    }
     return (
-      this.canFilter &&
+      tagExpressions &&
+      tagExpressions.length > 0 &&
       isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
     );
   }

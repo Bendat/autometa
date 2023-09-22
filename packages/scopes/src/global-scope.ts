@@ -42,6 +42,7 @@ import path from "path";
 import { Timeout, assertTimeout } from "./timeout";
 export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   canHandleAsync = false;
+  timeout = undefined;
   private _onFeatureExecuted: OnFeatureExecuted;
 
   action: (...args: unknown[]) => void;
@@ -529,6 +530,9 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
       ),
       def(string(), func<HookAction>()).matches((description, action) => {
         return [description, action] as const;
+      }),
+      fallback((...args)=>{
+        throw new Error(`You weren't supposed to see this. args: ${args}`)
       })
     ).use([description, action, exprOrTimeout, timeout]);
     const hook = new type(...args);
