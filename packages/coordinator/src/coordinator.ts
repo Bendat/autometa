@@ -26,6 +26,7 @@ export class Coordinator {
     events: TestEventEmitter,
     executor: (
       { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+      global: GlobalScope,
       bridge: FeatureBridge,
       events: TestEventEmitter,
       config: Config
@@ -53,6 +54,7 @@ export class Coordinator {
     events: TestEventEmitter,
     executor: (
       { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+      global: GlobalScope,
       bridge: FeatureBridge,
       events: TestEventEmitter,
       config: Config
@@ -64,7 +66,7 @@ export class Coordinator {
     this.#builder = new TestBuilder(gherkin);
     this.#bridge = this.#builder.onFeatureExecuted(feature);
     const { app, world } = this.opts[this.config.environment ?? "default"];
-    executor({ app, world }, this.#bridge, events, this.configs);
+    executor({ app, world }, this.global, this.#bridge, events, this.configs);
   }
 
   get fs() {

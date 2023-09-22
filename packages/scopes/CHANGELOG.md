@@ -1,5 +1,15 @@
 # Gherkin
 
+## 0.2.4
+
+### Patch Changes
+
+- e243e8b4: fix: globally scoped hooks not executing
+- Updated dependencies [e243e8b4]
+  - @autometa/overloaded@0.3.1
+  - @autometa/gherkin@0.4.2
+  - @autometa/events@0.1.2
+
 ## 0.2.3
 
 ### Patch Changes

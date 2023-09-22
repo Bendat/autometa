@@ -1,5 +1,11 @@
 # @autometa/datetime
 
+## 0.1.5
+
+### Patch Changes
+
+- e243e8b4: fix: globally scoped hooks not executing
+
 ## 0.1.4
 
 ### Patch Changes

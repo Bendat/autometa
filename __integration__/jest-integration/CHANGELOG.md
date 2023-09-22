@@ -1,5 +1,14 @@
 # @autometa/jest-integration
 
+## 0.1.11
+
+### Patch Changes
+
+- e243e8b4: fix: globally scoped hooks not executing
+- Updated dependencies [e243e8b4]
+  - @autometa/runner@0.2.3
+  - @autometa/jest-transformer@0.1.11
+
 ## 0.1.10
 
 ### Patch Changes

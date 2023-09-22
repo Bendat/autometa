@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.3.1
+
+### Patch Changes
+
+- e243e8b4: fix: globally scoped hooks not executing
+
 ## 0.3.0
 
 ### Minor Changes

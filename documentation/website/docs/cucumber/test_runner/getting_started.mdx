@@ -131,7 +131,7 @@ export class App {
 }
 ```
 
-The App will not be available in step callbacks.
+The App will now be available in step callbacks.
 
 ```ts
 import { Given } from "@autometa/runner";
@@ -212,7 +212,7 @@ we cannot see any of the type information we created in either. This is because
 App is represented by an Empty interface internally. We can fix this by creating
 a declaration file and overriding the `@autometa/app` package using our new classes
 
-This file can be placed anywhere, for now we'll place it next to our app. Our directory
+This file can be placed anywhere, including the project root. For now we'll place it next to our app. Our directory
 structure now looks like:
 
 ```
@@ -235,7 +235,7 @@ To make these types active, we must add them as a type root in `tsconfig.json`
 {
   "compilerOptions": {
     "...": "...",
-    "types": ["jest", "./autometa.d.ts"]
+    "types": ["jest", "./src/app/autometa.d.ts"]
   }
 }
 ```
@@ -400,6 +400,7 @@ The following hooks are supported:
 
 Hooks can be defined in files with the following extensions, and should be located under the `stepDefinitionsRoot`
 
+- `*.hooks.ts`
 - `*.before.ts`
 - `*.after.ts`
 - `*.setup.ts`
@@ -578,6 +579,7 @@ Feature(() => {
       });
     });
   });
+  "^/my-gherking.feature"
 });
 ```
 
