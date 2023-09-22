@@ -1,5 +1,16 @@
 # @autometa/jest-executor
 
+## 0.1.4
+
+### Patch Changes
+
+- e243e8b4: fix: globally scoped hooks not executing
+- Updated dependencies [e243e8b4]
+  - @autometa/test-builder@0.1.4
+  - @autometa/scopes@0.2.4
+  - @autometa/gherkin@0.4.2
+  - @autometa/events@0.1.2
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.5.2
+
+### Patch Changes
+
+- e243e8b4: fix: globally scoped hooks not executing
+
 ## 0.5.1
 
 ### Patch Changes
