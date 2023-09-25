@@ -20,7 +20,7 @@
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
     "dotenv": "^16.3.1",
-    "enquirer": "^2.3.6",
+    "enquirer": "^2.4.1",
     "inquirer": "^9.1.2",
     "inquirer-fuzzy-path": "^2.3.0",
     "node-persist": "^3.1.0",
