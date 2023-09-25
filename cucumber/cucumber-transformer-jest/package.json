@@ -43,7 +43,7 @@
     "@types/lodash": "^4.14.195",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^5.54.1",
     "@vitest/coverage-istanbul": "^0.31.0",
     "babel-preset-jest": "^29.5.0",
