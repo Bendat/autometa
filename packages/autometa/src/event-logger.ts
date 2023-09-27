@@ -70,12 +70,10 @@ export class GroupLogEvents implements EventSubscriber {
     console.groupEnd();
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
-
   }
   onBeforeStart(opts: StartBeforeOpts): void {
     console.group(opts.title);
-    console.groupEnd();
-
+    console.group();
   }
   onBeforeEnd({ title, status }: EndBeforeOpts): void {
     console.groupEnd();
@@ -119,11 +117,11 @@ function colorStatus(
 ) {
   switch (status) {
     case "FAILED":
-      return colors.red_b.underline(text);
+      return colors.red_b(text);
     case "PASSED":
-      return colors.green_b.underline(text);
+      return colors.green_b(text);
     case "SKIPPED":
-      return colors.yellow_b.underline(text);
+      return colors.yellow_b(text);
     default:
       return text;
   }
