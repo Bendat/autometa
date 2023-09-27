@@ -3,6 +3,7 @@ import { AutometaApp } from "./autometa-app";
 import { Class } from "@autometa/types";
 import { AutomationError } from "@autometa/errors";
 import { AutometaWorld } from ".";
+import { v4 } from "uuid";
 
 export function getApp<T extends AutometaApp, K extends AutometaWorld>(
   appType: Class<T>,
@@ -28,15 +29,12 @@ defineConfig({
   }
   container.registerType(worldType, worldType);
   instances.forEach(({ token, instance, cls }) =>
-    instance
-      ? child.registerInstance(token, instance)
-      : cls
-      ? child.registerType(token, cls)
-      : null
+    child.register(token, instance ?? cls)
   );
 
   const child = container.createChildContainer();
   const app = child.resolve(appType);
   app.world = child.resolve(worldType);
+  app.id = v4();
   return app;
 }

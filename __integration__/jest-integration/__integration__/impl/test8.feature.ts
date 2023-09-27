@@ -1,16 +1,25 @@
 import { Before, Feature, Given, Setup } from "@autometa/runner";
-import { Pass } from "@autometa/scopes";
 
-Setup("pre suite hook", () => {
+Setup("pre suite hook", ({ world, id, singleton }) => {
+  singleton.value = 1;
+  world.foo = 1;
+  console.log(id);
   console.log("setup");
 });
 
-Before("before hook", () => {
+Before("before hook", ({ world }) => {
+  world.bar = 2;
   console.log("before");
 });
 
-Given("a setup hook was run", Pass);
+Given("a setup hook was run", ({ world, singleton }) => {
+  world.foo = 1;
+  expect(singleton.value).toBe(1);
+  expect(world.bar).toBe(2);
+});
 
-Given("a before hook was run", Pass);
+Given("a before hook was run", ({ world }) => {
+  expect(world.foo).toBe(1);
+});
 
 Feature("../features/test8.feature");
