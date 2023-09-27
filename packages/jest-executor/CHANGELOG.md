@@ -1,5 +1,16 @@
 # @autometa/jest-executor
 
+## 0.1.6
+
+### Patch Changes
+
+- 29ed7239: fix(test-builder): onStepStart event not firing
+- Updated dependencies [29ed7239]
+  - @autometa/test-builder@0.1.6
+  - @autometa/gherkin@0.4.3
+  - @autometa/events@0.1.3
+  - @autometa/scopes@0.2.6
+
 ## 0.1.5
 
 ### Patch Changes
