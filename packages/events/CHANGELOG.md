@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.1.4
+
+### Patch Changes
+
+- ff45dc43: fix(jest-executor): step text was not correctly logged
+
 ## 0.1.3
 
 ### Patch Changes
