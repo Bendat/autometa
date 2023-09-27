@@ -1,5 +1,15 @@
 # @autometa/jest-executor
 
+## 0.1.7
+
+### Patch Changes
+
+- ff45dc43: fix(jest-executor): step text was not correctly logged
+- Updated dependencies [ff45dc43]
+  - @autometa/events@0.1.4
+  - @autometa/scopes@0.2.7
+  - @autometa/test-builder@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes
