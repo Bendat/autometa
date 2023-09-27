@@ -1973,6 +1973,9 @@ importers:
       '@autometa/errors':
         specifier: workspace:^
         version: link:../errors
+      '@autometa/events':
+        specifier: workspace:^
+        version: link:../events
       '@autometa/gherkin':
         specifier: workspace:^
         version: link:../gherkin
