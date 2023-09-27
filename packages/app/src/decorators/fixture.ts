@@ -1,7 +1,13 @@
 import "reflect-metadata";
 
 import { Class } from "@autometa/types";
-import { scoped, inject, Lifecycle as LC, injectable } from "tsyringe";
+import {
+  scoped,
+  inject,
+  Lifecycle as LC,
+  injectable,
+  singleton
+} from "tsyringe";
 /**
  * Marks a class as an injectable fixture. Constructor parameters
  * which are also injectable will be automatically constructed
@@ -40,8 +46,10 @@ import { scoped, inject, Lifecycle as LC, injectable } from "tsyringe";
  * ```
  */
 export function Fixture(target: Class<unknown>): void;
-export function Fixture(scope?: LC): (target: Class<unknown>) => void;
-export function Fixture(arg: LC | undefined | Class<unknown>) {
+export function Fixture<T extends Class<unknown>>(
+  scope?: Lifecycle
+): (target: T) => void;
+export function Fixture(arg: Lifecycle | undefined | Class<unknown>) {
   if (arg && typeof arg !== "number") {
     injectable()(arg);
     scoped(LC.ContainerScoped)(arg);
@@ -49,9 +57,21 @@ export function Fixture(arg: LC | undefined | Class<unknown>) {
   }
   return (target: Class<unknown>) => {
     injectable()(target);
+    if (arg === LIFE_CYCLE.Singleton) {
+      singleton()(target);
+      return;
+    }
     scoped(arg as LC.ContainerScoped | LC.ResolutionScoped)(target);
   };
 }
 
 export const Inject = inject;
-export const Lifecycle = LC;
+
+export const LIFE_CYCLE = {
+  Transient: LC.Transient as 0,
+  Singleton: LC.Singleton as 1,
+  ResolutionScoped: LC.ResolutionScoped as 2,
+  ContainerScoped: LC.ContainerScoped as 3
+} as const;
+
+export type Lifecycle = (typeof LIFE_CYCLE)[keyof typeof LIFE_CYCLE];

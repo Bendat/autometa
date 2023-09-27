@@ -1,5 +1,16 @@
 # @autometa/jest-executor
 
+## 0.1.5
+
+### Patch Changes
+
+- 4a16497d: fix(scopes): hooks not executing without tag expressions
+- Updated dependencies [4a16497d]
+  - @autometa/scopes@0.2.5
+  - @autometa/app@0.1.4
+  - @autometa/test-builder@0.1.5
+  - @autometa/config@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

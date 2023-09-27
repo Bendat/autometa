@@ -22,6 +22,9 @@ export abstract class Hook {
     if(!this.canFilter){
       return true
     }
+    if(this.tagFilterExpression === undefined){
+      return true
+    }
     return (
       tagExpressions &&
       tagExpressions.length > 0 &&

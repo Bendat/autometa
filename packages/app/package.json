@@ -1,6 +1,6 @@
 {
   "name": "@autometa/app",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "App and World container for Autometa",
   "type": "module",
   "main": "dist/index.js",
@@ -61,6 +61,7 @@
     "@autometa/asserters": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@autometa/phrases": "workspace:*",
-    "tsyringe": "^4.8.0"
+    "tsyringe": "^4.8.0",
+    "uuid": "^9.0.0"
   }
 }

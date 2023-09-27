@@ -1,10 +1,17 @@
-import { AppType } from "@autometa/runner";
+import { AppType, Fixture } from "@autometa/runner";
 import { World } from "./default.world";
 import { TestContainer } from "../test-container";
-
+import { LIFE_CYCLE } from "@autometa/app";
+@Fixture(LIFE_CYCLE.Singleton)
+class SingletonFixture {
+  value: number;
+}
 @AppType(World)
 export class DefaultApp {
-  constructor(readonly container: TestContainer) {}
+  constructor(
+    readonly container: TestContainer,
+    readonly singleton: SingletonFixture
+  ) {}
   report: {
     outterbackgroundstep: boolean;
     outterscenario1step: boolean;

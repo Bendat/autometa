@@ -2,5 +2,6 @@
 
 export interface World {}
 export interface App {
-    world: World;
+  readonly id: string;
+  world: World;
 }

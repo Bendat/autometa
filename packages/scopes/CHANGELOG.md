@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.5
+
+### Patch Changes
+
+- 4a16497d: fix(scopes): hooks not executing without tag expressions
+- Updated dependencies [4a16497d]
+  - @autometa/app@0.1.4
+
 ## 0.2.4
 
 ### Patch Changes

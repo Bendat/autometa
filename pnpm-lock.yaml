@@ -837,6 +837,9 @@ importers:
       tsyringe:
         specifier: ^4.8.0
         version: 4.8.0
+      uuid:
+        specifier: ^9.0.0
+        version: 9.0.0
     devDependencies:
       '@autometa/types':
         specifier: workspace:^

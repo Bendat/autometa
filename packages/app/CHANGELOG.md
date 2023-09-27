@@ -1,5 +1,11 @@
 # @autometa/app
 
+## 0.1.4
+
+### Patch Changes
+
+- 4a16497d: fix(scopes): hooks not executing without tag expressions
+
 ## 0.1.3
 
 ### Patch Changes
