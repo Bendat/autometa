@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.1.3
+
+### Patch Changes
+
+- 29ed7239: fix(test-builder): onStepStart event not firing
+- Updated dependencies [29ed7239]
+  - @autometa/gherkin@0.4.3
+
 ## 0.1.2
 
 ### Patch Changes
