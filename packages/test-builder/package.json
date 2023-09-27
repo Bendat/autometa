@@ -45,6 +45,7 @@
     "@autometa/bind-decorator": "workspace:^",
     "@autometa/dto-builder": "workspace:^",
     "@autometa/errors": "workspace:^",
+    "@autometa/events": "workspace:^",
     "@autometa/gherkin": "workspace:^",
     "@autometa/phrases": "workspace:^",
     "@autometa/scopes": "workspace:^",

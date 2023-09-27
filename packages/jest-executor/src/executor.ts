@@ -143,11 +143,21 @@ export function bootstrapBackground(
     const steps = background.steps;
     try {
       for (const step of steps) {
+        events.step.emitStart({
+          title: step.data.scope.title,
+          args: step.args,
+          expression: step.data.scope.expression.source
+        });
         await step.data.scope.execute(
           background.data.gherkin,
           step.data.gherkin,
           localApp()
         );
+        events.step.emitEnd({
+          expression: step.data.scope.expression.source,
+          text: step.data.scope.title,
+          args: step.args
+        });
       }
       events.before.emitEnd({
         title: title,
@@ -209,33 +219,45 @@ export function bootstrapScenario(
     scenarioName,
     async () => {
       events.scenario.emitStart({
-        title: scenarioName,
-        tags: [...data.gherkin.tags]
+        title: bridge.title,
+        tags: bridge.tags
       });
       try {
         for (const step of bridge.steps) {
+          events.step.emitStart({
+            title: step.data.scope.title,
+            args: step.args,
+            expression: step.expressionText
+          });
           await step.data.scope.execute(
             bridge.data.gherkin,
             step.data.gherkin,
             localApp()
           );
+          events.step.emitEnd({
+            expression: step.expressionText,
+            text: step.data.scope.title,
+            args: step.args
+          });
         }
         bridge.report = { passed: true };
         events.scenario.emitEnd({
-          title: scenarioName,
-          tags: [...data.gherkin.tags],
+          title: bridge.title,
+          tags: bridge.tags,
           status: "PASSED"
         });
       } catch (e) {
-        events.scenario.emitEnd({
-          title: scenarioName,
-          tags: [...data.gherkin.tags],
-          status: "FAILED",
-          error: e as Error
-        });
+        const error = e as Error;
         bridge.report = { passed: false, error: e as Error };
-        const message = `${scenarioName} failed to execute.`;
-        throw new AutomationError(message, { cause: e as Error });
+        events.scenario.emitEnd({
+          title: bridge.title,
+          tags: bridge.tags,
+          status: "FAILED",
+          error: error
+        });
+        const message = `${bridge.title} failed because an error was encountered while executing a step`;
+        const meta = { cause: error };
+        throw new AutomationError(message, meta);
       }
     },
     chosenTimeout.milliseconds
@@ -458,8 +480,8 @@ export function bootstrapSetupHooks(
     timeout,
     bridge.data.scope.timeout
   ).getTimeout(config).milliseconds;
-
-  bridge.data.scope.hooks.setup.forEach((hook) => {
+  const setups = bridge.data.scope.hooks.setup;
+  setups.forEach((hook) => {
     const hookTimeout = chooseTimeout(
       Timeout.from(chosenTimeout),
       hook.timeout
@@ -511,7 +533,7 @@ export function bootstrapAfterHooks(
       const scenarioBridge = find(root, testName);
       if (!scenarioBridge) {
         throw new AutomationError(
-          `No matching scenario bridge was found matching the test name: ${testName}`
+          `No scenario was found matching the test path: ${testName}`
         );
       }
       if (!hook.canExecute(...bridge.data.gherkin.tags)) {
@@ -554,7 +576,7 @@ export function bootstrapTeardownHooks(
       config
     ).milliseconds;
     afterAll(async () => {
-      if(!hook.canExecute(...tags)) {
+      if (!hook.canExecute(...tags)) {
         return;
       }
       event.teardown.emitStart({
