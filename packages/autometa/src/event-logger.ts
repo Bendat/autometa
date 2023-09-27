@@ -74,6 +74,8 @@ export class GroupLogEvents implements EventSubscriber {
   }
   onBeforeStart(opts: StartBeforeOpts): void {
     console.group(opts.title);
+    console.groupEnd();
+
   }
   onBeforeEnd({ title, status }: EndBeforeOpts): void {
     console.groupEnd();

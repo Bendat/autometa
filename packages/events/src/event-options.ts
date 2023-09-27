@@ -46,13 +46,11 @@ export const EndScenarioOptsSchema = ErrorEventSchema;
 export const StartStepOptsSchema = EventOptionsSchema.extend({
   args: z.array(z.unknown()).optional(),
   expression: z.string().optional(),
-  text: string().optional()
 });
-export const EndStepOptsSchema = ErrorEventSchema.extend({
+export const EndStepOptsSchema = EventOptionsSchema.extend({
   args: z.array(z.unknown()).optional(),
   expression: z.string(),
-  text: string()
-});
+}).and(ErrorEventSchema);
 export const StartBeforeOptsSchema = ArgsEventSchema;
 export const EndBeforeOptsSchema = ErrorEventSchema;
 export const StartAfterOptsSchema = ArgsEventSchema;

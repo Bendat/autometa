@@ -143,19 +143,26 @@ export function bootstrapBackground(
     const steps = background.steps;
     try {
       for (const step of steps) {
+        const title = step.data.scope.stepText(
+          step.data.gherkin.keyword,
+          step.data.gherkin.text
+        );
+
         events.step.emitStart({
-          title: step.data.scope.title,
+          title,
           args: step.args,
           expression: step.data.scope.expression.source
         });
+
         await step.data.scope.execute(
           background.data.gherkin,
           step.data.gherkin,
           localApp()
         );
+        
         events.step.emitEnd({
           expression: step.data.scope.expression.source,
-          text: step.data.scope.title,
+          title,
           args: step.args
         });
       }
@@ -224,8 +231,12 @@ export function bootstrapScenario(
       });
       try {
         for (const step of bridge.steps) {
+          const title = step.data.scope.stepText(
+            step.data.gherkin.keyword,
+            step.data.gherkin.text
+          );
           events.step.emitStart({
-            title: step.data.scope.title,
+            title,
             args: step.args,
             expression: step.expressionText
           });
@@ -236,7 +247,7 @@ export function bootstrapScenario(
           );
           events.step.emitEnd({
             expression: step.expressionText,
-            text: step.data.scope.title,
+            title,
             args: step.args
           });
         }
