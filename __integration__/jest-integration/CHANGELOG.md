@@ -1,5 +1,16 @@
 # @autometa/jest-integration
 
+## 0.1.16
+
+### Patch Changes
+
+- 12bd4b1e: fix: hooks not handling errors correctly
+- Updated dependencies [12bd4b1e]
+- Updated dependencies [12bd4b1e]
+  - @autometa/runner@0.2.8
+  - @autometa/jest-transformer@0.1.16
+  - @autometa/app@0.1.5
+
 ## 0.1.15
 
 ### Patch Changes

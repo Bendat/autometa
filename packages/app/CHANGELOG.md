@@ -1,5 +1,14 @@
 # @autometa/app
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+  - @autometa/asserters@0.1.2
+  - @autometa/phrases@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

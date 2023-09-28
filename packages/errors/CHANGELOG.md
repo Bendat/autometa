@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.1.2
+
+### Patch Changes
+
+- 12bd4b1e: fix: hooks not handling errors correctly
+
 ## 0.1.1
 
 ### Patch Changes

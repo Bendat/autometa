@@ -1,5 +1,26 @@
 # @autometa/runner
 
+## 0.2.8
+
+### Patch Changes
+
+- 12bd4b1e: Fix(runner): Before Hook logging misaligned
+- 12bd4b1e: fix: hooks not handling errors correctly
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+  - @autometa/scopes@0.2.8
+  - @autometa/app@0.1.5
+  - @autometa/asserters@0.1.2
+  - @autometa/config@0.1.5
+  - @autometa/coordinator@0.1.8
+  - @autometa/cucumber-expressions@0.1.6
+  - @autometa/datetime@0.1.6
+  - @autometa/events@0.1.5
+  - @autometa/gherkin@0.4.4
+  - @autometa/jest-executor@0.1.8
+  - @autometa/phrases@0.1.4
+  - @autometa/test-builder@0.1.8
+
 ## 0.2.7
 
 ### Patch Changes
