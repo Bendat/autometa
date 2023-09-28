@@ -2,7 +2,7 @@ import type { HookAction } from "./types";
 import { App } from "@autometa/app";
 import { isTagsMatch } from "@autometa/gherkin";
 import { Builder } from "@autometa/dto-builder";
-import { AutomationError, safe } from "@autometa/errors";
+import { AutomationError, safeAsync } from "@autometa/errors";
 import { HookReport } from "./hook-report";
 import { Timeout } from "./timeout";
 
@@ -39,11 +39,11 @@ export abstract class Hook {
     if (!this.canExecute(...tagExpressions)) {
       return report.status("SKIPPED").build();
     }
-    const result = await safe(this.action, app);
+    const result = await safeAsync(this.action, app);
     if (result instanceof Error) {
       const message = `${this.name}: ${this.description} failed to execute.`;
       const error = new AutomationError(message, { cause: result });
-      report.error(error).status("FAILED");
+      return report.error(error).status("FAILED").build();
     }
 
     return report.status("PASSED").build();

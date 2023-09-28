@@ -9,6 +9,7 @@ Setup("pre suite hook", ({ world, id, singleton }) => {
 
 Before("before hook", ({ world }) => {
   world.bar = 2;
+  // fail()
   console.log("before");
 });
 
