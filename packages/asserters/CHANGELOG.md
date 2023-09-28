@@ -1,5 +1,12 @@
 # Gherkin
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

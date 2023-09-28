@@ -1,5 +1,17 @@
 # Gherkin
 
+## 0.2.8
+
+### Patch Changes
+
+- 12bd4b1e: fix: hooks not handling errors correctly
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+  - @autometa/app@0.1.5
+  - @autometa/events@0.1.5
+  - @autometa/gherkin@0.4.4
+  - @autometa/phrases@0.1.4
+
 ## 0.2.7
 
 ### Patch Changes
