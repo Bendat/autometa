@@ -4,5 +4,5 @@ import { PhraseParser, IFromPhrase } from "@autometa/phrases";
 export class AutometaWorld {
   [key: string]: unknown;
 
-  dfromPhrase: IFromPhrase;
+  fromPhrase: IFromPhrase;
 }
