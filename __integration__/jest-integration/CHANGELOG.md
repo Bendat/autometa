@@ -1,5 +1,24 @@
 # @autometa/jest-integration
 
+## 0.1.18
+
+### Patch Changes
+
+- Fix: bad dist published
+- Updated dependencies
+  - @autometa/jest-transformer@0.1.18
+  - @autometa/runner@0.2.10
+  - @autometa/app@0.1.7
+
+## 0.1.17
+
+### Patch Changes
+
+- Updated dependencies [f167963f]
+  - @autometa/app@0.1.6
+  - @autometa/runner@0.2.9
+  - @autometa/jest-transformer@0.1.17
+
 ## 0.1.16
 
 ### Patch Changes

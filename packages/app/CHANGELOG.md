@@ -1,5 +1,17 @@
 # @autometa/app
 
+## 0.1.7
+
+### Patch Changes
+
+- Fix: bad dist published
+
+## 0.1.6
+
+### Patch Changes
+
+- f167963f: Fix: typo in AutometaWorld 'dfromPhrase' -> 'fromPhrase'
+
 ## 0.1.5
 
 ### Patch Changes

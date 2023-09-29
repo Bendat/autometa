@@ -1,5 +1,29 @@
 # @autometa/coordinator
 
+## 0.1.10
+
+### Patch Changes
+
+- Fix: bad dist published
+- Updated dependencies
+  - @autometa/jest-executor@0.1.10
+  - @autometa/test-builder@0.1.10
+  - @autometa/config@0.1.7
+  - @autometa/scopes@0.2.10
+  - @autometa/app@0.1.7
+
+## 0.1.9
+
+### Patch Changes
+
+- f167963f: Fix: typo in AutometaWorld 'dfromPhrase' -> 'fromPhrase'
+- Updated dependencies [f167963f]
+  - @autometa/app@0.1.6
+  - @autometa/scopes@0.2.9
+  - @autometa/test-builder@0.1.9
+  - @autometa/config@0.1.6
+  - @autometa/jest-executor@0.1.9
+
 ## 0.1.8
 
 ### Patch Changes

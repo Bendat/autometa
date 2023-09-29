@@ -1,5 +1,21 @@
 # @autometa/jest-transformer
 
+## 0.1.18
+
+### Patch Changes
+
+- Fix: bad dist published
+- Updated dependencies
+  - @autometa/runner@0.2.10
+
+## 0.1.17
+
+### Patch Changes
+
+- f167963f: Fix: typo in AutometaWorld 'dfromPhrase' -> 'fromPhrase'
+- Updated dependencies [f167963f]
+  - @autometa/runner@0.2.9
+
 ## 0.1.16
 
 ### Patch Changes
