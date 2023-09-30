@@ -27,7 +27,6 @@ defineConfig({
    }
 })`);
   }
-  container.registerType(worldType, worldType);
   instances.forEach(({ token, instance, cls }) =>
     child.register(token, instance ?? cls)
   );
