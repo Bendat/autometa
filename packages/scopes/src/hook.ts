@@ -19,17 +19,19 @@ export abstract class Hook {
   ) {}
 
   canExecute(...tagExpressions: string[]): boolean {
-    if(!this.canFilter){
-      return true
+    if (!this.canFilter) {
+      return true;
     }
-    if(this.tagFilterExpression === undefined){
-      return true
+    if (this.tagFilterExpression === undefined) {
+      return true;
     }
-    return (
-      tagExpressions &&
-      tagExpressions.length > 0 &&
-      isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression)
-    );
+    if (!tagExpressions) {
+      return true;
+    }
+    if (tagExpressions.length === 0) {
+      return true;
+    }
+    return isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression);
   }
 
   async execute(app: App, ...tagExpressions: string[]) {
