@@ -1,5 +1,15 @@
 # @autometa/runner
 
+## 0.2.12
+
+### Patch Changes
+
+- 2cbc095e: Fix: skipped hooks causing failure badge to appear in logs
+- Updated dependencies [2cbc095e]
+  - @autometa/test-builder@0.1.12
+  - @autometa/coordinator@0.1.12
+  - @autometa/jest-executor@0.1.12
+
 ## 0.2.11
 
 ### Patch Changes
