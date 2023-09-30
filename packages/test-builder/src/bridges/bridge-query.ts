@@ -16,7 +16,7 @@ function failed(bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge) {
   for (const scenario of bridge.scenarios) {
     if (scenario instanceof ScenarioOutlineBridge) {
       accumulator.push(...failedOutline(scenario));
-    } else if (!scenario.report.passed) {
+    } else if (!scenario.report.passed && scenario.report.error !== undefined) {
       accumulator.push(scenario);
     }
   }
