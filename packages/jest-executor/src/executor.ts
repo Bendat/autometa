@@ -5,7 +5,8 @@ import {
   ScenarioBridge,
   ScenarioOutlineBridge,
   find,
-  GlobalBridge
+  GlobalBridge,
+  StepBridge
 } from "@autometa/test-builder";
 import {
   describe,
@@ -159,7 +160,7 @@ export function bootstrapBackground(
           step.data.gherkin,
           localApp()
         );
-        
+
         events.step.emitEnd({
           expression: step.data.scope.expression.source,
           title,
@@ -231,25 +232,7 @@ export function bootstrapScenario(
       });
       try {
         for (const step of bridge.steps) {
-          const title = step.data.scope.stepText(
-            step.data.gherkin.keyword,
-            step.data.gherkin.text
-          );
-          events.step.emitStart({
-            title,
-            args: step.args,
-            expression: step.expressionText
-          });
-          await step.data.scope.execute(
-            bridge.data.gherkin,
-            step.data.gherkin,
-            localApp()
-          );
-          events.step.emitEnd({
-            expression: step.expressionText,
-            title,
-            args: step.args
-          });
+          await bootstrapStep(step, events, bridge, localApp);
         }
         bridge.report = { passed: true };
         events.scenario.emitEnd({
@@ -273,6 +256,46 @@ export function bootstrapScenario(
     },
     chosenTimeout.milliseconds
   );
+}
+
+async function bootstrapStep(
+  step: StepBridge,
+  events: TestEventEmitter,
+  bridge: ScenarioBridge,
+  localApp: () => App
+) {
+  const title = step.data.scope.stepText(
+    step.data.gherkin.keyword,
+    step.data.gherkin.text
+  );
+  events.step.emitStart({
+    title,
+    args: step.args,
+    expression: step.expressionText
+  });
+  try {
+    await step.data.scope.execute(
+      bridge.data.gherkin,
+      step.data.gherkin,
+      localApp()
+    );
+    events.step.emitEnd({
+      expression: step.expressionText,
+      title,
+      args: step.args,
+      status: "PASSED"
+    });
+  } catch (e) {
+    events.step.emitEnd({
+      expression: step.expressionText,
+      title,
+      args: step.args,
+      status: "FAILED",
+      error: e as Error
+    });
+    const message = `${title} experienced an error`;
+    throw new AutomationError(message, { cause: e as Error });
+  }
 }
 
 function isOutline(
@@ -475,7 +498,7 @@ export function bootstrapBeforeHooks(
         error: report.error
       });
       if (report.error) {
-        const message = `${hook.name}: ${hook.description} failed to execute.`;
+        const message = `${hook.name}: ${hook.description} experienced a failure.`;
         throw new AutomationError(message, { cause: report.error });
       }
     }, hookTimeout);
