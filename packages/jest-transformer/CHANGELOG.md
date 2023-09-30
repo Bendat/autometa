@@ -1,5 +1,12 @@
 # @autometa/jest-transformer
 
+## 0.1.21
+
+### Patch Changes
+
+- Updated dependencies [ddbdb401]
+  - @autometa/runner@0.2.13
+
 ## 0.1.20
 
 ### Patch Changes

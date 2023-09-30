@@ -1,5 +1,11 @@
 # @autometa/app
 
+## 0.1.9
+
+### Patch Changes
+
+- ddbdb401: Fix: World object not resolving correctly with DI
+
 ## 0.1.8
 
 ### Patch Changes

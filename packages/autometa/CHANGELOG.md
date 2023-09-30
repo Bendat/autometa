@@ -1,5 +1,18 @@
 # @autometa/runner
 
+## 0.2.13
+
+### Patch Changes
+
+- ddbdb401: Fix: World object not resolving correctly with DI
+- Updated dependencies [ddbdb401]
+  - @autometa/app@0.1.9
+  - @autometa/coordinator@0.1.13
+  - @autometa/jest-executor@0.1.13
+  - @autometa/scopes@0.2.12
+  - @autometa/test-builder@0.1.13
+  - @autometa/config@0.1.9
+
 ## 0.2.12
 
 ### Patch Changes

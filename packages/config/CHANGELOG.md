@@ -1,5 +1,12 @@
 # @autometa/config
 
+## 0.1.9
+
+### Patch Changes
+
+- Updated dependencies [ddbdb401]
+  - @autometa/app@0.1.9
+
 ## 0.1.8
 
 ### Patch Changes
