@@ -1,5 +1,11 @@
 # @autometa/test-builder
 
+## 0.1.12
+
+### Patch Changes
+
+- 2cbc095e: Fix: skipped hooks causing failure badge to appear in logs
+
 ## 0.1.11
 
 ### Patch Changes
