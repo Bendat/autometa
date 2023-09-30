@@ -113,7 +113,7 @@ function colorStatus(
     case "PASSED":
       return `${colors.green("✔️")} ${text}`;
     case "SKIPPED":
-      return `${colors.yellow("✔️")} ${text}`;
+      return `${colors.yellow("⊘")} ${text}`;
     default:
       return text;
   }
