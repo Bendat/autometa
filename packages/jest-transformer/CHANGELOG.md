@@ -1,5 +1,13 @@
 # @autometa/jest-transformer
 
+## 0.1.19
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/runner@0.2.11
+
 ## 0.1.18
 
 ### Patch Changes

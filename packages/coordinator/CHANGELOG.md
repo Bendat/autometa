@@ -1,5 +1,22 @@
 # @autometa/coordinator
 
+## 0.1.11
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/jest-executor@0.1.11
+  - @autometa/scopes@0.2.11
+  - @autometa/app@0.1.8
+  - @autometa/asserters@0.1.3
+  - @autometa/config@0.1.8
+  - @autometa/errors@0.1.3
+  - @autometa/events@0.1.6
+  - @autometa/gherkin@0.4.5
+  - @autometa/test-builder@0.1.11
+  - @autometa/types@0.4.1
+
 ## 0.1.10
 
 ### Patch Changes

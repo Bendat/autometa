@@ -1,5 +1,16 @@
 # @autometa/config
 
+## 0.1.8
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/app@0.1.8
+  - @autometa/asserters@0.1.3
+  - @autometa/errors@0.1.3
+  - @autometa/types@0.4.1
+
 ## 0.1.7
 
 ### Patch Changes
