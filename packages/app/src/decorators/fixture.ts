@@ -50,7 +50,7 @@ export function Fixture<T extends Class<unknown>>(
   scope?: Lifecycle
 ): (target: T) => void;
 export function Fixture(arg: Lifecycle | undefined | Class<unknown>) {
-  if (arg && typeof arg !== "number") {
+  if (arg !== undefined && typeof arg !== "number") {
     injectable()(arg);
     scoped(LC.ContainerScoped)(arg);
     return;
@@ -61,7 +61,7 @@ export function Fixture(arg: Lifecycle | undefined | Class<unknown>) {
       singleton()(target);
       return;
     }
-    scoped(arg as LC.ContainerScoped | LC.ResolutionScoped)(target);
+    scoped(arg ?? (LIFE_CYCLE.ContainerScoped as number))(target);
   };
 }
 
