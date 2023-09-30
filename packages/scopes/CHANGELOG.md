@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.12
+
+### Patch Changes
+
+- ddbdb401: Fix: World object not resolving correctly with DI
+- Updated dependencies [ddbdb401]
+  - @autometa/app@0.1.9
+
 ## 0.2.11
 
 ### Patch Changes
