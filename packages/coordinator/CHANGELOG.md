@@ -1,5 +1,15 @@
 # @autometa/coordinator
 
+## 0.1.16
+
+### Patch Changes
+
+- 5b44aa88: Fix: miscalculated Levenshtein distance when comparing a gherkin step literal to a cucumber expression with a string expression
+- Updated dependencies [5b44aa88]
+  - @autometa/jest-executor@0.1.16
+  - @autometa/scopes@0.2.15
+  - @autometa/test-builder@0.1.16
+
 ## 0.1.15
 
 ### Patch Changes
