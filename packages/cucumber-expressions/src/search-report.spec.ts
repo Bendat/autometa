@@ -1,17 +1,16 @@
 import stripColor from "strip-color";
 import { describe, it, expect } from "vitest";
-
+import {
+  DifferentStepTypeMatch,
+  FuzzySearchReport,
+  SameStepTypeMatch,
+  StepDiff
+} from ".";
 import {
   CucumberExpression,
   ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
-import { StepDiff } from "./step-matcher";
-import {
-  DifferentStepTypeMatch,
-  FuzzySearchReport,
-  SameStepTypeMatch
-} from "./search-report";
-const registery = new ParameterTypeRegistry();
+const registry = new ParameterTypeRegistry();
 describe("StepMatch", () => {
   describe("SameStepTypeMatch", () => {
     it("should format the match", () => {
@@ -22,7 +21,7 @@ describe("StepMatch", () => {
         step: {
           keyword: "Given",
           type: "Context",
-          expression: new CucumberExpression("", registery),
+          expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
           matches: () => false
         }
       };
@@ -33,18 +32,15 @@ describe("StepMatch", () => {
     });
   });
   describe("DifferentStepTypeMatch", () => {
-    it("should format the match", () => {
+    it("should format an only match", () => {
       const diff: StepDiff = {
         gherkin: "I have 2 grapes in my bowl",
-        merged: "I have {int} blue grapes in my {string}",
+        merged: "I have 2 blue grapes in my 2",
         distance: 4,
         step: {
           keyword: "When",
           type: "Action",
-          expression: new CucumberExpression(
-            "I have {int} blue grapes in my {string}",
-            registery
-          ),
+          expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
           matches: () => false
         }
       };
@@ -59,15 +55,12 @@ describe("SearchReport", () => {
   it("should format the match with same step type", () => {
     const diff: StepDiff = {
       gherkin: "I have 2 grapes in my bowl",
-      merged: "I have {int} blue grapes in my {string}",
+      merged: "I have 2 blue grapes in my bowl",
       distance: 4,
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression(
-          "I have {int} blue grapes in my {string}",
-          registery
-        ),
+        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
         matches: () => false
       }
     };
@@ -80,15 +73,12 @@ describe("SearchReport", () => {
   it("should format the match with different step type", () => {
     const diff: StepDiff = {
       gherkin: "I have 2 grapes in my bowl",
-      merged: "I have {int} blue grapes in my {string}",
+      merged: "I have 2 blue grapes in my bowl",
       distance: 4,
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression(
-          "I have {int} blue grapes in my {string}",
-          registery
-        ),
+        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
         matches: () => false
       }
     };
@@ -101,30 +91,24 @@ describe("SearchReport", () => {
   it("should format the match with same and different step type", () => {
     const diff: StepDiff = {
       gherkin: "I have 2 grapes in my bowl",
-      merged: "I have {int} blue grapes in my {string}",
+      merged: "I have 2 blue grapes in my bowl",
       distance: 4,
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression(
-          "I have {int} blue grapes in my {string}",
-          registery
-        ),
+        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
         matches: () => false
       }
     };
     const match = new SameStepTypeMatch(diff);
     const diff2: StepDiff = {
       gherkin: "I have 2 grapes in my bowl",
-      merged: "I have {int} blue grapes in my {string}",
+      merged: "I have 2 blue grapes in my bowl",
       distance: 4,
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression(
-          "I have {int} blue grapes in my {string}",
-          registery
-        ),
+        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
         matches: () => false
       }
     };
@@ -138,27 +122,24 @@ describe("SearchReport", () => {
   it("should format the match with steps and children with steps", () => {
     const diff: StepDiff = {
       gherkin: "I have 2 grapes in my bowl",
-      merged: "I have {int} blue grapes in my {string}",
+      merged: "I have 2 blue grapes in my bowl",
       distance: 4,
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression("", registery),
+        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
         matches: () => false
       }
     };
     const match = new SameStepTypeMatch(diff);
     const diff2: StepDiff = {
       gherkin: "I have 2 grapes in my bowl",
-      merged: "I have {int} blue grapes in my {string}",
+      merged: "I have 2 blue grapes in my bowl",
       distance: 2,
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression(
-          "I have {int} blue grapes in my {string}",
-          registery
-        ),
+        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
         matches: () => false
       }
     };

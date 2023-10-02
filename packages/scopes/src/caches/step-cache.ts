@@ -139,7 +139,7 @@ export class StepCache {
     depth = 0
   ): FuzzySearchReport {
     const closestMatches = this.findClosest(keywordType, text);
-    const report = buildFuzzySearchReport(closestMatches);
+    const report = buildFuzzySearchReport(closestMatches, depth);
     if (this.scopeName) report.addHeading(this.scopeName);
     if (this.parent) {
       const parentReport = this.parent.startFuzzySearch(
