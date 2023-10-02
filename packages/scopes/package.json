@@ -51,6 +51,7 @@
   "dependencies": {
     "@autometa/app": "workspace:*",
     "@autometa/bind-decorator": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:^",
     "@autometa/dto-builder": "workspace:*",
     "@autometa/errors": "workspace:^",
     "@autometa/events": "workspace:*",

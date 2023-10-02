@@ -3,10 +3,12 @@ import chalk from "colors-cli";
 export class SameStepTypeMatch {
   readonly keyword: string;
   readonly text: string;
+  readonly original: string;
   readonly distance: number;
   constructor(diff: StepDiff) {
     this.keyword = diff.step.keyword;
     this.text = diff.merged;
+    this.original = diff.step.expression.source;
     this.distance = diff.distance;
   }
   toString() {
@@ -19,16 +21,18 @@ export class SameStepTypeMatch {
 export class DifferentStepTypeMatch {
   readonly keyword: string;
   readonly text: string;
+  readonly original: string;
   readonly distance: number;
   constructor(diff: StepDiff) {
     this.keyword = diff.step.keyword;
     this.text = diff.merged;
+    this.original = diff.step.expression.source;
     this.distance = diff.distance;
   }
   toString() {
     const keywordColor = chalk.cyan_bt;
     const keyword = keywordColor(this.keyword);
-    const text = chalk.white_b(this.text);
+    const text = chalk.white_b(this.original);
     const distance = chalk.blue(`[${this.distance}]`);
     return `${distance} ${keyword} ${text}`;
   }
@@ -39,10 +43,7 @@ export class FuzzySearchReport {
   children: FuzzySearchReport[] = [];
 
   get length() {
-    return (
-      this.matches.length +
-      this.children.length
-    );
+    return this.matches.length + this.children.length;
   }
   addHeading(headingText: string) {
     this.headingText = headingText;
@@ -88,7 +89,7 @@ export class FuzzySearchReport {
       .map((it) => it.toString().replace(/^/gm, " "))
       .join("\n");
     const message = messageArray.join(`\n${TAB}`);
-    const heading = chalk.black_b(this.headingText);
+    const heading = this.headingText ? chalk.black_b(this.headingText) : "";
     return `${heading}
 ${TAB}${message}
 ${formatChildren}`;
