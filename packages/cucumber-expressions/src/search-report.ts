@@ -101,9 +101,9 @@ export class FuzzySearchReport {
     });
     const formatChildren: string = children
       .map((it) => it.toString())
-      .join("\n")
+      .join("\n");
     const message = messageArray.join(`\n`).trim();
-    const heading = chalk.black(this.headingText);
+    const heading = this.headingText && chalk.black(this.headingText);
     return `${heading ?? ""}
 ${message.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}
 ${formatChildren.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}`;

@@ -53,7 +53,7 @@ describe("step matcher", () => {
       );
       const step = {
         keyword: "Given",
-        keywordType: "Context",
+        type: "Context",
         expression,
         matches: () => true
       };
@@ -92,13 +92,31 @@ describe("step matcher", () => {
       );
       const step = {
         keyword: "Given",
-        keywordType: "Context",
+        type: "Context",
         expression,
         matches: () => true
       };
       const diffs = getDiff(text, step);
       const refined = refineDiff(diffs);
       expect(refined).toEqual("I have 2 blue grapes in my bowl");
+    });
+    it("should get the diffs of a similar text and expression with a space", () => {
+      const text = "I have a Social Group 'MyGroupChannel'";
+      const expression = new CucumberExpression(
+        "I have a Social Group {string} 1",
+        registry
+      );
+      const step = {
+        keyword: "Given",
+        type: "Context",
+        expression,
+        matches: () => true
+      };
+      const diffs = getDiff(text, step);
+      const refined = refineDiff(diffs);
+      expect(refined).toEqual(
+        "I have a Social Group 'MyGroupChannel' 1"
+      );
     });
     it("should get the diffs of a matching text and expression", () => {
       const text = "I have 2 grapes in my bowl";
@@ -108,7 +126,7 @@ describe("step matcher", () => {
       );
       const step = {
         keyword: "Given",
-        keywordType: "Context",
+        type: "Context",
         expression,
         matches: () => true
       };
@@ -151,7 +169,7 @@ describe("step matcher", () => {
       );
       const scope = {
         keyword,
-        keywordType,
+        type: keywordType,
         expression,
         matches: () => false
       };
@@ -281,7 +299,7 @@ const testStep: CachedStep = {
 
 const testStepOther = {
   keyword: "When",
-  keywordType: "Action",
+  type: "Action",
   expression: new CucumberExpression(
     "I have {int} blue drapes in my {string}",
     registry
