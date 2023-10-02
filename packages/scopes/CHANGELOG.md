@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.15
+
+### Patch Changes
+
+- 5b44aa88: Fix: miscalculated Levenshtein distance when comparing a gherkin step literal to a cucumber expression with a string expression
+- Updated dependencies [5b44aa88]
+  - @autometa/cucumber-expressions@0.1.10
+
 ## 0.2.14
 
 ### Patch Changes
