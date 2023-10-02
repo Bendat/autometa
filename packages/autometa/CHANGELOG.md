@@ -1,5 +1,17 @@
 # @autometa/runner
 
+## 0.2.14
+
+### Patch Changes
+
+- 4bbb87e4: Fix: step search returns literal strings instead of expressions when no exact match is found
+- Updated dependencies [4bbb87e4]
+  - @autometa/cucumber-expressions@0.1.8
+  - @autometa/scopes@0.2.13
+  - @autometa/coordinator@0.1.14
+  - @autometa/jest-executor@0.1.14
+  - @autometa/test-builder@0.1.14
+
 ## 0.2.13
 
 ### Patch Changes
