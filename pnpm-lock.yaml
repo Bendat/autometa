@@ -1840,6 +1840,9 @@ importers:
       '@autometa/bind-decorator':
         specifier: workspace:*
         version: link:../../libraries/bind-decorator
+      '@autometa/cucumber-expressions':
+        specifier: workspace:^
+        version: link:../cucumber-expressions
       '@autometa/dto-builder':
         specifier: workspace:*
         version: link:../../libraries/dto-builder

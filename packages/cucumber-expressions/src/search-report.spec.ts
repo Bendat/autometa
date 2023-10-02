@@ -41,7 +41,10 @@ describe("StepMatch", () => {
         step: {
           keyword: "When",
           type: "Action",
-          expression: new CucumberExpression("", registery),
+          expression: new CucumberExpression(
+            "I have {int} blue grapes in my {string}",
+            registery
+          ),
           matches: () => false
         }
       };
@@ -61,7 +64,10 @@ describe("SearchReport", () => {
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression("", registery),
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registery
+        ),
         matches: () => false
       }
     };
@@ -79,7 +85,10 @@ describe("SearchReport", () => {
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression("", registery),
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registery
+        ),
         matches: () => false
       }
     };
@@ -97,7 +106,10 @@ describe("SearchReport", () => {
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression("", registery),
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registery
+        ),
         matches: () => false
       }
     };
@@ -109,7 +121,10 @@ describe("SearchReport", () => {
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression("", registery),
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registery
+        ),
         matches: () => false
       }
     };
@@ -140,7 +155,10 @@ describe("SearchReport", () => {
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression("", registery),
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registery
+        ),
         matches: () => false
       }
     };
