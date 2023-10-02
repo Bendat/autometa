@@ -1,40 +1,22 @@
 import { diffWordsWithSpace, Change } from "diff";
 import { distance } from "closest-match";
-import { Expression } from "@cucumber/cucumber-expressions";
-import { AssertKey } from "@autometa/asserters";
-import { StepKeyword, StepType } from "@autometa/types";
-export interface Matchable {
-  matches(text: string): boolean;
-}
-
-export interface ExpressionWrapper {
-  expression: Expression;
-}
-
-export interface GherkinKeyword {
-  type: StepType;
-}
+import { CachedStep } from "./types";
 export type StepDiff = {
   merged: string;
-  step: {
-    keyword: StepKeyword;
-    expression: Expression;
-    type: StepType;
-    matches: (text: string) => boolean;
-  };
+  step: CachedStep;
   gherkin: string;
   distance: number;
 };
 export type StepDiffs = StepDiff[];
 export type LimitedStepDiffs = { same: StepDiffs; other: StepDiffs };
-export function checkMatch<T extends Matchable>(text: string, it: T): boolean {
+export function checkMatch(text: string, it: CachedStep): boolean {
   return it.matches(text);
 }
 export function limitDiffs(
-  sameStepType: StepDiff[],
-  differentStepType: StepDiff[],
+  sameStepType: StepDiffs,
+  differentStepType: StepDiffs,
   max: number
-) : LimitedStepDiffs {
+): LimitedStepDiffs {
   const sameDistances = sameStepType.map((it) => it.distance);
   const maxSameStepDistance = Math.max(...sameDistances);
   const otherStepDistance = differentStepType.map((it) => it.distance);
@@ -55,22 +37,15 @@ export function limitDiffs(
     return { same: sameSlice, other: differentSlice };
   }
   const maxIndex = Math.min(max, sameStepType.length);
-  const result = { same: sameStepType.slice(0, maxIndex), other: [] };
-  return result;
+  return { same: sameStepType.slice(0, maxIndex), other: [] };
 }
 
-export function getDiffs<T extends Matchable & ExpressionWrapper>(
-  text: string,
-  maxResults: number,
-  step: T[]
-) {
+export function getDiffs(text: string, maxResults: number, step: CachedStep[]) {
   const sorted = step
     .map((it) => {
       if (checkMatch(text, it)) {
         return { merged: text, step: it, gherkin: text, distance: 0 };
       }
-      AssertKey(it, "expression");
-      AssertKey(it, "matches");
       const diff = getDiff(text, it);
       const refined = refineDiff(diff);
       const dist = distance(text, refined);
@@ -81,7 +56,7 @@ export function getDiffs<T extends Matchable & ExpressionWrapper>(
   return sorted.slice(0, max);
 }
 
-export function getDiff<T extends ExpressionWrapper>(text: string, it: T) {
+export function getDiff(text: string, it: CachedStep) {
   return diffWordsWithSpace(text, it.expression.source);
 }
 
@@ -95,6 +70,9 @@ export function refineDiff(diff: Change[]) {
       index++;
       continue;
     }
+    if (gherkinChange.removed === true) {
+      continue;
+    }
     if (gherkinChange.value) {
       strings.push(gherkinChange.value);
       continue;
@@ -104,7 +82,7 @@ export function refineDiff(diff: Change[]) {
 }
 
 export function isExpressionCandidate(change1: Change, change2: Change) {
-  if (change1.removed && change2.added) {
+  if (change1 && change1.removed && change2 && change2.added) {
     const scopeText = change2.value;
     return /{.*}/.test(scopeText);
   }

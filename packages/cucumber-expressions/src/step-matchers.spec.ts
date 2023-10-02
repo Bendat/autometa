@@ -3,10 +3,8 @@ import {
   ParameterType,
   ParameterTypeRegistry
 } from "@cucumber/cucumber-expressions";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
-  ExpressionWrapper,
-  Matchable,
   checkMatch,
   getDiff,
   getDiffs,
@@ -14,22 +12,25 @@ import {
   limitDiffs,
   refineDiff
 } from "./step-matcher";
+import { CachedStep } from "./types";
 const registry = new ParameterTypeRegistry();
 registry.defineParameterType(
-  new ParameterType("task:builder", [/.*/], String, (val) => val)
+  new ParameterType("task:builder", [/.*/], String, vi.fn())
 );
+const keywordType = "Context";
+const keyword = "Given";
 describe("step matcher", () => {
-  describe("checkMatch", () => {
-    it("should confirm a matchable object returns true", () => {
-      const step: Matchable = { matches: () => true };
-      const matches = checkMatch("hello world", step);
-      expect(matches).toBe(true);
-    });
-    it("should confirm a non-matchable object returns false", () => {
-      const step: Matchable = { matches: () => false };
-      const matches = checkMatch("hello world", step);
-      expect(matches).toBe(false);
-    });
+  it("should find an exact match in the wrong step", () => {
+    const expression = new CucumberExpression("hello world", registry);
+    const step: CachedStep = {
+      keyword: "Given",
+      type: "Context",
+      expression,
+      matches: () => true
+    };
+
+    const matches = checkMatch("hello world", step);
+    expect(matches).toBe(true);
   });
   describe("isExpressionCandidate", () => {
     it("should return true if the change is a candidate for an expression", () => {
@@ -50,7 +51,9 @@ describe("step matcher", () => {
         "I have {int} grapes in my {string}",
         registry
       );
-      const step: Matchable & ExpressionWrapper = {
+      const step = {
+        keyword: "Given",
+        keywordType: "Context",
         expression,
         matches: () => true
       };
@@ -79,14 +82,19 @@ describe("step matcher", () => {
       ]);
       expect(refined).toEqual("I have 2 grapes in my bowl");
     });
+  });
+  describe("refineDiff", () => {
     it("should get the diffs of a similar text and expression", () => {
       const text = "I have 2 grapes in my bowl";
       const expression = new CucumberExpression(
         "I have {int} blue grapes in my {string}",
         registry
       );
-      const step: ExpressionWrapper = {
-        expression
+      const step = {
+        keyword: "Given",
+        keywordType: "Context",
+        expression,
+        matches: () => true
       };
       const diffs = getDiff(text, step);
       const refined = refineDiff(diffs);
@@ -98,8 +106,11 @@ describe("step matcher", () => {
         "I have {int} grapes in my {string}",
         registry
       );
-      const step: ExpressionWrapper = {
-        expression
+      const step = {
+        keyword: "Given",
+        keywordType: "Context",
+        expression,
+        matches: () => true
       };
       const diffs = getDiff(text, step);
       const refined = refineDiff(diffs);
@@ -113,11 +124,12 @@ describe("step matcher", () => {
         "I have {int} blue grapes in my {string}",
         registry
       );
-      const scope: ExpressionWrapper & Matchable = {
+      const scope: CachedStep = {
+        keyword,
+        type: keywordType,
         expression,
         matches: () => false
       };
-      //   = new StepScope(keyword, type, expression, Empty_Function);
       const [diffs] = getDiffs(text, 1, [scope]);
       expect(diffs).not.toBeUndefined();
       expect(diffs).not.toBeNull();
@@ -137,14 +149,18 @@ describe("step matcher", () => {
         "I have {int} blue drapes in my {string}",
         registry
       );
-      const scope: ExpressionWrapper & Matchable = {
+      const scope = {
+        keyword,
+        keywordType,
         expression,
         matches: () => false
       };
-      const scope1: ExpressionWrapper & Matchable = {
+      const scope1 = {
+        keyword,
+        type: keywordType,
         expression: expression1,
         matches: () => false
-      };
+      } satisfies CachedStep;
       const diffs = getDiffs(text, 1, [scope, scope1]);
       expect(diffs).toHaveLength(1);
       const [diff] = diffs;
@@ -155,7 +171,6 @@ describe("step matcher", () => {
       expect(distance).toEqual(5);
     });
   });
-
   describe("limitDiffs", () => {
     it("should limit a diff to only same step types when smaller distance than other step types", () => {
       const sameTypeDiff1 = {
@@ -254,22 +269,22 @@ describe("step matcher", () => {
   });
 });
 
-const testStep = {
-  type: "Context",
-  keyword: "Given",
+const testStep: CachedStep = {
+  keyword,
+  type: keywordType,
   expression: new CucumberExpression(
     "I have {int} blue grapes in my {string}",
     registry
   ),
   matches: () => false
-} as const;
+};
 
 const testStepOther = {
-  type: "Context",
-  keyword: "Given",
+  keyword: "When",
+  keywordType: "Action",
   expression: new CucumberExpression(
     "I have {int} blue drapes in my {string}",
     registry
   ),
   matches: () => false
-} as const;
+};
