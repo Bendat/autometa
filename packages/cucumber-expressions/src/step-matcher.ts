@@ -40,15 +40,33 @@ export function limitDiffs(
   return { same: sameStepType.slice(0, maxIndex), other: [] };
 }
 
+function removeWhitespaceFromQuotedSubstrings(inputString: string): string {
+  const regex = /(["'])([^"']*?)\1/g;
+  let modifiedString = inputString;
+
+  let match;
+  while ((match = regex.exec(inputString))) {
+    const quotedSubstring = match[0];
+    const strippedSubstring = match[2].replace(/\s+/g, ""); // Remove whitespace
+    modifiedString = modifiedString.replace(
+      quotedSubstring,
+      `${match[1]}${strippedSubstring}${match[1]}`
+    );
+  }
+
+  return modifiedString;
+}
+
 export function getDiffs(text: string, maxResults: number, step: CachedStep[]) {
   const sorted = step
     .map((it) => {
       if (checkMatch(text, it)) {
         return { merged: text, step: it, gherkin: text, distance: 0 };
       }
-      const diff = getDiff(text, it);
+      const collapsed = removeWhitespaceFromQuotedSubstrings(text);
+      const diff = getDiff(collapsed, it);
       const refined = refineDiff(diff);
-      const dist = distance(text, refined);
+      const dist = distance(collapsed, refined);
       return { merged: refined, step: it, gherkin: text, distance: dist };
     })
     .sort((a, b) => a.distance - b.distance);
@@ -67,6 +85,10 @@ export function refineDiff(diff: Change[]) {
     const scopeChange = diff[index + 1];
     if (isExpressionCandidate(gherkinChange, scopeChange)) {
       strings.push(gherkinChange.value);
+      const extra = extractTextAfterPlaceholder(scopeChange.value);
+      if (extra) {
+        strings.push(extra);
+      }
       index++;
       continue;
     }
@@ -75,12 +97,26 @@ export function refineDiff(diff: Change[]) {
     }
     if (gherkinChange.value) {
       strings.push(gherkinChange.value);
+
       continue;
     }
   }
   return strings.join("");
 }
+function extractTextAfterPlaceholder(inputString: string): string | null {
+  // Define a regular expression to match the pattern
+  const regex = /\{[^{}]+\}(.+)?/;
 
+  // Use regex.exec to find a match in the input string
+  const match = regex.exec(inputString);
+
+  // Check if a match was found
+  if (match && match[1]) {
+    return match[1]; // Extract and trim the matched text (including leading spaces if present)
+  } else {
+    return null; // No match found or nothing after curly braces
+  }
+}
 export function isExpressionCandidate(change1: Change, change2: Change) {
   if (change1 && change1.removed && change2 && change2.added) {
     const scopeText = change2.value;
