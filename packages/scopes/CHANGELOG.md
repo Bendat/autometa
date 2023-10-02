@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.14
+
+### Patch Changes
+
+- 4af1139a: Fix: fuzzy search for step names prints malformed strings
+- Updated dependencies [4af1139a]
+  - @autometa/cucumber-expressions@0.1.9
+
 ## 0.2.13
 
 ### Patch Changes

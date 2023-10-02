@@ -1,5 +1,17 @@
 # @autometa/runner
 
+## 0.2.15
+
+### Patch Changes
+
+- 4af1139a: Fix: fuzzy search for step names prints malformed strings
+- Updated dependencies [4af1139a]
+  - @autometa/cucumber-expressions@0.1.9
+  - @autometa/coordinator@0.1.15
+  - @autometa/jest-executor@0.1.15
+  - @autometa/scopes@0.2.14
+  - @autometa/test-builder@0.1.15
+
 ## 0.2.14
 
 ### Patch Changes

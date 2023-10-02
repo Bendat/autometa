@@ -1,5 +1,11 @@
 # @autometa/cucumber-expressions
 
+## 0.1.9
+
+### Patch Changes
+
+- 4af1139a: Fix: fuzzy search for step names prints malformed strings
+
 ## 0.1.8
 
 ### Patch Changes
