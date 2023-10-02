@@ -1,5 +1,11 @@
 # @autometa/cucumber-expressions
 
+## 0.1.8
+
+### Patch Changes
+
+- 4bbb87e4: Fix: step search returns literal strings instead of expressions when no exact match is found
+
 ## 0.1.7
 
 ### Patch Changes

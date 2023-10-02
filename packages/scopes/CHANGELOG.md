@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.13
+
+### Patch Changes
+
+- 4bbb87e4: Fix: step search returns literal strings instead of expressions when no exact match is found
+- Updated dependencies [4bbb87e4]
+  - @autometa/cucumber-expressions@0.1.8
+
 ## 0.2.12
 
 ### Patch Changes
