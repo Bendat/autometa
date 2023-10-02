@@ -1,5 +1,13 @@
 # @autometa/test-builder
 
+## 0.1.15
+
+### Patch Changes
+
+- 4af1139a: Fix: fuzzy search for step names prints malformed strings
+- Updated dependencies [4af1139a]
+  - @autometa/scopes@0.2.14
+
 ## 0.1.14
 
 ### Patch Changes
