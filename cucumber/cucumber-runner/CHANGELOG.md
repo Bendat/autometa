@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.9.0
+
+### Minor Changes
+
+- 5e53b2e0: feat: handle async events being emitted
+
 ## 0.8.0
 
 ### Minor Changes
