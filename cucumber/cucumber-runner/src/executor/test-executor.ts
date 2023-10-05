@@ -19,6 +19,7 @@ import { Status } from "allure-js-commons";
 import { ParsedDataTable } from "../gherkin/datatables/datatable";
 import { globalScope } from "../test-scopes/globals";
 import { LoggerSubscriber } from "./log-events";
+import { afterEach } from "node:test";
 export class TestExecutor {
   subscribers: EventSubscriber[];
   #instanceDependencies: DependencyInstanceProvider[];
@@ -60,6 +61,7 @@ export class TestExecutor {
     afterAll(() => {
       events.feature.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
     });
+    afterEach(events.settleAsyncEvents);
     const { title, path, tags, modifier } = this.feature;
     featureGroup(`Feature ${title}`, () => {
       for (const child of this.feature.childer) {
@@ -159,7 +161,26 @@ export class TestExecutor {
       events.scenarioWrapper.emitStart();
       await runBeforeHooks(befores, scenario.tags, app, onFailure);
       try {
-        await runBackgrounds(scenario, app);
+        try {
+          await runBackgrounds(scenario, app);
+        } catch (e) {
+          events.scenario.emitStart({
+            title,
+            tags,
+            modifier,
+            args: [],
+            uuid: id,
+            description,
+            examples,
+          });
+          events.scenario.emitEnd({
+            title,
+            status: Status.BROKEN,
+            modifier,
+            error: e as Error,
+          });
+          throw e;
+        }
         events.scenario.emitStart({
           title,
           tags,
