@@ -1,4 +1,4 @@
-import { transformTableValue } from './transform-table-value';
+import { transformTableValue } from "./transform-table-value";
 import { ParsedDataTable } from "./datatable";
 import { CompiledDataTable } from "./table-type";
 import { TableValue } from "./table-value";
@@ -74,7 +74,9 @@ export class MTable extends ParsedDataTable implements IMTable {
     this.vheaders = raw.slice(1, raw.length).map(([title]) => title as string);
     const row = raw.at(0) ?? [];
     this.hheaders = row.slice(1, row.length).map((it) => it as string) ?? [];
-    this.rows = raw.slice(1, raw.length).map((row) => row.slice(1, row.length).map(transformTableValue));
+    this.rows = raw
+      .slice(1, raw.length)
+      .map((row) => row.slice(1, row.length).map(transformTableValue));
     const mapHeaders = (collection: HeaderMapping) => (header: string, idx: number) => {
       collection[header] = idx;
     };
@@ -84,23 +86,35 @@ export class MTable extends ParsedDataTable implements IMTable {
 
   get = (verticalHeader: string, horizontalHeaderOrRaw?: string | boolean, raw?: boolean) => {
     let getRaw = raw;
-    if (typeof horizontalHeaderOrRaw === 'boolean') {
+    if (typeof horizontalHeaderOrRaw === "boolean") {
       getRaw = horizontalHeaderOrRaw;
     }
-    const rows = getRaw ? this.raw.slice(1, this.raw.length).map((row) => row.slice(1, row.length)) : this.rows
+    const rows = getRaw
+      ? this.raw.slice(1, this.raw.length).map((row) => row.slice(1, row.length))
+      : this.rows;
     const vIndex = this.vheaderMappings[verticalHeader];
     const row = rows[vIndex];
-    if (typeof horizontalHeaderOrRaw === 'string') {
+    if (typeof horizontalHeaderOrRaw === "string") {
       const hIndex = this.hheaderMappings[horizontalHeaderOrRaw];
-      return  row[hIndex];
+      return row[hIndex];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return row as any;
   };
 
   col = (horizontalHeader: string, raw?: boolean) => {
-    const rows = raw ? this.raw.slice(1, this.raw.length).map((row) => row.slice(1, row.length)) : this.rows
+    const rows = raw
+      ? this.raw.slice(1, this.raw.length).map((row) => row.slice(1, row.length))
+      : this.rows;
     const hIndex = this.hheaderMappings[horizontalHeader];
-    return  rows.map((it) => it.at(hIndex)) as TableValue[];
+    return rows.map((it) => it.at(hIndex)) as TableValue[];
   };
+
+  asJson(): Record<string | number, TableValue[]> {
+    const json: Record<string, TableValue[]> = {};
+    for (const header in this.hheaders) {
+      json[header] = this.col(header);
+    }
+    return json;
+  }
 }

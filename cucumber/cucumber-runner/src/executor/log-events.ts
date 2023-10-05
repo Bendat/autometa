@@ -48,7 +48,7 @@ export class LoggerSubscriber implements EventSubscriber {
     console.log(`Starting Step: ${opts.keyword} ${opts.text}`);
   };
   onStepEnd = (opts: EndStepOpts) => {
-    console.log(`Ending Step: ${opts.text}`);
+    console.log(`Ending Step: ${opts.expression}`);
   };
   onSetupStart = (opts: StartSetupOpts) => {
     console.log(`Starting Setup: ${opts.description}`);

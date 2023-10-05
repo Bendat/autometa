@@ -1,4 +1,4 @@
-import { transformTableValue } from './transform-table-value';
+import { transformTableValue } from "./transform-table-value";
 import { ParsedDataTable } from "./datatable";
 import { JsonTableRow } from "./json-table-row";
 import type { CompiledDataTable } from "./table-type";
@@ -54,7 +54,7 @@ export class VTable extends ParsedDataTable implements IVTable {
   get = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
     let index: number | null | undefined;
     let getRaw = raw;
-    if (typeof indexOrRaw === 'boolean') {
+    if (typeof indexOrRaw === "boolean") {
       getRaw = indexOrRaw;
     } else {
       index = indexOrRaw;
@@ -75,7 +75,7 @@ export class VTable extends ParsedDataTable implements IVTable {
   tryGet = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
     let index: number | null | undefined;
     let getRaw = raw;
-    if (typeof indexOrRaw === 'boolean') {
+    if (typeof indexOrRaw === "boolean") {
       getRaw = indexOrRaw;
     } else {
       index = indexOrRaw;
@@ -101,7 +101,7 @@ export class VTable extends ParsedDataTable implements IVTable {
    * @returns A Tuple-like array of the values of a row
    */
   row(number: number, raw?: boolean): TableValue[] {
-    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows
+    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows;
     const row = rows.at(number);
     if (!row) {
       throw new Error(`Row ${number} does not exist. This table has ${this.rows.length} rows.`);
@@ -119,7 +119,7 @@ export class VTable extends ParsedDataTable implements IVTable {
    * @returns A Tuple-like array of the values of a column
    */
   col(number: number, raw?: boolean): TableValue[] {
-    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows
+    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows;
     return rows.map((row) => {
       const col = row.at(number);
       if (!col) {
@@ -142,6 +142,14 @@ export class VTable extends ParsedDataTable implements IVTable {
     return this.toList(raw)[rowIndex] as T;
   }
 
+  asJson(): Record<string, TableValue[]> {
+    const json: Record<string, TableValue[]> = {};
+    this.headers.forEach((header) => {
+      json[header] = this.get(header);
+    });
+    return json;
+  }
+
   /**
    * Converts the content of the table
    * to an array of json objects, mapping
@@ -156,7 +164,7 @@ export class VTable extends ParsedDataTable implements IVTable {
    * @returns the converted object array
    */
   toList(raw?: boolean) {
-    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows
+    const rows = raw ? this.raw.map(([_, ...rows]) => rows) : this.rows;
     const raws = rows.map((values, idx) => {
       return values.map((value) => {
         const header = this.headers[idx];
