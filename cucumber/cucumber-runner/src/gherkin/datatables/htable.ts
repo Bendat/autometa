@@ -1,4 +1,4 @@
-import { transformTableValue } from './transform-table-value';
+import { transformTableValue } from "./transform-table-value";
 import { ParsedDataTable } from "./datatable";
 import { JsonTableRow } from "./json-table-row";
 import { CompiledDataTable } from "./table-type";
@@ -77,12 +77,12 @@ export class HTable extends ParsedDataTable implements IHTable {
     };
     this.headers.forEach(mapHeaders);
     const [_headers, ...rows] = [...raw];
-    this.rows = rows.map(row => row.map(transformTableValue));
+    this.rows = rows.map((row) => row.map(transformTableValue));
   }
   get = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
     let index: number | null | undefined;
     let getRaw = raw;
-    if (typeof indexOrRaw === 'boolean') {
+    if (typeof indexOrRaw === "boolean") {
       getRaw = indexOrRaw;
     } else {
       index = indexOrRaw;
@@ -104,7 +104,7 @@ export class HTable extends ParsedDataTable implements IHTable {
   tryGet = (header: string, indexOrRaw?: number | boolean, raw?: boolean) => {
     let index: number | null | undefined;
     let getRaw = raw;
-    if (typeof indexOrRaw === 'boolean') {
+    if (typeof indexOrRaw === "boolean") {
       getRaw = indexOrRaw;
     } else {
       index = indexOrRaw;
@@ -129,7 +129,7 @@ export class HTable extends ParsedDataTable implements IHTable {
    * @returns A Tuple-like array of the values of a row
    */
   row(number: number, raw?: boolean): TableValue[] {
-    const rows = raw ? this.raw.slice(1) : this.rows
+    const rows = raw ? this.raw.slice(1) : this.rows;
     const row = rows.at(number);
     if (!row) {
       throw new Error(`Row ${number} does not exist. This table has ${this.rows.length} rows.`);
@@ -147,7 +147,7 @@ export class HTable extends ParsedDataTable implements IHTable {
    * @returns A Tuple-like array of the values of a column
    */
   col(number: number, raw?: boolean): TableValue[] {
-    const rows = raw ? this.raw.slice(1) : this.rows
+    const rows = raw ? this.raw.slice(1) : this.rows;
     return rows.map((row) => {
       const col = row.at(number);
       if (!col) {
@@ -187,7 +187,14 @@ export class HTable extends ParsedDataTable implements IHTable {
   json<T extends JsonTableRow = JsonTableRow>(rowIndex: number, raw?: boolean): T {
     return this.toList(raw)[rowIndex] as T;
   }
-
+  asJson(): Record<string, TableValue[]> {
+    const json: Record<string, TableValue[]> = {};
+    for (const header of this.headers) {
+      this.headerMapping[header] = this.headers.indexOf(header);
+      json[header] = this.get(header);
+    }
+    return json;
+  }
   /**
    * Converts the content of the table
    * to an array of json objects, mapping
@@ -202,7 +209,7 @@ export class HTable extends ParsedDataTable implements IHTable {
    * @returns the converted object array
    */
   toList(raw?: boolean): JsonTableRow[] {
-    const rows = raw ? this.raw.slice(1) : this.rows
+    const rows = raw ? this.raw.slice(1) : this.rows;
     return rows.map((values) => {
       return values
         .map((value, idx) => {

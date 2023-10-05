@@ -19,6 +19,7 @@ import { Status } from "allure-js-commons";
 import { ParsedDataTable } from "../gherkin/datatables/datatable";
 import { globalScope } from "../test-scopes/globals";
 import { LoggerSubscriber } from "./log-events";
+import { GherkinStep } from "../gherkin/gherkin-steps";
 export class TestExecutor {
   subscribers: EventSubscriber[];
   #instanceDependencies: DependencyInstanceProvider[];
@@ -232,6 +233,7 @@ async function runSteps(
       step: StoredStep;
       args: unknown[];
     };
+    step: GherkinStep;
     tableOrDocstring: Docstring | CompiledDataTable | undefined;
   }[],
   app: unknown
@@ -242,23 +244,28 @@ async function runSteps(
       tableOrDocstring,
       found: {
         args,
-        step: { tableType, text, keyword },
+        step: { tableType, text: expression },
       },
+      step: { text, keyword },
     } = step;
 
     try {
       const params = getRealArgs(tableOrDocstring, args, app, tableType);
-      events.step.emitStart({ text: text.source, keyword, args: params });
+      events.step.emitStart({ text, keyword, args: params });
       await step.found.step.action(...params);
-      events.step.emitEnd({ text, status: Status.PASSED });
+      events.step.emitEnd({ expression, text, status: Status.PASSED });
     } catch (e) {
       const old = (e as Error).message;
-      (e as Error).message = `Step "${keyword} ${text.source}" failed with message ${old}`;
-      events.step.emitEnd({ text, status: Status.FAILED, error: [e] });
-      for (const step of stepDefinitions.slice(index + 1)) {
-        const params = getRealArgs(tableOrDocstring, args, app, tableType);
-        events.step.emitStart({ text: step.found.step.text.source, keyword, args: params });
-        events.step.emitEnd({ text: step.found.step.text, status: Status.BROKEN });
+      (
+        e as Error
+      ).message = `Step "${keyword} ${text}" failed with message ${old}. Expression: ${expression.source}`;
+      events.step.emitEnd({ expression, text, status: Status.FAILED, error: [e] });
+      for (const { step, found,tableOrDocstring } of stepDefinitions.slice(index + 1)) {
+        const params = getRealArgs(tableOrDocstring, found.args, app, tableType);
+        events.step.emitStart({ text: step.text, keyword: step.keyword, args: params });
+        const expression = found.step.text
+        const text = step.text
+        events.step.emitEnd({ expression , text, status: Status.BROKEN });
       }
       throw e;
     } finally {

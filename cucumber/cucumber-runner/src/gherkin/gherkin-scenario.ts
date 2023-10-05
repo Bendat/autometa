@@ -104,6 +104,7 @@ export class GherkinScenario extends GherkinNode {
   findMatchingSteps() {
     return this.steps.map((step) => {
       return {
+        step,
         found: this.stepCache.find(step.keywordType ?? "Unknown", step.keyword, step.text),
         tableOrDocstring: step.tableOrDocstring as Docstring | CompiledDataTable | undefined,
       };
@@ -112,6 +113,7 @@ export class GherkinScenario extends GherkinNode {
   findMatchingBackgroundSteps() {
     return this.backgroundSteps.map((step) => {
       return {
+        step,
         found: this.stepCache.find(step.keywordType ?? "Unknown", step.keyword, step.text),
         tableOrDocstring: step.tableOrDocstring as Docstring | CompiledDataTable | undefined,
       };

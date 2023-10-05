@@ -1,5 +1,6 @@
 import { ParsedDataTable } from "./datatable";
 import { CompiledDataTable } from "./table-type";
+import { TableValue } from "./table-value";
 interface IListTable {
   /**
    * Get an array of table values corresponding
@@ -29,6 +30,15 @@ interface IListTable {
  *
  */
 export class ListTable extends ParsedDataTable implements IListTable {
+  asJson(): Record<string, TableValue[]> {
+    const json: Record<number, TableValue[]> = {};
+    const length = this.rows.length;
+    for (let i = 0; i < length; i++) {
+      json[i] = this.rows[i];
+    }
+    return json;
+  }
+  
   readonly rows: readonly string[][];
   constructor(protected raw: CompiledDataTable) {
     super();
@@ -38,7 +48,7 @@ export class ListTable extends ParsedDataTable implements IListTable {
   get = (rowIndex: number, columnIndexOrRaw?: number | boolean, raw?: boolean) => {
     let index: number | null | undefined;
     let getRaw = raw;
-    if (typeof columnIndexOrRaw === 'boolean') {
+    if (typeof columnIndexOrRaw === "boolean") {
       getRaw = columnIndexOrRaw;
     } else {
       index = columnIndexOrRaw;
@@ -49,7 +59,7 @@ export class ListTable extends ParsedDataTable implements IListTable {
       throw new Error(`No table row found at index ${rowIndex}`);
     }
 
-    if (typeof index === 'number') {
+    if (typeof index === "number") {
       const cell = row.at(index);
       if (!cell) {
         throw new Error(`No table cell found at index ${rowIndex}, ${columnIndexOrRaw}`);

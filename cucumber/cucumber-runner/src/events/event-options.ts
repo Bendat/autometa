@@ -76,7 +76,8 @@ export interface StartStepOpts {
 }
 
 export interface EndStepOpts {
-  text: CucumberExpression | RegularExpression;
+  text: string;
+  expression: CucumberExpression | RegularExpression;
   status: Status;
   error?: Error | unknown;
 }
