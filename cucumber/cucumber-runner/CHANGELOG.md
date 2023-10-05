@@ -1,5 +1,17 @@
 # @autometa/cucumber-runner
 
+## 0.9.5
+
+### Patch Changes
+
+- Feat: updated dist folder
+
+## 0.9.4
+
+### Patch Changes
+
+- 340938d7: Fix: event callback arguments
+
 ## 0.9.3
 
 ### Patch Changes
