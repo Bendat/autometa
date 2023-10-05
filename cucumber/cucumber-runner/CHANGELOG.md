@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.9.2
+
+### Patch Changes
+
+- Rebuild
+
 ## 0.9.1
 
 ### Patch Changes
