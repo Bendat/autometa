@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.9.1
+
+### Patch Changes
+
+- 1fcdd00d: Fix: async await event
+
 ## 0.9.0
 
 ### Minor Changes
