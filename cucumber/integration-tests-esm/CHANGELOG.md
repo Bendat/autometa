@@ -1,5 +1,20 @@
 # integration-tests-esm
 
+## 0.6.6
+
+### Patch Changes
+
+- Feat: updated dist folder
+- Updated dependencies
+  - @autometa/cucumber-runner@0.9.5
+
+## 0.6.5
+
+### Patch Changes
+
+- Updated dependencies [340938d7]
+  - @autometa/cucumber-runner@0.9.4
+
 ## 0.6.4
 
 ### Patch Changes
