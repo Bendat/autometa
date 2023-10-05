@@ -34,6 +34,20 @@ export class TestEventEmitter {
   after = new TestEmitter<StartAfterOpts, EndAfterOpts>("After");
   step = new TestEmitter<StartStepOpts, EndStepOpts>("Step");
 
+  settleAsyncEvents = async () => {
+    return await Promise.allSettled([
+      this.scenarioOutline.waitForPromises(),
+      this.feature.waitForPromises(),
+      this.rule.waitForPromises(),
+      this.scenario.waitForPromises(),
+      this.scenarioWrapper.waitForPromises(),
+      this.setup.waitForPromises(),
+      this.teardown.waitForPromises(),
+      this.before.waitForPromises(),
+      this.after.waitForPromises(),
+      this.step.waitForPromises(),
+    ]);
+  };
   load = ({
     onFeatureStart,
     onFeatureEnd,

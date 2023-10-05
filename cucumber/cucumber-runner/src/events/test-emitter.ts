@@ -2,6 +2,7 @@ import EventEmitter from "events";
 import { type Cb } from "./test-event-emitter";
 
 export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmitter {
+  private promises: Promise<unknown>[] = [];
   constructor(readonly name: string) {
     super();
   }
@@ -29,6 +30,22 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
   load = (onStart?: Cb, onEnd?: Cb) => {
     this.onStart(onStart);
     this.onEnd(onEnd);
+  };
+
+  collectPromises = (name: string, action: (...args: unknown[]) => unknown, ...args: unknown[]) => {
+    try {
+      const result = action(...args);
+      if (result instanceof Promise) {
+        this.promises.push(result);
+      }
+    } catch (e) {
+      console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
+    }
+  };
+
+  waitForPromises = async () => {
+    const settled = await Promise.allSettled(this.promises);
+    return settled.filter((it) => it.status === "rejected").length;
   };
 }
 
