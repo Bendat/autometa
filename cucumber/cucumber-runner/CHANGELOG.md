@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.9.3
+
+### Patch Changes
+
+- Fix steps being marked "failed" even when they pass
+
 ## 0.9.2
 
 ### Patch Changes
