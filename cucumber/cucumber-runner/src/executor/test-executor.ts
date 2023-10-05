@@ -19,7 +19,6 @@ import { Status } from "allure-js-commons";
 import { ParsedDataTable } from "../gherkin/datatables/datatable";
 import { globalScope } from "../test-scopes/globals";
 import { LoggerSubscriber } from "./log-events";
-import { afterEach } from "node:test";
 export class TestExecutor {
   subscribers: EventSubscriber[];
   #instanceDependencies: DependencyInstanceProvider[];
@@ -41,7 +40,7 @@ export class TestExecutor {
     this.#globalApp = getApp(...this.#instanceDependencies);
   }
   execute() {
-    const { beforeAll, afterAll, describe } = Config.get<TestFunctions>("runner");
+    const { beforeAll, afterAll, describe, afterEach } = Config.get<TestFunctions>("runner");
 
     const featureGroup = tagFilter(this.feature.tags, describe, this.feature.modifier);
     let failed = false;
@@ -58,10 +57,13 @@ export class TestExecutor {
       const teardown = [...globalScope.hooks.teardown, ...this.feature.hooks.teardown];
       await runTeardownHooks(teardown, this.#globalApp, failFeature);
     });
-    afterAll(() => {
+    afterAll(async () => {
       events.feature.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
+      await events.settleAsyncEvents();
     });
-    afterEach(events.settleAsyncEvents);
+    afterEach(async () => {
+      await events.settleAsyncEvents();
+    });
     const { title, path, tags, modifier } = this.feature;
     featureGroup(`Feature ${title}`, () => {
       for (const child of this.feature.childer) {
@@ -234,6 +236,7 @@ async function runSteps(
   }[],
   app: unknown
 ) {
+  let index = 0;
   for (const step of stepDefinitions) {
     const {
       tableOrDocstring,
@@ -247,12 +250,19 @@ async function runSteps(
       const params = getRealArgs(tableOrDocstring, args, app, tableType);
       events.step.emitStart({ text: text.source, keyword, args: params });
       await step.found.step.action(...params);
-      events.step.emitEnd({ text, status: Status.FAILED });
+      events.step.emitEnd({ text, status: Status.PASSED });
     } catch (e) {
       const old = (e as Error).message;
       (e as Error).message = `Step "${keyword} ${text.source}" failed with message ${old}`;
       events.step.emitEnd({ text, status: Status.FAILED, error: [e] });
+      for (const step of stepDefinitions.slice(index + 1)) {
+        const params = getRealArgs(tableOrDocstring, args, app, tableType);
+        events.step.emitStart({ text: step.found.step.text.source, keyword, args: params });
+        events.step.emitEnd({ text: step.found.step.text, status: Status.BROKEN });
+      }
       throw e;
+    } finally {
+      index++;
     }
   }
 }
