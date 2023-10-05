@@ -13,13 +13,13 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
 
   onStart = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onStart${this.name}`, tryWrapper(this.name, action));
+      this.on(`onStart${this.name}`,  this.collectPromises(this.name, action));
     }
   };
 
   onEnd = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onEnd${this.name}`, tryWrapper(this.name, action));
+      this.on(`onEnd${this.name}`, this.collectPromises(this.name, action));
     }
   };
 
@@ -32,15 +32,17 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
     this.onEnd(onEnd);
   };
 
-  collectPromises = (name: string, action: (...args: unknown[]) => unknown, ...args: unknown[]) => {
-    try {
-      const result = action(...args);
-      if (result instanceof Promise) {
-        this.promises.push(result);
+  collectPromises = (name: string, action: (...args: unknown[]) => unknown) => {
+    return (...args: unknown[]) => {
+      try {
+        const result = action(...args);
+        if (result instanceof Promise) {
+          this.promises.push(result);
+        }
+      } catch (e) {
+        console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
       }
-    } catch (e) {
-      console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
-    }
+    };
   };
 
   waitForPromises = async () => {
@@ -49,17 +51,17 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
   };
 }
 
-function tryWrapper(name: string, action: (...args: unknown[]) => void) {
-  return (...args: unknown[]) => {
-    try {
-      const result = action(...args);
-      if ((result as unknown) instanceof Promise) {
-        throw new Error(
-          `A Subscriber action cannot be async or return a promise. Executing ${name}`
-        );
-      }
-    } catch (e) {
-      console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
-    }
-  };
-}
+// function tryWrapper(name: string, action: (...args: unknown[]) => void) {
+//   return (...args: unknown[]) => {
+//     try {
+//       const result = action(...args);
+//       if ((result as unknown) instanceof Promise) {
+//         throw new Error(
+//           `A Subscriber action cannot be async or return a promise. Executing ${name}`
+//         );
+//       }
+//     } catch (e) {
+//       console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
+//     }
+//   };
+// }
