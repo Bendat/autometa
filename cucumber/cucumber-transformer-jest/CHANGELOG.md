@@ -1,5 +1,12 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [5e53b2e0]
+  - @autometa/cucumber-runner@0.9.0
+
 ## 0.5.0
 
 ### Minor Changes
