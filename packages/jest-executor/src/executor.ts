@@ -93,7 +93,8 @@ export function execute(
     ]);
     bootstrapTeardownHooks(bridge, staticApp, events, [config, chosenTimeout]);
   });
-  afterAll(() => {
+  afterAll(async () => {
+    // events.
     const failures = Query.find.failed(bridge);
     const status =
       modifier === "skip"
@@ -107,6 +108,13 @@ export function execute(
       tags: [...bridge.data.gherkin.tags],
       status: status
     });
+    const settled = await events.settleAsyncEvents();
+    const failedCount = settled.filter((e) => e.status === "rejected").length;
+    if(failedCount > 0){
+      const count = `${failedCount}/${settled.length}`
+      const message = `${count} asynchronous Test Events were rejected.`
+      console.warn(message)
+    }
   });
 }
 

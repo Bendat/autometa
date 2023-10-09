@@ -103,6 +103,7 @@ export function refineDiff(diff: Change[]) {
   }
   return strings.join("");
 }
+
 function extractTextAfterPlaceholder(inputString: string): string | null {
   // Define a regular expression to match the pattern
   const regex = /\{[^{}]+\}(.+)?/;
@@ -117,6 +118,7 @@ function extractTextAfterPlaceholder(inputString: string): string | null {
     return null; // No match found or nothing after curly braces
   }
 }
+
 export function isExpressionCandidate(change1: Change, change2: Change) {
   if (change1 && change1.removed && change2 && change2.added) {
     const scopeText = change2.value;
