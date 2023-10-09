@@ -1,5 +1,29 @@
 # @autometa/runner
 
+## 0.2.19
+
+### Patch Changes
+
+- fix: exporting event types
+- Updated dependencies
+  - @autometa/jest-executor@0.2.2
+  - @autometa/test-builder@0.1.19
+  - @autometa/coordinator@0.1.19
+  - @autometa/events@0.2.2
+  - @autometa/scopes@0.2.18
+
+## 0.2.18
+
+### Patch Changes
+
+- 3672161c: Fix: export event option types
+- Updated dependencies [3672161c]
+  - @autometa/events@0.2.1
+  - @autometa/coordinator@0.1.18
+  - @autometa/jest-executor@0.2.1
+  - @autometa/scopes@0.2.17
+  - @autometa/test-builder@0.1.18
+
 ## 0.2.17
 
 ### Patch Changes
