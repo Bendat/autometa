@@ -78,7 +78,7 @@
     "@cucumber/messages": "^21.0.1",
     "@cucumber/tag-expressions": "^5.0.1",
     "@types/convert-array-to-csv": "^2.0.0",
-    "allure-js-commons": "^2.1.0",
+    "allure-js-commons": "^2.9.2",
     "cd": "^0.3.3",
     "color-json": "^3.0.5",
     "commander": "^10.0.0",
