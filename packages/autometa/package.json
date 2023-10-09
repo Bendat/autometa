@@ -1,6 +1,6 @@
 {
   "name": "@autometa/runner",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
