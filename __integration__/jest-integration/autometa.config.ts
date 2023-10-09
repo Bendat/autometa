@@ -3,7 +3,7 @@ defineConfig({
   runner: "jest",
   environment: "default",
   test: {
-    groupLogging: true
+    groupLogging: true,
   },
   events: [],
   roots: {
