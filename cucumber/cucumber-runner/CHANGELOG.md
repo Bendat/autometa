@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.10.0
+
+### Minor Changes
+
+- 51d88780: Feat: Add Async Test Event support to new runner
+
 ## 0.9.5
 
 ### Patch Changes

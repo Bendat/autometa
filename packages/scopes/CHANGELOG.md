@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.16
+
+### Patch Changes
+
+- Updated dependencies [51d88780]
+  - @autometa/cucumber-expressions@0.2.0
+  - @autometa/events@0.2.0
+
 ## 0.2.15
 
 ### Patch Changes

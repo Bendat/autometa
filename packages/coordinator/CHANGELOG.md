@@ -1,5 +1,15 @@
 # @autometa/coordinator
 
+## 0.1.17
+
+### Patch Changes
+
+- Updated dependencies [51d88780]
+  - @autometa/jest-executor@0.2.0
+  - @autometa/events@0.2.0
+  - @autometa/scopes@0.2.16
+  - @autometa/test-builder@0.1.17
+
 ## 0.1.16
 
 ### Patch Changes
