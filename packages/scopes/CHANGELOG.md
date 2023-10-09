@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.2.18
+
+### Patch Changes
+
+- fix: exporting event types
+- Updated dependencies
+  - @autometa/events@0.2.2
+
 ## 0.2.17
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @autometa/jest-transformer
 
+## 0.1.27
+
+### Patch Changes
+
+- fix: exporting event types
+- Updated dependencies
+  - @autometa/runner@0.2.19
+
 ## 0.1.26
 
 ### Patch Changes

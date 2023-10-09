@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.2
+
+### Patch Changes
+
+- fix: exporting event types
+
 ## 0.2.1
 
 ### Patch Changes

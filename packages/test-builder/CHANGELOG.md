@@ -1,5 +1,14 @@
 # @autometa/test-builder
 
+## 0.1.19
+
+### Patch Changes
+
+- fix: exporting event types
+- Updated dependencies
+  - @autometa/events@0.2.2
+  - @autometa/scopes@0.2.18
+
 ## 0.1.18
 
 ### Patch Changes

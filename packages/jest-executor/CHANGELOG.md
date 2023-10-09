@@ -1,5 +1,15 @@
 # @autometa/jest-executor
 
+## 0.2.2
+
+### Patch Changes
+
+- fix: exporting event types
+- Updated dependencies
+  - @autometa/test-builder@0.1.19
+  - @autometa/events@0.2.2
+  - @autometa/scopes@0.2.18
+
 ## 0.2.1
 
 ### Patch Changes
