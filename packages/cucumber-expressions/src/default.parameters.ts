@@ -75,7 +75,7 @@ export const PrimitiveParam: ParamTypeDefinition = {
   transform: (value: unknown) => {
     return overloads(
       def(string({ equals: "null" })).matches((_) => null),
-      def(string({ equals: "undefined" })).matches((_) => undefined),
+      def(string({ in: ["undefined", "missing" ]})).matches((_) => undefined),
       def(string({ in: boolTypes })).matches((val) => Boolean(val)),
       def(string({ equals: "NaN" })).matches((_) => NaN),
       def(string({ equals: "Infinity" })).matches((_) => Infinity),
