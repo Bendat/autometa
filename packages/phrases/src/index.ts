@@ -7,10 +7,12 @@ export {
   sfx,
   pascal,
   pfx,
+  kebab,
   constant,
   upper,
   lower,
-  collapse
+  collapse,
+  trim
 } from "./string-transformer";
 export * from "./types";
 export {

@@ -110,10 +110,10 @@ export function execute(
     });
     const settled = await events.settleAsyncEvents();
     const failedCount = settled.filter((e) => e.status === "rejected").length;
-    if(failedCount > 0){
-      const count = `${failedCount}/${settled.length}`
-      const message = `${count} asynchronous Test Events were rejected.`
-      console.warn(message)
+    if (failedCount > 0) {
+      const count = `${failedCount}/${settled.length}`;
+      const message = `${count} asynchronous Test Events were rejected.`;
+      console.warn(message);
     }
   });
 }
@@ -240,7 +240,7 @@ export function bootstrapScenario(
       });
       try {
         for (const step of bridge.steps) {
-          await bootstrapStep(step, events, bridge, localApp);
+          await tryRunStep(step, events, bridge, localApp);
         }
         bridge.report = { passed: true };
         events.scenario.emitEnd({
@@ -264,6 +264,10 @@ export function bootstrapScenario(
     },
     chosenTimeout.milliseconds
   );
+}
+
+async function tryRunStep(step: StepBridge, events: TestEventEmitter, bridge: ScenarioBridge, localApp: () => App) {
+  await bootstrapStep(step, events, bridge, localApp);
 }
 
 async function bootstrapStep(
@@ -350,12 +354,7 @@ export function bootstrapScenarioOutline(
     bootstrapTeardownHooks(bridge, staticApp, events, [config, timeout]);
     afterAll(() => {
       const failures = Query.find.failed(bridge);
-      const status =
-        modifier === "skip"
-          ? "SKIPPED"
-          : failures.length === 0
-          ? "PASSED"
-          : "FAILED";
+      const status = getStatus(modifier, failures);
       events.scenarioOutline.emitEnd({
         title,
         modifier,
@@ -425,12 +424,7 @@ export function bootstrapRules(
 
       afterAll(() => {
         const failures = Query.find.failed(rule);
-        const status =
-          modifier === "skip"
-            ? "SKIPPED"
-            : failures.length === 0
-            ? "PASSED"
-            : "FAILED";
+        const status = getStatus(modifier, failures);
         events.rule.emitEnd({
           title: ruleName,
           modifier,
@@ -440,6 +434,16 @@ export function bootstrapRules(
       }, ruleTimeout.milliseconds);
     });
   });
+}
+
+function getStatus(modifier: string | undefined, failures: unknown[]) {
+  if (modifier === "skip") {
+    return "SKIPPED";
+  }
+  if (failures.length === 0) {
+    return "PASSED";
+  }
+  return "FAILED";
 }
 
 function getGroupOrModifier({
@@ -518,25 +522,28 @@ export function bootstrapSetupHooks(
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
 ) {
+  const { scope, gherkin } = bridge.data;
   const chosenTimeout = chooseTimeout(
     timeout,
     bridge.data.scope.timeout
   ).getTimeout(config).milliseconds;
-  const setups = bridge.data.scope.hooks.setup;
+  const setups = scope.hooks.setup;
   setups.forEach((hook) => {
     const hookTimeout = chooseTimeout(
       Timeout.from(chosenTimeout),
       hook.timeout
     ).getTimeout(config).milliseconds;
-    const tags = bridge.data.gherkin.tags ?? [];
+    const tags = gherkin.tags ?? [];
 
     beforeAll(async () => {
       if (!hook.canExecute(...tags)) {
         return;
       }
+
       events.setup.emitStart({
         title: `${hook.name}: ${hook.description}`
       });
+
       const report = await hook.execute(staticApp, ...tags);
 
       events.setup.emitEnd({
@@ -560,11 +567,11 @@ export function bootstrapAfterHooks(
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
 ) {
-  const chosenTimeout = chooseTimeout(
-    timeout,
-    bridge.data.scope.timeout
-  ).getTimeout(config).milliseconds;
-  bridge.data.scope.hooks.after.forEach((hook) => {
+  const { scope } = bridge.data;
+  const chosenTimeout = chooseTimeout(timeout, scope.timeout).getTimeout(
+    config
+  ).milliseconds;
+  scope.hooks.after.forEach((hook) => {
     const hookTimeout = chooseTimeout(
       Timeout.from(chosenTimeout),
       hook.timeout
@@ -609,11 +616,11 @@ export function bootstrapTeardownHooks(
   [config, timeout]: [Config, Timeout]
 ) {
   const tags = bridge.data.gherkin.tags ?? [];
-  const chosenTimeout = chooseTimeout(
-    timeout,
-    bridge.data.scope.timeout
-  ).getTimeout(config);
-  bridge.data.scope.hooks.teardown.forEach((hook) => {
+  const { scope } = bridge.data;
+  const chosenTimeout = chooseTimeout(timeout, scope.timeout).getTimeout(
+    config
+  );
+  scope.hooks.teardown.forEach((hook) => {
     const hookTimeout = chooseTimeout(chosenTimeout, hook.timeout).getTimeout(
       config
     ).milliseconds;

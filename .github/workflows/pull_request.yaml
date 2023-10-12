@@ -5,16 +5,17 @@ on:
     branches: ["main"]
   pull_request:
     types: [opened, synchronize]
-
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN}}
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # To use Remote Caching, uncomment the next lines and follow the steps below.
-    env:
-     TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-     TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v3
