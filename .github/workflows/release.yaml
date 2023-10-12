@@ -5,7 +5,11 @@ on:
   push:
     branches:
       - main
-
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN}}
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
@@ -18,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.PR_TOKEN }}
+          token: ${{ env.GITHUB_TOKEN }}
           path: main
       - uses: pnpm/action-setup@v2.0.1
         with:
@@ -46,6 +50,4 @@ jobs:
           cwd: main
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
