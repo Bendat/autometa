@@ -68,14 +68,15 @@ export const PrimitiveParam: ParamTypeDefinition = {
     /-Infinity/,
     isodateRegexp,
     shortDateRegex,
-    /-?\d+/,
+    /-?(\d*\.?\d+|\d{1,3}(,\d{3})*(\.\d+)?)/, // Comma delimited number, e.g. "1", "1,000", "1,000.00"
+    /-?(\d*,?\d+|\d{1,3}(.\d{3})*(,\d+))/, // Period delimited number, e.g. "1", "1.000,00"
     /"([^"]*)"/,
     /'([^']*)'/
   ],
   transform: (value: unknown) => {
     return overloads(
       def(string({ equals: "null" })).matches((_) => null),
-      def(string({ in: ["undefined", "missing" ]})).matches((_) => undefined),
+      def(string({ in: ["undefined", "missing"] })).matches((_) => undefined),
       def(string({ in: boolTypes })).matches((val) => Boolean(val)),
       def(string({ equals: "NaN" })).matches((_) => NaN),
       def(string({ equals: "Infinity" })).matches((_) => Infinity),
@@ -83,7 +84,18 @@ export const PrimitiveParam: ParamTypeDefinition = {
       def(string({ pattern: isodateRegexp })).matches(parseIso),
       def(string({ pattern: shortDateRegex })).matches(parseDate),
       def(string({ pattern: strNum })).matches(trimQuotes),
-      def(string({ pattern: /-?\d+/ })).matches((val) => Number(val)),
+      def(
+        string({ pattern: /-?(\d{1,3}(,\d{3})*(\.\d+)?)/})
+      ).matches((val) => {
+        const asStr = val.replace(/,/g, "");
+        return parseFloat(asStr);
+      }),
+      // def(string({ pattern: /-?(\d{1,3}(\.\d{3})*(,\d+)?)/ })).matches(
+      //   (val) =>{
+      //     const asStr = val.replace(/\./g, "").replace(/,/g, ".");
+      //     return Number(asStr);
+      //   }
+      // ),
       def(string({ in: boolTypesEnabled })).matches(boolEnabled),
       def(string({ in: boolTypesActive })).matches(boolActive),
       fallback((val) => {
