@@ -1,5 +1,20 @@
 # @autometa/datetime
 
+## 0.1.9
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/phrases@0.1.7
+
+## 0.1.8
+
+### Patch Changes
+
+- Updated dependencies [85050386]
+  - @autometa/phrases@0.1.6
+
 ## 0.1.7
 
 ### Patch Changes

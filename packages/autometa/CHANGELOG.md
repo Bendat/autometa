@@ -1,5 +1,37 @@
 # @autometa/runner
 
+## 0.2.21
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/cucumber-expressions@0.2.2
+  - @autometa/jest-executor@0.2.4
+  - @autometa/test-builder@0.1.21
+  - @autometa/coordinator@0.1.21
+  - @autometa/datetime@0.1.9
+  - @autometa/phrases@0.1.7
+  - @autometa/config@0.1.11
+  - @autometa/scopes@0.2.20
+  - @autometa/app@0.1.11
+
+## 0.2.20
+
+### Patch Changes
+
+- a289cabb: Fix: missing case types for convert phrase
+- Updated dependencies [85050386]
+  - @autometa/jest-executor@0.2.3
+  - @autometa/phrases@0.1.6
+  - @autometa/coordinator@0.1.20
+  - @autometa/app@0.1.10
+  - @autometa/datetime@0.1.8
+  - @autometa/scopes@0.2.19
+  - @autometa/test-builder@0.1.20
+  - @autometa/config@0.1.10
+  - @autometa/cucumber-expressions@0.2.1
+
 ## 0.2.19
 
 ### Patch Changes

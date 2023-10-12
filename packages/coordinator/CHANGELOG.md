@@ -1,5 +1,28 @@
 # @autometa/coordinator
 
+## 0.1.21
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/jest-executor@0.2.4
+  - @autometa/test-builder@0.1.21
+  - @autometa/config@0.1.11
+  - @autometa/scopes@0.2.20
+  - @autometa/app@0.1.11
+
+## 0.1.20
+
+### Patch Changes
+
+- Updated dependencies [85050386]
+  - @autometa/jest-executor@0.2.3
+  - @autometa/app@0.1.10
+  - @autometa/scopes@0.2.19
+  - @autometa/test-builder@0.1.20
+  - @autometa/config@0.1.10
+
 ## 0.1.19
 
 ### Patch Changes

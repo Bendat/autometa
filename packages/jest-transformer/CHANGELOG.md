@@ -1,5 +1,20 @@
 # @autometa/jest-transformer
 
+## 0.1.29
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/runner@0.2.21
+
+## 0.1.28
+
+### Patch Changes
+
+- Updated dependencies [a289cabb]
+  - @autometa/runner@0.2.20
+
 ## 0.1.27
 
 ### Patch Changes

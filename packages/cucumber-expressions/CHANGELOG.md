@@ -1,5 +1,19 @@
 # @autometa/cucumber-expressions
 
+## 0.2.2
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/datetime@0.1.9
+
+## 0.2.1
+
+### Patch Changes
+
+- @autometa/datetime@0.1.8
+
 ## 0.2.0
 
 ### Minor Changes

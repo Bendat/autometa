@@ -1,5 +1,24 @@
 # Gherkin
 
+## 0.2.20
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/cucumber-expressions@0.2.2
+  - @autometa/phrases@0.1.7
+  - @autometa/app@0.1.11
+
+## 0.2.19
+
+### Patch Changes
+
+- Updated dependencies [85050386]
+  - @autometa/phrases@0.1.6
+  - @autometa/app@0.1.10
+  - @autometa/cucumber-expressions@0.2.1
+
 ## 0.2.18
 
 ### Patch Changes
