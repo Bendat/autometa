@@ -1,6 +1,7 @@
 name: Release to NPM
 
 on:
+
   push:
     branches:
       - main
@@ -11,6 +12,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -23,7 +27,6 @@ jobs:
           version: 6.32.2
       - name: Print PWD
         run: |
-          pwd
           ls -la
 
       - name: Setup Node.js environment
@@ -31,10 +34,12 @@ jobs:
         with:
           node-version: 16
           cache: "pnpm"
-          cache-dependency-path: autometa/main/pnpm-lock.yaml
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install Dependencies
-        run: pnpm i
+        working-directory: main
+        run: |
+          pnpm install
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
