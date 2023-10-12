@@ -1,5 +1,26 @@
 # @autometa/jest-executor
 
+## 0.2.4
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/test-builder@0.1.21
+  - @autometa/config@0.1.11
+  - @autometa/scopes@0.2.20
+  - @autometa/app@0.1.11
+
+## 0.2.3
+
+### Patch Changes
+
+- 85050386: Fix: missing trim and kebab case string mutations in phrases
+  - @autometa/app@0.1.10
+  - @autometa/scopes@0.2.19
+  - @autometa/test-builder@0.1.20
+  - @autometa/config@0.1.10
+
 ## 0.2.2
 
 ### Patch Changes

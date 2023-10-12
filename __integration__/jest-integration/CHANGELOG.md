@@ -1,5 +1,24 @@
 # @autometa/jest-integration
 
+## 0.1.29
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/jest-transformer@0.1.29
+  - @autometa/runner@0.2.21
+  - @autometa/app@0.1.11
+
+## 0.1.28
+
+### Patch Changes
+
+- Updated dependencies [a289cabb]
+  - @autometa/runner@0.2.20
+  - @autometa/jest-transformer@0.1.28
+  - @autometa/app@0.1.10
+
 ## 0.1.27
 
 ### Patch Changes

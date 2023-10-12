@@ -1,5 +1,17 @@
 # Gherkin
 
+## 0.1.7
+
+### Patch Changes
+
+- Release Bump
+
+## 0.1.6
+
+### Patch Changes
+
+- 85050386: Fix: missing trim and kebab case string mutations in phrases
+
 ## 0.1.5
 
 ### Patch Changes

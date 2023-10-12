@@ -1,5 +1,19 @@
 # @autometa/config
 
+## 0.1.11
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/app@0.1.11
+
+## 0.1.10
+
+### Patch Changes
+
+- @autometa/app@0.1.10
+
 ## 0.1.9
 
 ### Patch Changes

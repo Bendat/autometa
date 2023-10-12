@@ -1,5 +1,24 @@
 # @autometa/test-builder
 
+## 0.1.21
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/phrases@0.1.7
+  - @autometa/scopes@0.2.20
+  - @autometa/app@0.1.11
+
+## 0.1.20
+
+### Patch Changes
+
+- Updated dependencies [85050386]
+  - @autometa/phrases@0.1.6
+  - @autometa/app@0.1.10
+  - @autometa/scopes@0.2.19
+
 ## 0.1.19
 
 ### Patch Changes
