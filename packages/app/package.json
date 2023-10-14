@@ -26,7 +26,7 @@
   "devDependencies": {
     "@autometa/types": "workspace:^",
     "@types/node": "^18.11.18",
-    "@types/uuid": "^9.0.1",
+    "@types/uuid": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "@vitest/coverage-istanbul": "^0.31.0",
@@ -62,6 +62,6 @@
     "@autometa/errors": "workspace:*",
     "@autometa/phrases": "workspace:*",
     "tsyringe": "^4.8.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1"
   }
 }
