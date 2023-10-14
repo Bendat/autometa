@@ -211,6 +211,10 @@ function formatReport(report: FuzzySearchReport) {
   if (report.length <= 0) {
     return "";
   }
+  const reportString = report.toString();
+  if (reportString.length <= 0) {
+    return "";
+  }
   return `\n* Some potential matches were found:\n${report.toString()}`;
 }
 

@@ -82,4 +82,12 @@ export class HTable extends DataTable {
     }
     return result;
   }
+
+  asJson(): Record<string, TableValue[]> {
+    const json: Record<string, TableValue[]> = {};
+    for (const header in this.headers) {
+      json[header] = this.get(header);
+    }
+    return json;
+  }
 }

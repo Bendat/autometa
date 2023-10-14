@@ -39,6 +39,27 @@ describe("MTable", () => {
     const mtable = new MTable(compiled);
 
     expect(mtable.getRow("hard")).toEqual(["stone", "ice"]);
-    expect(mtable.getCol("wet")).toEqual(["water", "ice"]);
+    expect(mtable.getColumn("wet")).toEqual(["water", "ice"]);
   });
+
+  it('should convert the table to JSON with asJson', () => {
+    const compiled = new CompiledDataTable(
+      [
+        ["", "dry", "wet"],
+        ["soft", "pillow", "water"],
+        ["hard", "stone", "ice"]
+      ],
+      [
+        ["", "dry", "wet"],
+        ["soft", "pillow", "water"],
+        ["hard", "stone", "ice"]
+      ]
+    );
+    const mtable = new MTable(compiled);
+    expect(mtable.asJson()).toEqual({
+      "": ["soft", "hard"],
+      "dry": ["pillow", "stone"],
+      "wet": ["water", "ice"],
+    });
+  })
 });
