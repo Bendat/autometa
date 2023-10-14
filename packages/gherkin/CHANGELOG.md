@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.5.0
+
+### Minor Changes
+
+- 329c6b8: Fix: asJson missing from new tables, 'missing' missing from primitive regex's
+
 ## 0.4.5
 
 ### Patch Changes

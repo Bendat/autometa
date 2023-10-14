@@ -1,5 +1,11 @@
 # @autometa/cucumber-expressions
 
+## 0.3.0
+
+### Minor Changes
+
+- 329c6b8: Fix: asJson missing from new tables, 'missing' missing from primitive regex's
+
 ## 0.2.2
 
 ### Patch Changes

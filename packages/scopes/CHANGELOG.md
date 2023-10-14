@@ -1,5 +1,18 @@
 # Gherkin
 
+## 0.3.0
+
+### Minor Changes
+
+- 329c6b8: Fix: asJson missing from new tables, 'missing' missing from primitive regex's
+
+### Patch Changes
+
+- Updated dependencies [329c6b8]
+  - @autometa/cucumber-expressions@0.3.0
+  - @autometa/gherkin@0.5.0
+  - @autometa/events@0.2.3
+
 ## 0.2.20
 
 ### Patch Changes
