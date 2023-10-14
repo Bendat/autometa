@@ -1,5 +1,157 @@
 # Gherkin
 
+## 0.3.1
+
+### Patch Changes
+
+- 4ee4e99: Fixes strings like 'abc2bd' being parsed as NaN in `primitive` expression type. Not supports comma and decimal delimters (EU, US respectively
+- Updated dependencies [4ee4e99]
+  - @autometa/cucumber-expressions@0.3.1
+  - @autometa/app@0.1.12
+
+## 0.3.0
+
+### Minor Changes
+
+- 329c6b8: Fix: asJson missing from new tables, 'missing' missing from primitive regex's
+
+### Patch Changes
+
+- Updated dependencies [329c6b8]
+  - @autometa/cucumber-expressions@0.3.0
+  - @autometa/gherkin@0.5.0
+  - @autometa/events@0.2.3
+
+## 0.2.20
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/cucumber-expressions@0.2.2
+  - @autometa/phrases@0.1.7
+  - @autometa/app@0.1.11
+
+## 0.2.19
+
+### Patch Changes
+
+- Updated dependencies [85050386]
+  - @autometa/phrases@0.1.6
+  - @autometa/app@0.1.10
+  - @autometa/cucumber-expressions@0.2.1
+
+## 0.2.18
+
+### Patch Changes
+
+- fix: exporting event types
+- Updated dependencies
+  - @autometa/events@0.2.2
+
+## 0.2.17
+
+### Patch Changes
+
+- Updated dependencies [3672161c]
+  - @autometa/events@0.2.1
+
+## 0.2.16
+
+### Patch Changes
+
+- Updated dependencies [51d88780]
+  - @autometa/cucumber-expressions@0.2.0
+  - @autometa/events@0.2.0
+
+## 0.2.15
+
+### Patch Changes
+
+- 5b44aa88: Fix: miscalculated Levenshtein distance when comparing a gherkin step literal to a cucumber expression with a string expression
+- Updated dependencies [5b44aa88]
+  - @autometa/cucumber-expressions@0.1.10
+
+## 0.2.14
+
+### Patch Changes
+
+- 4af1139a: Fix: fuzzy search for step names prints malformed strings
+- Updated dependencies [4af1139a]
+  - @autometa/cucumber-expressions@0.1.9
+
+## 0.2.13
+
+### Patch Changes
+
+- 4bbb87e4: Fix: step search returns literal strings instead of expressions when no exact match is found
+- Updated dependencies [4bbb87e4]
+  - @autometa/cucumber-expressions@0.1.8
+
+## 0.2.12
+
+### Patch Changes
+
+- ddbdb401: Fix: World object not resolving correctly with DI
+- Updated dependencies [ddbdb401]
+  - @autometa/app@0.1.9
+
+## 0.2.11
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/app@0.1.8
+  - @autometa/errors@0.1.3
+  - @autometa/events@0.1.6
+  - @autometa/gherkin@0.4.5
+  - @autometa/phrases@0.1.5
+  - @autometa/types@0.4.1
+
+## 0.2.10
+
+### Patch Changes
+
+- Fix: bad dist published
+- Updated dependencies
+  - @autometa/app@0.1.7
+
+## 0.2.9
+
+### Patch Changes
+
+- f167963f: Fix: typo in AutometaWorld 'dfromPhrase' -> 'fromPhrase'
+- Updated dependencies [f167963f]
+  - @autometa/app@0.1.6
+
+## 0.2.8
+
+### Patch Changes
+
+- 12bd4b1e: fix: hooks not handling errors correctly
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+  - @autometa/app@0.1.5
+  - @autometa/events@0.1.5
+  - @autometa/gherkin@0.4.4
+  - @autometa/phrases@0.1.4
+
+## 0.2.7
+
+### Patch Changes
+
+- Updated dependencies [ff45dc43]
+  - @autometa/events@0.1.4
+
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [29ed7239]
+  - @autometa/gherkin@0.4.3
+  - @autometa/events@0.1.3
+
 ## 0.2.5
 
 ### Patch Changes

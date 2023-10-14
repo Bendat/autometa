@@ -19,6 +19,7 @@ import { Status } from "allure-js-commons";
 import { ParsedDataTable } from "../gherkin/datatables/datatable";
 import { globalScope } from "../test-scopes/globals";
 import { LoggerSubscriber } from "./log-events";
+import { GherkinStep } from "../gherkin/gherkin-steps";
 export class TestExecutor {
   subscribers: EventSubscriber[];
   #instanceDependencies: DependencyInstanceProvider[];
@@ -40,7 +41,7 @@ export class TestExecutor {
     this.#globalApp = getApp(...this.#instanceDependencies);
   }
   execute() {
-    const { beforeAll, afterAll, describe } = Config.get<TestFunctions>("runner");
+    const { beforeAll, afterAll, describe, afterEach } = Config.get<TestFunctions>("runner");
 
     const featureGroup = tagFilter(this.feature.tags, describe, this.feature.modifier);
     let failed = false;
@@ -57,8 +58,12 @@ export class TestExecutor {
       const teardown = [...globalScope.hooks.teardown, ...this.feature.hooks.teardown];
       await runTeardownHooks(teardown, this.#globalApp, failFeature);
     });
-    afterAll(() => {
+    afterAll(async () => {
       events.feature.emitEnd({ title, status: failed ? Status.FAILED : Status.PASSED });
+      await events.settleAsyncEvents();
+    });
+    afterEach(async () => {
+      await events.settleAsyncEvents();
     });
     const { title, path, tags, modifier } = this.feature;
     featureGroup(`Feature ${title}`, () => {
@@ -159,7 +164,26 @@ export class TestExecutor {
       events.scenarioWrapper.emitStart();
       await runBeforeHooks(befores, scenario.tags, app, onFailure);
       try {
-        await runBackgrounds(scenario, app);
+        try {
+          await runBackgrounds(scenario, app);
+        } catch (e) {
+          events.scenario.emitStart({
+            title,
+            tags,
+            modifier,
+            args: [],
+            uuid: id,
+            description,
+            examples,
+          });
+          events.scenario.emitEnd({
+            title,
+            status: Status.BROKEN,
+            modifier,
+            error: e as Error,
+          });
+          throw e;
+        }
         events.scenario.emitStart({
           title,
           tags,
@@ -209,29 +233,43 @@ async function runSteps(
       step: StoredStep;
       args: unknown[];
     };
+    step: GherkinStep;
     tableOrDocstring: Docstring | CompiledDataTable | undefined;
   }[],
   app: unknown
 ) {
+  let index = 0;
   for (const step of stepDefinitions) {
     const {
       tableOrDocstring,
       found: {
         args,
-        step: { tableType, text, keyword },
+        step: { tableType, text: expression },
       },
+      step: { text, keyword },
     } = step;
 
     try {
       const params = getRealArgs(tableOrDocstring, args, app, tableType);
-      events.step.emitStart({ text: text.source, keyword, args: params });
+      events.step.emitStart({ text, keyword, args: params });
       await step.found.step.action(...params);
-      events.step.emitEnd({ text, status: Status.FAILED });
+      events.step.emitEnd({ expression, text, status: Status.PASSED });
     } catch (e) {
       const old = (e as Error).message;
-      (e as Error).message = `Step "${keyword} ${text.source}" failed with message ${old}`;
-      events.step.emitEnd({ text, status: Status.FAILED, error: [e] });
+      (
+        e as Error
+      ).message = `Step "${keyword} ${text}" failed with message ${old}. Expression: ${expression.source}`;
+      events.step.emitEnd({ expression, text, status: Status.FAILED, error: [e] });
+      for (const { step, found,tableOrDocstring } of stepDefinitions.slice(index + 1)) {
+        const params = getRealArgs(tableOrDocstring, found.args, app, tableType);
+        events.step.emitStart({ text: step.text, keyword: step.keyword, args: params });
+        const expression = found.step.text
+        const text = step.text
+        events.step.emitEnd({ expression , text, status: Status.BROKEN });
+      }
       throw e;
+    } finally {
+      index++;
     }
   }
 }

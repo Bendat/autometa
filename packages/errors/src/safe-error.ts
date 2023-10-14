@@ -1,13 +1,25 @@
 import { AutomationError } from "./automation-error";
 
-export function safe(
+export function safe<T>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (...args: any[]) => any | Promise<any>,
+  action: (...args: any) => T ,
   ...args: unknown[]
-): AutomationError | undefined | Promise<AutomationError | undefined> {
-  const result = action(...args);
-  if (result instanceof Promise) {
-    return result.catch((e) => e as AutomationError);
+): AutomationError | T {
+  try{
+    return action(...args);
+  } catch (e) {
+    return e as AutomationError
   }
-  return result;
+}
+
+export async function safeAsync<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: (...args: any) => T | Promise<T>,
+  ...args: unknown[]
+): Promise<AutomationError | T> {
+  try{
+    return await action(...args);
+  } catch (e) {
+    return e as AutomationError
+  }
 }

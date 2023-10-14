@@ -1,5 +1,20 @@
 # Gherkin
 
+## 0.1.3
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/errors@0.1.3
+
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

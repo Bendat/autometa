@@ -1,40 +1,22 @@
 import { diffWordsWithSpace, Change } from "diff";
 import { distance } from "closest-match";
-import { Expression } from "@cucumber/cucumber-expressions";
-import { AssertKey } from "@autometa/asserters";
-import { StepKeyword, StepType } from "@autometa/types";
-export interface Matchable {
-  matches(text: string): boolean;
-}
-
-export interface ExpressionWrapper {
-  expression: Expression;
-}
-
-export interface GherkinKeyword {
-  type: StepType;
-}
+import { CachedStep } from "./types";
 export type StepDiff = {
   merged: string;
-  step: {
-    keyword: StepKeyword;
-    expression: Expression;
-    type: StepType;
-    matches: (text: string) => boolean;
-  };
+  step: CachedStep;
   gherkin: string;
   distance: number;
 };
 export type StepDiffs = StepDiff[];
 export type LimitedStepDiffs = { same: StepDiffs; other: StepDiffs };
-export function checkMatch<T extends Matchable>(text: string, it: T): boolean {
+export function checkMatch(text: string, it: CachedStep): boolean {
   return it.matches(text);
 }
 export function limitDiffs(
-  sameStepType: StepDiff[],
-  differentStepType: StepDiff[],
+  sameStepType: StepDiffs,
+  differentStepType: StepDiffs,
   max: number
-) : LimitedStepDiffs {
+): LimitedStepDiffs {
   const sameDistances = sameStepType.map((it) => it.distance);
   const maxSameStepDistance = Math.max(...sameDistances);
   const otherStepDistance = differentStepType.map((it) => it.distance);
@@ -55,25 +37,36 @@ export function limitDiffs(
     return { same: sameSlice, other: differentSlice };
   }
   const maxIndex = Math.min(max, sameStepType.length);
-  const result = { same: sameStepType.slice(0, maxIndex), other: [] };
-  return result;
+  return { same: sameStepType.slice(0, maxIndex), other: [] };
 }
 
-export function getDiffs<T extends Matchable & ExpressionWrapper>(
-  text: string,
-  maxResults: number,
-  step: T[]
-) {
+function removeWhitespaceFromQuotedSubstrings(inputString: string): string {
+  const regex = /(["'])([^"']*?)\1/g;
+  let modifiedString = inputString;
+
+  let match;
+  while ((match = regex.exec(inputString))) {
+    const quotedSubstring = match[0];
+    const strippedSubstring = match[2].replace(/\s+/g, ""); // Remove whitespace
+    modifiedString = modifiedString.replace(
+      quotedSubstring,
+      `${match[1]}${strippedSubstring}${match[1]}`
+    );
+  }
+
+  return modifiedString;
+}
+
+export function getDiffs(text: string, maxResults: number, step: CachedStep[]) {
   const sorted = step
     .map((it) => {
       if (checkMatch(text, it)) {
         return { merged: text, step: it, gherkin: text, distance: 0 };
       }
-      AssertKey(it, "expression");
-      AssertKey(it, "matches");
-      const diff = getDiff(text, it);
+      const collapsed = removeWhitespaceFromQuotedSubstrings(text);
+      const diff = getDiff(collapsed, it);
       const refined = refineDiff(diff);
-      const dist = distance(text, refined);
+      const dist = distance(collapsed, refined);
       return { merged: refined, step: it, gherkin: text, distance: dist };
     })
     .sort((a, b) => a.distance - b.distance);
@@ -81,7 +74,7 @@ export function getDiffs<T extends Matchable & ExpressionWrapper>(
   return sorted.slice(0, max);
 }
 
-export function getDiff<T extends ExpressionWrapper>(text: string, it: T) {
+export function getDiff(text: string, it: CachedStep) {
   return diffWordsWithSpace(text, it.expression.source);
 }
 
@@ -92,19 +85,42 @@ export function refineDiff(diff: Change[]) {
     const scopeChange = diff[index + 1];
     if (isExpressionCandidate(gherkinChange, scopeChange)) {
       strings.push(gherkinChange.value);
+      const extra = extractTextAfterPlaceholder(scopeChange.value);
+      if (extra) {
+        strings.push(extra);
+      }
       index++;
+      continue;
+    }
+    if (gherkinChange.removed === true) {
       continue;
     }
     if (gherkinChange.value) {
       strings.push(gherkinChange.value);
+
       continue;
     }
   }
   return strings.join("");
 }
 
+function extractTextAfterPlaceholder(inputString: string): string | null {
+  // Define a regular expression to match the pattern
+  const regex = /\{[^{}]+\}(.+)?/;
+
+  // Use regex.exec to find a match in the input string
+  const match = regex.exec(inputString);
+
+  // Check if a match was found
+  if (match && match[1]) {
+    return match[1]; // Extract and trim the matched text (including leading spaces if present)
+  } else {
+    return null; // No match found or nothing after curly braces
+  }
+}
+
 export function isExpressionCandidate(change1: Change, change2: Change) {
-  if (change1.removed && change2.added) {
+  if (change1 && change1.removed && change2 && change2.added) {
     const scopeText = change2.value;
     return /{.*}/.test(scopeText);
   }

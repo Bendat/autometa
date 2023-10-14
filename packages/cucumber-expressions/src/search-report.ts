@@ -3,15 +3,17 @@ import chalk from "colors-cli";
 export class SameStepTypeMatch {
   readonly keyword: string;
   readonly text: string;
+  readonly source: string;
   readonly distance: number;
   constructor(diff: StepDiff) {
     this.keyword = diff.step.keyword;
     this.text = diff.merged;
+    this.source = diff.step.expression.source;
     this.distance = diff.distance;
   }
   toString() {
     const keyword = chalk.green(this.keyword);
-    const text = chalk.white(this.text);
+    const text = chalk.white(this.source);
     const distance = chalk.blue(`[${this.distance}]`);
     return `${distance} ${keyword} ${text}`;
   }
@@ -19,16 +21,18 @@ export class SameStepTypeMatch {
 export class DifferentStepTypeMatch {
   readonly keyword: string;
   readonly text: string;
+  readonly source: string;
   readonly distance: number;
   constructor(diff: StepDiff) {
     this.keyword = diff.step.keyword;
     this.text = diff.merged;
+    this.source = diff.step.expression.source;
     this.distance = diff.distance;
   }
   toString() {
     const keywordColor = chalk.cyan_bt;
     const keyword = keywordColor(this.keyword);
-    const text = chalk.white_b(this.text);
+    const text = chalk.white(this.source);
     const distance = chalk.blue(`[${this.distance}]`);
     return `${distance} ${keyword} ${text}`;
   }
@@ -37,12 +41,12 @@ export class FuzzySearchReport {
   headingText: string;
   matches: (SameStepTypeMatch | DifferentStepTypeMatch)[] = [];
   children: FuzzySearchReport[] = [];
-
+  constructor(readonly depth: number = 0) {}
   get length() {
-    return (
-      this.matches.length +
-      this.children.length
-    );
+    const childLength: number = this.children
+      .map((it) => it.length)
+      .reduce<number>((a: number, b: number) => a + b, 0);
+    return this.matches.length + childLength;
   }
   addHeading(headingText: string) {
     this.headingText = headingText;
@@ -68,35 +72,46 @@ export class FuzzySearchReport {
   }
 
   toString() {
-    const same = this.#sameMatchTypes.map((it) => it.toString()).join("\n");
-    const sameMessage = same.length > 0 ? `Steps with matching step type:` : "";
+    if (this.length === 0) {
+      return "";
+    }
+    const same = this.#sameMatchTypes
+      .filter((it) => it.distance < 10)
+      .map((it) => it.toString())
+      .join("\n");
+    const sameMessage =
+      same.length > 0 ? chalk.italic(`Steps with matching step type:`) : "";
     const different = this.#differentMatchTypes
+      .filter((it) => it.distance < 10)
       .map((it) => it.toString())
       .join("\n");
     const differentMessage =
-      different.length > 0 ? `Steps with different step type:` : "";
+      different.length > 0
+        ? chalk.italic(`Steps with different step type:`)
+        : "";
+
     const messageArray: string[] = [];
     appendSubMessage(messageArray, sameMessage);
-    appendSubMessage(messageArray, same, TAB);
+    appendSubMessage(messageArray, same);
     appendSubMessage(messageArray, differentMessage);
-    appendSubMessage(messageArray, different, TAB);
+    appendSubMessage(messageArray, different);
     const children: FuzzySearchReport[] = [];
     this.children.forEach((child) => {
       appendChild(children, child);
     });
     const formatChildren: string = children
-      .map((it) => it.toString().replace(/^/gm, " "))
+      .map((it) => it.toString())
       .join("\n");
-    const message = messageArray.join(`\n${TAB}`);
-    const heading = chalk.black_b(this.headingText);
-    return `${heading}
-${TAB}${message}
-${formatChildren}`;
+    const message = messageArray.join(`\n`).trim();
+    const heading = this.headingText && chalk.black(this.headingText);
+    return `${heading ?? ""}
+${message.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}
+${formatChildren.replace(/\r\n|\n|\r/gm, `\n${TAB}`)}`;
   }
 }
 function appendSubMessage(arr: string[], message: string, prefix?: string) {
   if (message && message.length > 0) {
-    const str = prefix ? `${prefix}${message}` : message;
+    const str = prefix ? `${prefix ?? ""}${message ?? ""}` : message ?? "";
     arr.push(str);
   }
 }
@@ -108,8 +123,11 @@ function appendChild(arr: FuzzySearchReport[], message: FuzzySearchReport) {
 const SPACE = " ";
 const TAB = SPACE.repeat(2);
 
-export function buildFuzzySearchReport({ same, other }: LimitedStepDiffs) {
-  const report = new FuzzySearchReport();
+export function buildFuzzySearchReport(
+  { same, other }: LimitedStepDiffs,
+  depth: number
+) {
+  const report = new FuzzySearchReport(depth);
   same.forEach((diff) => {
     report.addMatch(new SameStepTypeMatch(diff));
   });

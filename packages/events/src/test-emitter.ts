@@ -1,10 +1,11 @@
 import EventEmitter from "events";
 import { Cb } from "./test-event-emitter";
-import { AutomationError } from "@autometa/errors";
 export class TestEmitter<
   TArgsStart = never,
   TArgsEnd = never
 > extends EventEmitter {
+  private promises: Promise<unknown>[] = [];
+
   constructor(readonly name: string) {
     super();
   }
@@ -15,13 +16,13 @@ export class TestEmitter<
 
   onStart = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onStart${this.name}`, tryWrapper(this.name, action));
+      this.on(`onStart${this.name}`, this.collectPromises(this.name, action));
     }
   };
 
   onEnd = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onEnd${this.name}`, tryWrapper(this.name, action));
+      this.on(`onEnd${this.name}`, this.collectPromises(this.name, action));
     }
   };
 
@@ -33,21 +34,22 @@ export class TestEmitter<
     this.onStart(onStart);
     this.onEnd(onEnd);
   };
-}
-
-function tryWrapper(name: string, action: (...args: unknown[]) => void) {
-  return (...args: unknown[]) => {
-    try {
-      const result = action(...args);
-      if ((result as unknown) instanceof Promise) {
-        throw new AutomationError(
-          `A Subscriber action cannot be async or return a promise. Executing ${name}`
-        );
+  
+  collectPromises = (name: string, action: (...args: unknown[]) => unknown) => {
+    return (...args: unknown[]) => {
+      try {
+        const result = action(...args);
+        if (result instanceof Promise) {
+          this.promises.push(result);
+        }
+      } catch (e) {
+        console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
       }
-    } catch (e) {
-      console.error(
-        `Event Subscriber ${name} threw an error ${(e as Error).message}`
-      );
-    }
+    };
+  };
+
+  waitForPromises = async () => {
+    const settled = await Promise.allSettled(this.promises);
+    return settled.filter((it) => it.status === "rejected").length;
   };
 }

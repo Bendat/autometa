@@ -1,5 +1,34 @@
 # Gherkin
 
+## 0.1.7
+
+### Patch Changes
+
+- Release Bump
+
+## 0.1.6
+
+### Patch Changes
+
+- 85050386: Fix: missing trim and kebab case string mutations in phrases
+
+## 0.1.5
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/asserters@0.1.3
+  - @autometa/errors@0.1.3
+
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+  - @autometa/asserters@0.1.2
+
 ## 0.1.3
 
 ### Patch Changes

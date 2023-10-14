@@ -143,7 +143,7 @@ importers:
         version: 8.6.0(eslint@8.37.0)
       eslint-config-turbo:
         specifier: latest
-        version: 1.10.14(eslint@8.37.0)
+        version: 1.10.15(eslint@8.37.0)
       eslint-plugin-react:
         specifier: 7.31.8
         version: 7.31.8(eslint@8.37.0)
@@ -245,8 +245,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       allure-js-commons:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.9.2
+        version: 2.9.2
       cd:
         specifier: ^0.3.3
         version: 0.3.3
@@ -363,7 +363,7 @@ importers:
   cucumber/cucumber-transformer-jest:
     dependencies:
       '@autometa/cucumber-runner':
-        specifier: workspace:^0.8.0
+        specifier: workspace:^0.10.0
         version: link:../cucumber-runner
       '@babel/core':
         specifier: ^7.22.11
@@ -454,8 +454,8 @@ importers:
         specifier: ^29.4.3
         version: 29.4.3
       allure-js-commons:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.9.2
+        version: 2.9.2
     devDependencies:
       '@types/jest':
         specifier: ^29.5.2
@@ -1836,6 +1836,9 @@ importers:
       '@autometa/bind-decorator':
         specifier: workspace:*
         version: link:../../libraries/bind-decorator
+      '@autometa/cucumber-expressions':
+        specifier: workspace:^
+        version: link:../cucumber-expressions
       '@autometa/dto-builder':
         specifier: workspace:*
         version: link:../../libraries/dto-builder
@@ -1969,6 +1972,9 @@ importers:
       '@autometa/errors':
         specifier: workspace:^
         version: link:../errors
+      '@autometa/events':
+        specifier: workspace:^
+        version: link:../events
       '@autometa/gherkin':
         specifier: workspace:^
         version: link:../gherkin
@@ -8804,11 +8810,10 @@ packages:
       '@algolia/transporter': 4.15.0
     dev: false
 
-  /allure-js-commons@2.1.0:
-    resolution: {integrity: sha512-EPtyzVXjpWhIGpZd1jBQ9+Ymt+H0fhywkcBSN9eSXOjpmJV8TWGrQximQV5q9XKuNyMmz0PlwvbIn42NC/u2/A==}
+  /allure-js-commons@2.9.2:
+    resolution: {integrity: sha512-Qvi+zMZQruklqcnqG/zHCnE209v1YiWGhO3H2aPW2aXC8Ockqd01a+w2lP4Qqp3SfC+WQDeAK2+pp+v+eNl8xQ==}
     dependencies:
       properties: 1.2.1
-      uuid: 8.3.2
     dev: false
 
   /amdefine@1.0.1:
@@ -11172,13 +11177,12 @@ packages:
       eslint: 8.44.0
     dev: true
 
-  /eslint-config-turbo@1.10.14(eslint@8.37.0):
-    resolution: {integrity: sha512-ZeB+IcuFXy1OICkLuAplVa0euoYbhK+bMEQd0nH9+Lns18lgZRm33mVz/iSoH9VdUzl/1ZmFmoK+RpZc+8R80A==}
+  /eslint-config-turbo@1.10.15(eslint@8.37.0):
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
       eslint: 8.37.0
-      eslint-plugin-turbo: 1.10.14(eslint@8.37.0)
+      eslint-plugin-turbo: 1.10.15(eslint@8.37.0)
     dev: false
 
   /eslint-plugin-react@7.31.8(eslint@8.37.0):
@@ -11204,8 +11208,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: false
 
-  /eslint-plugin-turbo@1.10.14(eslint@8.37.0):
-    resolution: {integrity: sha512-sBdBDnYr9AjT1g4lR3PBkZDonTrMnR4TvuGv5W0OiF7z9az1rI68yj2UHJZvjkwwcGu5mazWA1AfB0oaagpmfg==}
+  /eslint-plugin-turbo@1.10.15(eslint@8.37.0):
+    resolution: {integrity: sha512-Tv4QSKV/U56qGcTqS/UgOvb9HcKFmWOQcVh3HEaj7of94lfaENgfrtK48E2CckQf7amhKs1i+imhCsNCKjkQyA==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:

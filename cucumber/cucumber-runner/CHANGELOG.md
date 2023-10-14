@@ -1,5 +1,47 @@
 # @autometa/cucumber-runner
 
+## 0.10.0
+
+### Minor Changes
+
+- 51d88780: Feat: Add Async Test Event support to new runner
+
+## 0.9.5
+
+### Patch Changes
+
+- Feat: updated dist folder
+
+## 0.9.4
+
+### Patch Changes
+
+- 340938d7: Fix: event callback arguments
+
+## 0.9.3
+
+### Patch Changes
+
+- Fix steps being marked "failed" even when they pass
+
+## 0.9.2
+
+### Patch Changes
+
+- Rebuild
+
+## 0.9.1
+
+### Patch Changes
+
+- 1fcdd00d: Fix: async await event
+
+## 0.9.0
+
+### Minor Changes
+
+- 5e53b2e0: feat: handle async events being emitted
+
 ## 0.8.0
 
 ### Minor Changes

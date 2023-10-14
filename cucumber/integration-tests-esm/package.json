@@ -1,6 +1,6 @@
 {
   "name": "integration-tests-esm",
-  "version": "0.6.0",
+  "version": "0.6.7",
   "description": "",
   "private": true,
   "type": "module",
@@ -29,6 +29,6 @@
   "dependencies": {
     "@autometa/cucumber-runner": "workspace:^",
     "@jest/globals": "^29.4.3",
-    "allure-js-commons": "^2.1.0"
+    "allure-js-commons": "^2.9.2"
   }
 }

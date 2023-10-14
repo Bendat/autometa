@@ -1,4 +1,3 @@
-import { CucumberExpression } from "@cucumber/cucumber-expressions";
 import { object, string, literal, z } from "zod";
 const uuidRegex =
   /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gm;
@@ -40,22 +39,18 @@ export const StartScenarioOutlineOptsSchema = EventOptionsSchema;
 
 export const EndScenarioOutlineOptsSchema = ErrorEventSchema;
 
-export const StartScenarioOptsSchema = EventOptionsSchema.extend({
-  examples: object({ key: string() }).array().optional()
-});
+export const StartScenarioOptsSchema = EventOptionsSchema;
 
 export const EndScenarioOptsSchema = ErrorEventSchema;
 
 export const StartStepOptsSchema = EventOptionsSchema.extend({
   args: z.array(z.unknown()).optional(),
-  expression: z.instanceof(CucumberExpression).optional(),
-  text: string().optional()
+  expression: z.string().optional(),
 });
-export const EndStepOptsSchema = ErrorEventSchema.extend({
+export const EndStepOptsSchema = EventOptionsSchema.extend({
   args: z.array(z.unknown()).optional(),
-  expression: z.instanceof(CucumberExpression),
-  text: string()
-});
+  expression: z.string(),
+}).and(ErrorEventSchema);
 export const StartBeforeOptsSchema = ArgsEventSchema;
 export const EndBeforeOptsSchema = ErrorEventSchema;
 export const StartAfterOptsSchema = ArgsEventSchema;

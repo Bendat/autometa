@@ -1,5 +1,17 @@
 # Gherkin
 
+## 0.1.3
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+
+## 0.1.2
+
+### Patch Changes
+
+- 12bd4b1e: fix: hooks not handling errors correctly
+
 ## 0.1.1
 
 ### Patch Changes

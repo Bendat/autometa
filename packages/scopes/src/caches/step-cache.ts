@@ -2,8 +2,12 @@ import { Bind } from "@autometa/bind-decorator";
 import { StepKeyword, StepType } from "@autometa/gherkin";
 import { CachedStep } from "./types";
 import { AutomationError } from "@autometa/errors";
-import { getDiffs, limitDiffs } from "./search/step-matcher";
-import { FuzzySearchReport, buildFuzzySearchReport } from "./search";
+import {
+  FuzzySearchReport,
+  buildFuzzySearchReport,
+  getDiffs,
+  limitDiffs
+} from "@autometa/cucumber-expressions";
 import { interpolateStepText } from "@autometa/gherkin";
 export class StepCache {
   private Context: CachedStep[] = [];
@@ -138,7 +142,11 @@ export class StepCache {
     const report = buildFuzzySearchReport(closestMatches, depth);
     if (this.scopeName) report.addHeading(this.scopeName);
     if (this.parent) {
-      const parentReport = this.parent.startFuzzySearch(keywordType, text, depth + 1);
+      const parentReport = this.parent.startFuzzySearch(
+        keywordType,
+        text,
+        depth + 1
+      );
       parentReport.addChild(report);
       return parentReport;
     }
@@ -152,17 +160,23 @@ export class StepCache {
   }
 
   #findClosestOfType(stepType: StepType, text: string) {
+    if (stepType === "Conjunction" || stepType === "Unknown") {
+      const list = [...this.Context, ...this.Action, ...this.Outcome];
+      return getDiffs(text, 5, list);
+    }
+
     const list = this[stepType];
     return getDiffs(text, 5, list);
   }
 
   #findClosestOfAll(ignoreStepType: StepType, text: string) {
+    if (ignoreStepType === "Conjunction" || ignoreStepType === "Unknown") {
+      return [];
+    }
     const cache: CachedStep[] = [];
     this.#gatherSteps("Context", ignoreStepType, cache);
     this.#gatherSteps("Action", ignoreStepType, cache);
     this.#gatherSteps("Outcome", ignoreStepType, cache);
-    this.#gatherSteps("Conjunction", ignoreStepType, cache);
-    this.#gatherSteps("Unknown", ignoreStepType, cache);
     return getDiffs(text, 5, cache);
   }
 
@@ -194,8 +208,11 @@ export class StepCache {
 }
 
 function formatReport(report: FuzzySearchReport) {
-  
   if (report.length <= 0) {
+    return "";
+  }
+  const reportString = report.toString();
+  if (reportString.length <= 0) {
     return "";
   }
   return `\n* Some potential matches were found:\n${report.toString()}`;

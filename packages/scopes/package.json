@@ -1,6 +1,6 @@
 {
   "name": "@autometa/scopes",
-  "version": "0.2.5",
+  "version": "0.3.1",
   "description": "Test Scopes and Groups for @Autometa",
   "type": "module",
   "main": "dist/index.js",
@@ -51,6 +51,7 @@
   "dependencies": {
     "@autometa/app": "workspace:*",
     "@autometa/bind-decorator": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:^",
     "@autometa/dto-builder": "workspace:*",
     "@autometa/errors": "workspace:^",
     "@autometa/events": "workspace:*",

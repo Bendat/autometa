@@ -11,7 +11,7 @@ import {
   PrimitiveParam
 } from "./default.parameters";
 import { AssertDefined } from "@autometa/asserters";
-vi.setSystemTime('2021-01-01T00:00:00.000Z')
+vi.setSystemTime("2021-01-01T00:00:00.000Z");
 Argument.prototype.getValue = function (thisObj: unknown) {
   const groupValues = this.group
     ? this.group.value
@@ -20,6 +20,7 @@ Argument.prototype.getValue = function (thisObj: unknown) {
     : null;
   return this.parameterType.transform(thisObj, groupValues);
 };
+
 describe("Default Parameters", () => {
   describe("Number Parameter", () => {
     it("should match a number", () => {
@@ -73,37 +74,183 @@ describe("Default Parameters", () => {
       expect(args?.length).toBe(1);
       expect(args?.[0].getValue(null)).toBe(true);
     });
-    it("should match a positive number primitive", () => {
-      const registry = new ParameterTypeRegistry();
-      const { name, regexpPattern, transform } = PrimitiveParam;
-      const param = new ParameterType(name, regexpPattern, null, transform);
-      registry.defineParameterType(param);
-      const expression = new CucumberExpression(
-        "I have {primitive} cukes in my belly now",
-        registry
-      );
-      const args = expression.match("I have 7 cukes in my belly now");
-      AssertDefined(args);
-      const [arg] = args;
-      expect(args).toBeDefined();
-      expect(args?.length).toBe(1);
-      const value = arg.getValue(arg);
-      expect(value).toBe(7);
-    });
 
-    it("should match a negative number primitive", () => {
-      const registry = new ParameterTypeRegistry();
-      const { name, regexpPattern, transform } = PrimitiveParam;
-      const param = new ParameterType(name, regexpPattern, null, transform);
-      registry.defineParameterType(param);
-      const expression = new CucumberExpression(
-        "I have {primitive} cukes in my belly now",
-        registry
-      );
-      const args = expression.match("I have -7 cukes in my belly now");
-      expect(args).toBeDefined();
-      expect(args?.length).toBe(1);
-      expect(args?.[0].getValue(null)).toBe(-7);
+    describe("number primitive", () => {
+      it("should match a positive number primitive", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have 7 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(7);
+      });
+      it("should match a positive integer primitive with a comma delimiter", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern , null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have 7,000 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(7000);
+      });
+
+      it("should match a negative integer primitive", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have -7 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(-7);
+      });
+
+      it("should match a negative integer primitive with a comma delimiter", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have -7,000 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(-7000);
+      });
+
+      it("should match a positive float primitive", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have 7.5 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(7.5);
+      });
+
+      it("should match a negative float primitive", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have -7.5 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(-7.5);
+      });
+
+      it("should match a positive float primitive with a comma delimiter", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have 7,000.5 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(7000.5);
+      });
+
+      it("should match a negative float primitive with a comma delimiter", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have -7,000.5 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(-7000.5);
+      });
+
+      it("should match a positive float primitive with a comma delimiter and no decimal", () => {
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have 7,000 cukes in my belly now");
+        AssertDefined(args);
+        const [arg] = args;
+        expect(args).toBeDefined();
+        expect(args?.length).toBe(1);
+        const value = arg.getValue(arg);
+        expect(value).toBe(7000);
+      });
+      
+    //   it('should match a positive float with a dot delimiter and comma decimal', ()=>{
+    //     const registry = new ParameterTypeRegistry();
+    //     const { name, regexpPattern, transform } = PrimitiveParam;
+    //     const param = new ParameterType(name, regexpPattern, null, transform);
+    //     registry.defineParameterType(param);
+    //     const expression = new CucumberExpression('I have {primitive} cukes in my belly now', registry);
+    //     const args = expression.match('I have 7.000,5 cukes in my belly now');
+    //     AssertDefined(args);
+    //     const [arg] = args;
+    //     expect(args).toBeDefined();
+    //     expect(args?.length).toBe(1);
+    //     const value = arg.getValue(arg);
+    //     expect(value).toBe(7000.5);
+    //   })
     });
 
     it("should match a null primitive", () => {

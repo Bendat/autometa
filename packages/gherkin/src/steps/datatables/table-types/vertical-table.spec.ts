@@ -67,4 +67,22 @@ describe("VTable", () => {
     expect(vtable.get("age", 0, true)).toEqual("30");
     expect(vtable.get("age", 1, true)).toEqual("25");
   });
+
+  it('should convert the table to JSON with asJson', ()=>{
+    const compiled = new CompiledDataTable(
+      [
+        ["name", "bob", "jane"],
+        ["age", 30, 25]
+      ],
+      [
+        ["name", "bob", "jane"],
+        ["age", "30", "25"]
+      ]
+    );
+    const vtable = new VTable(compiled);
+    expect(vtable.asJson()).toEqual({
+      name: ["bob", "jane"],
+      age: [30, 25]
+    })
+  })
 });

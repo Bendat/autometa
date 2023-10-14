@@ -7,6 +7,7 @@ export class MTable extends DataTable {
   private vheaders: { [header: string]: number };
   private hheaders: { [header: string]: number };
   private rows: TableValue[][];
+  private raw: string[][];
 
   protected construct({ table, raw }: CompiledDataTable): void {
     const vheaders = raw.slice(1, raw.length).map(([title]) => title as string);
@@ -17,6 +18,7 @@ export class MTable extends DataTable {
     this.rows = table
       .slice(1, raw.length)
       .map((row) => row.slice(1, row.length));
+    this.raw = raw
   }
 
   get<TReturn = TableValue>(vheader: string, hheader: string): TReturn;
@@ -40,7 +42,7 @@ export class MTable extends DataTable {
     return this.rows[vIdx] as T;
   }
 
-  getCol<T extends [...TableValue[]] = [...TableValue[]]>(
+  getColumn<T extends [...TableValue[]] = [...TableValue[]]>(
     hheader: TableValue
   ): T {
     const hIdx = this.hheaders[String(hheader)];
@@ -65,5 +67,15 @@ export class MTable extends DataTable {
       );
     }
     return hor;
+  }
+
+  asJson(): Record<string | number, TableValue[]> {
+    const json: Record<string, TableValue[]> = {};
+    for(let i = 0; i < this.raw[0].length; i++) {
+      const header = this.raw[0][i];
+      // collect columns into array and attach to json
+      json[header] = this.raw.slice(1).map(row => row[i])
+    }
+    return json;
   }
 }

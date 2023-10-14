@@ -47,4 +47,21 @@ describe("HTable", () => {
     expect(htable.getOrThrow("name")).toEqual(["bob", "jane"]);
     expect(htable.getOrThrow("age")).toEqual([30, 25]);
   });
+
+  it('should convert the table to JSON with asJson', () => {
+    const compiled = new CompiledDataTable([
+      ["name", "age"],
+      ["bob", 30],
+      ["jane", 25]
+    ],[
+      ["name", "age"],
+      ["bob", '30'],
+      ["jane", '25']
+    ]);
+    const htable = new HTable(compiled);
+    expect(htable.asJson()).toEqual({
+      name: ["bob", "jane"],
+      age: [30, 25]
+    });
+  })
 });

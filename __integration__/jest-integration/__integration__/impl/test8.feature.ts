@@ -1,5 +1,4 @@
 import { Before, Feature, Given, Setup } from "@autometa/runner";
-
 Setup("pre suite hook", ({ world, id, singleton }) => {
   singleton.value = 1;
   world.foo = 1;
@@ -7,10 +6,14 @@ Setup("pre suite hook", ({ world, id, singleton }) => {
   console.log("setup");
 });
 
-Before("before hook", ({ world }) => {
-  world.bar = 2;
-  console.log("before");
-});
+Before(
+  "before hook",
+  ({ world }) => {
+    world.bar = 2;
+    console.log("before");
+  },
+  "@foo"
+);
 
 Given("a setup hook was run", ({ world, singleton }) => {
   world.foo = 1;

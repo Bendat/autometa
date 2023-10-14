@@ -12,7 +12,7 @@ import {
 } from "@autometa/gherkin";
 import { App } from "@autometa/app";
 import { Bind } from "@autometa/bind-decorator";
-import { AutomationError, safe } from "@autometa/errors";
+import { AutomationError, safeAsync } from "@autometa/errors";
 import { Class } from "@autometa/types";
 import { Expression } from "@cucumber/cucumber-expressions";
 import { HookCache } from "./caches/hook-cache";
@@ -73,7 +73,7 @@ export class StepScope<
       this.handleMissingTable(title, args, gherkin);
     }
     args.push(app);
-    const error = await safe(this.stepAction, ...args);
+    const error = await safeAsync(this.stepAction, ...args);
     if (error instanceof Error) {
       const message = `Step '${title}' failed with error
   

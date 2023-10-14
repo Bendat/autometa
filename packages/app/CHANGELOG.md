@@ -1,5 +1,63 @@
 # @autometa/app
 
+## 0.1.12
+
+### Patch Changes
+
+- 4ee4e99: Fixes strings like 'abc2bd' being parsed as NaN in `primitive` expression type. Not supports comma and decimal delimters (EU, US respectively
+
+## 0.1.11
+
+### Patch Changes
+
+- Release Bump
+- Updated dependencies
+  - @autometa/phrases@0.1.7
+
+## 0.1.10
+
+### Patch Changes
+
+- Updated dependencies [85050386]
+  - @autometa/phrases@0.1.6
+
+## 0.1.9
+
+### Patch Changes
+
+- ddbdb401: Fix: World object not resolving correctly with DI
+
+## 0.1.8
+
+### Patch Changes
+
+- 53f958e1: Fix: steps not executing onStepEnded event when an error was thrown
+- Updated dependencies [53f958e1]
+  - @autometa/asserters@0.1.3
+  - @autometa/errors@0.1.3
+  - @autometa/phrases@0.1.5
+
+## 0.1.7
+
+### Patch Changes
+
+- Fix: bad dist published
+
+## 0.1.6
+
+### Patch Changes
+
+- f167963f: Fix: typo in AutometaWorld 'dfromPhrase' -> 'fromPhrase'
+
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [12bd4b1e]
+  - @autometa/errors@0.1.2
+  - @autometa/asserters@0.1.2
+  - @autometa/phrases@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

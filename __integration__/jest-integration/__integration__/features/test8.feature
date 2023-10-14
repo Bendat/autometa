@@ -1,3 +1,4 @@
+@foo
 Feature: A Feature with hooks
 
     Scenario: Hooks were run

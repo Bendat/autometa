@@ -6,7 +6,8 @@ import {
   Tag,
   StepKeywordType,
   FeatureChild,
-  RuleChild
+  RuleChild,
+  TableCell
 } from "@cucumber/messages";
 import { FeatureBuilder } from "../groups/feature";
 import { Rule, RuleBuilder } from "../groups/rule";
@@ -172,9 +173,10 @@ export function buildRule(
 
 export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
   return scenario.examples.map((example) => {
-    const titles = example.tableHeader?.cells.map((cell) => cell.value) ?? [];
+    const cellValue = (cell: TableCell) => cell.value;
+    const titles = example.tableHeader?.cells.map(cellValue) ?? [];
     const values =
-      example.tableBody.map((row) => row.cells.map((cell) => cell.value)) ?? [];
+      example.tableBody.map((row) => row.cells.map(cellValue)) ?? [];
 
     const scenarios = values.map((row) => {
       const name = scenarioExampleTitle(titles, scenario.name, row);
@@ -186,20 +188,22 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
           return { ...old, ...current };
         }, {});
       const steps = makeSteps(scenario);
+      const tags = new Set([...tagsNew, ...buildTags(example.tags)]);
       return new ExampleBuilder()
         .name(name)
         .description(scenario.description)
-        .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
+        .tags(tags)
         .keyword("Example")
         .table(exampleValues)
         .children(steps)
         .build();
     });
+    const tags = new Set([...tagsNew, ...buildTags(example.tags)]);
     return new ExamplesBuilder()
       .name(example.name)
       .description(example.description)
       .keyword(example.keyword.trim())
-      .tags(new Set([...tagsNew, ...buildTags(example.tags)]))
+      .tags(tags)
       .titles(titles)
       .values(values)
       .children(scenarios)

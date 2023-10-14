@@ -1,6 +1,6 @@
 {
   "name": "@autometa/test-builder",
-  "version": "0.1.5",
+  "version": "0.1.23",
   "description": "internal library for autometa",
   "type": "module",
   "main": "dist/index.js",
@@ -45,6 +45,7 @@
     "@autometa/bind-decorator": "workspace:^",
     "@autometa/dto-builder": "workspace:^",
     "@autometa/errors": "workspace:^",
+    "@autometa/events": "workspace:^",
     "@autometa/gherkin": "workspace:^",
     "@autometa/phrases": "workspace:^",
     "@autometa/scopes": "workspace:^",

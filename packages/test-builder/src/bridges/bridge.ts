@@ -62,6 +62,13 @@ export class ScenarioBridge extends GherkinCodeBridge {
     passed?: boolean;
     error?: Error;
   } = {};
+
+  get title() {
+    return this.data.scope.title(this.data.gherkin);
+  }
+  get tags() {
+    return [...this.data.gherkin.tags];
+  }
 }
 export class ExampleBridge extends GherkinCodeBridge {
   data: { gherkin: Example; scope: ScenarioScope };
@@ -70,17 +77,35 @@ export class ExampleBridge extends GherkinCodeBridge {
     passed?: boolean;
     error?: Error;
   } = {};
+  get title() {
+    return this.data.scope.title(this.data.gherkin);
+  }
+  get tags() {
+    return [...this.data.gherkin.tags];
+  }
 }
 export class ScenarioOutlineBridge extends GherkinCodeBridge {
   data: { gherkin: ScenarioOutline; scope: ScenarioOutlineScope };
   examples: ExamplesBridge[] = [];
   steps: StepBridge[] = [];
+  get title() {
+    return this.data.scope.title(this.data.gherkin);
+  }
+  get tags() {
+    return [...this.data.gherkin.tags];
+  }
 }
 
 export class ExamplesBridge extends GherkinCodeBridge {
   data: { gherkin: Examples; scope: ScenarioOutlineScope };
   scenarios: ScenarioBridge[] = [];
   steps: StepBridge[] = [];
+  get title() {
+    return this.data.scope.title(this.data.gherkin);
+  }
+  get tags() {
+    return [...this.data.gherkin.tags];
+  }
 }
 
 export class StepBridge extends GherkinCodeBridge {
@@ -89,4 +114,12 @@ export class StepBridge extends GherkinCodeBridge {
     scope: StepScope<string, DataTable | undefined>;
     args: unknown[];
   };
+
+  get args() {
+    return this.data.scope.getArgs(this.data.gherkin.text);
+  }
+
+  get expressionText() {
+    return this.data.scope.expression.source;
+  }
 }
