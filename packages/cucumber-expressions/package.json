@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-expressions",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "wrapper on @cucumber/cucumber-expressions",
   "type": "module",
   "main": "dist/index.js",
