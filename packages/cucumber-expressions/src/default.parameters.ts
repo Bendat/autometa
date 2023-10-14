@@ -62,7 +62,7 @@ export const PrimitiveParam: ParamTypeDefinition = {
     /active|inactive/,
     /null/,
     /empty/,
-    /undefined/,
+    /undefined|missing/,
     /NaN/,
     /Infinity/,
     /-Infinity/,

@@ -95,4 +95,11 @@ export class VTable extends DataTable {
       throw new AutomationError(msg);
     }
   }
+  asJson(): Record<string, TableValue[]> {
+    const json: Record<string, TableValue[]> = {};
+    this.headers.forEach((header) => {
+      json[header] = this.get(header);
+    });
+    return json;
+  }
 }
