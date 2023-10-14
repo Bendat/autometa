@@ -31,7 +31,7 @@
     "@types/diff": "^5.0.3",
     "@types/glob": "^8.0.1",
     "@types/node": "^18.11.18",
-    "@types/uuid": "^9.0.1",
+    "@types/uuid": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "@vitest/coverage-istanbul": "^0.31.0",
@@ -69,6 +69,6 @@
     "diff": "^5.1.0",
     "get-caller-file": "^2.0.5",
     "glob": "^8.1.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1"
   }
 }
