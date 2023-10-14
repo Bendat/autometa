@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.10.1
+
+### Patch Changes
+
+- 4b796f8: Fix: expose asJson on Data Tables
+
 ## 0.10.0
 
 ### Minor Changes

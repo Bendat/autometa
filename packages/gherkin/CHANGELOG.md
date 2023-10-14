@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.5.1
+
+### Patch Changes
+
+- 4b796f8: Fix: expose asJson on Data Tables
+
 ## 0.5.0
 
 ### Minor Changes
