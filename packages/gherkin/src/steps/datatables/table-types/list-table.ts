@@ -9,4 +9,13 @@ export class ListTable extends DataTable {
     this.table = table;
     this.raw = raw;
   }
+
+  asJson(): Record<string, TableValue[]> {
+    const json: Record<number, TableValue[]> = {};
+    const length = this.raw.length;
+    for (let i = 0; i < length; i++) {
+      json[i] = this.raw[i];
+    }
+    return json;
+  }
 }
