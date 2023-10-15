@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.27
+
+### Patch Changes
+
+- 96d25f7: Fix: properly handle events as class, function or object
+
 ## 0.2.26
 
 ### Patch Changes
