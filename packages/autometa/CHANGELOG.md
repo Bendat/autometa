@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.26
+
+### Patch Changes
+
+- 05597f0: Fix: attempt to read events from default export
+
 ## 0.2.25
 
 ### Patch Changes
