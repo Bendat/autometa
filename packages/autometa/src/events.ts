@@ -20,11 +20,19 @@ export function makeTestEmitter(opts: { groupLogger: boolean }) {
       const uri = p.join(uriRoot, event);
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const listener = require(uri);
+      if('default' in listener) {
+        emitter.load(listener.default);
+        return emitter;
+      }
       emitter.load(listener);
       return emitter;
     }
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const listener = require(event);
+    if('default' in listener) {
+      emitter.load(listener.default);
+      return emitter;
+    }
     emitter.load(listener);
     return emitter;
   }
