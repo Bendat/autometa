@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.25
+
+### Patch Changes
+
+- 4c0999a: Fix: events should differentiate local from node_module strings
+
 ## 0.2.24
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @autometa/jest-integration
 
+## 0.1.33
+
+### Patch Changes
+
+- Updated dependencies [4c0999a]
+  - @autometa/runner@0.2.25
+  - @autometa/jest-transformer@0.1.33
+
 ## 0.1.32
 
 ### Patch Changes
