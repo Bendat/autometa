@@ -1,5 +1,12 @@
 # Gherkin
 
+## 0.3.6
+
+### Patch Changes
+
+- Updated dependencies [020b205]
+  - @autometa/cucumber-expressions@0.3.5
+
 ## 0.3.5
 
 ### Patch Changes

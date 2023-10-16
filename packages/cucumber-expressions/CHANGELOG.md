@@ -1,5 +1,11 @@
 # @autometa/cucumber-expressions
 
+## 0.3.5
+
+### Patch Changes
+
+- 020b205: Fix: strings like 'abc123' parsed as numbers in expressions
+
 ## 0.3.4
 
 ### Patch Changes
