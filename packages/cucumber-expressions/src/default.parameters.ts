@@ -42,13 +42,11 @@ export const BooleanParam = {
   name: "boolean",
   regexpPattern: /true|false/,
   primitive: Boolean,
-  transform: (value: string) => value === "true"
 };
 export const BoolParam = {
   name: "bool",
   regexpPattern: /true|false/,
   primitive: Boolean,
-  transform: (value: string) => value === "true"
 };
 export const DateParam: AutoParamTypeDefinition = {
   name: "date",
