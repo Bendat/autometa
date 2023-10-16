@@ -84,7 +84,7 @@ export const PrimitiveParam: ParamTypeDefinition = {
       def(string({ pattern: isodateRegexp })).matches(parseIso),
       def(string({ pattern: shortDateRegex })).matches(parseDate),
       def(string({ pattern: strNum })).matches(trimQuotes),
-      def(string({ pattern: /-?(\d{1,3}(,\d{3})*(\.\d+)?)/ })).matches(
+      def(string({ pattern: /^-?(\d{1,3}(,\d{3})*(\.\d+)?)/ })).matches(
         (val) => {
           const asStr = val.replace(/,/g, "");
           return parseFloat(asStr);
