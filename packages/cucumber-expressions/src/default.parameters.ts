@@ -38,15 +38,17 @@ export const TextParam: ParamTypeDefinition = {
   }
 };
 
-export const BooleanParam: AutoParamTypeDefinition = {
+export const BooleanParam = {
   name: "boolean",
   regexpPattern: /true|false/,
-  primitive: Boolean
+  primitive: Boolean,
+  transform: (value: string) => value === "true"
 };
-export const BoolParam: AutoParamTypeDefinition = {
+export const BoolParam = {
   name: "bool",
   regexpPattern: /true|false/,
-  primitive: Boolean
+  primitive: Boolean,
+  transform: (value: string) => value === "true"
 };
 export const DateParam: AutoParamTypeDefinition = {
   name: "date",
@@ -77,19 +79,19 @@ export const PrimitiveParam: ParamTypeDefinition = {
     return overloads(
       def(string({ equals: "null" })).matches((_) => null),
       def(string({ in: ["undefined", "missing"] })).matches((_) => undefined),
-      def(string({ in: boolTypes })).matches((val) => Boolean(val)),
+      def(string({ in: boolTypes })).matches((val) => val === "true"),
       def(string({ equals: "NaN" })).matches((_) => NaN),
       def(string({ equals: "Infinity" })).matches((_) => Infinity),
       def(string({ equals: "-Infinity" })).matches((_) => -Infinity),
       def(string({ pattern: isodateRegexp })).matches(parseIso),
       def(string({ pattern: shortDateRegex })).matches(parseDate),
       def(string({ pattern: strNum })).matches(trimQuotes),
-      def(
-        string({ pattern: /-?(\d{1,3}(,\d{3})*(\.\d+)?)/})
-      ).matches((val) => {
-        const asStr = val.replace(/,/g, "");
-        return parseFloat(asStr);
-      }),
+      def(string({ pattern: /-?(\d{1,3}(,\d{3})*(\.\d+)?)/ })).matches(
+        (val) => {
+          const asStr = val.replace(/,/g, "");
+          return parseFloat(asStr);
+        }
+      ),
       // def(string({ pattern: /-?(\d{1,3}(\.\d{3})*(,\d+)?)/ })).matches(
       //   (val) =>{
       //     const asStr = val.replace(/\./g, "").replace(/,/g, ".");
