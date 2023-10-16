@@ -125,7 +125,7 @@ function registerParameterType(
     ).matches((name, regexp, _, transform, primitive) => {
       const primitivePrototype = primitive as unknown as PrimitiveConstructor;
       const wrapper = (val: unknown) => {
-        const asPrimitive = primitivePrototype(val);
+        const asPrimitive = fromPrimitive(val, primitivePrototype);
         return transform(asPrimitive);
       };
       const param = new ParameterType(name, regexp, primitive, wrapper);
@@ -141,7 +141,7 @@ function registerParameterType(
       const primitivePrototype = primitive as unknown as PrimitiveConstructor;
       const typePrototype = type as unknown as Class<unknown>;
       const wrapper = (val: unknown) => {
-        const asPrimitive = primitivePrototype(val);
+        const asPrimitive = fromPrimitive(val, primitivePrototype);
         return new typePrototype(asPrimitive);
       };
       const param = new ParameterType(name, regexp, type, wrapper);
@@ -163,7 +163,7 @@ function registerParameterType(
       func("primitive")
     ).matches((name, pattern, _, __, primitive) => {
       const prototype = primitive as unknown as PrimitiveConstructor;
-      const transform = (val: unknown) => prototype(val);
+      const transform = (val: unknown) => fromPrimitive(val, prototype);
       const param = new ParameterType(name, pattern, null, transform);
       registry.defineParameterType(param);
     }),
@@ -185,4 +185,17 @@ function registerParameterType(
       }
     )
   ).use([name, regexpPattern, type, transform, primitive]);
+}
+
+function fromPrimitive(value: unknown, primitive: PrimitiveConstructor) {
+  if (primitive === String) {
+    return value;
+  }
+  if (primitive === Number) {
+    return parseFloat(value as string);
+  }
+  if (primitive === Boolean) {
+    return value === "true";
+  }
+  return primitive(value);
 }
