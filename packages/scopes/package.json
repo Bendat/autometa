@@ -28,7 +28,7 @@
   "license": "MIT",
   "devDependencies": {
     "@cucumber/cucumber-expressions": "^16.1.2",
-    "@types/diff": "^5.0.3",
+    "@types/diff": "^5.0.6",
     "@types/glob": "^8.0.1",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.5",

@@ -1256,8 +1256,8 @@ importers:
         specifier: ^16.1.2
         version: 16.1.2
       '@types/diff':
-        specifier: ^5.0.3
-        version: 5.0.3
+        specifier: ^5.0.6
+        version: 5.0.6
       '@types/luxon':
         specifier: ^3.3.1
         version: 3.3.1
@@ -1898,8 +1898,8 @@ importers:
         specifier: ^16.1.2
         version: 16.1.2
       '@types/diff':
-        specifier: ^5.0.3
-        version: 5.0.3
+        specifier: ^5.0.6
+        version: 5.0.6
       '@types/glob':
         specifier: ^8.0.1
         version: 8.0.1
@@ -7832,8 +7832,8 @@ packages:
       '@cucumber/cucumber': 9.5.1
     dev: true
 
-  /@types/diff@5.0.3:
-    resolution: {integrity: sha512-amrLbRqTU9bXMCc6uX0sWpxsQzRIo9z6MJPkH1pkez/qOxuqSZVuryJAWoBRq94CeG8JxY+VK4Le9HtjQR5T9A==}
+  /@types/diff@5.0.6:
+    resolution: {integrity: sha512-OxYeXtiT2eAkK5Js6V6wY+Jb9uKdeSQIXxEZcRBqrE/VBJPMnrmsArARjGjiIulpu13vnpvGf+LLTNyZaJNPuw==}
 
   /@types/error-cause@1.0.1:
     resolution: {integrity: sha512-+jboV83Oc3rUWnlZEXq2L6GU7qc8Gd5uI1nN2O5QE54goJapuYGWQpKXnj/s57BXlvohRgcICgQ99AB6RqxvXA==}
