@@ -1,5 +1,16 @@
 # @autometa/runner
 
+## 0.2.30
+
+### Patch Changes
+
+- Updated dependencies [bc3d616]
+  - @autometa/cucumber-expressions@0.3.4
+  - @autometa/scopes@0.3.5
+  - @autometa/coordinator@0.1.27
+  - @autometa/jest-executor@0.2.10
+  - @autometa/test-builder@0.1.27
+
 ## 0.2.29
 
 ### Patch Changes

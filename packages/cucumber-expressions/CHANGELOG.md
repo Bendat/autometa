@@ -1,5 +1,11 @@
 # @autometa/cucumber-expressions
 
+## 0.3.4
+
+### Patch Changes
+
+- bc3d616: fix: update primitive constructor initialization
+
 ## 0.3.3
 
 ### Patch Changes
