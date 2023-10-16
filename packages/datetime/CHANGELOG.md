@@ -1,5 +1,11 @@
 # @autometa/datetime
 
+## 0.1.10
+
+### Patch Changes
+
+- 6dd05a6: Fix: Missing common properties on Dates.fmt
+
 ## 0.1.9
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @autometa/cucumber-expressions
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [6dd05a6]
+  - @autometa/datetime@0.1.10
+
 ## 0.3.1
 
 ### Patch Changes
