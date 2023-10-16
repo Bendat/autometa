@@ -1,5 +1,11 @@
 # @autometa/cucumber-expressions
 
+## 0.3.3
+
+### Patch Changes
+
+- f8b311e: Fix: Boolean expressions incorrectly parsed
+
 ## 0.3.2
 
 ### Patch Changes
