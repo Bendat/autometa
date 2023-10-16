@@ -93,6 +93,18 @@ describe("Default Parameters", () => {
         const value = arg.getValue(arg);
         expect(value).toBe(7);
       });
+      it('should not match a string', ()=>{
+        const registry = new ParameterTypeRegistry();
+        const { name, regexpPattern, transform } = PrimitiveParam;
+        const param = new ParameterType(name, regexpPattern, null, transform);
+        registry.defineParameterType(param);
+        const expression = new CucumberExpression(
+          "I have {primitive} cukes in my belly now",
+          registry
+        );
+        const args = expression.match("I have abc7 cukes in my belly now");
+        expect(args).toBeNull();
+      })
       it("should match a positive integer primitive with a comma delimiter", () => {
         const registry = new ParameterTypeRegistry();
         const { name, regexpPattern, transform } = PrimitiveParam;
