@@ -34,7 +34,7 @@
     "tsconfig": "workspace: *",
     "tsup": "^7.2.0",
     "typescript": "^4.9.5",
-    "vitest": "0.33.0"
+    "vitest": "0.34.6"
   },
   "dependencies": {
     "@types/error-cause": "^1.0.1",

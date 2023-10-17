@@ -36,7 +36,7 @@
     "tsconfig": "workspace: *",
     "tsup": "^7.2.0",
     "typescript": "^4.9.5",
-    "vitest": "^0.29.8"
+    "vitest": "0.34.6"
   },
   "dependencies": {
     "@autometa/app": "workspace:^",
@@ -49,6 +49,7 @@
     "@autometa/errors": "workspace:^",
     "@autometa/events": "workspace:^",
     "@autometa/gherkin": "workspace:^",
+    "@autometa/http": "workspace:^",
     "@autometa/jest-executor": "workspace:^",
     "@autometa/phrases": "workspace:^",
     "@autometa/scopes": "workspace:^",
