@@ -4,6 +4,7 @@ export const tsup: Options = {
   format: ["cjs", "esm"], // generate cjs and esm files
   skipNodeModulesBundle: true,
   entryPoints: ["src/index.ts"],
+  dts: true,
   target: "es2020",
   outDir: "dist",
   legacyOutput: true,
