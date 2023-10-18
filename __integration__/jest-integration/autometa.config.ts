@@ -9,7 +9,8 @@ defineConfig({
   roots: {
     features: ["__integration__/features"],
     steps: ["__integration__/steps"],
-    app: ["src"]
+    app: ["src"],
+    parameterTypes: ["src/**/*.param.ts"],
   },
   shim: {
     errorCause: true

@@ -33,6 +33,7 @@ abstract class FileSystem {
   abstract get path(): string | string[];
   declare stepDefRoots: string[];
   declare appRoots: string[];
+  declare parameterTypes: string[];
 
   getFeatureFile() {
     if (Array.isArray(this.path)) {
@@ -73,6 +74,24 @@ abstract class FileSystem {
       }
     }
   }
+
+  loadParameterTypes() {
+    const paramDirs = this.parameterTypes;
+    if (paramDirs !== undefined) {
+      for (const paramDir of paramDirs) {
+        const resolved = path.resolve(paramDir);
+        const paths = glob.sync(resolved);
+        for (const path of paths) {
+          for (const ext of extensions) {
+            if (!path.endsWith(ext)) {
+              continue;
+            }
+          }
+          require(path);
+        }
+      }
+    }
+  }
 }
 
 export class RelativeFileSystem extends FileSystem {
@@ -80,7 +99,8 @@ export class RelativeFileSystem extends FileSystem {
     private caller: string,
     private uri: string,
     readonly stepDefRoots: string[],
-    readonly appRoots: string[]
+    readonly appRoots: string[],
+    readonly parameterTypes: string[] = []
   ) {
     super();
     if (!this.caller) {
@@ -97,7 +117,8 @@ export class HomeDirectoryFileSystem extends FileSystem {
   constructor(
     private uri: string,
     readonly stepDefRoots: string[],
-    readonly appRoots: string[]
+    readonly appRoots: string[],
+    readonly parameterTypes: string[] = []
   ) {
     super();
     if (!uri.startsWith("~")) {
@@ -114,7 +135,8 @@ export class AbsoluteFileSystem extends FileSystem {
   constructor(
     private uri: string,
     readonly stepDefRoots: string[],
-    readonly appRoots: string[]
+    readonly appRoots: string[],
+    readonly parameterTypes: string[] = []
   ) {
     super();
   }
@@ -128,7 +150,8 @@ export class FeatureRootFileSystem extends FileSystem {
     private featureRoot: string[],
     private uri: string,
     readonly stepDefRoots: string[],
-    readonly appRoots: string[]
+    readonly appRoots: string[],
+    readonly parameterTypes: string[] = []
   ) {
     super();
     if (
@@ -150,13 +173,13 @@ export class FeatureRootFileSystem extends FileSystem {
           `Cannot use Feature Root path without feature root. Stub was ${this.uri}. A Feature Root starts with '^' or '^/'`
         );
       }
-      const uriReplace = (replacement: string)=>{
-        if(this.uri.startsWith("^/")){
+      const uriReplace = (replacement: string) => {
+        if (this.uri.startsWith("^/")) {
           return this.uri.replace("^/", replacement);
         }
         return this.uri.replace("^", replacement);
-      }
-      
+      };
+
       const uri = uriReplace("").replace(/\\/g, "/");
       const result = path.resolve(root, uri);
       return result;
@@ -168,6 +191,7 @@ export class Files {
   callerFile: string;
   stepDefRoot: string[];
   appRoot: string[];
+  parameterTypes: string[];
 
   @Bind
   withFeatureRoot(featureRoot: string | string[]) {
@@ -205,20 +229,47 @@ export class Files {
   }
 
   @Bind
+  withParameterTypes(parameterTypes?: string | string[]) {
+    if (typeof parameterTypes === "string") {
+      this.parameterTypes = [parameterTypes];
+      return this;
+    }
+    if (parameterTypes === undefined) {
+      this.parameterTypes = [];
+      return this;
+    }
+    this.parameterTypes = parameterTypes;
+    return this;
+  }
+
+  @Bind
   fromUrlPattern(uriPattern: string) {
     const global = this.stepDefRoot;
     const apps = this.appRoot;
+    const params = this.parameterTypes;
     if (uriPattern.startsWith("./") || uriPattern.startsWith("../")) {
-      return new RelativeFileSystem(this.callerFile, uriPattern, global, apps);
+      return new RelativeFileSystem(
+        this.callerFile,
+        uriPattern,
+        global,
+        apps,
+        params
+      );
     }
     if (uriPattern.startsWith(".\\") || uriPattern.startsWith("..\\")) {
-      return new RelativeFileSystem(this.callerFile, uriPattern, global, apps);
+      return new RelativeFileSystem(
+        this.callerFile,
+        uriPattern,
+        global,
+        apps,
+        params
+      );
     }
     if (path.isAbsolute(uriPattern)) {
-      return new AbsoluteFileSystem(uriPattern, global, apps);
+      return new AbsoluteFileSystem(uriPattern, global, apps, params);
     }
     if (uriPattern.startsWith("~")) {
-      return new HomeDirectoryFileSystem(uriPattern, global, apps);
+      return new HomeDirectoryFileSystem(uriPattern, global, apps, params);
     }
     if (uriPattern.startsWith("^")) {
       return new FeatureRootFileSystem(
@@ -230,6 +281,12 @@ export class Files {
     }
 
     // assuming no delimiter. i.e src/lib vs ./src/lib
-    return new RelativeFileSystem(this.callerFile, uriPattern, global, apps);
+    return new RelativeFileSystem(
+      this.callerFile,
+      uriPattern,
+      global,
+      apps,
+      params
+    );
   }
 }

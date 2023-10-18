@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import type { DefaultApp, World as W } from "./src";
-
+import type { DefaultApp, World as W, Foo } from "./src";
 declare module "@autometa/app" {
   export interface App extends DefaultApp {
     world: W;
@@ -12,5 +11,6 @@ declare module "@autometa/app" {
 declare module "@autometa/scopes" {
   export interface Types {
     snoob: number;
+    "class:foo": Foo;
   }
 }

@@ -61,6 +61,7 @@ export class Coordinator {
     ) => void
   ) {
     this.global.unlock();
+    this.loadParameterTypes();
     this.loadSteps();
     this.global.lock();
     this.#builder = new TestBuilder(gherkin);
@@ -82,12 +83,13 @@ export class Coordinator {
 
   fileSystem(caller: string) {
     const { roots } = this.config;
-    const { steps, features, app } = roots;
+    const { steps, features, app, parameterTypes } = roots;
 
     this.#fs = new Files()
       .withFeatureRoot(features)
       .withCallerFile(caller)
       .withStepsRoot(steps)
+      .withParameterTypes(parameterTypes)
       .withAppRoot(app);
     return this.fs;
   }
@@ -100,6 +102,22 @@ export class Coordinator {
     }
     for (const stepRoot of steps) {
       this.fs.fromUrlPattern(stepRoot).loadStepDefinitions();
+    }
+  }
+
+  loadParameterTypes() {
+    const { parameterTypes } = this.config.roots;
+    if (parameterTypes === undefined) {
+      return;
+    }
+
+    if (typeof parameterTypes === "string") {
+      this.fs.fromUrlPattern(parameterTypes).loadParameterTypes();
+      return;
+    }
+
+    for (const paramTypeRoot of parameterTypes) {
+      this.fs.fromUrlPattern(paramTypeRoot).loadParameterTypes();
     }
   }
 }
