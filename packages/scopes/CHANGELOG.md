@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.4.0
+
+### Minor Changes
+
+- de6dad7: Feat: Expressions are now loaded using config
+
 ## 0.3.6
 
 ### Patch Changes

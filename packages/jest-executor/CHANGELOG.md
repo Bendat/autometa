@@ -1,5 +1,13 @@
 # @autometa/jest-executor
 
+## 0.2.12
+
+### Patch Changes
+
+- Updated dependencies [de6dad7]
+  - @autometa/scopes@0.4.0
+  - @autometa/test-builder@0.1.29
+
 ## 0.2.11
 
 ### Patch Changes

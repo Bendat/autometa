@@ -1,5 +1,16 @@
 # @autometa/jest-integration
 
+## 0.2.0
+
+### Minor Changes
+
+- de6dad7: Feat: Expressions are now loaded using config
+
+### Patch Changes
+
+- @autometa/runner@0.2.32
+- @autometa/jest-transformer@0.1.40
+
 ## 0.1.39
 
 ### Patch Changes

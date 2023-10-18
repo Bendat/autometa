@@ -1,5 +1,18 @@
 # @autometa/coordinator
 
+## 0.2.0
+
+### Minor Changes
+
+- de6dad7: Feat: Expressions are now loaded using config
+
+### Patch Changes
+
+- Updated dependencies [de6dad7]
+  - @autometa/scopes@0.4.0
+  - @autometa/jest-executor@0.2.12
+  - @autometa/test-builder@0.1.29
+
 ## 0.1.28
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @autometa/test-builder
 
+## 0.1.29
+
+### Patch Changes
+
+- Updated dependencies [de6dad7]
+  - @autometa/scopes@0.4.0
+
 ## 0.1.28
 
 ### Patch Changes
