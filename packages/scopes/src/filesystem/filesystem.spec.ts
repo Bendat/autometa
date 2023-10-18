@@ -17,7 +17,7 @@ describe("FileSystem", () => {
         const caller = "/home/user/project/src";
         const uri = "features";
         const stepDefRoot = "step_definitions";
-        const fs = new RelativeFileSystem(caller, uri, [stepDefRoot]);
+        const fs = new RelativeFileSystem(caller, uri, [stepDefRoot], []);
         expect(fs.path).toBe("/home/user/project/src/features");
       });
     });
@@ -27,7 +27,7 @@ describe("FileSystem", () => {
       it("should throw an error when the uri does not start with ~", () => {
         const uri = "features";
         const stepDefRoot = "step_definitions";
-        expect(() => new HomeDirectoryFileSystem(uri, [stepDefRoot])).toThrow(
+        expect(() => new HomeDirectoryFileSystem(uri, [stepDefRoot], [])).toThrow(
           "Cannot use home directory path without ~. Stub was features"
         );
       });
@@ -35,7 +35,7 @@ describe("FileSystem", () => {
       it("should return the path relative to the home directory", () => {
         const uri = "~/features";
         const stepDefRoot = "step_definitions";
-        const fs = new HomeDirectoryFileSystem(uri, [stepDefRoot]);
+        const fs = new HomeDirectoryFileSystem(uri, [stepDefRoot], []);
         expect(fs.path).toBe(`${homeDirectory}/features`);
       });
     });
@@ -44,7 +44,7 @@ describe("FileSystem", () => {
     describe("path", () => {
       it("should return the absolute path", () => {
         const uri = "/home/user/features";
-        const fs = new AbsoluteFileSystem(uri);
+        const fs = new AbsoluteFileSystem(uri, [], []);
         expect(fs.path).toBe("/home/user/features");
       });
     });
