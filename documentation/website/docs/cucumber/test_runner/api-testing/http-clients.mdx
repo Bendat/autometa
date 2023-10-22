@@ -1,0 +1,337 @@
+---
+sidebar_position: 3
+---
+
+# Setting up a HTTP Client
+
+Autometa comes with a built in `HTTP` module which is a wrapper around
+axios that works with a fluent/builder syntax, however you can use
+the client of your choosing.
+
+We'll create abstraction layers over this client to match our
+API structure.
+
+Since the [Dummy JSON API](https://jsonplaceholder.typicode.com/) is a
+large API, we'll break it down by controller, creating class `Fixture`s for each.
+
+We'll centralize all of our controllers through an `API` class.
+
+First we'll create a `Fixture` class for the `products` controller.
+
+```ts
+import { HTTP, Fixture } from "@autometa/runner";
+import { Env } from "../env";
+import { Products, Product } from "../models/products";
+
+@Fixture
+export class ProductController {
+  constructor(private readonly http: HTTP) {
+    this.http.url(Environment.API_URL);
+  }
+
+  /**
+   * Get all products on the service.
+   * [DOCS](https://dummyjson.com/docs/products)
+   */
+  async getAll() {
+    return this.http.routes("products").get<Products>();
+  }
+
+  /**
+   * Get a single product by ID.
+   * [DOCS](https://dummyjson.com/docs/product#single)
+   */
+  async get(id: number) {
+    return this.http.routes("products", id).get<Product>();
+  }
+
+  /**
+   * Add a new product.
+   * [DOCS](https://dummyjson.com/docs/products#add)
+   */
+  async add(product: Product) {
+    return this.http.routes("products").post<Product>(product);
+  }
+}
+```
+
+Next we'll create an API class to centralize all of our controllers.
+
+```ts
+// ./src/controllers/api.ts
+import { Fixture, HTTP } from "@autometa/runner";
+import { ProductController } from "./controllers/products";
+
+@Fixture
+export class API {
+  constructor(public readonly products: ProductController) {}
+}
+```
+
+Now we'll inject the API class into the App:
+
+```ts
+// ./app/app.ts
+import { App } from "@autometa/runner";
+import { API } from "./api";
+
+export class MyApp extends App {
+  constructor(public readonly api: API) {
+    super();
+  }
+}
+```
+
+Which can be used in step definitions.
+
+```ts
+// ./app/steps/products.steps.ts
+import { When } from "@autometa/runner";
+
+When("I get all products", async ({ world, api: { products } }) => {
+  world.allProductsResponse = await products.getAll();
+});
+```
+
+:::tip
+It's a good idea to declare your stored responses on the World
+
+```ts
+// ./app/world.ts
+
+export class World {
+  declare allProductsResponse: Products;
+  declare productResponse: Product;
+}
+```
+
+Depending on your tsconfig settings you may not need the `declare` keyword, or you might need to
+use a not null assertion
+
+```ts
+// ./app/world.ts
+
+export class World {
+  allProductsResponse!: Products;
+  productResponse!: Product;
+}
+```
+
+These will be automatically inferred by step definition callbacks.
+:::
+
+## Using Schemas with our Client
+
+We can use our MyZod/Zod schemas to declare the expected shape of our responses,
+mapped by status code. For this API we only deal with 200 OK
+
+```ts
+// ./app/controllers/product/product.controller.ts
+import { HTTP, Fixture } from "@autometa/runner";
+import { Env } from "../env";
+import { ProductSchema, ProductListSchema, Products, Product } from "./";
+
+@Fixture
+export class ProductController {
+  constructor(private readonly http: HTTP) {
+    this.http.url(Environment.API_URL);
+  }
+
+  /**
+   * Get all products on the service.
+   * [DOCS](https://dummyjson.com/docs/products)
+   */
+  async getAll() {
+    return this.http
+      .routes("products")
+      .schema(ProductListSchema, 200)
+      .get<Products>();
+  }
+
+  /**
+   * Get a single product by ID.
+   * [DOCS](https://dummyjson.com/docs/product#single)
+   */
+  async get(id: number) {
+    return this.http
+      .route("products")
+      .route(id)
+      .schema(ProductSchema, 200)
+      .get<Product>();
+  }
+
+  /**
+   * Add a new product.
+   * [DOCS](https://dummyjson.com/docs/products#add)
+   */
+  async add(product: Product) {
+    return this.http
+      .routes("products")
+      .schema(ProductSchema, 200)
+      .data(product)
+      .post<Product>();
+  }
+}
+```
+
+Now our responses will automatically be validated according to response code. So if our product 'price' is
+missing, or is a string, the test will fail immediately with a sensible message. If an unregistered
+response code is encountered in the response, an error will also be thrown.
+
+In the case of errors you might want that schema to be shared, which can be accomplished with `sharedSchema`
+
+```ts
+// ./app/controllers/product/product.controller.ts
+import { HTTP, Fixture } from "@autometa/runner";
+import { Env } from "../env";
+import { ErrorSchema } from "../../errors";
+import { ProductSchema, ProductListSchema, Products, Product } from "./";
+
+@Fixture
+export class ProductController {
+  constructor(private readonly http: HTTP) {
+    this.http
+      .url(Environment.API_URL)
+      .sharedSchema(ErrorSchema, { from: 400, to: 500 });
+  }
+
+  // ...
+
+  async get(id: number) {
+    return this.http
+      .route("products")
+      .route(id)
+      .schema(ProductSchema, 200)
+      .get<Product>();
+  }
+
+  // ...
+}
+```
+
+If you wish to construct a log using the builder data before the request is sent, you can register a function
+to run `onBeforeSend`. When executed, the registered function will be passed an object representing the state of the request
+with the following schema:
+
+```ts
+interface State {
+  headers: Map<string, string>;
+  params: Map<string, string>;
+  data: T;
+  url: string;
+  route: string[];
+  responseType: string;
+}
+```
+
+And upon recieving a response any function registered with `onRecievedResponse` which is passed a `HTTPRequest<T>`:
+
+```ts
+interface HTTPRequest<T> {
+  data: T;
+  headers: Map<string, string>;
+  status: number;
+  statusText: string;
+}
+```
+
+Now we can add logger functions to our controller (or a shared base class) to log our request and response:
+
+```ts
+// ./app/controllers/product/product.controller.ts
+import { HTTP, Fixture, HTTPResponse, RequestState } from "@autometa/runner";
+import { Env } from "../env";
+import { ErrorSchema } from "../../errors";
+import { ProductSchema, ProductListSchema, Products, Product } from "./";
+
+@Fixture
+export class ProductController {
+  constructor(private readonly http: HTTP) {
+    this.http
+      .url(Env.API_URL)
+      .sharedSchema(ErrorSchema, { from: 400, to: 500 })
+      .sharedOnBeforeSend(this.logRequest)
+      .sharedOnRecievedResponse(this.logResponse);
+  }
+
+  // ...
+
+  async get(id: number) {
+    return this.http
+      .route("products")
+      .route(id)
+      .schema(ProductSchema, 200)
+      .get<Product>();
+  }
+
+  // ...
+
+  private logRequest(state: RequestState) {
+    const headers = JSON.stringify(Object.fromEntries(state.headers));
+    const data = JSON.stringify(state.data);
+    console.log(
+      `Sending ${state.method} request to ${state.fullUrl}
+
+headers: ${headers}
+data: ${data}`
+    );
+  }
+
+  private logResponse(response: HTTPResponse<unknown>) {
+    const data = JSON.stringify(response.data);
+    const url = response.request.url;
+    console.log(
+      `Received ${response.status} response from ${url}
+
+statusText: ${response.statusText}
+status: ${response.status}
+data: ${data}`
+    );
+  }
+}
+```
+
+Since we want our logs to be used in all endpoints, we register them with `sharedOnBeforeSend` and `sharedOnRecievedResponse`.
+
+It can be a good idea to use a shared base class for your controllers, so you don't have to register these functions for every controller.
+
+```ts
+// ./app/controllers/base.controller.ts
+import { HTTP } from "@autometa/runner";
+import { RequestState, HTTPResponse } from "@autometa/runner";
+import { Env } from "../apps";
+
+export abstract class BaseController {
+  constructor(protected readonly http: HTTP) {
+    this.http
+      .url(Env.API_URL)
+      .sharedOnBeforeSend(this.logRequest)
+      .sharedOnReceiveResponse(this.logResponse);
+  }
+
+  private logRequest(state: RequestState) {
+    const headers = JSON.stringify(Object.fromEntries(state.headers));
+    const data = JSON.stringify(state.data);
+    console.log(
+      `Sending ${state.method} request to ${state.fullUrl}
+
+headers: ${headers}
+data: ${data}`
+    );
+  }
+
+  private logResponse(response: HTTPResponse<unknown>) {
+    const data = JSON.stringify(response.data);
+    const url = response.request.url;
+    console.log(
+      `Received ${response.status} response from ${url}
+
+statusText: ${response.statusText}
+status: ${response.status}
+data: ${data}`
+    );
+  }
+}
+```
+
+You can register more than one function per hook. They will run in the order they were defined. 

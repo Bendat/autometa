@@ -4,6 +4,7 @@ import {
   DateParam,
   NumberParam,
   PrimitiveParam,
+  OrdinalParam,
   TextParam,
   defineParameterType as dpt
 } from "@autometa/cucumber-expressions";
@@ -17,5 +18,6 @@ defineParameterType(
   BooleanParam,
   PrimitiveParam,
   TextParam,
-  DateParam
+  DateParam,
+  OrdinalParam
 );

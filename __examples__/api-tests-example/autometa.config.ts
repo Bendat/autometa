@@ -4,18 +4,16 @@ defineConfig({
   environment: "default",
   test: {
     groupLogging: true,
+    timeout: 10000
   },
   events: [],
   roots: {
-    features: ["__integration__/features"],
-    steps: ["__integration__/steps"],
-    app: ["src"]
+    features: ["integration/features"],
+    steps: ["integration/steps"],
+    app: ["src"],
+    parameterTypes: ["*.params.ts"]
   },
   shim: {
     errorCause: true
   }
-  // test: {
-  //   timeout: 10000
-  //   // tagFilter: "@integration"
-  // },
-});
+}); 

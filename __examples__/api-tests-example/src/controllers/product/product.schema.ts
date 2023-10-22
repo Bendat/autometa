@@ -21,4 +21,4 @@ export const ProductListSchema = object({
   limit: number()
 });
 
-export const CategorySchema = array(string());
+export const CategoriesSchema = array(string());

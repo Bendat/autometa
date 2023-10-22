@@ -40,9 +40,11 @@
     "@autometa/app": "workspace:^",
     "@autometa/errors": "workspace:^",
     "@autometa/status-codes": "workspace:^",
+    "@stdlib/assert-is-json": "^0.1.1",
     "axios": "^1.5.1",
     "class-transformer": "^0.5.1",
+    "cli-highlight": "^2.1.11",
     "reflect-metadata": "^0.1.13",
-    "url-join": "^5.0.0"
+    "url-join-ts": "^1.0.5"
   }
 }

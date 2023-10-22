@@ -1,9 +1,9 @@
 import { StatusCode, SchemaParser } from "./types";
 import { AutomationError } from "@autometa/errors";
 import { StatusCodes } from "@autometa/status-codes";
-import { HTTPResponse } from "./http.response";
 
 export class SchemaMap {
+  #children: SchemaMap[] = [];
   #map: Map<StatusCode, SchemaParser> = new Map();
   register(
     parser: SchemaParser,
@@ -39,6 +39,10 @@ export class SchemaMap {
     });
   }
 
+  including(map: SchemaMap) {
+    this.#children.includes(map);
+    return this;
+  }
   registerRange(
     parser: SchemaParser,
     ...range: { from: StatusCode; to: StatusCode }[]
@@ -47,6 +51,9 @@ export class SchemaMap {
       assertIsStatusCode(from);
       assertIsStatusCode(to);
       for (let i = from; i <= to; i++) {
+        if (!IsStatusCode(i)) {
+          continue;
+        }
         if (this.#map.has(i)) {
           throw new AutomationError(
             `Status code ${i} is already registered with a parser`
@@ -57,16 +64,24 @@ export class SchemaMap {
     });
   }
 
-  get(status: StatusCode) {
+  get(status: StatusCode): SchemaParser | undefined {
     assertIsStatusCode(status);
-    return this.#map.get(status);
+    const local = this.#map.get(status);
+    if (local) {
+      return local;
+    }
+    const nested = this.#children.find((it) => it.#map.has(status));
+    return nested?.get(status);
   }
 
-  validate<T>(status: StatusCode, response: T) {
+  validate<T>(status: StatusCode, response: T, strict: boolean) {
     const parser = this.get(status);
     if (!parser) {
+      if (!strict) {
+        return response;
+      }
       throw new AutomationError(
-        `No schema parser registered for status code ${status}`
+        `No schema parser registered for status code ${status} and 'requireSchema' is set to true`
       );
     }
     return parser.parse(response);
@@ -78,6 +93,14 @@ export function assertIsStatusCode(value: number): asserts value is StatusCode {
     .map((it) => it.status as number)
     .includes(value);
   if (!result) {
-    throw new AutomationError(`Expected status code ${value} to be a valid status code, but it is not a known HTTP codeF`);
+    throw new AutomationError(
+      `Expected status code ${value} to be a valid status code, but it is not a known HTTP codeF`
+    );
   }
+}
+
+export function IsStatusCode(value: number): value is StatusCode {
+  return Object.values(StatusCodes)
+    .map((it) => it.status as number)
+    .includes(value);
 }

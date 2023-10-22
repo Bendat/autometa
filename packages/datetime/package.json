@@ -42,6 +42,7 @@
   "dependencies": {
     "@autometa/asserters": "workspace:^",
     "@autometa/errors": "workspace:^",
-    "@autometa/phrases": "workspace:^"
+    "@autometa/phrases": "workspace:^",
+    "iso-datestring-validator": "^2.2.2"
   }
 }

@@ -1,0 +1,316 @@
+---
+sidebar_position: 0
+---
+
+# Setting Up
+
+In this tutorial we'll walk through setting up an Autometa based API testing framework in a Typescript project.
+The goal of this guide is to end up with a project that can run tests against a local server, or a live
+deployed service.
+
+From Autometa we'll use the following libraries:
+
+- `@autometa/runner` - Our Cucumber executor, which contains a HTTP Client built on Axios
+- `@autometa/status-codes` - A collection of HTTP status codes and their descriptions which can be used for assertions.
+- `@autometa/builder` - Simply define and create DTOs and Request obects using a builder pattern.
+
+We'll also use some other great libraries:
+
+- [MyZod](https://github.com/davidmdm/myzod), [Zod](https://zod.dev/) or other schema
+  validation library you like to validate our API responses and reduce our 'Testing Surface Area'
+  - Schemas let us validate the "shape" of a response. e.g is `name` a `string` and `details` an `object`?
+  - Validators besides MyZod and Zod may require you to write a wrapper to interact with the Autometa HTTP Client, if in use.
+- [Envalid](https://www.npmjs.com/package/envalid) a schema validator for the
+  environment variables in our project. You could also make your own with MyZod or Zod.
+  - This will parse our `process.env` including values injected from CI Workflows or `.env` files.
+  - Handles type conversion from `string` (only type supported by `process.env`) to `number`, `boolean`, `object` etc.
+- [DotEnv](https://www.npmjs.com/package/dotenv) to load our environment variables from a `.env` file
+  - We'll store our API urls and other environment-based or sensitive data in this file (do not commit this file to source control)
+- [Reflect Metadata](https://www.npmjs.com/package/reflect-metadata) - To allow us to use decorators in Typescript
+  - This requires `experimentalDecorators` and `emitDecoratorMetadata` to be set to `true` in your `tsconfig.json`
+- [Jest](https://jestjs.io/) - At present, Autometa requires Jest as a Test Runner. Future support for Vitest is planned.
+- [ts-jest](https://www.npmjs.com/package/ts-jest) - To allow Jest to run Typescript tests
+- [ts-node](https://www.npmjs.com/package/ts-node) - To allow Jest to run Typescript tests
+
+Optional:
+
+If you prefer the workflow of Axios or node-fetch you can use that as a HTTP client instead.
+
+:::warning
+This library requires `experimentalDecorators` and `emitDecoratorMetadata` to be set to `true` in your `tsconfig.json`
+:::
+
+## Pre Setup
+
+To begin, set up a new Typescript project to your preferred configuration. If starting
+from scratch, you can use a project template such as [this](https://github.com/themetalfleece/nodejs-typescript-template).
+
+Configure your jest.config & tsconfig to your liking and install the following dependencies:
+
+```bash
+npm i -D @autometa/runner @autometa/status-codes @autometa/builder myzod envalid dotenv
+```
+
+## Our API
+
+For this example we're going to build a framework to test the free [Dummy JSON](https://dummyjson.com/) API.
+
+## Choose Your test Style
+
+Autometa supports two styles of testing:
+
+- Gherkin
+  - Uses the `@autometa/jest-transformer` to execute Cucumber `.feature` files directly in Jest.
+  - Test Scenarios are assembled automatically by globally defined `Step Definitions` and `Hooks`.
+- [Jest-Cucumber Inspired](https://npmjs.com/package/jest-cucumber)
+  - Executes code files which reference `.feature` files, and support nested Step Definitions,
+    and concrete test scenarios.
+
+For this tutorial we'll use `Gherkin` style.
+
+## Create a Config file
+
+In the Root of your project, create a file called `autometa.config.ts` and add the following:
+
+```typescript
+import { defineConfig } from "@autometa/runner";
+
+export default defineConfig();
+```
+
+Next we need to add the following options:
+
+- runner - The Library or Framework running our tests
+  - Currently only `jest` is supported
+- roots - roots define the roots for important files in our project.
+  - `features` - The root of our `.feature` files relative to the project root.
+    - e.g. `$root/integration/features`
+  - steps: The root of our `Step Definitions` relative to the project root.
+    - e.g. `$root/integration/steps`
+  - Step Definitions act as "import with side effects". This option is required to ensure they are loaded.\
+  - app: The 'App' is the entry point for our tests and a deviation from Cucumbers default "World" concept. It is the file that will be executed by our test runner.
+    - e.g. `$root/integration/app.ts`
+    - A class `App` contains our supporting and utility classes via dependency injection.
+    - A class `World` contains our test state and is passed to each test scenario. Almost identitical to Cucumber's `World` concept.
+    - (recommended) a `env.ts` file to contain our environment variables and their types using Envalid.
+- (Optional) shim - an object which can enable or disable shims. Currently only 'Error Causes' is supported.
+  - Error Causes - Errors in jest will contain a stack of errors, not just a textual stack trace.
+  - Not necessary for ecmascript 2022+ as it's now supported natively
+
+```typescript
+import { defineConfig } from "@autometa/runner";
+
+export default defineConfig({
+  runner: "jest",
+  roots: {
+    features: "integration/features",
+    steps: "integration/steps",
+    app: "src/app.ts"
+  },
+  shim: {
+    errorCauses: true
+  }
+});
+```
+
+Make sure your `autometa.config.ts` is included in your `tsconfig file` under `include` or `files`:
+
+```json
+{
+  "include": ["autometa.config.ts"]
+}
+```
+
+## App
+
+The `App` is our central point of communication within a test. An `App` is a class you define in your Framework
+using the `@AppType` decorator. `AppType` takes a `World` argument. This is reference to your `World` class.
+
+In the official Cucumber implementation, there is no `App` concept. Instead, Cucumber relies on implicit
+access to the `World` object through the `this` variable. As a result, Cucumber functions must be defined with
+`function(){}` syntax, and cannot use `(fat)=> 'arrow'` functions.
+
+In Cucumber `this` is bound to the tests `World` object.
+
+In Autometa the `World` is defined explicitly, and it is a child of the `App`. Conceptually,
+the `World` is a state manager. It acts as a way of passing state between steps within a
+Scenario's Step Definitions. It is unique between tests but shared between steps.
+
+The `App` is a wrapper over the world, which represents state, and other fixtures which handle behavior,
+such as HTTP Clients, Database Clients, Page Objects or other utilities.
+
+We can add dependencies to the app by creating classes marked with `@Fixture`:
+
+```ts
+// my-client.ts
+
+import { Fixture, HTTP } from "@autometa/runner";
+
+@Fixture
+export class MyClient {
+  constructor(readonly http: HTTP) {
+    this.http.url(Env.API_URL);
+  }
+
+  async getResource() {
+    return await this.http.route("myResource").get();
+  }
+}
+
+// app.ts
+
+import { AppType } from "@autometa/runner";
+import { MyClient } from "./my-client";
+import { World } from "./world";
+
+@AppType(World)
+export class App {
+  constructor(readonly myClient: MyClient) {}
+}
+```
+
+:::tip
+`HTTP` is a built in HTTP client which wraps `Axios`.
+:::
+
+The app will be instantiated once per test and will contain a test-specific reference to
+a World instance.
+
+```ts
+import { Given } from "@autometa/runner";
+import { App } from "../app";
+
+When("I retrieve the resource", ({ world, myClient }: App) => {
+  world.response = await myClient.getResource();
+});
+```
+
+:::tip
+It is not necessary to explicitely define the paramater as `: APP` provided you follow the steps `Declaration Overrides`
+below. With overrides, the App is inferred and the World with it
+:::
+
+## World
+
+World is a Key:Value store represented by a blank class instance. It is automatically
+injected into the App during tests.
+
+Values in the world will persist between
+
+- Before Hooks
+- After Hooks
+- Scenarion and Scenario Outline Step Definitions
+- Background Step Definitions
+
+Meaning you can set up data in a pretest hook and use it as seed data for your tests.
+We can declare values on the world which are undefined by default, but are available
+with their types until the value is filled.
+
+```ts
+import { Fixture, HTTPResponse } from "@autometa/runner";
+import { MyResourceBody } from "./myclient/myclient.types.ts";
+@Fixture
+export class World {
+  declare myResourceResponse: HTTPResponse<MyResourceBody>;
+}
+```
+
+## Env
+
+To set up our environment variables we'll use [`Envalid`](https://www.npmjs.com/package/envalid) and `DotEnv`.
+
+Create a `.env` file in the root of your project and add the following:
+
+```env
+API_URL=https://dummyapi.io/data/api
+```
+
+Next create a file `env.ts` in `./src/env` of your project and add the following:
+
+```ts
+import { cleanEnv, str } from "envalid";
+import { config } from "dotenv";
+
+config();
+
+export const Env = cleanEnv(process.env, {
+  API_URL: str()
+});
+```
+
+Here we defined an `API_URL` which points to our API. This can easily be configured from `.env` files,
+or CI/CD workflows.
+
+```ts
+// some-file.ts
+const url = Env.API_URL;
+```
+
+## Declaration Overrides
+
+Your `App`/`World` classes are unique. No other project has one quite like yours. It's important then
+that it be declared in a way that is unique to your project. To do this, we'll use a `declaration override`.
+
+Create a new directory `__typings__` and include it as a `typeRoot` in your `tsconfig.json`:
+
+Now that we have our App and World defined, we can declare them to override Autometas empty default interfaces.
+
+```json
+{
+  "compilerOptions": {
+    "typeRoots": ["./__typings__"]
+  }
+}
+```
+
+Next create `autometa.d.ts`, and override Autometas internal `App` and `World` interfaces with your own:
+
+```typescript
+import { App as MyApp, World as MyWorld } from "../src/app";
+
+declare module "@autometa/runner" {
+  interface App extends MyApp {}
+  interface World extends MyWorld {}
+}
+```
+
+Steps will now automatically infer the type of the App and World, and it is no longer necessary to
+explicitely define their type in your Step Definitions.
+
+```ts
+Given("I have a world", ({ world }) => {
+  // world is inferred as MyWorld
+});
+```
+
+We can also use these overridden to automatically infer the type of [Cucumber Expressions](https://cucumber.io/docs/cucumber/cucumber-expressions/).
+
+```ts
+Given("a {builder:product} to add", (product, { world }) => {
+  // product is inferred as ProductBuilder
+  // world is inferred as MyWorld
+  world.productBuilder = product;
+});
+```
+
+```ts
+// src/app/types.ts
+interface Types {
+  "builder:product": ProductBuilder;
+}
+```
+
+```ts
+import type { App as MyApp, World as MyWorld, Types as T } from "../src/app";
+import type { ProductBuilder } from "../src/product/product.builder";
+
+declare module "@autometa/runner" {
+  interface App extends MyApp {}
+  interface World extends MyWorld {}
+  interface Types extends T {}
+}
+```
+
+:::tip
+Use the `export * from './foo'` syntax in `index.ts` files to make import your modules more easily.
+:::

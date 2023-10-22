@@ -2,7 +2,7 @@ import { TimeUnit, camel, convertPhrase, collapse } from "@autometa/phrases";
 import { midnight } from "./midnight";
 import { AutomationError, raise } from "@autometa/errors";
 import { ConfirmDefined, ConfirmLengthAtLeast } from "@autometa/asserters";
-
+import { isValidDate, isValidISODateString, isValidTime, isValidYearMonth } from "iso-datestring-validator";
 type TimeShortcut =
   | "now"
   | "beforeYesterday"
@@ -17,6 +17,7 @@ type TimeShortcut =
   | "nextFortnight";
 
 function isTimeShortcut(text: string): text is TimeShortcut {
+  const converted = convertPhrase(text, camel);
   const includes = [
     "now",
     "beforeYesterday",
@@ -29,11 +30,11 @@ function isTimeShortcut(text: string): text is TimeShortcut {
     "nextWeek",
     "lastFortnight",
     "nextFortnight"
-  ].includes(text);
+  ].includes(converted);
   if (!includes) {
-    return false
+    return false;
   }
-  return true
+  return true;
 }
 export class DateFactory {
   phraseMap = new Map<TimeShortcut, () => Date>([
@@ -70,10 +71,17 @@ export class DateFactory {
         return this.phraseMap.get(name)?.call(this);
       }
     }
-
+    
     const matchDay = this.#extractTimeFromPhrase(phrase);
     if (matchDay) {
       return matchDay;
+    }
+    const first = isValidDate(phrase);
+    const second = isValidISODateString(phrase);
+    const third = isValidTime(phrase);
+    const fourth = isValidYearMonth(phrase);
+    if (!first && !second && !third && !fourth) {
+      return new Date("null");
     }
     const parsed = new Date(phrase);
     if (isNaN(parsed.getTime())) {
@@ -124,7 +132,7 @@ export class DateFactory {
     );
   }
   #extractFutureFromPhrase(phrase: string) {
-    const pastPattern = /(\d+) (.*)s? from now?/;
+    const pastPattern = /^(\d+) (.*)s? from now?/;
     const pastMatch = pastPattern.exec(phrase);
 
     if (ConfirmDefined(pastMatch) && ConfirmLengthAtLeast(pastMatch, 3)) {
@@ -134,7 +142,7 @@ export class DateFactory {
     }
   }
   #extractPastFromPhrase(phrase: string) {
-    const pastPattern = /(\d+) (.*)(s)? ago?/gm;
+    const pastPattern = /^(\d+) (.*)(s)? ago?/gm;
     const pastMatch = pastPattern.exec(phrase);
     if (ConfirmDefined(pastMatch) && ConfirmLengthAtLeast(pastMatch, 3)) {
       const [_, value, unit] = pastMatch;

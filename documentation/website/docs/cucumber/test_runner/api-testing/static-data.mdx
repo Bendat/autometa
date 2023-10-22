@@ -1,0 +1,133 @@
+---
+sidebar_position: 7
+---
+
+# Static Data - Mapping Names to IDs
+
+The endpoint we are looking at currently is `products/{id}`, which retrieves a product
+resource by it's numeric ID in the database. This makes sense for the API, but we'd
+like our Gherkin to reflect the product itself.
+
+Since we know that in our test environments this resource is static, we can treat it
+as static test data. We can create a mapping object that maps the product name to
+it's ID in the database. Let's make a const dictionary to map product names to IDs
+
+```ts
+// src/controllers/products/product.static.ts
+
+export const ProductIdMap = {
+  "iPhone 9": 1
+} as const;
+```
+
+:::tip
+`as const` marks the object as compile time constant. So it's schema is literal, and not
+cast to a generic type like `number`.
+
+Without const, when hovering over the map in your editor, its shape would be displayed as
+
+```ts
+{
+    'iPhone 9': number
+}
+```
+
+Rather than the literal we want:
+
+```ts
+{
+    'iPhone 9': 1
+}
+```
+
+:::
+
+If using multiple environments, like dev, test, etc. we
+might want to set those values with `envalid`, however we will lose the constant type literals.
+
+```ts
+// src/controllers/products/product.static.ts
+import { Env } from "../../app/env";
+export const ProductIdMap = {
+  "iPhone 9": Env.PRODUCT_ID_IPHONE_9
+};
+
+// src/app/env.ts
+import { cleanEnv, num, str } from "envalid";
+
+export const Env = cleanEnv(process.env, {
+  API_URL: str({ default: "http://localhost:3000" }),
+  PRODUCT_ID_IPHONE_9: num({ default: 1 })
+});
+```
+
+## Using the Static Data With Expressions
+
+We can also take advantage of expressions here to automatically our products
+from gherkin.
+
+Consider the following step:
+
+```gherkin
+Given I have a product named "iPhone 9"
+```
+
+We can create a new `product:static:name` expression to map the product name to
+it's corresponding ID and automatically extract it from steps. As before we can
+use the `AssertKey` to validate the input.
+
+```ts
+// src/controllers/products/product.params.ts
+import { ProductIdMap } from "./product.static";
+import { defineParameterType } from "@autometa/runner";
+
+defineParameterType(
+  {
+    name: "product:static:name",
+    regexp: /"(.*)"/,
+    transformer: (name: string) => {
+      AssertKey(ProductIdMap, name, `Product Map name ${name}`);
+      return ProductIdMap[name];
+    }
+  } /* .... */
+);
+```
+
+And update our types:
+
+```ts
+import type { App as A, World as W } from "./src";
+import type {
+  ProductBuilder,
+  Product,
+  ProductId
+} from "./src/controllers/product";
+declare module "@autometa/runner" {
+  export interface App extends A {}
+  export interface World extends W {}
+  export interface Types {
+    "builder:product": ProductBuilder;
+    "product:property": keyof Product;
+    "product:static:name": ProductId;
+    "world:property:response": keyof W;
+  }
+}
+
+```
+
+Now we can use this expression in our step definition:
+
+```ts
+// src/controllers/products/product.steps.ts
+import { Given } from "@autometa/runner";
+import { ProductIdMap } from "./product.static";
+
+Given(
+  "I want to view the product {product:static:map}",
+  async (id, { world }) => {
+    world.viewProductId = id;
+  }
+);
+```
+
+With all that out of the way we can start to write our gherkin tests

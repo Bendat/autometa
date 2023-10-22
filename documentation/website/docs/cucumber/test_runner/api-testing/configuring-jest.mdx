@@ -1,0 +1,38 @@
+---
+sidebar_position: 1
+---
+
+# Configuring Jest
+
+Once your `jest.config` has been set up to your liking, we'll need to make some changes
+to support the Cucumber Runner.
+
+## Add the Cucumber transformer
+
+With `@autometa/jest-transformer` installed, we can add it as a transform module for `*.feature` files.
+We can also make `*.feature` a test extension which Jest can load
+
+```js
+// jest.config.ts
+default export {
+  transform: {
+    "^.+\\.feature$": "@autometa/jest-transformer"
+  },
+  moduleFileExtensions: ["feature", "js", "json", "ts", "tsx"],
+  testRegex: "(/integration/feature/.*|(\\.|/)(test|spec))\\.feature$"
+};
+```
+
+For this example we will hold our tests in `integration/feature` and name them with the `.feature` extension.
+
+## Setup Files After Env
+
+We need to setup the Cucumber environment before Jest runs. We can do this by adding a `setupFilesAfterEnv` property to our Jest config,
+and reference our `autometa.config.ts` file and `reflect-metadata`.
+
+```js
+// jest.config.ts
+export default {
+  setupFilesAfterEnv: ["reflect-metadata", "@autometa/jest-cucumber-runner"]
+};
+```

@@ -1,0 +1,143 @@
+---
+sidebar_position: 2
+---
+
+# Schemas and Types
+
+Next we'll define Schemas and our Types/Interfaces for the API Request
+and response bodies.
+
+Focusing on `product`, we have the following example:
+
+```ts
+{
+  "id": 1,
+  "title": "iPhone 9",
+  "description": "An apple mobile which is nothing like apple",
+  "price": 549,
+  "discountPercentage": 12.96,
+  "rating": 4.69,
+  "stock": 94,
+  "brand": "Apple",
+  "category": "smartphones",
+  "thumbnail": "...",
+  "images": ["...", "...", "..."]
+}
+```
+
+We can break this down into a shape:
+
+```ts
+{
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  discountPercentage: number;
+  rating: number;
+  stock: number;
+  brand: string;
+  category: string;
+  thumbnail: string;
+  images: string[];
+}
+```
+
+This represents the shape we expect our product objects to have. It's worth
+noting that we've lost information. `stock` is defined as a number, but we
+specifically want to ensure it's an integer.
+
+We'll create a new file file to define an integer:
+
+```ts
+// src/schemas/integer.ts
+
+import { number } from "myzod";
+
+const integerSchema = mz
+  .number()
+  .withPredicate(
+    Number.isInteger,
+    (value) => `number must be an integer but got: ${value}`
+  );
+```
+
+We'll structure our project by controller. We'll create a `product` folder
+and name our files with the `product.*.ts` extension. To begin create
+`src/controllers/product/product.schema.ts`:
+
+```ts
+import { mz } from "myzod";
+import { integerSchema } from "../../schemas/integer";
+
+export const ProductSchema = mz
+  .object({
+    id: mz.number(),
+    title: mz.string(),
+    description: mz.string(),
+    price: mz.number(),
+    discountPercentage: mz.number(),
+    rating: mz.number(),
+    stock: integerSchema,
+    brand: mz.string(),
+    category: mz.string(),
+    thumbnail: mz.string(),
+    images: mz.array(mz.string())
+  })
+```
+
+MyZod has an `Infer<>` type helper which can convert a schema into a type.
+Create a new file `src/controllers/product/product.types.ts`:
+
+```ts
+import { Infer } from "myzod";
+import { ProductSchema } from "./product.schema";
+
+export type Product = Infer<typeof ProductSchema>;
+```
+
+Let's also add definitions for `Products` which is an object containing
+an array of products, as well as pagination data.
+
+Since MyZod is composable, we can reuse our `productSchema` to define
+the list elements.
+
+The example body is:
+
+```ts
+import { mz } from "myzod";
+import { integerSchema } from "../../schemas/integer";
+
+const ProductsSchema = mz.object({
+  products: mz.array(productSchema),
+  total: integerSchema,
+  skip: integerSchema,
+  limit: integerSchema
+});
+```
+
+And update our types
+
+```ts
+import { Infer } from "myzod";
+
+export type Product = Infer<typeof productSchema>;
+
+export type Products = Infer<typeof productsSchema>;
+```
+
+Since we'll often be dealing with responses, we can define their types here too.
+
+```ts
+import { Infer } from "myzod";
+import { HTTPResponse } from "@autometer/runner";
+
+export type Product = Infer<typeof productSchema>;
+export type ProductResponse = HTTPResponse<Product>;
+
+export type Products = Infer<typeof productsSchema>;
+export type ProductsResponse = HTTPResponse<Products>;
+
+```
+
+Next we'll look at creating a client to make requests to our API.

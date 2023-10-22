@@ -1,16 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
+import type { App as A, World as W, Types as T } from "./src";
 
-import type { DefaultApp, World as W } from "./src";
-
-declare module "@autometa/app" {
-  export interface App extends DefaultApp {
-    world: W;
-  }
+declare module "@autometa/runner" {
+  export interface App extends A {}
   export interface World extends W {}
-}
-
-declare module "@autometa/scopes" {
-  export interface Types {
-    snoob: number;
-  }
+  export interface Types extends T {}
 }
