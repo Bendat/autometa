@@ -1,5 +1,13 @@
 # @autometa/jest-transformer
 
+## 0.1.41
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/runner@0.2.33
+
 ## 0.1.40
 
 ### Patch Changes

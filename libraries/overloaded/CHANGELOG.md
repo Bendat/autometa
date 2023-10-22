@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.3.2
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+
 ## 0.3.1
 
 ### Patch Changes

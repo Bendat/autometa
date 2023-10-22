@@ -1,5 +1,15 @@
 # @autometa/config
 
+## 0.1.13
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/asserters@0.1.4
+  - @autometa/errors@0.1.4
+  - @autometa/app@0.1.13
+
 ## 0.1.12
 
 ### Patch Changes

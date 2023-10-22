@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.10.1
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+
 ## 0.10.0
 
 ### Minor Changes
