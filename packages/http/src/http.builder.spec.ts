@@ -6,9 +6,10 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 vi.mock("axios", async () => {
-
   const mockAxios = {
-    default: vi.fn().mockResolvedValue({ data: {}, status: 200, statusText: "OK"  })
+    default: vi
+      .fn()
+      .mockResolvedValue({ data: {}, status: 200, statusText: "OK" })
   };
 
   return mockAxios;
@@ -60,7 +61,10 @@ describe("HTTPBuilder", () => {
   describe("post request hook", () => {
     it("should run the post request hook", async () => {
       const hook = vi.fn();
-      await new HTTPRequestBuilder(map).url("foo").onReceivedResponse(hook).get();
+      await new HTTPRequestBuilder(map)
+        .url("foo")
+        .onReceivedResponse(hook)
+        .get();
       expect(hook).toHaveBeenCalled();
     });
     it("should throw if a hook fails", async () => {
@@ -73,4 +77,3 @@ describe("HTTPBuilder", () => {
     });
   });
 });
-

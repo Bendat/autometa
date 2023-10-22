@@ -10,7 +10,7 @@ import isJson from "@stdlib/assert-is-json";
 import highlight from "cli-highlight";
 export type RequestState = {
   headers: Map<string, string>;
-  params: Map<string, string>;
+  params: Map<string, unknown>;
   url: string;
   route: string[];
   responseType: ResponseType | undefined;
@@ -25,7 +25,7 @@ export type ResponseHook<T> = (state: HTTPResponse<T>) => unknown;
 @Fixture(LIFE_CYCLE.Transient)
 export class HTTPRequestBuilder {
   #headers = new Map<string, string>();
-  #params = new Map<string, string>();
+  #params = new Map<string, unknown>();
   #url: string;
   #route: string[] = [];
   #method: Method;
@@ -85,13 +85,13 @@ export class HTTPRequestBuilder {
     return this;
   }
 
-  onBeforeSend(hook: RequestHook) {
-    this.#onBeforeSend.push(hook);
+  onBeforeSend(...hook: RequestHook[]) {
+    this.#onBeforeSend.push(...hook);
     return this;
   }
 
-  onReceivedResponse(hook: ResponseHook<unknown>) {
-    this.#onAfterSend.push(hook);
+  onReceivedResponse(...hook: ResponseHook<unknown>[]) {
+    this.#onAfterSend.push(...hook);
     return this;
   }
 
@@ -100,8 +100,9 @@ export class HTTPRequestBuilder {
     return this;
   }
 
-  header(name: string, value: string) {
-    this.#headers.set(name, value);
+  header<T>(name: string, value: T) {
+    const val = Array.isArray(value) ? value.join(",") : `${value}`;
+    this.#headers.set(name, val);
     return this;
   }
 
@@ -112,15 +113,13 @@ export class HTTPRequestBuilder {
     return this;
   }
 
-  param(name: string, value: string) {
+  param<T>(name: string, value: T) {
     this.#params.set(name, value);
     return this;
   }
 
-  params(dict: Record<string, string>) {
-    Object.entries(dict).forEach(([name, value]) =>
-      this.#params.set(name, value)
-    );
+  params(dict: Record<string, unknown>) {
+    Object.entries(dict).forEach(([name, value]) => this.param(name, value));
     return this;
   }
 
