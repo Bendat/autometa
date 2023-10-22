@@ -1,2 +1,2 @@
-export * from "./apps";
-export * from "./test-container";
+export * from "./app";
+export * from "./controllers";

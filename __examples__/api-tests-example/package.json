@@ -8,9 +8,7 @@
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "integrate:impl": "jest __integration__/features",
-    "integrate:transform": "jest __integration__/transform --runInBand",
-    "integrate": "pnpm integrate:impl && pnpm integrate:transform",
+    "integrate": "jest integration/features",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -26,11 +24,9 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@autometa/scopes": "workspace:^",
     "@jest/globals": "^29.6.2",
     "@types/jest": "^29.5.2",
     "@types/node": "^18.11.18",
-    "@types/uuid": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "@vitest/coverage-istanbul": "^0.31.0",
@@ -45,12 +41,8 @@
     "vitest": "0.34.6"
   },
   "dependencies": {
-    "@autometa/app": "workspace:^",
-    "@autometa/bind-decorator": "workspace:^",
-    "@autometa/http": "workspace:^",
-    "@autometa/jest-transformer": "workspace:^",
+    "@autometa/dto-builder": "workspace:^",
     "@autometa/runner": "workspace:^",
-    "@jest/reporters": "^29.6.4",
     "dotenv": "^16.3.1",
     "envalid": "^8.0.0",
     "jest": "^29.5.0",

@@ -1,0 +1,509 @@
+---
+sidebar_position: 9
+---
+
+# Writing Step Definitions - Putting it Together
+
+Let's recap on what are code approximately looks like (your exact layout and names will differ):
+
+## Schemas
+
+```ts
+// src/controllers/product/product.schema.ts
+import { string, number, object, array } from "myzod";
+
+export const ProductSchema = object({
+  id: number(),
+  title: string(),
+  description: string(),
+  price: number(),
+  discountPercentage: number(),
+  rating: number(),
+  stock: number(),
+  brand: string(),
+  category: string(),
+  thumbnail: string(),
+  images: array(string())
+});
+```
+
+## Types
+
+```ts
+// src/controllers/product/product.types.ts
+import { Infer } from "myzod";
+import {
+  CategoriesSchema,
+  ProductListSchema,
+  ProductSchema
+} from "./product.schema";
+import { HTTPResponse } from "@autometa/runner";
+
+export type Product = Infer<typeof ProductSchema>;
+export type ProductResponse = HTTPResponse<Product>;
+export type ProductList = Infer<typeof ProductListSchema>;
+export type ProductListResponse = HTTPResponse<ProductList>;
+export type Categories = Infer<typeof CategoriesSchema>;
+export type CategoriesResponse = HTTPResponse<Categories>;
+```
+
+## DTO
+
+```ts
+// src/controllers/product/product.dto.ts
+import { Product } from "./product.types";
+import { Property } from "@autometa/dto-builder";
+export class ProductDTO implements Product {
+  @Property
+  id: number;
+  @Property
+  title: string;
+  @Property
+  description: string;
+  @Property
+  price: number;
+  @Property
+  discountPercentage: number;
+  @Property
+  rating: number;
+  @Property
+  stock: number;
+  @Property
+  brand: string;
+  @Property
+  category: string;
+  @Property
+  thumbnail: string;
+  @Property
+  images: string[];
+}
+```
+
+## Builder
+
+```ts
+// src/controllers/product/product.builder.ts
+import { Builder } from "@autometa/dto-builder";
+import { ProductDTO } from "./product.dto";
+
+export class ProductBuilder extends Builder(ProductDTO) {}
+```
+
+## Controller
+
+```ts
+// src/controllers/product/product.controller.ts
+import { Fixture, HTTP } from "@autometa/runner";
+import { Product } from "./product.types";
+import { ProductSchema } from "./product.schema";
+import { Env } from "../../apps";
+
+@Fixture
+export class ProductController {
+  constructor(readonly http: HTTP) {
+    this.http.url(Env.API_URL).requireSchema(true);
+  }
+
+  view(id: number) {
+    return this.http
+      .route("products")
+      .route(id)
+      .schema(ProductSchema, 200)
+      .get<Product>();
+  }
+}
+```
+
+## Static
+
+```ts
+export const ProductIdMap = {
+  "iPhone 9": 1
+} as const;
+
+export type ProductId = (typeof ProductIdMap)[keyof typeof ProductIdMap];
+```
+
+## Expression Parameter Types
+
+```ts
+// src/controllers/product/product.params.ts
+import {
+  camel,
+  convertPhrase,
+  defineParameterType,
+  AssertKey
+} from "@autometa/runner";
+import { ProductBuilder } from "./product.builder";
+import { ProductIdMap } from "./product.static";
+defineParameterType(
+  {
+    name: "builder:product",
+    regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
+    transform: (value) => new ProductBuilder().title(value)
+  },
+  {
+    name: "product:property",
+    regexpPattern: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
+    transform: (value) => convertPhrase(value, camel)
+  },
+  {
+    name: "product:static:name",
+    regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
+    transform: (value) => {
+      AssertKey(ProductIdMap, value, `Product property key '${value}'`);
+      return ProductIdMap[value];
+    }
+  }
+);
+```
+
+## API
+
+```ts
+// src/controllers/api.ts
+import { Fixture } from "@autometa/runner";
+import { ProductController } from "./product";
+
+@Fixture
+export class API {
+  constructor(readonly products: ProductController) {}
+}
+```
+
+## World
+
+```ts
+// src/controllers/product/product.world.ts
+import { AutometaWorld } from "@autometa/runner";
+import type { ProductId, ProductResponse } from "../controllers/product";
+
+export class World extends AutometaWorld {
+  declare viewProductId: ProductId;
+  declare viewProductResponse: ProductResponse;
+}
+```
+
+## App
+
+```ts
+import { AppType } from "@autometa/runner";
+import { World } from "./default.world";
+import { API } from "../controllers/api";
+
+@AppType(World)
+export class App {
+  constructor(readonly api: API) {}
+}
+```
+
+## Types
+
+```ts
+// src/app/autometa.types.ts
+import type { ProductBuilder, Product, ProductId } from "../controllers";
+import { World } from "./default.world";
+
+export interface Types {
+  "builder:product": ProductBuilder;
+  "product:property": keyof Product;
+  "product:static:name": ProductId;
+  "world:property:response": keyof World;
+}
+```
+
+## Declaration Overrides
+
+```ts
+// typings/autometa.d.ts
+/* eslint-disable @typescript-eslint/no-empty-interface */
+import type { App as A, World as W, Types as T } from "./src";
+
+declare module "@autometa/runner" {
+  export interface App extends A {}
+  export interface World extends W {}
+  export interface Types extends T {}
+}
+```
+
+## Config
+
+```ts
+// autometa.config.ts
+import { defineConfig } from "@autometa/runner";
+defineConfig({
+  runner: "jest",
+  environment: "default",
+  test: {
+    groupLogging: true,
+    timeout: 10000
+  },
+  events: [],
+  roots: {
+    features: ["integration/features"],
+    steps: ["integration/steps"],
+    app: ["src"],
+    parameterTypes: ["*.params.ts"]
+  },
+  shim: {
+    errorCause: true
+  }
+});
+```
+
+## Env
+
+```ts
+// src/app/env.ts
+import { cleanEnv, str } from "envalid";
+import dotenv from "dotenv";
+dotenv.config();
+export const Env = cleanEnv(process.env, {
+  API_URL: str({
+    example: "https://example.com",
+    default: "https://dummyjson.com"
+  })
+});
+```
+
+# Gherkin
+
+We also have the following gherkin. We will create the same scenario, with two
+different approaches to `Then` step validation.
+
+```gherkin
+// integration/features/product/view-product.feature
+Feature: Viewing a Product
+
+    Scenario: I view an iPhone (builder)
+        Given I want to view the product 'iPhone 9'
+        When I view the product
+        Then the product description is "An apple mobile which is nothing like apple"
+        And the product price is 549
+        * the product 'discount percentage' is 12.96
+        * the product brand is 'Apple'
+
+
+    Scenario: I view an iPhone (table)
+        Given I want to view the product 'iPhone 9'
+        When I view the product
+        Then the product has the expected details
+            | description | An apple mobile which is nothing like apple |
+            | price       | 549                                         |
+            | discount    | 12.96                                       |
+            | brand       | Apple                                       |
+```
+
+## Step Definitions
+
+With everything in place we can start writing step definitions for our gherkin, starting with the `Given` step.
+
+### Given
+
+```ts
+// integration/steps/product/given.steps.ts
+import { Given } from "@autometa/runner";
+
+Given(
+  "I want to view the product {product:static:name}",
+  (productId, { world }) => {
+    world.viewProductId = productId;
+  }
+);
+```
+
+Here we use the `product:static:name` expression parameter type we defined, which converts
+the phone product `iPhone 9` to it's static id `1`. We then store this in the world
+so we can access it when we wish to execute our request.
+
+### When
+
+Here we simply grab the product ID we stored, and access the `product` controller.
+
+```ts
+// integration/steps/product/when.steps.ts
+import { When } from "@autometa/runner";
+
+When("I view the product", ({ world, app: { api: products } }) => {
+  world.viewProductResponse = await products.view(world.viewProductId);
+});
+```
+
+If the response does not match the schema we provided, or it returns an unexpected status code, the test will fail here.
+Otherwise, the response object will be stored in the World. This can be accessed by `Then` steps to validate data.
+
+### Then
+
+We have two different approaches to implement here. The first is a builder style, using `And` and list style `*` steps
+to dynamically validate individual properties of the response.
+
+#### Builder
+
+Using a builder style pattern, we simply extract the response property we want to validate,
+and an expected value it should match.
+
+```ts
+// integration/steps/product/then.steps.ts
+import { Then, VTable } from "@autometa/runner";
+
+Then(
+  "the product {product:property} is {primitive}",
+  (target, value, { world }) => {
+    const { data: product } = world.viewProductResponse;
+    expect(product[target]).toEqual(value);
+  }
+);
+```
+
+For this, we use the `product:property` expression we defined to access a value from
+the reponse Product object. The `primitive` parameter type is included by default with autometa.
+It will attempt to parse a variety of Cucumber Expressions and convert them into one of the following types:
+
+- `string`
+  - If no other match is found, the value will be returned as a string.
+- `number`
+  - If the value is a number not in quotes, it will be converted to a number type.
+  - Comma delimiters are permitted, e.g. `1,000` will be converted to `1000` and `1,000.50` will be converted to `1000.5`.
+  - `Infinity`, `-Infinity` and `NaN` will be converted to their respective types.
+- `boolean`
+  - The words `true` and `false` will be converted to boolean types, but some other words will also transform into booleans
+    - enabled, disabled
+    - active, inactive
+    - on, off
+- `null`
+  - The word `null` will be converted to a null type.
+- `undefined`
+  - The word `undefined` will be converted to an undefined type.
+    - `missing` will also become undefined.
+- date strings
+  - date strings in the format `YYYY-MM-DD` will be converted to a date type.
+  - datetime strings in the format `YYYY-MM-DDTHH:mm:ss:msZ` will be converted to a date type.
+  - certain words or phrases corresponding to time:
+    - `today`, `tomorrow`, `yesterday`, `after tomorrow`, `last fortnight`, `next week` etc will attempt to create a date matching those literals in time from now.
+    - `now` will create a date matching the current time.
+    - `'5 days'` and `'5 days from now'` will create a date 5 days from now.
+      - `'5 days ago'` will create a date 5 days ago.
+      - `years`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds` and `milliseconds` are all valid units for this pattern.
+
+The primitive type is not intended to replace all types, but it does enable builder patterns in your
+steps without duplication the same step definition with different `{paramaterType}`s to extract the value.
+
+This will match the `Then`, `And` and `*` steps in our gherkin file, and other tests with
+other focuses can choose to run the same initital test but validate other properties more related
+to the tests purpose.
+
+We end up with a list of assertions we want to make on our data.
+
+```gherkin
+    Then the product description is "An apple mobile which is nothing like apple"
+    And the product price is 549
+    * the product 'discount percentage' is 12.96
+    * the product brand is 'Apple'
+```
+
+:::info
+In the above example the `{product:property}` expression can be seen matching single words without strings,
+or multiple words wrapped in quotes. The way our expression was defined, it will not match `discount percentage`
+without quotes.
+
+However if you don't mind exposing implementation details, you can match `discountPercentage` without quotes.
+:::
+
+#### Table
+
+If instead we want to have a consistent data set from our response that we want to verify,
+we can define that behavior with a step with a table.
+
+In our case we chose a vertical table, or `VTable`. A vertical table has it's titles
+as the first column, and the rest of the row is its values.
+
+```ts
+Then the product has the expected details
+    | description | An apple mobile which is nothing like apple |
+    | price       | 549                                         |
+    | discount    | 12.96                                       |
+    | brand       | Apple                                       |
+```
+
+:::tip
+Other table types are supported.
+`HTable` is a standard table with horizontal headers on the first row:
+
+```gherkin
+Then the product has the expected details
+    | description | price | discount | brand |
+    | An apple mobile which is nothing like apple | 549 | 12.96 | Apple |
+```
+
+An `MTable` or matrix table tracks individual cells against both a vertical and horizontal
+header, such as matching `Severity` to `Likelyhood`, i.e how likely something is to happen
+vs how much impact it has, or matching attributes like the `hardness` of an object to the color,
+like `blue and tough = diamond`, 'blue and soft = water', 'red and tough = ruby', 'red and soft = tomato' etc.
+
+```gherkin
+Then we have a matrix table of color and hardness for some reason
+    |      | red    | blue    |
+    | hard | ruby   | diamond |
+    | soft | tomato | water   |
+```
+
+A List table or `ListTable` is just a raw list with no presumed headers.
+
+```ts
+Then I have a list of lists
+    |  1 | 2 | 3 |
+    |  4 | 5 | 6 |
+    | -1 | 4 | 2 |
+```
+
+**Casting**: By Default autometa will attempt to parse numbers and booleans from a table into
+their respective type. If you want to disable this behavior, you can pass `false` as the last
+argument to the `.get` method, which will return the raw string.
+
+`.get` can return either an entire row/column or just a cells
+
+```ts
+Given(
+  "a step with a VTablel",
+  (table) => {
+    const row = table.get("foo");
+    const firstFoo = table.get("foo", 0);
+    const rawRow = table.get("foo", false);
+    const rawFirstFoo = table.get("foo", 0, false);
+  },
+  VTable
+);
+```
+
+:::
+
+We can extract our values from out VTable now. Since we only have one cell per header,
+we can directly access it with an index `0`. In other situations, you could forgo
+the index and have an iterable array or for loop. If your step is getting complicated,
+consider making a new Fixture to encapsulate that behavior, so step definitions can
+be kept simple and declarative.
+
+```ts
+Then(
+  "the product has the expected details",
+  (table, { world }) => {
+    const {
+      data: { description, price, discountPercentage, brand }
+    } = world.viewProductResponse;
+    const expectedDescription = table.get<string>("description", 0);
+    const expectedPrice = table.get<number>("price", 0);
+    const expectedDiscount = table.get<number>("discount", 0);
+    const expectedBrand = table.get<string>("brand", 0);
+
+    expect(description).toEqual(expectedDescription);
+    expect(price).toEqual(expectedPrice);
+    expect(discountPercentage).toEqual(expectedDiscount);
+    expect(brand).toEqual(expectedBrand);
+  },
+  VTable
+);
+```
+
+With that we've fully implemented our first test. Full source code for this example,
+including more endpoints and controllers can be found in the [Github Repository](https://github.com/bendat/autometa)
+under the `__examples__/api-tests-example` directory.

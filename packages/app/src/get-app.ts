@@ -23,7 +23,7 @@ export class MyAutometaApp extends AutometaApp {
 }
 defineConfig({
    roots: {
-    app: './src/apps'
+    app: './src/app'
    }
 })`);
   }

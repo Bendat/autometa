@@ -1,0 +1,106 @@
+---
+sidebar_position: 6
+---
+
+# Phrases & Hiding Implementation Details
+
+In the last section we looked at using Cucumber Expressions to extract DTO property
+keys from gherkin steps. This is a great way to keep your gherkin steps readable
+and reduce the number of step definitions you need to create.
+
+One caveat is that for multi word properties, we need to write them in their in-code
+convention - in this API that's `camelCase`, meaning in our gherkin we reference our
+discount percentage as `discountPercentage`. This is fine but it exposes implementation detail
+and doesn't read fluently.
+
+Autometa has the concept of `phrases` to map human friendly strings to their in-code counterparts.
+
+This can be accomplished with the `convertPhrase` function. This function takes a string and
+returns a string. You can apply transformers to this string including prefixes, suffixes, trimming,
+and changing the case.
+
+In our case we want to convert `discount percentage` to `discountPercentage`. We can do this
+by simply calling `convertPhrase` using the `camel` transformer.
+
+```ts
+import { convertPhrase, camel } from "@autometa/runner";
+
+const result = convertPhrase("discount percentage", camel); // discountPercentage
+```
+
+Next we can combine this with the Cucumber Expression we built in the last section:
+
+```ts
+// src/product/product.params.ts
+import { defineExpression, AssertKey } from "@autometa/runner";
+import { ProductBuilder } from "./";
+
+defineExpression({
+  name: "product:property",
+  transform: (value) => {
+    const property = convertPhrase(value, camel);
+    AssertKey(ProductBuilder, property, `Product property key ${property}`);
+    return value;
+  }
+});
+```
+
+Nothing changes in how we consume this expression in step definitions.
+
+## Suffixes
+
+It's likely that properties on the world follow some pattern. For example,
+maybe all API responses are stored in the format `{foo}Response`. We can
+define this in our phrases to easily extract responses from the world.
+
+We can add this as a suffix using the `sfx` transformer:
+
+```ts
+// src/product/product.params.ts
+import { defineExpression, AssertKey, sfx, camel } from "@autometa/runner";
+defineExpression({
+  name: "world:property:response",
+  regexpPattern: [/"(.*)"/, /'(.*)'/]
+  transform: (value) => {
+    const property = convertPhrase(value, sfx`Response`, camel);
+    return value;
+  }
+});
+```
+
+**Note**: we have no way of asserting properties on the world at this point.
+
+And update our types:
+
+```ts
+import type { App as MyApp, World as MyWorld } from "../src/app";
+import type { ProductBuilder, Product } from "../src/product";
+
+declare module "@autometa/runner" {
+  interface App extends MyApp {}
+  interface World extends MyWorld {}
+  interface Types {
+    "builder:product": ProductBuilder;
+    "product:property": keyof Product;
+    "world:property:response": keyof World;
+  }
+}
+```
+
+Which can use in our step definitions:
+
+```ts
+// integration/steps/product/given.steps.ts
+import { Given, When, Then } from "@cucumber/cucumber";
+import { World } from "../world";
+
+Given(
+  "the product {product:property} is {world:property:response}",
+  function (property, response, { world }) {
+    const { data } = world[response] as HTTPResponse;
+    this.builder[property] = data[property];
+  }
+);
+```
+
+Finally, before we start writing our gherkin, we want to think about static data.

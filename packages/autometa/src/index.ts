@@ -25,3 +25,4 @@ export { Bind } from "@autometa/bind-decorator";
 export { Types } from "@autometa/scopes";
 export * from "./events";
 export * from "@autometa/http";
+export * from '@autometa/asserters'

@@ -1,0 +1,52 @@
+---
+sidebar_position: 8
+---
+
+# Writing Gherkin
+
+We have everything in place to support our gherkin, so let's start writing it.
+We'll write some test plans for a few endpoints on the `products` controller.
+
+To start let's do the `products/{id}` endpoint, which retrieves a single product
+by its id.
+
+We'll write our test from the perspective of a 'Customer', who wishes to browse products.
+
+To start, we need to get the product id. Since we know we have an `iPhone 9` as static data, we
+can reference that in our set up step. Then we'll execute the request to view the product, and
+finally we'll verify that the product has the expected values for each property.
+
+```gherkin
+Feature: As a Customer, I want to view available products
+
+    Scenario: View a single product
+      Given I want to view the product 'iPhone 9'
+      When I view the product
+      Then the product description is "An apple mobile which is nothing like apple"
+      And the product price is 549
+      * the product 'discount percentage' is 12.96
+      * the product brand is Apple
+```
+The last 4 steps all refer to the same step definition, but it can be used to test almost our entire
+response body, however we would need to come up with a new strategy to test arrays.
+
+Alternatively, instead of using a builder pattern for the Then steps, you could use a table. The main difference
+is the table will likely need to contain all fields in all tests, while the builder pattern allows you
+to focus on different fields in different tests. For these we'll use a vertical table, where the titles
+are represented by the leftmost column, and apply to a row.
+
+```gherkin
+Feature: As a Customer, I want to view available products
+
+    Scenario: I view an iPhone 9
+      Given I want to view the product 'iPhone 9'
+      When I view the product
+      Then the product has the expected details
+        | description | An apple mobile which is nothing like apple |
+        | price       | 549                                        |
+        | discount    | 12.96                                      |
+        | brand       | Apple                                      |
+```
+
+That's enough to start with, so lets put together our code so far to create
+step definitions to test both of these scenario styles.

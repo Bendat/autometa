@@ -14,6 +14,12 @@ const boolTypesActive = ["active", "inactive"];
 const boolTypesEnabled = ["enabled", "disabled"];
 const boolTypes = ["true", "false"];
 
+export const OrdinalParam: ParamTypeDefinition = {
+  name: "ordinal",
+  regexpPattern: /(\d+)(?:st|nd|rd|th)/,
+  transform: (value: string) => parseInt(value, 10)
+};
+
 export const NumberParam: AutoParamTypeDefinition = {
   name: "number",
   regexpPattern: /\d+/,
@@ -129,3 +135,4 @@ function trimQuotes(val: string): string {
 function parseIso(val: string): Date {
   return DateTime.fromISO(val).toJSDate();
 }
+

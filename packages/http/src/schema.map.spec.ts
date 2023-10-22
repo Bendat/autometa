@@ -62,13 +62,13 @@ describe("SchemaMap", () => {
       const map = new SchemaMap();
       const parser: SchemaParser = { parse: <T>(data: T) => data };
       map.register(parser, 200);
-      const validate = map.validate(200, { foo: "bar" });
+      const validate = map.validate(200, { foo: "bar" }, true);
       expect(validate).toEqual({ foo: "bar" });
     });
 
     it("should throw if the status code is not registered", () => {
       const map = new SchemaMap();
-      expect(() => map.validate(200, { foo: "bar" })).toThrow();
+      expect(() => map.validate(200, { foo: "bar" }, true)).toThrow();
     });
   });
 });
