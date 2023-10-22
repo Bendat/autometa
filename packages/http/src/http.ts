@@ -45,12 +45,12 @@ export class HTTP {
     return this.builder().onReceivedResponse(hook);
   }
 
-  shareSchema(parser: SchemaParser, ...codes: StatusCode[]): HTTP;
-  shareSchema(
+  sharedSchema(parser: SchemaParser, ...codes: StatusCode[]): HTTP;
+  sharedSchema(
     parser: SchemaParser,
     ...range: { from: StatusCode; to: StatusCode }[]
   ): HTTP;
-  shareSchema(
+  sharedSchema(
     parser: SchemaParser,
     ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
   ) {
@@ -98,7 +98,7 @@ export class HTTP {
     return this.builder().route(...route);
   }
 
-  header(name: string, value: string) {
+  header<T>(name: string, value: T) {
     return this.builder().header(name, value);
   }
 
@@ -117,11 +117,7 @@ export class HTTP {
       .allowPlainText(this.#allowPlainText)
       .headers(Object.fromEntries(this.#headers))
       .requireSchema(this.#requireSchema)
-      .onBeforeSend((state) => {
-        this.#onBeforeSend.forEach((it) => it(state));
-      })
-      .onReceivedResponse((state) => {
-        this.#onAfterSend.forEach((it) => it(state));
-      });
+      .onBeforeSend(...this.#onBeforeSend)
+      .onReceivedResponse(...this.#onAfterSend);
   }
 }
