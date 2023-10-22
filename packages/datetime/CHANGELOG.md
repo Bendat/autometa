@@ -1,5 +1,15 @@
 # @autometa/datetime
 
+## 0.1.11
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/asserters@0.1.4
+  - @autometa/phrases@0.1.8
+  - @autometa/errors@0.1.4
+
 ## 0.1.10
 
 ### Patch Changes

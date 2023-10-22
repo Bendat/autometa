@@ -1,5 +1,13 @@
 # @autometa/cucumber-runner
 
+## 0.10.2
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/dto-builder@0.10.1
+
 ## 0.10.1
 
 ### Patch Changes

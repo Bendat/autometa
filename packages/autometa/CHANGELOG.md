@@ -1,5 +1,27 @@
 # @autometa/runner
 
+## 0.2.33
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/http@0.1.0
+  - @autometa/cucumber-expressions@0.3.6
+  - @autometa/bind-decorator@0.5.1
+  - @autometa/jest-executor@0.2.13
+  - @autometa/test-builder@0.1.30
+  - @autometa/coordinator@0.2.1
+  - @autometa/asserters@0.1.4
+  - @autometa/datetime@0.1.11
+  - @autometa/gherkin@0.5.2
+  - @autometa/phrases@0.1.8
+  - @autometa/config@0.1.13
+  - @autometa/errors@0.1.4
+  - @autometa/events@0.2.5
+  - @autometa/scopes@0.4.1
+  - @autometa/app@0.1.13
+
 ## 0.2.32
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @autometa/jest-integration
 
+## 0.2.1
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/jest-transformer@0.1.41
+  - @autometa/bind-decorator@0.5.1
+  - @autometa/runner@0.2.33
+  - @autometa/app@0.1.13
+
 ## 0.2.0
 
 ### Minor Changes

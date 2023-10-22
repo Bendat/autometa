@@ -1,5 +1,21 @@
 # @autometa/test-builder
 
+## 0.1.30
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/bind-decorator@0.5.1
+  - @autometa/dto-builder@0.10.1
+  - @autometa/asserters@0.1.4
+  - @autometa/gherkin@0.5.2
+  - @autometa/phrases@0.1.8
+  - @autometa/errors@0.1.4
+  - @autometa/events@0.2.5
+  - @autometa/scopes@0.4.1
+  - @autometa/app@0.1.13
+
 ## 0.1.29
 
 ### Patch Changes

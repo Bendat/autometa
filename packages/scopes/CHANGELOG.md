@@ -1,5 +1,21 @@
 # Gherkin
 
+## 0.4.1
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/cucumber-expressions@0.3.6
+  - @autometa/bind-decorator@0.5.1
+  - @autometa/dto-builder@0.10.1
+  - @autometa/overloaded@0.3.2
+  - @autometa/gherkin@0.5.2
+  - @autometa/phrases@0.1.8
+  - @autometa/errors@0.1.4
+  - @autometa/events@0.2.5
+  - @autometa/app@0.1.13
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,14 @@
 # Gherkin
 
+## 0.2.5
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/gherkin@0.5.2
+  - @autometa/errors@0.1.4
+
 ## 0.2.4
 
 ### Patch Changes

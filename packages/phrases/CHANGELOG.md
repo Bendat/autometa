@@ -1,5 +1,15 @@
 # Gherkin
 
+## 0.1.8
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/bind-decorator@0.5.1
+  - @autometa/asserters@0.1.4
+  - @autometa/errors@0.1.4
+
 ## 0.1.7
 
 ### Patch Changes

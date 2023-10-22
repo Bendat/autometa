@@ -1,5 +1,11 @@
 # @autometa/cucumber-markdown
 
+## 0.8.1
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+
 ## 0.8.0
 
 ### Minor Changes

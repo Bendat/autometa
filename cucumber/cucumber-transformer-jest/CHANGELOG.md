@@ -1,5 +1,13 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.5.3
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/cucumber-runner@0.10.2
+
 ## 0.5.2
 
 ### Patch Changes

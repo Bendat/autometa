@@ -1,5 +1,16 @@
 # @autometa/cucumber-expressions
 
+## 0.3.6
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/overloaded@0.3.2
+  - @autometa/asserters@0.1.4
+  - @autometa/datetime@0.1.11
+  - @autometa/errors@0.1.4
+
 ## 0.3.5
 
 ### Patch Changes

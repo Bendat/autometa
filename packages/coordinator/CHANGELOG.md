@@ -1,5 +1,21 @@
 # @autometa/coordinator
 
+## 0.2.1
+
+### Patch Changes
+
+- 04ed85d: feat: added HTP client based on axios
+- Updated dependencies [04ed85d]
+  - @autometa/jest-executor@0.2.13
+  - @autometa/test-builder@0.1.30
+  - @autometa/asserters@0.1.4
+  - @autometa/gherkin@0.5.2
+  - @autometa/config@0.1.13
+  - @autometa/errors@0.1.4
+  - @autometa/events@0.2.5
+  - @autometa/scopes@0.4.1
+  - @autometa/app@0.1.13
+
 ## 0.2.0
 
 ### Minor Changes
