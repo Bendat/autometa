@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.37
+
+### Patch Changes
+
+- 8912822: fix: event logger should not log skipped hooks
+
 ## 0.2.36
 
 ### Patch Changes
