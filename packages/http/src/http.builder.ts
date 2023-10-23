@@ -250,9 +250,8 @@ function transformResponse(allowPlainText: boolean, data: string) {
   if (["true", "false"].includes(data)) {
     return JSON.parse(data);
   }
-  const asNumber = Number(data);
-  if (!isNaN(asNumber)) {
-    return asNumber;
+  if(/^\d*\.?\d+$/.test(data)) {
+    return Number(data);
   }
   if (allowPlainText) {
     return data;
