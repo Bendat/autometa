@@ -229,7 +229,7 @@ export class HTTPRequestBuilder {
       data: parsed ?? data,
       request: {
         url,
-        validated: !!parsed,
+        validated: !!parsed
       }
     });
   }
@@ -250,11 +250,14 @@ function transformResponse(allowPlainText: boolean, data: string) {
   if (["true", "false"].includes(data)) {
     return JSON.parse(data);
   }
-  if(/^\d*\.?\d+$/.test(data)) {
+  if (/^\d*\.?\d+$/.test(data)) {
     return Number(data);
   }
+  if (data === "") {
+    return undefined;
+  }
   if (allowPlainText) {
-    return data;
+    return JSON.stringify(data);
   }
   const response = highlight(data, { language: "html" });
   const message = [
