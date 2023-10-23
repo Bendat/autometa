@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.3
+
+### Patch Changes
+
+- ef91448: fix: http client return undefined
+
 ## 1.0.2
 
 ### Patch Changes
