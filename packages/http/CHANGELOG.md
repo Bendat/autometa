@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.0
+
+### Major Changes
+
+- c7b973f: fix: onRecieve hooks not executing if schema validation fails
+
 ## 0.1.2
 
 ### Patch Changes
