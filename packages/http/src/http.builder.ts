@@ -7,7 +7,7 @@ import { HTTPResponse } from "./http.response";
 import { SchemaMap } from "./schema.map";
 import { SchemaParser, StatusCode } from "./types";
 import isJson from "@stdlib/assert-is-json";
-import highlight from "cli-highlight";
+import { highlight } from "cli-highlight";
 export type RequestState = {
   headers: Map<string, string>;
   params: Map<string, unknown>;
