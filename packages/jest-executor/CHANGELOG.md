@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 0.2.14
+
+### Patch Changes
+
+- 4d8e52d: fix: hooks not correctly skipped
+
 ## 0.2.13
 
 ### Patch Changes
