@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 0.1.2
+
+### Patch Changes
+
+- 815b324: Fix: incorrectly imported cli-highlight package
+
 ## 0.1.1
 
 ### Patch Changes
