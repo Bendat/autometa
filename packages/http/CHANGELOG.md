@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.4
+
+### Patch Changes
+
+- 79a672d: fix: JSON.parse responses
+
 ## 1.0.3
 
 ### Patch Changes
