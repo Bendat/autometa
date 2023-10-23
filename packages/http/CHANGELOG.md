@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.1
+
+### Patch Changes
+
+- e9a8dc8: fix: parsing numbers from raw response string
+
 ## 1.0.0
 
 ### Major Changes
