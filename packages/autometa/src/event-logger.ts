@@ -66,38 +66,62 @@ export class GroupLogEvents implements EventSubscriber {
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
   }
-  onBeforeStart(opts: StartBeforeOpts): void {
-    console.group(opts.title);
+  onBeforeStart({ title, status }: StartBeforeOpts): void {
+    if (status === "SKIPPED") {
+      return;
+    }
+    console.group(title);
     console.group();
   }
   onBeforeEnd({ title, status }: EndBeforeOpts): void {
+    if (status === "SKIPPED") {
+      return;
+    }
     console.groupEnd();
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
   }
-  onAfterStart(opts: StartAfterOpts): void {
-    console.group(opts.title);
+  onAfterStart({ title, status }: StartAfterOpts): void {
+    if (status === "SKIPPED") {
+      return;
+    }
+    console.group(title);
     console.group();
   }
   onAfterEnd({ title, status }: EndAfterOpts): void {
+    if (status === "SKIPPED") {
+      return;
+    }
     console.groupEnd();
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
   }
-  onTeardownStart(opts: StartTeardownOpts): void {
-    console.group(opts.title);
+  onTeardownStart({ title, status }: StartTeardownOpts): void {
+    if (status === "SKIPPED") {
+      return;
+    }
+    console.group(title);
     console.group();
   }
   onTeardownEnd({ title, status }: EndTeardownOpts): void {
+    if (status === "SKIPPED") {
+      return;
+    }
     console.groupEnd();
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
   }
-  onSetupStart(opts: StartSetupOpts): void {
-    console.group(opts.title);
+  onSetupStart({title, status}: StartSetupOpts): void {
+    if (status === "SKIPPED") {
+      return
+    }
+    console.group(title);
     console.group();
   }
   onSetupEnd({ title, status }: EndSetupOpts): void {
+    if (status === "SKIPPED") {
+      return
+    }
     console.groupEnd();
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
@@ -105,7 +129,7 @@ export class GroupLogEvents implements EventSubscriber {
 }
 function colorStatus(
   status: "FAILED" | "PASSED" | "SKIPPED" | "BROKEN" | undefined,
-  text: string,
+  text: string
 ) {
   switch (status) {
     case "FAILED":
