@@ -5,6 +5,8 @@ export class HTTPResponse<T> {
   headers: Record<string, string>;
   request: {
     url: string;
+    validated: boolean;
+    passedValidation: boolean
   };
 
   static fromRaw<T>(
@@ -12,7 +14,9 @@ export class HTTPResponse<T> {
     status: number,
     statusText: string,
     headers: Record<string, string>,
-    url: string
+    url: string,
+    validated: boolean,
+    passedValidation: boolean
   ) {
     const response = new HTTPResponse<T>();
     response.data = data;
@@ -20,7 +24,9 @@ export class HTTPResponse<T> {
     response.statusText = statusText;
     response.headers = headers;
     response.request = {
-      url
+      url,
+      validated,
+      passedValidation
     };
     return response;
   }

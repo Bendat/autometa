@@ -74,7 +74,7 @@ export class SchemaMap {
     return nested?.get(status);
   }
 
-  validate<T>(status: StatusCode, response: T, strict: boolean) {
+  validate<T>(status: StatusCode, response: T, strict: boolean): T {
     const parser = this.get(status);
     if (!parser) {
       if (!strict) {
@@ -84,7 +84,7 @@ export class SchemaMap {
         `No schema parser registered for status code ${status} and 'requireSchema' is set to true`
       );
     }
-    return parser.parse(response);
+    return parser.parse(response) as T;
   }
 }
 
