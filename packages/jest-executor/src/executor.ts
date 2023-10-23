@@ -494,7 +494,7 @@ export function bootstrapBeforeHooks(
           `No matching scenario was found matching the test name: ${testName}`
         );
       }
-      if (!hook.canExecute(...bridge.data.gherkin.tags)) {
+      if (!hook.canExecute(...scenarioBridge.data.gherkin.tags)) {
         return;
       }
       const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
@@ -585,7 +585,7 @@ export function bootstrapAfterHooks(
           `No scenario was found matching the test path: ${testName}`
         );
       }
-      if (!hook.canExecute(...bridge.data.gherkin.tags)) {
+      if (!hook.canExecute(...scenarioBridge.data.gherkin.tags)) {
         return;
       }
       const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
