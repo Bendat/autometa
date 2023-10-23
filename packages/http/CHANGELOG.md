@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.5
+
+### Patch Changes
+
+- 3a8b32f: fix: improper handling of strings when parsing
+
 ## 1.0.4
 
 ### Patch Changes
