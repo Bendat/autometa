@@ -250,14 +250,12 @@ function transformResponse(allowPlainText: boolean, data: string) {
   if (["true", "false"].includes(data)) {
     return JSON.parse(data);
   }
-  if (/^\d*\.?\d+$/.test(data)) {
-    return Number(data);
-  }
+  
   if (data === "" || data === undefined) {
     return undefined;
   }
   if (allowPlainText) {
-    return data;
+    return JSON.parse(data);
   }
   const response = highlight(data, { language: "html" });
   const message = [
