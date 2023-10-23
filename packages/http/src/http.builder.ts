@@ -253,11 +253,11 @@ function transformResponse(allowPlainText: boolean, data: string) {
   if (/^\d*\.?\d+$/.test(data)) {
     return Number(data);
   }
-  if (data === "") {
+  if (data === "" || data === undefined) {
     return undefined;
   }
   if (allowPlainText) {
-    return JSON.stringify(data);
+    return data;
   }
   const response = highlight(data, { language: "html" });
   const message = [
