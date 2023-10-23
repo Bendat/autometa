@@ -150,9 +150,11 @@ export class HTTPRequestBuilder {
     const headers = this.#headers && Object.fromEntries(this.#headers);
     const responseType = this.#responseType;
     const data = this.#data;
+    let response: AxiosResponse = undefined as unknown as AxiosResponse;
+    let skipFailedAfterHooks = false;
     try {
       this.tryRunBeforeHooks();
-      const response = await axios({
+      response = await axios({
         method,
         url,
         headers,
@@ -165,22 +167,20 @@ export class HTTPRequestBuilder {
       });
       const instance = this.makeResponse<T>(response);
 
+      skipFailedAfterHooks = true;
       this.tryRunAfterHooks<T>(instance);
       return instance;
     } catch (e) {
+      if (response && !skipFailedAfterHooks) {
+        const instance = this.createWrapper<T>(response);
+        this.tryRunAfterHooks<T>(instance);
+      }
       const error = e as Error;
       const message = `HTTP Client failed while while making request to ${url} with:
 * headers: ${JSON.stringify(headers, null, 2)}
 
 * data: ${data && JSON.stringify(data, null, 2)}`;
       throw new AutomationError(message, { cause: error });
-    } finally {
-      this.#headers.clear();
-      this.#params.clear();
-      this.#route = [];
-      this.#url = "";
-      this.#responseType = undefined;
-      this.#data = undefined;
     }
   }
 
@@ -211,23 +211,35 @@ export class HTTPRequestBuilder {
     }
   }
   makeResponse<T>(res: AxiosResponse) {
-    const { status, data, statusText, headers } = res;
-    const parsed = this.#schemaMap.validate<T>(
-      status as StatusCode,
-      data,
-      this.#requireSchema
-    );
+    const { status, data } = res;
+    const parsed = this.validateSchemas<T>(status, data);
+    return this.createWrapper<T>(res, parsed);
+  }
+
+  private createWrapper<T>(
+    { status, statusText, headers, data }: AxiosResponse<T>,
+    parsed?: T
+  ) {
     const params = Object.fromEntries(this.#params);
     const url = urlJoinP(this.#url, this.#route, params);
     return plainToClass(HTTPResponse<T>, {
       status,
       statusText,
       headers,
-      data: parsed,
+      data: parsed ?? data,
       request: {
-        url
+        url,
+        validated: !!parsed,
       }
     });
+  }
+
+  private validateSchemas<T>(status: number, data: T): T {
+    return this.#schemaMap.validate<T>(
+      status as StatusCode,
+      data,
+      this.#requireSchema
+    );
   }
 }
 
