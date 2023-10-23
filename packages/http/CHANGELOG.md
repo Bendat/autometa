@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 0.1.1
+
+### Patch Changes
+
+- 2ec3670: fix: http client accepts any input and converts it to a string
+
 ## 0.1.0
 
 ### Minor Changes
