@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.2
+
+### Patch Changes
+
+- 9870641: fix: allow empty plaintext response without flagging it
+
 ## 1.0.1
 
 ### Patch Changes
