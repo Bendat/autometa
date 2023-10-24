@@ -1,5 +1,11 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.5.5
+
+### Patch Changes
+
+- 612c72b: fix: use cjs for transformer
+
 ## 0.5.4
 
 ### Patch Changes
