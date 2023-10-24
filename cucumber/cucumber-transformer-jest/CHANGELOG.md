@@ -1,5 +1,11 @@
 # @autometa/cucumber-transformer-jest
 
+## 0.5.4
+
+### Patch Changes
+
+- 2940874: fix: cucumber-transformer-jest pointed to wrong cjs export
+
 ## 0.5.3
 
 ### Patch Changes
