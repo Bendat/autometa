@@ -3,7 +3,7 @@
   "version": "0.5.3",
   "description": "Convert Cucumber .feature files into Autometa cucumber tests with jest",
   "type": "module",
-  "main": "dist/cjs/index.js",
+  "main": "dist/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
   "repository": {
