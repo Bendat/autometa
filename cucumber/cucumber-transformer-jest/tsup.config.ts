@@ -6,6 +6,7 @@ export const tsup: Options = {
   entryPoints: ["index.ts"],
   target: "es2020",
   outDir: "dist",
-  legacyOutput: true,
+  dts: true,
+  legacyOutput: false,
   external: ["dist"],
 };
