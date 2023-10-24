@@ -3,8 +3,8 @@
   "version": "0.5.3",
   "description": "Convert Cucumber .feature files into Autometa cucumber tests with jest",
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "repository": {
     "type": "git",
@@ -30,10 +30,10 @@
   "author": "Ben Aherne",
   "license": "ISC",
   "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/index.js",
-    "default": "./dist/esm/index.js",
-    "types": "./dist/index.d.ts"
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js",
+    "types": "./dist/index.d.cts"
   },
   "devDependencies": {
     "@jest/globals": "^29.4.3",
