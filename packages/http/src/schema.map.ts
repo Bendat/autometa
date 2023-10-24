@@ -16,6 +16,10 @@ export class SchemaMap {
   register(
     parser: SchemaParser,
     ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
+  ): (typeof parser)["parse"];
+  register(
+    parser: SchemaParser,
+    ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
   ) {
     args.forEach((arg) => {
       if (typeof arg === "number") {

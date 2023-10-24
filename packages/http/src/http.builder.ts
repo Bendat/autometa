@@ -1,26 +1,18 @@
 import { Fixture, LIFE_CYCLE } from "@autometa/app";
 import { AutomationError } from "@autometa/errors";
-import axios, { AxiosResponse, Method, ResponseType } from "axios";
-import { plainToClass } from "class-transformer";
+import { AxiosRequestConfig, Method, ResponseType } from "axios";
 import { urlJoinP } from "url-join-ts";
 import { HTTPResponse } from "./http.response";
 import { SchemaMap } from "./schema.map";
-import { SchemaParser, StatusCode } from "./types";
-import isJson from "@stdlib/assert-is-json";
-import { highlight } from "cli-highlight";
-export type RequestState = {
-  headers: Map<string, string>;
-  params: Map<string, unknown>;
-  url: string;
-  route: string[];
-  responseType: ResponseType | undefined;
-  data: unknown;
-  method: Method;
-  get fullUrl(): string;
-};
-
-export type RequestHook = (state: RequestState) => unknown;
-export type ResponseHook<T> = (state: HTTPResponse<T>) => unknown;
+import {
+  RequestHook,
+  RequestState,
+  ResponseHook,
+  SchemaParser,
+  StatusCode
+} from "./types";
+import { transformResponse } from "./transform-response";
+import { AxiosExecutor } from "./axios-executor";
 
 @Fixture(LIFE_CYCLE.Transient)
 export class HTTPRequestBuilder {
@@ -66,22 +58,23 @@ export class HTTPRequestBuilder {
     this.#url = url;
     return this;
   }
+
   allowPlainText(value: boolean) {
     this.#allowPlainText = value;
     return this;
   }
-  schema(parser: SchemaParser, ...codes: number[]): HTTPRequestBuilder;
+
+  schema(parser: SchemaParser, ...codes: StatusCode[]): HTTPRequestBuilder;
   schema(
     parser: SchemaParser,
-    ...range: { from: number; to: number }[]
+    ...range: { from: StatusCode; to: StatusCode }[]
   ): HTTPRequestBuilder;
 
   schema(
     parser: SchemaParser,
-    ...args: (number | { from: number; to: number })[]
+    ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
   ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.#schemaMap.register(parser, ...(args as any));
+    this.#schemaMap.register(parser, ...args);
     return this;
   }
 
@@ -144,44 +137,50 @@ export class HTTPRequestBuilder {
     return this._request("PUT");
   }
 
+  async patch<TReturn>(): Promise<HTTPResponse<TReturn>> {
+    return this._request("PATCH");
+  }
   private async _request<T>(method: Method) {
     this.#method = method;
+
+    const options: AxiosRequestConfig = this.constructOptions<T>(method);
+    this.tryRunBeforeHooks();
+    const executor = new AxiosExecutor(
+      options,
+      this.#schemaMap,
+      this.currentState,
+      this.#requireSchema
+    );
+    await executor.tryRequest<T>();
+    if (executor.requestSucceeded && !executor.validationFailed) {
+      const response = executor.getValidatedResponse<T>();
+      this.tryRunAfterHooks<T>(response);
+      return response;
+    }
+    if (executor.requestSucceeded) {
+      const response = executor.getResponse<T>();
+      // this.tryOnValidationFailed(response);
+      this.tryRunAfterHooks<T>(response);
+    }
+    throw executor.error;
+  }
+
+  private constructOptions<T>(method: string): AxiosRequestConfig<T> {
     const url = this.currentUrl;
     const headers = this.#headers && Object.fromEntries(this.#headers);
     const responseType = this.#responseType;
-    const data = this.#data;
-    let response: AxiosResponse = undefined as unknown as AxiosResponse;
-    let skipFailedAfterHooks = false;
-    try {
-      this.tryRunBeforeHooks();
-      response = await axios({
-        method,
-        url,
-        headers,
-        data,
-        responseType,
-        validateStatus: function (status) {
-          return status >= 100 && status < 500;
-        },
-        transformResponse: transformResponse.bind(null, this.#allowPlainText)
-      });
-      const instance = this.makeResponse<T>(response);
-
-      skipFailedAfterHooks = true;
-      this.tryRunAfterHooks<T>(instance);
-      return instance;
-    } catch (e) {
-      if (response && !skipFailedAfterHooks) {
-        const instance = this.createWrapper<T>(response);
-        this.tryRunAfterHooks<T>(instance);
-      }
-      const error = e as Error;
-      const message = `HTTP Client failed while while making request to ${url} with:
-* headers: ${JSON.stringify(headers, null, 2)}
-
-* data: ${data && JSON.stringify(data, null, 2)}`;
-      throw new AutomationError(message, { cause: error });
-    }
+    const data = this.#data as T;
+    return {
+      method,
+      url,
+      headers,
+      data,
+      responseType,
+      validateStatus: function (status) {
+        return status >= 100 && status < 500;
+      },
+      transformResponse: transformResponse.bind(null, this.#allowPlainText)
+    };
   }
 
   private tryRunBeforeHooks() {
@@ -193,7 +192,7 @@ export class HTTPRequestBuilder {
       }
     } catch (e) {
       const error = e as Error;
-      const message = `HTTP Client encountered an error while running 'onBeforeRequest' hooks at index ${index}`;
+      const message = `HTTP Client 'onBeforeRequest' experienced an error at listener count ${index}`;
       throw new AutomationError(message, { cause: error });
     }
   }
@@ -206,65 +205,8 @@ export class HTTPRequestBuilder {
       }
     } catch (e) {
       const error = e as Error;
-      const message = `HTTP Client encountered an error while running 'onAfterRequest' hooks at index ${index}`;
+      const message = `HTTP Client 'onRequestReceived' experienced an error at listener count ${index}`;
       throw new AutomationError(message, { cause: error });
     }
   }
-  makeResponse<T>(res: AxiosResponse) {
-    const { status, data } = res;
-    const parsed = this.validateSchemas<T>(status, data);
-    return this.createWrapper<T>(res, parsed);
-  }
-
-  private createWrapper<T>(
-    { status, statusText, headers, data }: AxiosResponse<T>,
-    parsed?: T
-  ) {
-    const params = Object.fromEntries(this.#params);
-    const url = urlJoinP(this.#url, this.#route, params);
-    return plainToClass(HTTPResponse<T>, {
-      status,
-      statusText,
-      headers,
-      data: parsed ?? data,
-      request: {
-        url,
-        validated: !!parsed
-      }
-    });
-  }
-
-  private validateSchemas<T>(status: number, data: T): T {
-    return this.#schemaMap.validate<T>(
-      status as StatusCode,
-      data,
-      this.#requireSchema
-    );
-  }
-}
-
-function transformResponse(allowPlainText: boolean, data: string) {
-  if (isJson(data)) {
-    return JSON.parse(data);
-  }
-  if (["true", "false"].includes(data)) {
-    return JSON.parse(data);
-  }
-
-  if (data === "" || data === undefined) {
-    return undefined;
-  }
-  if (allowPlainText) {
-    if (/^\d*\.?\d+$/.test(data) || ['true', 'false'].includes(data)) {
-      return JSON.parse(data);
-    }
-    return data;
-  }
-  const response = highlight(data, { language: "html" });
-  const message = [
-    `HTTP Client received a response which could not be parsed as JSON, and plain text responses were not configured for this request, Instead the body was:`,
-    " ",
-    response
-  ];
-  throw new AutomationError(message.join("\n"));
 }

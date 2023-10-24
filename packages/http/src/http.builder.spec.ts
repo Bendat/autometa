@@ -1,7 +1,7 @@
 import { HTTPRequestBuilder } from "./http.builder";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SchemaMap } from "./schema.map";
-
+import * as axios from "axios";
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -74,6 +74,45 @@ describe("HTTPBuilder", () => {
       await expect(() =>
         new HTTPRequestBuilder(map).url("").onReceivedResponse(hook).get()
       ).rejects.toThrow();
+    });
+  });
+  describe("requests", () => {
+    it("should run a before hook before making a request", async () => {
+      const hook = vi.fn();
+      await new HTTPRequestBuilder(map).url("foo").onBeforeSend(hook).get();
+      expect(hook).toHaveBeenCalled();
+    });
+    it("should run an after hook after making a request", async () => {
+      const hook = vi.fn();
+      await new HTTPRequestBuilder(map)
+        .url("foo")
+        .onReceivedResponse(hook)
+        .get();
+      expect(hook).toHaveBeenCalled();
+    });
+    it("should not run an after hook after failing a HTTP request", async () => {
+      const hook = vi.fn();
+      vi.spyOn(axios, "default").mockRejectedValueOnce(new Error("foo"));
+      const action = () =>
+        new HTTPRequestBuilder(map).url("foo").onReceivedResponse(hook).get();
+      await expect(action).rejects.toThrow();
+      expect(hook).not.toHaveBeenCalled();
+    });
+    it("should run an after hook after failing a validation", async () => {
+      const hook = vi.fn();
+      const data = {
+        status: 200,
+        data: { a: 1 }
+      };
+      vi.spyOn(axios, "default").mockResolvedValueOnce(data);
+      const schema = { parse: vi.fn().mockReturnValue(data) };
+
+      await new HTTPRequestBuilder(map)
+        .url("foo")
+        .schema(schema, 200)
+        .onReceivedResponse(hook)
+        .get();
+      expect(hook).toHaveBeenCalled();
     });
   });
 });

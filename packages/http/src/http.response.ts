@@ -1,3 +1,5 @@
+import { Method } from "axios";
+
 export class HTTPResponse<T> {
   status: number;
   statusText: string;
@@ -5,31 +7,8 @@ export class HTTPResponse<T> {
   headers: Record<string, string>;
   request: {
     url: string;
-    validated: boolean;
-    passedValidation: boolean
+    method: Method;
   };
-
-  static fromRaw<T>(
-    data: T,
-    status: number,
-    statusText: string,
-    headers: Record<string, string>,
-    url: string,
-    validated: boolean,
-    passedValidation: boolean
-  ) {
-    const response = new HTTPResponse<T>();
-    response.data = data;
-    response.status = status;
-    response.statusText = statusText;
-    response.headers = headers;
-    response.request = {
-      url,
-      validated,
-      passedValidation
-    };
-    return response;
-  }
   static derive<TOriginal, TDerived>(
     original: HTTPResponse<TOriginal>,
     data: TDerived
