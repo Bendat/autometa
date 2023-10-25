@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.7
+
+### Patch Changes
+
+- b992a2b: fix: HTTPResponse should be exported
+
 ## 1.0.6
 
 ### Patch Changes
