@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.6
+
+### Patch Changes
+
+- 469f0cb: refactor: http client refactor
+
 ## 1.0.5
 
 ### Patch Changes
