@@ -45,6 +45,7 @@
     "class-transformer": "^0.5.1",
     "cli-highlight": "^2.1.11",
     "reflect-metadata": "^0.1.13",
+    "ts-retry": "^4.2.3",
     "url-join-ts": "^1.0.5"
   }
 }

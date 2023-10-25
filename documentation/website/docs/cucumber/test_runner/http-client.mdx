@@ -1,0 +1,236 @@
+---
+sidebar_position: 8
+---
+
+# HTTP Client
+
+One of the included fixtures provided is the `HTTP` client. Unlike most
+fixtures which are which behave like singletons within the context of
+a Scenario, the HTTP client is "transient", and each time it is injected
+a new copy is created.
+
+It is accessed as a normal fixture, by defining it as a constructor
+parameter for whatever fixture or App is consuming it.
+
+```ts
+@Fixture
+export class MyClient {
+  constructor(private http: Http) {}
+}
+```
+
+The client is unusual in that it behaves as a 2-part builder patten. Certain information,
+such as the API URL, routes or common headers can be stored statefully within the client itself
+
+```ts
+@Fixture
+export class MyClient {
+  constructor(private http: Http) {
+    this.http
+      .url("https://api.example.com")
+      .sharedRoute("v2")
+      .sharedHeader("x-example", "true");
+  }
+}
+```
+
+However when a non shared header or route is set, it creates a new request context,
+which will contain values set in the client, and allow collect any new headers,
+routes, query parameters, or payload data that are set. This context uses the same
+naming scheme for methods as the `Http` class itself.
+
+```ts
+@Fixture
+export class MyClient {
+  constructor(private http: Http) {
+    this.http
+      .url("https://api.example.com")
+      .sharedRoute("v2")
+      .sharedHeader("x-example", "true");
+  }
+
+  getProduct(id: number) {
+    return this.http.route("products").route(id).get();
+  }
+
+  getProducts(limit?: number) {
+    return (
+      this.http
+        .route("products")
+        // resolves to /v2/products?limit=10
+        .param("limit", limit)
+        .get()
+    );
+  }
+}
+```
+
+## Hooks
+
+The http client has two hooks:
+
+- `onBeforeSend` which is triggered when the request has been constructed but no request has been made.
+- `onRecievedResponse` which executes after the response has been received, if axios did not throw an error.
+
+`onBeforeSend` receieves a copy of the current request state, and can be useful for logging.
+
+```ts
+export type RequestState = {
+  headers: Map<string, string>;
+  params: Map<string, unknown>;
+  url: string;
+  route: string[];
+  responseType: ResponseType | undefined;
+  data: unknown;
+  method: Method;
+  get fullUrl(): string;
+};
+```
+
+`fullUrl` is the full resolved url of the request including parameters and routes, i.e.
+`https://api.example.com/v2/products/1?limit=10`
+
+`onRecievedResponse` receives the response object, and the request state. It can be used to
+run assertions against a response or again for logging.
+
+```ts
+export class HTTPResponse<T> {
+  status: number;
+  statusText: string;
+  data: T;
+  headers: Record<string, string>;
+  request: {
+    url: string;
+    method: Method;
+  };
+}
+```
+
+```ts
+import { z } from "zod";
+const ResponseSchema = z.object({
+  id: z.number(),
+  name: z.string()
+});
+
+@Fixture
+export class MyClient {
+  constructor(private http: Http) {
+    this.http
+      .url("https://api.example.com")
+      .sharedRoute("v2")
+      .sharedOnBeforeHook(this.logRequest)
+      .sharedOnRecievedResponseHook(this.logResponse);
+  }
+
+  logRequest({ method, url }: RequestState) {
+    console.log(`making ${method} request to ${url}`);
+  }
+
+  logResponse(response: HTTPResponse<unknown>) {
+    console.log(`recieved ${response.status} response from ${method} ${url}`);
+  }
+}
+```
+
+## Schema Validation
+
+The client accepts a `schema` map, which is a mapping of a schema parsing object to a HTTP status code
+or list of status codes. A schema is registered as an object with a `parse` method, which accepts the
+response data and returns a parsed object, or throws an error.
+
+Example using `zod`:
+
+```ts
+import { z } from "zod";
+const ResponseSchema = z.object({
+  id: z.number(),
+  name: z.string()
+});
+
+@Fixture
+export class MyClient {
+  constructor(private http: Http) {
+    this.http
+      .url("https://api.example.com")
+      .sharedRoute("v2")
+      .sharedHeader("x-example", "true");
+  }
+
+  getProduct(id: number) {
+    return (
+      this.http
+        .route("products")
+        // single value
+        .schema(ResponseSchema, 200)
+        // list
+        .schema(ResponseSchema, 200, 201, 204)
+        // range
+        .schema(ResponseSchema, { from: 200, to: 204 })
+        .route(id)
+        .get()
+    );
+  }
+}
+```
+
+## Derived Responses
+
+Responses can be 'derived' from other responses. With this, the status, and header
+information remains the same but a new response object is produced, using a value
+taken from the original response as it's data.
+
+Imagine you have steps to validate a product stored in the world:
+
+```ts
+import { Then, AssertKey } from "@autometa/runner";
+// Then the product name is 'bob'
+// Then the product price is 10
+Then("the product {string} is {primitive}", (key, value, { world }) => {
+  AssertKey(world.myProduct, key);
+  const product = world.myProduct;
+  expect(product[key]).toEqual(value);
+});
+```
+
+And later you're implementing the `products` endpoint which gets all products
+as an object with a paginated list:
+
+```ts
+{
+    products: Product[];
+    pagination: {
+        total: number;
+        limit: number;
+        offset: number;
+    }
+}
+```
+
+It would be nice to easily reuse our existing steps to validate the product, by making
+a new step to add it as `myProduct`, which is a `HTTPResponse<Produxt>`
+
+```ts
+Then("I examine product {int}", (index, { world }) => {
+  const response = world.productsResponse;
+  //   const data = response.data.products[index];
+  world.myProduct = HTTPResponse.derive(
+    response,
+    ({ products }) => products[index]
+  ); // now HTTPResponse<Product>
+});
+```
+
+Which lets you reuse your existing step.
+
+```gherkin
+Scenario: some scenario
+    ...
+    ...
+    Then I examine product 1
+    * the product name is 'bob'
+    * the product price is 10
+    And I examine product 2
+    * the product name is 'alice'
+    * the product price is 20
+```

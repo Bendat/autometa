@@ -1,7 +1,7 @@
 import { Fixture, LIFE_CYCLE } from "@autometa/app";
-import { HTTPRequestBuilder, RequestHook, ResponseHook } from "./http.builder";
+import { HTTPRequestBuilder } from "./http.builder";
 import { SchemaMap } from "./schema.map";
-import { SchemaParser, StatusCode } from "./types";
+import { RequestHook, ResponseHook, SchemaParser, StatusCode } from "./types";
 @Fixture(LIFE_CYCLE.Transient)
 export class HTTP {
   #url: string;
