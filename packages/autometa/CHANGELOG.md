@@ -1,5 +1,12 @@
 # @autometa/runner
 
+## 0.2.46
+
+### Patch Changes
+
+- Updated dependencies [3390c77]
+  - @autometa/http@1.0.8
+
 ## 0.2.45
 
 ### Patch Changes
