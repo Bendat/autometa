@@ -8,8 +8,8 @@ export type StatusCode<T extends typeof StatusCodes = typeof StatusCodes> = {
 }[keyof T];
 
 export type RequestState = {
-  headers: Map<string, string>;
-  params: Map<string, unknown>;
+  headers: Record<string, string>;
+  params: Record<string, unknown>;
   url: string;
   route: string[];
   responseType: ResponseType | undefined;
