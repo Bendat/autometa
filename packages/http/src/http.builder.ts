@@ -38,8 +38,8 @@ export class HTTPRequestBuilder {
   get currentState(): RequestState {
     const fullUrl = this.currentUrl;
     return {
-      headers: this.#headers,
-      params: this.#params,
+      headers: Object.fromEntries(this.#headers),
+      params: Object.fromEntries(this.#params),
       url: this.#url,
       route: this.#route,
       responseType: this.#responseType,

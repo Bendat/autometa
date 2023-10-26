@@ -19,9 +19,9 @@ const axiosConfig: AxiosRequestConfig = {
 const requestState: RequestState = {
   data: {},
   fullUrl: "http://localhost:3000",
-  headers: new Map(),
+  headers: {},
   method: "GET",
-  params: new Map(),
+  params: {},
   responseType: undefined,
   route: [],
   url: "http://localhost:3000"

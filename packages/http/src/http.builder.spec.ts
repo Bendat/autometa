@@ -31,14 +31,14 @@ describe("HTTPBuilder", () => {
   it("should add a header", () => {
     const builder = new HTTPRequestBuilder(map);
     builder.header("foo", "bar");
-    const headers = Object.fromEntries(builder.currentState.headers);
+    const headers = builder.currentState.headers;
     expect(headers).toEqual({ foo: "bar" });
   });
 
   it("should add a param", () => {
     const builder = new HTTPRequestBuilder(map);
     builder.param("foo", "bar");
-    const params = Object.fromEntries(builder.currentState.params);
+    const params = builder.currentState.params;
     expect(params).toEqual({ foo: "bar" });
   });
 
