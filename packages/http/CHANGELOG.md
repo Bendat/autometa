@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.9
+
+### Patch Changes
+
+- a7b715a: fix: return empty string bodies without allowPlainText
+
 ## 1.0.8
 
 ### Patch Changes
