@@ -12,6 +12,9 @@ export function transformResponse(
   if (data === undefined) {
     return undefined;
   }
+  if (data === "") {
+    return data;
+  }
   if (isJson(data)) {
     return JSON.parse(data);
   }
