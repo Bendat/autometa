@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.8
+
+### Patch Changes
+
+- 3390c77: fix: RequestState uses objects instead of maps
+
 ## 1.0.7
 
 ### Patch Changes
