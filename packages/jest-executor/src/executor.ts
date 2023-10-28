@@ -19,7 +19,7 @@ import {
 } from "@jest/globals";
 import { type App, AutometaApp, AutometaWorld, getApp } from "@autometa/app";
 import { Class } from "@autometa/types";
-import { AutomationError } from "@autometa/errors";
+import { AutomationError, formatErrorCauses } from "@autometa/errors";
 import { TestEventEmitter } from "@autometa/events";
 import { Query } from "@autometa/test-builder";
 import { Config } from "@autometa/config";
@@ -259,14 +259,21 @@ export function bootstrapScenario(
         });
         const message = `${bridge.title} failed because an error was encountered while executing a step`;
         const meta = { cause: error };
-        throw new AutomationError(message, meta);
+        const newError = new AutomationError(message, meta);
+        console.error(formatErrorCauses(newError));
+        throw newError;
       }
     },
     chosenTimeout.milliseconds
   );
 }
 
-async function tryRunStep(step: StepBridge, events: TestEventEmitter, bridge: ScenarioBridge, localApp: () => App) {
+async function tryRunStep(
+  step: StepBridge,
+  events: TestEventEmitter,
+  bridge: ScenarioBridge,
+  localApp: () => App
+) {
   await bootstrapStep(step, events, bridge, localApp);
 }
 
