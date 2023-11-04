@@ -1,5 +1,13 @@
 # @autometa/config
 
+## 0.1.15
+
+### Patch Changes
+
+- Updated dependencies [0c070cb]
+  - @autometa/asserters@0.1.6
+  - @autometa/app@0.2.1
+
 ## 0.1.14
 
 ### Patch Changes

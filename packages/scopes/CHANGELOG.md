@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.4.4
+
+### Patch Changes
+
+- @autometa/app@0.2.1
+- @autometa/cucumber-expressions@0.3.9
+- @autometa/phrases@0.1.10
+
 ## 0.4.3
 
 ### Patch Changes
