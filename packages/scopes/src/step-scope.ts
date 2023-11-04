@@ -12,12 +12,12 @@ import {
 } from "@autometa/gherkin";
 import { App } from "@autometa/app";
 import { Bind } from "@autometa/bind-decorator";
-import { AutomationError, safeAsync } from "@autometa/errors";
+import { AutomationError } from "@autometa/errors";
 import { Class } from "@autometa/types";
 import { Expression } from "@cucumber/cucumber-expressions";
 import { HookCache } from "./caches/hook-cache";
 import { Empty_Function } from "./novelties";
-import { StepActionFn } from "./types";
+import { StepActionFn, StepArgs } from "./types";
 import { interpolateStepText } from "@autometa/gherkin";
 
 export class StepScope<
@@ -60,12 +60,12 @@ export class StepScope<
   async execute(scenario: Scenario | Background, gherkin: Step, app: App) {
     const args: unknown[] = [];
     const title = this.stepText(gherkin.keyword, gherkin.text);
-    let gotArgs: unknown[];
+    let gotArgs: StepArgs<string, DataTable>;
     if (scenario instanceof Example) {
       const realText = interpolateStepText(gherkin.text, scenario.table);
-      gotArgs = this.getArgs(realText);
+      gotArgs = this.getArgs(realText) as StepArgs<string, DataTable>;
     } else {
-      gotArgs = this.getArgs(gherkin.text);
+      gotArgs = this.getArgs(gherkin.text) as StepArgs<string, DataTable>;
     }
 
     args.push(...gotArgs);
@@ -73,13 +73,8 @@ export class StepScope<
       this.handleMissingTable(title, args, gherkin);
     }
     args.push(app);
-    const error = await safeAsync(this.stepAction, ...args);
-    if (error instanceof Error) {
-      const message = `Step '${title}' failed with error
-  
-  ${error.message}`;
-      throw new AutomationError(message, { cause: error });
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.stepAction(...args as any);
   }
 
   private handleMissingTable(title: string, args: unknown[], gherkin: Step) {

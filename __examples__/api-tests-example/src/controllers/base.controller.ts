@@ -11,9 +11,9 @@ export abstract class BaseController {
   }
 
   private logRequest(state: RequestState) {
-    const headers = JSON.stringify(Object.fromEntries(state.headers));
+    const headers = JSON.stringify(state.headers);
     const data = JSON.stringify(state.data);
-    const headerLength = state.headers.size > 0 ? 1 : 0;
+    const headerLength = Object.keys(state.headers).length > 0 ? 1 : 0;
     const headerString = headerLength ? `headers: ${headers}` : "";
     const dataString = data !== undefined ? `data: ${data}` : "";
     const messages = [

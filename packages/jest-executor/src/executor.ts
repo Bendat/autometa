@@ -257,7 +257,7 @@ export function bootstrapScenario(
           status: "FAILED",
           error: error
         });
-        const message = `${bridge.title} failed because an error was encountered while executing a step`;
+        const message = `${bridge.title} failed while executing a step`;
         const meta = { cause: error };
         const newError = new AutomationError(message, meta);
         console.error(formatErrorCauses(newError));
