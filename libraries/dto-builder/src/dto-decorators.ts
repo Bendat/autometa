@@ -61,6 +61,18 @@ export function makeDtoDefaults<T>(target: BuilderClass<T>): T {
       instanceDict[property] = makeDtoDefaults(defaultValue);
       continue;
     }
+
+    if(defaultValue && defaultValue instanceof Date.constructor){
+      instanceDict[property] = new Date();
+    }
+
+    if (typeof defaultValue === "function") {
+      const value = defaultValue();
+      if(value && 'then' in value && typeof value.then === 'function'){
+        throw new Error(`Default value for ${property} is an async function. This is not supported. Please use a sync function or a value.`)
+      }
+      instanceDict[property] = value;
+    }
     if (defaultValue !== undefined) {
       instanceDict[property] = defaultValue;
     }

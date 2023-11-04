@@ -2,7 +2,7 @@ import { closestMatch } from "closest-match";
 import { BuilderClass, Dict } from "./types";
 export abstract class AbstractDtoBuilder<TDtoType> {
   #dto: TDtoType & { constructor: { name: string } };
-  protected get dto() {
+  get dto() {
     return this.#dto;
   }
   /**
