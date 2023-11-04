@@ -1,54 +1,54 @@
 import { describe, it, expect } from "vitest";
 import {
   AccessTracker,
-  DecorateAccessTracker,
   GetAccessedCount,
-  GetAssignedValues
+  GetAssignedValues,
+  TrackAccess
 } from "./access-tracker";
 
 describe("AccessTracker", () => {
   describe("accesses", () => {
     it("should get 0 accesses for a new object", () => {
-      const obj = AccessTracker({ foo: undefined });
+      const obj = AccessTracker([], { foo: undefined });
       expect(GetAccessedCount(obj, "foo")).toBe(0);
     });
     it("should get 1 access for a new object with a value", () => {
-      const obj = AccessTracker({ foo: 1 });
+      const obj = AccessTracker([], { foo: 1 });
       expect(GetAccessedCount(obj, "foo")).toBe(1);
     });
     it("should get 2 access for an accessed object", () => {
-      const obj = AccessTracker({ foo: 1 });
+      const obj = AccessTracker([], { foo: 1 });
       expect(obj.foo).toBe(1);
       expect(GetAccessedCount(obj, "foo")).toBe(2);
     });
     it("it should throw an error when accessing a never-assigned value", () => {
-      const obj = AccessTracker({} as { foo: number });
+      const obj = AccessTracker([], {} as { foo: number });
       expect(() => obj.foo).toThrowError();
     });
   });
   describe("assignments", () => {
     it("should get 1 assignments for a new object with a value", () => {
-      const obj = AccessTracker({ foo: 1 });
+      const obj = AccessTracker([],{ foo: 1 });
       expect(GetAssignedValues(obj, "foo")).toEqual([1]);
     });
     it("should get 0 assignments for a new object", () => {
-      const obj = AccessTracker({ foo: undefined });
+      const obj = AccessTracker([], { foo: undefined });
       expect(GetAssignedValues(obj, "foo")).toEqual([]);
     });
     it("should get 1 assignment for an assigned to object", () => {
-      const obj = AccessTracker({ foo: 1 });
+      const obj = AccessTracker([], { foo: 1 });
       obj.foo = 2;
       expect(GetAssignedValues(obj, "foo")).toEqual([1, 2]);
     });
     it("should get 1 assignment for an assigned undefined value", () => {
-      const obj = AccessTracker({ foo: 1 });
+      const obj = AccessTracker([], { foo: 1 });
       obj.foo = undefined as unknown as number;
       expect(GetAssignedValues(obj, "foo")).toEqual([1, undefined]);
     });
   });
 });
 
-@DecorateAccessTracker
+@TrackAccess<TestFixture>()
 class TestFixture {
   foo = 1;
   bar = 2;

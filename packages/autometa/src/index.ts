@@ -36,7 +36,7 @@ export { Types } from "@autometa/scopes";
 export * from "./events";
 export * from "@autometa/http";
 export * from "@autometa/asserters";
-
+export { GetAccessedCount, GetAssignedValues, TrackAccess } from "@autometa/fixture-proxies";
 /**
  * Executes a gherkin `.feature` file. Assembles Tests
  * using the Cucumber file and globally defined Step Definitions.
