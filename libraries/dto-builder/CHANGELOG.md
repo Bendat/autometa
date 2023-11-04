@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.11.0
+
+### Minor Changes
+
+- 8f116d9: feat: access tracker and error catching proxies on fixtures
+
 ## 0.10.1
 
 ### Patch Changes

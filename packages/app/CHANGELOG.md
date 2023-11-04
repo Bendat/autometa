@@ -1,5 +1,20 @@
 # @autometa/app
 
+## 0.2.0
+
+### Minor Changes
+
+- 8f116d9: feat: access tracker and error catching proxies on fixtures
+
+### Patch Changes
+
+- Updated dependencies [b5ce008]
+- Updated dependencies [8f116d9]
+  - @autometa/errors@0.2.0
+  - @autometa/fixture-proxies@0.1.0
+  - @autometa/asserters@0.1.5
+  - @autometa/phrases@0.1.9
+
 ## 0.1.13
 
 ### Patch Changes
