@@ -1,5 +1,12 @@
 # Gherkin
 
+## 0.4.5
+
+### Patch Changes
+
+- Updated dependencies [8ec0cdc]
+  - @autometa/app@0.2.2
+
 ## 0.4.4
 
 ### Patch Changes

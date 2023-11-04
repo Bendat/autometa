@@ -1,5 +1,20 @@
 # @autometa/runner
 
+## 0.2.51
+
+### Patch Changes
+
+- 8ec0cdc: fix: allow whitelist for tracked types, don't auto-track World
+- Updated dependencies [8ec0cdc]
+  - @autometa/fixture-proxies@0.1.1
+  - @autometa/app@0.2.2
+  - @autometa/config@0.1.16
+  - @autometa/coordinator@0.2.6
+  - @autometa/http@1.0.12
+  - @autometa/jest-executor@0.3.3
+  - @autometa/scopes@0.4.5
+  - @autometa/test-builder@0.1.34
+
 ## 0.2.50
 
 ### Patch Changes

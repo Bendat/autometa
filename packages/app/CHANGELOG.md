@@ -1,5 +1,13 @@
 # @autometa/app
 
+## 0.2.2
+
+### Patch Changes
+
+- 8ec0cdc: fix: allow whitelist for tracked types, don't auto-track World
+- Updated dependencies [8ec0cdc]
+  - @autometa/fixture-proxies@0.1.1
+
 ## 0.2.1
 
 ### Patch Changes
