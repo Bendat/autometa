@@ -4,6 +4,19 @@ import { overloads, def, string, number, boolean } from "@autometa/overloaded";
 import { AutomationError } from "@autometa/errors";
 import { Bind } from "@autometa/bind-decorator";
 import { DataTable, mapHeaders } from "./data-table";
+
+/**
+ * A horizontal table is a table where the first row is the header row,
+ * and each subsequent row is a row of values.
+ *
+ * For example:
+ *
+ * ```gherkin
+ * Given I have a Table
+ *  | Header 1 | Header 2 | Header 3 |
+ *  | Value 1  | Value 2  | Value 3  |
+ * ```
+ */
 export class HTable extends DataTable {
   private headers: { [header: string]: number };
   private rows: readonly TableValue[][];
@@ -17,7 +30,36 @@ export class HTable extends DataTable {
     this.headers = mapHeaders(headers);
   }
 
-  get<T extends [...TableValue[]] = [...TableValue[]]>(header: string, raw?: boolean): T;
+  /**
+   * Retrieves a column from the table by it's header.
+   * By default the values will be coerced to their typescript types,
+   * i.e a value '1' in a table cell will be coerced into a number,
+   * 'true' to a boolean, etc.
+   *
+   * Specifying the raw flag will return the column with it's original string
+   * value.
+   * @param header The header string of the column to retrieve
+   * @param raw Whether to return the column with it's original string values
+   */
+  get<T extends [...TableValue[]] = [...TableValue[]]>(
+    header: string,
+    raw?: boolean
+  ): T;
+  /**
+   * Retrieves a value from a specific table cell using
+   * the header and row index.
+   *
+   * By default the value will be coerced to it's typescript type,
+   * i.e a value '1' in a table cell will be coerced into a number,
+   * 'true' to a boolean, etc.
+   *
+   * Specifying the raw flag will return the value with it's original string
+   * value.
+   *
+   * @param header
+   * @param row
+   * @param raw
+   */
   get<T extends TableValue = TableValue>(
     header: string,
     row: number,
@@ -49,11 +91,16 @@ export class HTable extends DataTable {
       def(string()).matches((header) => {
         const colIdx = this.headers[header];
         return this.rows.map((row) => row[colIdx]);
-      }),
+      })
     ).use(args);
   }
 
-  private handleError(colIdx: number, source: readonly TableValue[][], header: string, row: number) {
+  private handleError(
+    colIdx: number,
+    source: readonly TableValue[][],
+    header: string,
+    row: number
+  ) {
     if (colIdx > source.length) {
       const maxLength = source.length - 1;
       const msg = `Could not find column ${header} row ${row}. Max length for row is ${maxLength} on ${source}.`;
@@ -62,10 +109,7 @@ export class HTable extends DataTable {
   }
 
   getOrThrow<T extends TableValue = TableValue>(header: TableValue): T[];
-  getOrThrow<T extends TableValue = TableValue>(
-    header: string,
-    row: number
-  ): T;
+  getOrThrow<T extends TableValue = TableValue>(header: string, row: number): T;
   @Bind
   getOrThrow(
     header: string,

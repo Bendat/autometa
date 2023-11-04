@@ -5,6 +5,19 @@ import { DataTable } from "./data-table";
 import { overloads, def, string, number, boolean } from "@autometa/overloaded";
 import { AutomationError } from "@autometa/errors";
 
+/**
+ * A vertical table is a table where the first cell of each row is the header,
+ * and each subsequent cell is a value.
+ * 
+ * For example:
+ * 
+ * ```gherkin
+ * Given I have a Table
+ * | Header 1 | value 1 |
+ * | Header 2 | value 2 |
+ * | Header 3 | value 3 |
+ * ```
+ */
 export class VTable extends DataTable {
   private headers: string[];
   private columns: readonly TableValue[][];
@@ -23,10 +36,38 @@ export class VTable extends DataTable {
     this.headers.forEach(mapHeaders);
   }
 
+  /**
+   * Retrieves a row from the table by it's header.
+   * By default the values will be coerced to their typescript types,
+   * i.e a value '1' in a table cell will be coerced into a number,
+   * 'true' to a boolean, etc.
+   * 
+   * Specifying the raw flag will return the row with it's original string
+   * value.
+   * @param header The header string of the row to retrieve
+   * @param raw Whether to return the row with it's original string values
+   * @returns The row as an array of values
+   */
   get<T extends [...TableValue[]] = [...TableValue[]]>(
     header: string,
     raw?: boolean
   ): T;
+  /**
+   * Retrieves a value from a specific table cell using
+   * the header and column index.
+   * 
+   * By default the value will be coerced to it's typescript type,
+   * i.e a value '1' in a table cell will be coerced into a number,
+   * 'true' to a boolean, etc.
+   * 
+   * Specifying the raw flag will return the value with it's original string
+   * value.
+   * 
+   * @param header 
+   * @param column 
+   * @param raw 
+   * @returns The value at the specified cell
+   */
   get<T extends TableValue = TableValue>(
     header: string,
     col: number,
