@@ -1,5 +1,15 @@
 # Gherkin
 
+## 0.4.3
+
+### Patch Changes
+
+- 6fe8f64: docs: improved typedocs on public interface
+- Updated dependencies [6fe8f64]
+  - @autometa/gherkin@0.5.4
+  - @autometa/cucumber-expressions@0.3.8
+  - @autometa/events@0.2.7
+
 ## 0.4.2
 
 ### Patch Changes

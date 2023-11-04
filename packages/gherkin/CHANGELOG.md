@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.5.4
+
+### Patch Changes
+
+- 6fe8f64: docs: improved typedocs on public interface
+
 ## 0.5.3
 
 ### Patch Changes
