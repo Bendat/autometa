@@ -1,0 +1,4 @@
+{
+  "extends": "tsconfig/base.json",
+  "files": ["src/index.ts", "src/access-tracker.ts", "src/any-function.ts"],
+}
