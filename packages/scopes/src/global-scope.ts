@@ -102,7 +102,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   ): FeatureScope;
   @Bind
   Feature(...args: (FeatureAction | string | TestTimeout)[]) {
-    const caller = path.dirname(getCaller());
+    const caller = path.dirname(getCaller(3));
     const feature: FeatureScope = overloads(
       def(string("filePath"), number("timeout")).matches(
         (filePath, timeout) => {
