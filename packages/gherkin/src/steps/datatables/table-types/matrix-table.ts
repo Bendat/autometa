@@ -3,6 +3,19 @@ import { CompiledDataTable } from "../compiled-data-table";
 import { DataTable, mapHeaders } from "./data-table";
 import { AutomationError } from "@autometa/errors";
 
+/**
+ * A matrix table is a table where the first row and column are headers,
+ * and each intersecting cell is a value.
+ *
+ * For example:
+ *
+ * ```gherkin
+ * Given I have a Table
+ *  |           | HHEader1 | HHeader2 | HHeader 3 |
+ *  | VHeader 1 | Value 4  | Value 5  | Value 6   |
+ *  | VHeader 2 | Value 7  | Value 8  | Value 9   |
+ * ```
+ */
 export class MTable extends DataTable {
   private vheaders: { [header: string]: number };
   private hheaders: { [header: string]: number };
@@ -18,9 +31,20 @@ export class MTable extends DataTable {
     this.rows = table
       .slice(1, raw.length)
       .map((row) => row.slice(1, row.length));
-    this.raw = raw
+    this.raw = raw;
   }
 
+  /**
+   * Retrieves a value from a specific table cell using
+   * the header and row index.
+   *
+   * By default the value will be coerced to it's typescript type,
+   * i.e a value '1' in a table cell will be coerced into a number,
+   * 'true' to a boolean, etc.
+   *
+   * @param vheader
+   * @param hheader
+   */
   get<TReturn = TableValue>(vheader: string, hheader: string): TReturn;
   get<TReturn = TableValue>(
     vheader: string,
@@ -31,10 +55,13 @@ export class MTable extends DataTable {
       return this.rows[vIdx] as TReturn[];
     }
     const hIdx = this.hheaders[hheader];
-    
+
     return this.rows[vIdx][hIdx] as TReturn;
   }
 
+  /**
+   * Retrieves a row from the table by it's vertical header.
+   */
   getRow<T extends [...TableValue[]] = [...TableValue[]]>(
     vheader: TableValue
   ): T {
@@ -42,6 +69,9 @@ export class MTable extends DataTable {
     return this.rows[vIdx] as T;
   }
 
+  /**
+   * Retrieves a column from the table by it's horizontal header.
+   */
   getColumn<T extends [...TableValue[]] = [...TableValue[]]>(
     hheader: TableValue
   ): T {
@@ -71,10 +101,10 @@ export class MTable extends DataTable {
 
   asJson(): Record<string | number, TableValue[]> {
     const json: Record<string, TableValue[]> = {};
-    for(let i = 0; i < this.raw[0].length; i++) {
+    for (let i = 0; i < this.raw[0].length; i++) {
       const header = this.raw[0][i];
       // collect columns into array and attach to json
-      json[header] = this.raw.slice(1).map(row => row[i])
+      json[header] = this.raw.slice(1).map((row) => row[i]);
     }
     return json;
   }

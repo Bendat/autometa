@@ -183,10 +183,7 @@ export interface Scopes {
     filepath: string,
     timeout: SizedTimeout
   ): FeatureScope;
-  /**
-   * FPPPPPPPPPPP
-   * @param args 
-   */
+
   Feature(...args: (FeatureAction | string | TestTimeout)[]): FeatureScope;
 
   Scenario(title: string, action: ScenarioAction): ScenarioScope;
@@ -200,6 +197,9 @@ export interface Scopes {
     action: ScenarioAction,
     timeout: SizedTimeout
   ): ScenarioScope;
+  Scenario(
+    ...args: (string | ScenarioAction | SizedTimeout | number)[]
+  ): ScenarioScope;
 
   ScenarioOutline(title: string, action: ScenarioAction): ScenarioScope;
   ScenarioOutline(
@@ -212,10 +212,15 @@ export interface Scopes {
     action: ScenarioAction,
     timeout: SizedTimeout
   ): ScenarioScope;
+  ScenarioOutline(
+    ...args: (string | ScenarioAction | SizedTimeout | number)[]
+  ): ScenarioScope;
+
 
   Rule(title: string, action: RuleAction): RuleScope;
   Rule(title: string, action: RuleAction, timeout: number): RuleScope;
   Rule(title: string, action: RuleAction, timeout: SizedTimeout): RuleScope;
+  Rule(...args: (string | RuleAction | SizedTimeout | number)[]): RuleScope;
 
   Given<TText extends string, TTable extends DataTable = NeverDataTable>(
     title: TText,
@@ -232,6 +237,7 @@ export interface Scopes {
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ): void;
+  
 
   Before(description: string, action: HookAction): BeforeHook;
   Before(description: string, action: HookAction, timeout: number): BeforeHook;
