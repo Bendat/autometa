@@ -1,5 +1,20 @@
 # @autometa/runner
 
+## 0.2.49
+
+### Patch Changes
+
+- 6fe8f64: docs: improved typedocs on public interface
+- Updated dependencies [6fe8f64]
+  - @autometa/datetime@0.1.13
+  - @autometa/gherkin@0.5.4
+  - @autometa/scopes@0.4.3
+  - @autometa/cucumber-expressions@0.3.8
+  - @autometa/coordinator@0.2.4
+  - @autometa/events@0.2.7
+  - @autometa/jest-executor@0.3.1
+  - @autometa/test-builder@0.1.32
+
 ## 0.2.48
 
 ### Patch Changes

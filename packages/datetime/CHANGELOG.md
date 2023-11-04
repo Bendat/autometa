@@ -1,5 +1,11 @@
 # @autometa/datetime
 
+## 0.1.13
+
+### Patch Changes
+
+- 6fe8f64: docs: improved typedocs on public interface
+
 ## 0.1.12
 
 ### Patch Changes
