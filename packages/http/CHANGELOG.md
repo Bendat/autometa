@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.0.11
+
+### Patch Changes
+
+- @autometa/app@0.2.1
+
 ## 1.0.10
 
 ### Patch Changes
