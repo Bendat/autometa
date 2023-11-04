@@ -1,5 +1,24 @@
 # @autometa/jest-executor
 
+## 0.3.0
+
+### Minor Changes
+
+- b5ce008: feat: errors now print before throwing
+
+### Patch Changes
+
+- Updated dependencies [b5ce008]
+- Updated dependencies [8f116d9]
+  - @autometa/errors@0.2.0
+  - @autometa/app@0.2.0
+  - @autometa/asserters@0.1.5
+  - @autometa/config@0.1.14
+  - @autometa/events@0.2.6
+  - @autometa/gherkin@0.5.3
+  - @autometa/scopes@0.4.2
+  - @autometa/test-builder@0.1.31
+
 ## 0.2.14
 
 ### Patch Changes

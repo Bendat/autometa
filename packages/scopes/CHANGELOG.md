@@ -1,5 +1,19 @@
 # Gherkin
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [b5ce008]
+- Updated dependencies [8f116d9]
+  - @autometa/errors@0.2.0
+  - @autometa/dto-builder@0.11.0
+  - @autometa/app@0.2.0
+  - @autometa/cucumber-expressions@0.3.7
+  - @autometa/events@0.2.6
+  - @autometa/gherkin@0.5.3
+  - @autometa/phrases@0.1.9
+
 ## 0.4.1
 
 ### Patch Changes

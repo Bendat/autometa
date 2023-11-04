@@ -1,5 +1,26 @@
 # @autometa/runner
 
+## 0.2.48
+
+### Patch Changes
+
+- Updated dependencies [b5ce008]
+- Updated dependencies [8f116d9]
+  - @autometa/jest-executor@0.3.0
+  - @autometa/errors@0.2.0
+  - @autometa/app@0.2.0
+  - @autometa/coordinator@0.2.3
+  - @autometa/asserters@0.1.5
+  - @autometa/config@0.1.14
+  - @autometa/cucumber-expressions@0.3.7
+  - @autometa/datetime@0.1.12
+  - @autometa/events@0.2.6
+  - @autometa/gherkin@0.5.3
+  - @autometa/http@1.0.10
+  - @autometa/phrases@0.1.9
+  - @autometa/scopes@0.4.2
+  - @autometa/test-builder@0.1.31
+
 ## 0.2.47
 
 ### Patch Changes
