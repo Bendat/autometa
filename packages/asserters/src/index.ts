@@ -6,3 +6,4 @@ export * from "./types";
 export * from "./assert-length";
 export * from "./assert-defined";
 export * from "./assert-is";
+export * from './lie'
