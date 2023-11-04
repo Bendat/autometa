@@ -2,7 +2,12 @@ import { closestMatch } from "closest-match";
 import { AutomationError } from "@autometa/errors";
 import { AnyFunction } from "./any-function";
 
-export function AccessTracker<T extends AnyFunction | object>(target: T): T {
+export function AccessTracker<T extends AnyFunction | object>(
+  guardWhitelist: (keyof T)[],
+  target: T
+) {
+  const whitelist = new Set(guardWhitelist);
+
   const accessed = new Map<string | symbol, number>();
   const assigned = new Map<string | symbol, unknown[]>();
   const rawTarget = target as Record<string | symbol, unknown>;
@@ -25,7 +30,7 @@ export function AccessTracker<T extends AnyFunction | object>(target: T): T {
 
       const count = accessed.get(prop) as number;
       accessed.set(prop, count + 1);
-      if (!(prop in target)) {
+      if (!(prop in target) && !whitelist.has(prop as keyof T)) {
         const keys = Object.keys(target as object);
         const closest = closestMatch(prop.toString(), keys, true) ?? [];
         const hasMatches = Array.isArray(closest) && closest.length > 0;
@@ -68,17 +73,22 @@ export function GetAssignedValues<T>(
   return obj.$assigned.get(prop) ?? [];
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
-export function DecorateAccessTracker<T extends { new (...args: any[]): {} }>(
-  constructor: T
+export function TrackAccess<TWrapping extends object>(
+  ...guardWhitelist: (keyof TWrapping)[]
 ) {
-  const cls = class extends constructor {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(...args: any[]) {
-      super(...args);
-      return AccessTracker(this);
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+  return function DecorateAccessTracker<T extends { new (...args: any[]): {} }>(
+    constructor: T
+  ) {
+    const cls = class extends constructor {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      constructor(...args: any[]) {
+        super(...args);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return AccessTracker<TWrapping>(guardWhitelist, this as any);
+      }
+    };
+    Object.defineProperty(cls, "name", { value: constructor.name });
+    return cls;
   };
-  Object.defineProperty(cls, "name", { value: constructor.name });
-  return cls;
 }

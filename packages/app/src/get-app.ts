@@ -4,7 +4,7 @@ import { Class } from "@autometa/types";
 import { AutomationError } from "@autometa/errors";
 import { AutometaWorld } from ".";
 import { v4 } from "uuid";
-import { AccessTracker, ErrorCatcherProxy } from "@autometa/fixture-proxies";
+import { ErrorCatcherProxy } from "@autometa/fixture-proxies";
 export function getApp<T extends AutometaApp, K extends AutometaWorld>(
   appType: Class<T>,
   worldType: Class<K>,
@@ -35,7 +35,7 @@ defineConfig({
 
   const child = container.createChildContainer();
   const app = ErrorCatcherProxy(child.resolve(appType));
-  app.world = AccessTracker(child.resolve(worldType));
+  app.world = child.resolve(worldType);
   app.id = v4();
   return app;
 }

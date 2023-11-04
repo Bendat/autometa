@@ -48,6 +48,7 @@
     "@autometa/datetime": "workspace:^",
     "@autometa/errors": "workspace:^",
     "@autometa/events": "workspace:^",
+    "@autometa/fixture-proxies": "workspace:^",
     "@autometa/gherkin": "workspace:^",
     "@autometa/http": "workspace:^",
     "@autometa/jest-executor": "workspace:^",
