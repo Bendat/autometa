@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.4.6
+
+### Patch Changes
+
+- edf1819: fix: tagged hooks executing when scenario untagged
+
 ## 0.4.5
 
 ### Patch Changes

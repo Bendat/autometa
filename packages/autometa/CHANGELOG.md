@@ -1,5 +1,15 @@
 # @autometa/runner
 
+## 0.2.52
+
+### Patch Changes
+
+- Updated dependencies [edf1819]
+  - @autometa/scopes@0.4.6
+  - @autometa/coordinator@0.2.7
+  - @autometa/jest-executor@0.3.4
+  - @autometa/test-builder@0.1.35
+
 ## 0.2.51
 
 ### Patch Changes

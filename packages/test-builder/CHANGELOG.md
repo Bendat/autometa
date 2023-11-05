@@ -1,5 +1,12 @@
 # @autometa/test-builder
 
+## 0.1.35
+
+### Patch Changes
+
+- Updated dependencies [edf1819]
+  - @autometa/scopes@0.4.6
+
 ## 0.1.34
 
 ### Patch Changes
