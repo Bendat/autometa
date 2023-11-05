@@ -28,7 +28,7 @@ export abstract class Hook {
     if (!tagExpressions) {
       return true;
     }
-    if (tagExpressions.length === 0) {
+    if (tagExpressions.length === 0 && !this.tagFilterExpression) {
       return true;
     }
     return isTagsMatch(Array.from(tagExpressions), this.tagFilterExpression);
