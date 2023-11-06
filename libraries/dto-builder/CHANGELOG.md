@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.11.1
+
+### Patch Changes
+
+- 4f7d4d0: fix: class-validator dependency missing
+
 ## 0.11.0
 
 ### Minor Changes
