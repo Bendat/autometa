@@ -259,9 +259,7 @@ export function bootstrapScenario(
         });
         const message = `${bridge.title} failed while executing a step`;
         const meta = { cause: error };
-        const newError = new AutomationError(message, meta);
-        console.error(formatErrorCauses(newError));
-        throw newError;
+        throw new AutomationError(message, meta);
       }
     },
     chosenTimeout.milliseconds
@@ -305,6 +303,7 @@ async function bootstrapStep(
       status: "PASSED"
     });
   } catch (e) {
+    const error = e as Error;
     events.step.emitEnd({
       expression: step.expressionText,
       title,
@@ -313,7 +312,10 @@ async function bootstrapStep(
       error: e as Error
     });
     const message = `${title} experienced an error`;
-    throw new AutomationError(message, { cause: e as Error });
+    const meta = { cause: error };
+    const newError = new AutomationError(message, meta);
+    console.error(formatErrorCauses(newError));
+    throw newError;
   }
 }
 
