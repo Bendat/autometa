@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.4.8
+
+### Patch Changes
+
+- 09ddb3c: fix: read 'hooks.ts' files
+
 ## 0.4.7
 
 ### Patch Changes
