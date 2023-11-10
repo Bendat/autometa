@@ -13,6 +13,7 @@ const extensions = [
   ".when.ts",
   ".then.ts",
   ".hooks.ts",
+  "hooks.ts",
   ".before.ts",
   ".after.ts",
   ".setup.ts",
