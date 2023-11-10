@@ -39,7 +39,7 @@
     "errors": "link:packages/errors",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^9.0.0",
     "events": "link:packages/events",
     "gherkin": "link:packages/gherkin",
     "istanbul": "^0.4.5",
