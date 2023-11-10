@@ -1,5 +1,14 @@
 # @autometa/jest-executor
 
+## 0.3.6
+
+### Patch Changes
+
+- 09ddb3c: fix: read 'hooks.ts' files
+- Updated dependencies [09ddb3c]
+  - @autometa/scopes@0.4.8
+  - @autometa/test-builder@0.1.37
+
 ## 0.3.5
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @autometa/runner
 
+## 0.2.54
+
+### Patch Changes
+
+- Updated dependencies [09ddb3c]
+  - @autometa/jest-executor@0.3.6
+  - @autometa/scopes@0.4.8
+  - @autometa/coordinator@0.2.9
+  - @autometa/test-builder@0.1.37
+
 ## 0.2.53
 
 ### Patch Changes
