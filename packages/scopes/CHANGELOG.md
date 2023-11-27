@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.4.9
+
+### Patch Changes
+
+- eeccd7d: fix: windows paths for test start up not loading correctly
+
 ## 0.4.8
 
 ### Patch Changes
