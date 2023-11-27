@@ -1,4 +1,5 @@
 {
   "extends": "tsconfig/base.json",
-  "files": ["src/index.ts"],
+  "files": ["src/index.ts", "src/types.ts,", "__integration__/shop/signin.page.ts", "__integration__/shop/signup-page.ts", "__integration__/shop/page-header.component.ts", "__integration__/shop/signin.form.component.ts", "__integration__/shop/promotion.widget.component.ts", "__integration__/shop/promotions.component.ts", "__integration__/shop/signup.form.component.ts"],
+  "include": ["__integration__"]
 }
