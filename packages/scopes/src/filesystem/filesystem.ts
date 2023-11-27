@@ -53,10 +53,10 @@ abstract class FileSystem {
       for (const globalsDir of globalsDirs) {
         const resolved = path.resolve(globalsDir);
         const paths = extensions.flatMap((ext) =>
-          glob.sync(`${resolved}/**/*${ext}`)
+          glob.sync(`${resolved}/**/*${ext}`.replace(/\\/g, '/'))
         );
         for (const path of paths) {
-          require(path);
+          require(path.replace(/\\/g, '/'));
         }
       }
     }
@@ -67,7 +67,7 @@ abstract class FileSystem {
       for (const appDir of appDirs) {
         const resolved = path.resolve(appDir);
         const paths = [".ts", ".js"].flatMap((ext) =>
-          glob.sync(`${resolved}/**/*${ext}`)
+          glob.sync(`${resolved}/**/*${ext}`.replace(/\\/g, '/'))
         );
         for (const path of paths) {
           require(path);
@@ -80,7 +80,7 @@ abstract class FileSystem {
     const paramDirs = this.parameterTypes;
     if (paramDirs !== undefined) {
       for (const paramDir of paramDirs) {
-        const resolved = path.resolve(paramDir);
+        const resolved = path.resolve(paramDir).replace(/\\/g, '/');
         const paths = glob.sync(resolved);
         for (const path of paths) {
           for (const ext of extensions) {
