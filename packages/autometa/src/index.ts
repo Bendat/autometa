@@ -23,6 +23,7 @@ import {
   Setup as SetupDefinition
 } from "./scopes";
 import { RuleAction } from "@autometa/scopes";
+export { getApp } from "@autometa/app";
 import { RuleScope } from "@autometa/scopes";
 export { Pass } from "./scopes";
 export * from "@autometa/phrases";
