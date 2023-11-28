@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.2.56
+
+### Patch Changes
+
+- e58c175: fix: expose 'getApp' di function
+
 ## 0.2.55
 
 ### Patch Changes
