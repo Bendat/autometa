@@ -1,5 +1,14 @@
 # @autometa/datetime
 
+## 0.1.15
+
+### Patch Changes
+
+- Updated dependencies [3493bb6]
+  - @autometa/errors@0.2.1
+  - @autometa/asserters@0.1.7
+  - @autometa/phrases@0.1.11
+
 ## 0.1.14
 
 ### Patch Changes

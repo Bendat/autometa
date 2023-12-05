@@ -1,5 +1,18 @@
 # @autometa/test-builder
 
+## 0.1.39
+
+### Patch Changes
+
+- Updated dependencies [3493bb6]
+  - @autometa/errors@0.2.1
+  - @autometa/app@0.2.3
+  - @autometa/asserters@0.1.7
+  - @autometa/events@0.2.9
+  - @autometa/gherkin@0.5.6
+  - @autometa/phrases@0.1.11
+  - @autometa/scopes@0.4.10
+
 ## 0.1.38
 
 ### Patch Changes

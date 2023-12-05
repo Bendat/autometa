@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.1
+
+### Patch Changes
+
+- 3493bb6: fix: use 'merge-error-cause' library to format errors
+
 ## 0.2.0
 
 ### Minor Changes
