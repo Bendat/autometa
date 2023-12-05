@@ -2,11 +2,12 @@ import { Fixture, LIFE_CYCLE } from "@autometa/app";
 import { HTTPRequestBuilder } from "./http.builder";
 import { SchemaMap } from "./schema.map";
 import { RequestHook, ResponseHook, SchemaParser, StatusCode } from "./types";
+export type DynamicHeader = () => string;
 @Fixture(LIFE_CYCLE.Transient)
 export class HTTP {
   #url: string;
   #route: string[] = [];
-  #headers = new Map<string, string>();
+  #headers = new Map<string, string | DynamicHeader>();
   #requireSchema = false;
   #schemaMap: SchemaMap = new SchemaMap();
   #onBeforeSend: RequestHook[] = [];
@@ -89,7 +90,7 @@ export class HTTP {
     return this.builder().data(data);
   }
 
-  sharedHeader(name: string, value: string) {
+  sharedHeader(name: string, value: string | DynamicHeader) {
     this.#headers.set(name, value);
     return this;
   }
@@ -111,13 +112,22 @@ export class HTTP {
   }
 
   private builder() {
+    const headers = this.convertFactoriesToString();
     return new HTTPRequestBuilder(this.#schemaMap)
       .url(this.#url)
       .route(...this.#route)
       .allowPlainText(this.#allowPlainText)
-      .headers(Object.fromEntries(this.#headers))
+      .headers(headers)
       .requireSchema(this.#requireSchema)
       .onBeforeSend(...this.#onBeforeSend)
       .onReceivedResponse(...this.#onAfterSend);
+  }
+
+  private convertFactoriesToString(){
+    const dict: Record<string, string> = {};
+    for (const [key, value] of this.#headers.entries()) {
+      dict[key] = typeof value === "string" ? value : value();
+    }
+    return dict;
   }
 }
