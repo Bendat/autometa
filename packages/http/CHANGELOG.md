@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.1.0
+
+### Minor Changes
+
+- 4bbe6fc: feat: support factory function for shared headers
+
 ## 1.0.14
 
 ### Patch Changes
