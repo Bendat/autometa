@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@types/error-cause": "^1.0.1",
-    "error-cause": "^1.0.5"
+    "error-cause": "^1.0.5",
+    "merge-error-cause": "^5.0.0"
   }
 }
