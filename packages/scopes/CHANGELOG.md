@@ -1,5 +1,17 @@
 # Gherkin
 
+## 0.4.10
+
+### Patch Changes
+
+- Updated dependencies [3493bb6]
+  - @autometa/errors@0.2.1
+  - @autometa/app@0.2.3
+  - @autometa/cucumber-expressions@0.3.10
+  - @autometa/events@0.2.9
+  - @autometa/gherkin@0.5.6
+  - @autometa/phrases@0.1.11
+
 ## 0.4.9
 
 ### Patch Changes
