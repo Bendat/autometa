@@ -1,5 +1,12 @@
 # @autometa/fixture-proxies
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [3fe2ad4]
+  - @autometa/errors@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes

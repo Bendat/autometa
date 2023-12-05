@@ -1,5 +1,14 @@
 # @autometa/cucumber-expressions
 
+## 0.3.11
+
+### Patch Changes
+
+- Updated dependencies [3fe2ad4]
+  - @autometa/errors@0.2.2
+  - @autometa/asserters@0.1.8
+  - @autometa/datetime@0.1.16
+
 ## 0.3.10
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.2
+
+### Patch Changes
+
+- 3fe2ad4: fix: revert dependency change on errors (breaks with jest)
+
 ## 0.2.1
 
 ### Patch Changes

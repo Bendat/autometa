@@ -1,5 +1,15 @@
 # @autometa/app
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [3fe2ad4]
+  - @autometa/errors@0.2.2
+  - @autometa/asserters@0.1.8
+  - @autometa/fixture-proxies@0.1.3
+  - @autometa/phrases@0.1.12
+
 ## 0.2.3
 
 ### Patch Changes
