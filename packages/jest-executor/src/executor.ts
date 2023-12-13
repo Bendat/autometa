@@ -17,16 +17,17 @@ import {
   afterAll,
   beforeAll
 } from "@jest/globals";
-import { type App, AutometaApp, AutometaWorld, getApp } from "@autometa/app";
+import { World, type App } from "@autometa/app";
 import { Class } from "@autometa/types";
-import { AutomationError, formatErrorCauses } from "@autometa/errors";
+import { AutomationError, formatErrorCauses, raise } from "@autometa/errors";
 import { TestEventEmitter } from "@autometa/events";
 import { Query } from "@autometa/test-builder";
 import { Config } from "@autometa/config";
 import { chooseTimeout } from "./timeout-selector";
 import { GlobalScope, NullTimeout, Timeout } from "@autometa/scopes";
+import { Container, defineContainerContext } from "@autometa/injection";
 export function execute(
-  { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+  { app }: { app: Class<App>; world: Class<World> },
   global: GlobalScope,
   bridge: FeatureBridge,
   events: TestEventEmitter,
@@ -48,10 +49,21 @@ export function execute(
     });
   }, chosenTimeout.milliseconds);
   group(featureTitle, () => {
+    let testContainerContext: symbol;
+    let testContainer: Container;
+    // = registerContainerContext(app, world);
     let localApp: App;
-    const staticApp: App = getApp(app, world);
+    const globalContainerContext = defineContainerContext("global");
+    const globalContainer = new Container(globalContainerContext);
+    const staticApp: App = globalContainer.get(app);
+    staticApp.di = globalContainer;
     beforeEach(() => {
-      localApp = getApp(app, world);
+      const name =
+        expect.getState().currentTestName ?? raise("A test must have a name");
+      testContainerContext = defineContainerContext(name);
+      testContainer = new Container(testContainerContext);
+      localApp = testContainer.get(app);
+      localApp.di = testContainer;
     });
 
     bootstrapSetupHooks(globalBridge, staticApp, events, [

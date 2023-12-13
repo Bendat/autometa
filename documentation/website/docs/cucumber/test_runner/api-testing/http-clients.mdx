@@ -24,6 +24,7 @@ import { Env } from "../env";
 import { Products, Product } from "../models/products";
 
 @Fixture
+@Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http.url(Environment.API_URL);
@@ -63,6 +64,7 @@ import { Fixture, HTTP } from "@autometa/runner";
 import { ProductController } from "./controllers/products";
 
 @Fixture
+@Constructor(ProductController)
 export class API {
   constructor(public readonly products: ProductController) {}
 }
@@ -72,10 +74,12 @@ Now we'll inject the API class into the App:
 
 ```ts
 // ./app/app.ts
-import { App } from "@autometa/runner";
+import { World } from "./world";
 import { API } from "./api";
 
-export class MyApp extends App {
+@AppType(World)
+@Constructor(API)
+export class MyApp {
   constructor(public readonly api: API) {
     super();
   }
@@ -132,6 +136,7 @@ import { Env } from "../env";
 import { ProductSchema, ProductListSchema, Products, Product } from "./";
 
 @Fixture
+@Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http.url(Environment.API_URL);
@@ -188,6 +193,7 @@ import { ErrorSchema } from "../../errors";
 import { ProductSchema, ProductListSchema, Products, Product } from "./";
 
 @Fixture
+@Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http
@@ -245,6 +251,7 @@ import { ErrorSchema } from "../../errors";
 import { ProductSchema, ProductListSchema, Products, Product } from "./";
 
 @Fixture
+@Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http
@@ -301,6 +308,7 @@ import { HTTP } from "@autometa/runner";
 import { RequestState, HTTPResponse } from "@autometa/runner";
 import { Env } from "../apps";
 
+@Constructor(HTTP)
 export abstract class BaseController {
   constructor(protected readonly http: HTTP) {
     this.http

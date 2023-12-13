@@ -1,0 +1,103 @@
+---
+sidebar_position: 5
+---
+
+# Dependency Injection
+
+## Introduction
+
+Autometa supports the dependency injection pattern, which it uses to
+automatically assemble complex relationships between, in particular,
+classes.
+
+A class can be marked as injectable using the `Fixture` decorator:
+
+```ts
+@Fixture()
+class Foo {}
+```
+
+By default, fixtures are marked as `Cached`, meaning that a single instance
+is shared between all dependants. This can be changed by passing and
+Injection Scope, of which there are `Cached`, as discussed, `Transient`, and
+`Singleton`.
+
+A transient dependency is never cached. Each dependant property
+will be instantiated with a new instance of the transient dependency.
+
+A cached depenenency is cached for the lifetime of the test container. A new Test container
+is created for each Scenario being tested. Once instantiated, that cached instance will
+be used in all other dependant properties. However, a new instance is created for each
+new Scenario and cannot be shared between them
+
+A singleton dependency behaves similar to a cached dependency, except that
+the instance created is reused across all test containers. This means for each `Feature`
+file, only one copy of this dependency will exist across all test scenarios.
+
+```ts
+@Fixture(InjectionScope.Singleton)
+class SingletonFoo {}
+
+@Fixture(InjectionScope.Transient)
+class TransientFoo {}
+```
+
+## Dependencies
+
+Dependencies are injected into a class using one of the `Inject` decorators.
+There are presently 3 such decorators:
+
+- `Inject.class` - Injects an instance of a class into the property. If the class is marked singleton or cached, the existing instance will be reused.
+- `Inject.factory` - Accepts a factory function whose return value will be injected into the property.
+- `Inject.value` - Injects a literal value, such as a string, number, array or anonymous object.
+
+```ts
+@Fixture()
+class Foo {
+  @Inject.class(Bar)
+  bar: Bar;
+
+  @Inject.factory(() => new Baz())
+  baz: Baz;
+
+  @Inject.value("Hello World")
+  message: string;
+}
+```
+
+## Constructor Injection
+
+Autometa also supports constructor injection. This allows you to describe
+a constructor to behave as you wish.
+
+To match the constructor to it's dependencies, the `Constructor` decorator
+may be used. This decorator accepts a list of fixture classes or tokens. The order
+of this list must match the order of the constructor arguments.
+
+```ts
+@Fixture()
+@Constructor(Bar, Baz, Token("message"))
+class Foo {
+  constructor(bar: Bar, baz: Baz, message: string) {}
+}
+```
+
+## Interacting with a Container
+
+The container is available in Hooks and Step Definitions through the app,
+where it is attached as the `di` property. It can be used to register
+new dependencies without relying on the `@Fixture` syntax. Note that
+fixtures have already been constructed at this point, so dependencies
+defined here will not be available through static injection via decorators
+if that class is instantiated before the new dependency is registered.
+
+```ts
+Before("I register a value", async (app) => {
+  const asyncData = await app.myClient.getAsyncData();
+  app.di.registerValue("asyncData", asyncData);
+});
+
+After("I use the registered value", (app) => {
+  const asyncData = app.di.get("asyncData");
+});
+```

@@ -1,6 +1,6 @@
-const { DefaultReporter, CoverageReporter } = require('@jest/reporters')
+const { DefaultReporter, CoverageReporter, VerboseReporter, GitHubActionsReporter, SummaryReporter } = require('@jest/reporters')
 
-class Reporter extends DefaultReporter
+class Reporter extends SummaryReporter
 {
 	constructor()
 	{

@@ -1,8 +1,7 @@
-import { Fixture } from "@autometa/app";
+import { Fixture } from "@autometa/runner";
 
-@Fixture()
+@Fixture
 export class TestContainer {
   [key: string]: unknown;
   steps: number[] = [];
-  
 }

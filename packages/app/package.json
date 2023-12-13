@@ -61,6 +61,7 @@
     "@autometa/asserters": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@autometa/fixture-proxies": "workspace:^",
+    "@autometa/injection": "workspace:^",
     "@autometa/phrases": "workspace:*",
     "tsyringe": "^4.8.0",
     "uuid": "^9.0.1"

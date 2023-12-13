@@ -1,8 +1,6 @@
 import { Class } from "@autometa/types";
-import { AutometaApp, AutometaWorld } from "@autometa/app";
-import { DependencyContainer } from "tsyringe";
+import { App, World } from "@autometa/app";
 export type CoordinatorOpts = {
-  app: Class<AutometaApp>;
-  world: Class<AutometaWorld>;
-  container: DependencyContainer;
+  app: Class<App>;
+  world: Class<World>;
 };

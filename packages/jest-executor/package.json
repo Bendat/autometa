@@ -54,6 +54,7 @@
     "@autometa/errors": "workspace:^",
     "@autometa/events": "workspace:^",
     "@autometa/gherkin": "workspace:^",
+    "@autometa/injection": "workspace:^",
     "@autometa/scopes": "workspace:^",
     "@autometa/test-builder": "workspace:^",
     "@autometa/types": "workspace:^"

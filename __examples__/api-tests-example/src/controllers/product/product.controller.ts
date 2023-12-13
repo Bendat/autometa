@@ -1,9 +1,10 @@
-import { Fixture, HTTP } from "@autometa/runner";
+import { Constructor, Fixture, HTTP } from "@autometa/runner";
 import { Product, ProductList } from "./product.types";
 import { ProductListSchema, ProductSchema } from "./product.schema";
 import { BaseController } from "../base.controller";
 
 @Fixture
+@Constructor(HTTP)
 export class ProductController extends BaseController {
   constructor(http: HTTP) {
     super(http)
