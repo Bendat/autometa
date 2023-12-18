@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.6.0
+
+### Minor Changes
+
+- 98d911f: feat: replace tsyringe with custom DI solution
+
 ## 0.5.3
 
 ### Patch Changes
