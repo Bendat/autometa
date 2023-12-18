@@ -39,6 +39,7 @@
   "dependencies": {
     "@autometa/app": "workspace:^",
     "@autometa/errors": "workspace:^",
+    "@autometa/injection": "workspace:^",
     "@autometa/status-codes": "workspace:^",
     "@stdlib/assert-is-json": "^0.1.1",
     "axios": "^1.5.1",

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
+import { Container } from "@autometa/injection";
+
 /**
  * Basic Key Value store for managing state across Step Definitions. A unique copy of this object
  * is shared between all steps and hooks in a given running Scenario, however it is not possible
@@ -87,7 +89,7 @@ export interface World {
  * ```
  */
 export interface App {
-  readonly id: string;
   world: World;
+  di: Container;
 }
 

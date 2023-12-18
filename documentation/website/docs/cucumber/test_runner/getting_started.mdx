@@ -167,7 +167,6 @@ Depending on your Typescript settings, you can use any of the following declarat
 import { MyComplexObject } from "../objects";
 
 export class World {
-  [key: string]: unknown;
   foo: number;
   bar: string;
   baz: MyComplexObjectType;
@@ -630,6 +629,9 @@ injected into each other, and the App, by adding them as arguments to the constr
 This functionality depends on `reflect-metadata` and `experimentalDecorators` being enabled
 in your `tsconfig.json`.
 
+Constructor dependencies can be defined with the `Constructor` decorator which takes
+a list of fixtures or injectables (Using the `Token` factory function) which match the
+argument list defined in the constructor.
 ```ts
 // src/clients/http.ts
 import { Fixture, Inject } from "@autometa/runner";
@@ -647,12 +649,13 @@ import { MyHttpClient } from "../clients/http";
 import { World } from "./world";
 
 @AppType(World)
+@Constructor(MyHttpClient)
 export class App {
   constructor(readonly httpClient: MyHttpClient) {}
 }
 ```
 
-If for some reason automatic injection is not working, it can be specified with the `Inject` decorator.
+Alternatively, dependencies can be defined as class properties using one of the `Inject` decorators.
 
 ```ts title='src/app/app.ts'
 import { AppType, Inject } from "@autometa/runner";
@@ -661,7 +664,9 @@ import { World } from "./world";
 
 @AppType(World)
 export class App {
-  @Inject(MyHttpClient)
+  @Inject.class(MyHttpClient)
   readonly httpClient!: MyHttpClient;
+  // @Inject.factory(()=> new MyHTTPClient())
+  // @Inject.value(1)
 }
 ```

@@ -1,17 +1,17 @@
 import { Class } from "@autometa/types";
-import { Lifecycle } from "tsyringe";
-import { AutometaWorld } from "..";
-import { Fixture } from "./fixture";
-
-
+import { App, World, AutometaWorld } from "..";
+import { metadata } from "@autometa/injection";
 export function AppType(
-  container: Record<string, { app: unknown; world: unknown; }>,
+  container: Record<string, { app: Class<App>; world: Class<World> }>,
   world: Class<AutometaWorld>,
   environment = "default"
 ) {
   const env = environment ?? "default";
   return (target: Class<unknown>) => {
-    Fixture(Lifecycle.ContainerScoped)(target);
-    container[env] = { app: target, world };
+    metadata(target.prototype).set({
+      key: "world",
+      class: world
+    });
+    container[env] = { app: target as Class<App>, world: world as Class<World> };
   };
 }

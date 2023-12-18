@@ -1,12 +1,12 @@
-import { AppType, Fixture } from "@autometa/runner";
+import { AppType, Constructor, Fixture, INJECTION_SCOPE } from "@autometa/runner";
 import { World } from "./default.world";
 import { TestContainer } from "../test-container";
-import { LIFE_CYCLE } from "@autometa/app";
-@Fixture(LIFE_CYCLE.Singleton)
+@Fixture(INJECTION_SCOPE.SINGLETON)
 class SingletonFixture {
   value: number;
 }
 @AppType(World)
+@Constructor(TestContainer, SingletonFixture)
 export class DefaultApp {
   constructor(
     readonly container: TestContainer,

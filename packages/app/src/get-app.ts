@@ -35,7 +35,7 @@ defineConfig({
 
   const child = container.createChildContainer();
   const app = ErrorCatcherProxy(child.resolve(appType));
-  app.world = child.resolve(worldType);
+  // app.world = child.resolve(worldType);
   app.id = v4();
   return app;
 }

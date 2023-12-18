@@ -1,4 +1,3 @@
-import { Fixture, LIFE_CYCLE } from "@autometa/app";
 import { AutomationError } from "@autometa/errors";
 import { AxiosRequestConfig, Method, ResponseType } from "axios";
 import { urlJoinP } from "url-join-ts";
@@ -13,8 +12,9 @@ import {
 } from "./types";
 import { transformResponse } from "./transform-response";
 import { AxiosExecutor } from "./axios-executor";
+import { Fixture, INJECTION_SCOPE } from "@autometa/injection";
 
-@Fixture(LIFE_CYCLE.Transient)
+@Fixture(INJECTION_SCOPE.TRANSIENT)
 export class HTTPRequestBuilder {
   #headers = new Map<string, string>();
   #params = new Map<string, unknown>();

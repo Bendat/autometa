@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["env", "CUCUMBER_FILTER_TAGS"],
+  "globalDependencies": ["env", "CUCUMBER_FILTER_TAGS",  "FOO"],
   "pipeline": {
     "build": {
       "inputs": ["**/*.ts"],

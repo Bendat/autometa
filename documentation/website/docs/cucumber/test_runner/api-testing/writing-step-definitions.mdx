@@ -99,6 +99,7 @@ import { ProductSchema } from "./product.schema";
 import { Env } from "../../apps";
 
 @Fixture
+@Constructor(HTTP)
 export class ProductController {
   constructor(readonly http: HTTP) {
     this.http.url(Env.API_URL).requireSchema(true);
@@ -192,6 +193,7 @@ import { World } from "./default.world";
 import { API } from "../controllers/api";
 
 @AppType(World)
+@Constructor(API)
 export class App {
   constructor(readonly api: API) {}
 }

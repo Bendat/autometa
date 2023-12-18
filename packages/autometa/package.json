@@ -51,6 +51,7 @@
     "@autometa/fixture-proxies": "workspace:^",
     "@autometa/gherkin": "workspace:^",
     "@autometa/http": "workspace:^",
+    "@autometa/injection": "workspace:^",
     "@autometa/jest-executor": "workspace:^",
     "@autometa/phrases": "workspace:^",
     "@autometa/scopes": "workspace:^",

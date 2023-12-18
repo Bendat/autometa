@@ -1,8 +1,7 @@
 import { Before, Feature, Given, Setup } from "@autometa/runner";
-Setup("pre suite hook", ({ world, id, singleton }) => {
+Setup("pre suite hook", ({ world, singleton }) => {
   singleton.value = 1;
   world.foo = 1;
-  console.log(id);
   console.log("setup");
 });
 

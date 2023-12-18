@@ -1,9 +1,9 @@
-import { Fixture, LIFE_CYCLE } from "@autometa/app";
+import { Fixture, INJECTION_SCOPE } from "@autometa/injection";
 import { HTTPRequestBuilder } from "./http.builder";
 import { SchemaMap } from "./schema.map";
 import { RequestHook, ResponseHook, SchemaParser, StatusCode } from "./types";
 export type DynamicHeader = () => string;
-@Fixture(LIFE_CYCLE.Transient)
+@Fixture(INJECTION_SCOPE.TRANSIENT)
 export class HTTP {
   #url: string;
   #route: string[] = [];
@@ -123,7 +123,7 @@ export class HTTP {
       .onReceivedResponse(...this.#onAfterSend);
   }
 
-  private convertFactoriesToString(){
+  private convertFactoriesToString() {
     const dict: Record<string, string> = {};
     for (const [key, value] of this.#headers.entries()) {
       dict[key] = typeof value === "string" ? value : value();

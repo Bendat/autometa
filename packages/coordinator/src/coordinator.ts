@@ -1,6 +1,6 @@
 import { Config } from "@autometa/config";
 import { FeatureBridge, TestBuilder } from "@autometa/test-builder";
-import { AutometaApp, AutometaWorld } from "@autometa/app";
+import { App, World } from "@autometa/app";
 import { TestEventEmitter } from "@autometa/events";
 import { Class } from "@autometa/types";
 import { FeatureScope, Files, GlobalScope } from "@autometa/scopes";
@@ -25,7 +25,7 @@ export class Coordinator {
     caller: string,
     events: TestEventEmitter,
     executor: (
-      { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+      { app, world }: { app: Class<App>; world: Class<World> },
       global: GlobalScope,
       bridge: FeatureBridge,
       events: TestEventEmitter,
@@ -53,7 +53,7 @@ export class Coordinator {
     feature: FeatureScope,
     events: TestEventEmitter,
     executor: (
-      { app, world }: { app: Class<AutometaApp>; world: Class<AutometaWorld> },
+      { app, world }: { app: Class<App>; world: Class<World> },
       global: GlobalScope,
       bridge: FeatureBridge,
       events: TestEventEmitter,
