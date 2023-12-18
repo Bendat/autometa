@@ -1,5 +1,18 @@
 # @autometa/jest-integration
 
+## 0.3.0
+
+### Minor Changes
+
+- 98d911f: feat: replace tsyringe with custom DI solution
+
+### Patch Changes
+
+- Updated dependencies [98d911f]
+  - @autometa/runner@0.3.0
+  - @autometa/app@0.3.0
+  - @autometa/jest-transformer@0.1.68
+
 ## 0.2.27
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @autometa/http
 
+## 1.2.0
+
+### Minor Changes
+
+- 98d911f: feat: replace tsyringe with custom DI solution
+
+### Patch Changes
+
+- Updated dependencies [98d911f]
+  - @autometa/injection@0.1.0
+  - @autometa/app@0.3.0
+
 ## 1.1.0
 
 ### Minor Changes

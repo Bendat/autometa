@@ -1,5 +1,20 @@
 # @autometa/jest-executor
 
+## 0.4.0
+
+### Minor Changes
+
+- 98d911f: feat: replace tsyringe with custom DI solution
+
+### Patch Changes
+
+- Updated dependencies [98d911f]
+  - @autometa/injection@0.1.0
+  - @autometa/app@0.3.0
+  - @autometa/config@0.1.19
+  - @autometa/scopes@0.4.12
+  - @autometa/test-builder@0.1.41
+
 ## 0.3.9
 
 ### Patch Changes
