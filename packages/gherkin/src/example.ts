@@ -1,8 +1,7 @@
-import { Builder, Property } from "@autometa/dto-builder";
+import { Builder } from "@autometa/dto-builder";
 import { Scenario } from "./scenario";
 
 export class Example extends Scenario {
-  @Property
   readonly table: { [header: string]: string };
 }
 

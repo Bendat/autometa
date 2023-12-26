@@ -1,4 +1,4 @@
 {
   "extends": "tsconfig/base.json",
-  "files": ["src/index.ts", "src/validation-error.ts"],
+  "files": ["src/index.ts"],
 }
