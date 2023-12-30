@@ -1,0 +1,32 @@
+---
+sidebar_position: 10
+---
+
+# File Object Proxies
+
+A File Object is a proxy instance tied to some Interface. It is created
+by passing filepath to the `FileObject` function. The returned object
+will be the type of the generic interface parameter provided to the function.
+
+This object will behave similarly to a plain javascript object, but instead
+of being in memory, it instead reads from and writes directly to a file.
+
+This file will be a json file containing the stringified version of the
+object you are manipulating.
+
+```ts
+import { john } from "./credentials";
+interface AuthFile {
+  token: string;
+  refreshToken: string;
+}
+
+const authFile = FileObject<AuthFile>("./auth.json");
+const { token, refreshToken } = await authClient.login(john);
+authFile.token = token;
+authFile.refreshToken = refreshToken;
+
+// somewhere else
+const token = authFile.token;
+await myClient.get("foo/stuff", token);
+```

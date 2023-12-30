@@ -53,6 +53,8 @@ export {
   GetAssignedValues,
   TrackAccess
 } from "@autometa/fixture-proxies";
+
+export { FileObject } from "@autometa/file-proxies";
 /**
  * Executes a gherkin `.feature` file. Assembles Tests
  * using the Cucumber file and globally defined Step Definitions.
