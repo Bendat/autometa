@@ -8,7 +8,8 @@ export {
   InjectionScope,
   Token,
   Container,
-  Constructor
+  Constructor,
+  Inject,
 } from "@autometa/injection";
 export const OPTS = {} as Record<string, CoordinatorOpts>;
 /**
