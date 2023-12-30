@@ -217,6 +217,9 @@ describe("constructors", () => {
   class TestClass {
     constructor(public dependency: DependencyClass) {}
   }
+
+  @Fixture
+  class InheritedTestClass extends TestClass{}
   it("should construct a class with a constructor", () => {
     const context = defineContainerContext("abc12");
     const container = new Container(context);
@@ -224,4 +227,12 @@ describe("constructors", () => {
     const instance = container.get(TestClass);
     expect(instance).toBeInstanceOf(TestClass);
   });
+
+  it('should construct a subclass with a constructor', ()=>{
+    const context = defineContainerContext("abc13");
+    const container = new Container(context);
+    container.registerTransient(Token("class2"), DependencyClass2);
+    const instance = container.get(InheritedTestClass);
+    expect(instance).toBeInstanceOf(InheritedTestClass);
+  })
 });

@@ -667,6 +667,12 @@ importers:
 
   libraries/dto-builder:
     dependencies:
+      '@autometa/injection':
+        specifier: workspace:^
+        version: link:../../packages/injection
+      any-date-parser:
+        specifier: ^1.5.4
+        version: 1.5.4
       class-validator:
         specifier: ^0.14.0
         version: 0.14.0
@@ -8720,6 +8726,10 @@ packages:
   /ansi-styles@6.2.1:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
+
+  /any-date-parser@1.5.4:
+    resolution: {integrity: sha512-S4gl9UmXNk9XXSQxp5w5harUD6aM0fepyL3dZM/B3znX57sWf792hS2UvvCFIHECfpsqfKbQ+cqWBky4AKyRIg==}
+    dev: false
 
   /any-promise@1.3.0:
     resolution: {integrity: sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==}

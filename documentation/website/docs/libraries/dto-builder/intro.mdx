@@ -69,7 +69,7 @@ If the `class validator` package is installed, the DTO will be validated on buil
 import { Builder } from "@autometa/dto-builder";
 import { UserDto } from "./user-dto";
 
-const UserBuilder = Builder(UserDto);
+class UserBuilder extends Builder(UserDto) {}
 
 const userBuilder = new UserBuilder();
 userBuilder.id(1).name("bob").age(23);
@@ -96,20 +96,24 @@ const userBuilder = new UserBuilder(cachedUser);
 
 # Default Values
 
-You can pass a value into the Property decorator to provide a default value.
+You can pass a value into the DTO decorators to provide a default value.
 The default value will be injected by the Builder class.
 
 ```ts
-import { Property } from "@autometa/dto-builder";
+import { DTO } from "@autometa/dto-builder";
 
 export class UserDto {
-  @Property(100)
+  @DTO.value(100)
   id: number;
-  @Property("paul")
+  @DTO.factory(() => "paul")
   name: string;
-  @Property(20)
+  @DTO.value(20)
   age: number;
+  @DTO.date("2020-01-01")
+  created: Date;
 }
+
+export class UserBuilder extends Builder(UserDto) {}
 
 const user = new UserBuilder().build();
 
@@ -118,37 +122,62 @@ console.log(user.name === "paul"); // true
 console.log(user.age === 20); // true
 ```
 
+## Extending Interfaces
+
+It may be the case you already have interfaces defined and don't want
+to redeclare each property to "implement" it. You can use the `DTO`
+function to "extend" an interface without redeclarations. Note,
+these properties will be `undefined` on the dto and will not appear
+in `Object.keys`, unless a default value or factory is defined for them and they
+and constructed via a builder.
+
+```ts
+export interface MyInterface {
+  id: number;
+  name: string;
+}
+
+export class MyDto extends DTO<MyInterface>() {}
+
+// or with a default value
+
+export class MyDto extends DTO<MyInterface>() {
+  @DTO.value(1)
+  id: number;
+}
+```
+
+This will satisfy the compiler that the DTO implements the interface correctly.
+
 ## Nesting DTOs
 
 For complex classes with nested classes or objects it is adiviseable to use a type
-or interface rather than a Dto type.
+or interface rather than a Dto type for the property type.
 
 ```ts
 // prefer not
 class InnerDto {
-  @Property
   value: number;
 }
 
 class OuterDto {
-
-  @Property
   inner: InnerDto;
 }
 
-// prefer
 interface Inner {
   value: number;
 }
 
-class InnerDto {
-  @Property
+class InnerDto implements Inner {
   value: number;
 }
 
-class OuterDto {
+// alternatively, extend the interface with `DTO` to avoid
+// redeclaring properties
+class InnerDto extends DTO<Inner> {}
 
-  @Property
+class OuterDto {
+  @DTO.dto(InnerDto)
   inner: Inner;
 }
 ```
@@ -169,20 +198,20 @@ interface Inner {
 }
 
 class InnerDto {
-  @Property(1)
+  @DTO.value(1)
   value: number;
 }
 
 class OuterDto {
 
-  @Property(InnerDto)
+  @DTO.dto(InnerDto)
   inner: Inner;
 }
 
 const Outer = new OuterBuilder().build()
 
 console.log(outer.inner instanceOf InnerDto); // true
-console.log(outer.innerr.value === 1); // true
+console.log(outer.inner.value === 1); // true
 ```
 
 You can also create a unique dto with default values by calling the static `default`
@@ -190,7 +219,6 @@ method on your builder
 
 ```ts
 const Outer = OuterBuilder.default();
-
 ```
 
 For many tests, valid default values may be all you need on your dto. If
@@ -198,7 +226,6 @@ you wish to make further edits you can pass the instance to a builder later
 
 ```ts
 new OuterBuilder(Outer).inner(new InnerBuilder().value(1).build());
-
 ```
 
 Note that this will mutate the original dto. You do not need to reassign it or
@@ -213,23 +240,5 @@ calling `fromRaw` on the Builder class, passing it the raw object.
 const raw = { Outer: { inner: { value: 1 } } };
 const dto = OuterBuilder.fromRaw(raw);
 
-
 expect(dto).toBeInstanceOf(Outer);
-
-```
-
-## Tranforming raw values
-
-If a raw value should be further processed, a transformation function
-can be provided. For example, if a string should be converted to a date,
-`Date.parse` can be provided.
-
-```ts
-@Property(Date.parse)
-created: Date
-
-// wrapping function
-@Property((value: string) => Date.parse(value))
-
-created: Date
 ```

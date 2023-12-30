@@ -1,20 +1,14 @@
 import { GherkinDocString } from "./doc-string";
-import { Builder, DtoBuilder, Property } from "@autometa/dto-builder";
-import { Class } from "@autometa/types";
+import { Builder, DtoBuilder } from "@autometa/dto-builder";
 import { StepType, StepKeyword } from "./enums";
 import { GherkinNode } from "../gherkin-node";
 import { CompiledDataTable } from "./datatables";
 
-export class Step extends GherkinNode{
-  @Property
+export class Step extends GherkinNode {
   readonly keywordType: StepType;
-  @Property
   readonly keyword: StepKeyword;
-  @Property
   readonly text: string;
-  @Property
   readonly docstring?: GherkinDocString;
-  @Property
   readonly table?: CompiledDataTable;
 
   get hasDocstring() {
@@ -26,4 +20,4 @@ export class Step extends GherkinNode{
   }
 }
 
-export const StepBuilder: Class<DtoBuilder<Step>> = Builder(Step);
+export const StepBuilder: DtoBuilder<Step> = Builder(Step);

@@ -11,8 +11,15 @@ export function metadata<T extends object>(target: T) {
   const metadata = withMetaData[AutometaSymbol.META_DATA];
 
   return {
-    set: (info: MetadataInfo) => {
-      metadata[info.key] = info;
+    set: (info: MetadataInfo, override = true) => {
+      if (!metadata[info.key]) {
+        metadata[info.key] = info;
+        return;
+      }
+      if (override) {
+        metadata[info.key] = info;
+        return;
+      }
     },
     update: (key: string, updater: (info: MetadataInfo) => void) => {
       const current = metadata[key];
@@ -23,11 +30,18 @@ export function metadata<T extends object>(target: T) {
       }
       updater(current);
     },
-    custom: <T>(key: symbol, value: T) => {
+    custom: <T>(key: symbol, value: T, override = true) => {
       const md = withMetaData as unknown as Record<symbol, unknown>;
-      md[key] = value;
+      if (!md[key] || override) {
+        md[key] = value;
+      }
+      return md[key] as T;
     },
     getCustom: <T>(key: symbol): T => {
+      const md = withMetaData as unknown as Record<symbol, unknown>;
+      return md[key] as T;
+    },
+    hasCustom: <T>(key: symbol): T => {
       const md = withMetaData as unknown as Record<symbol, unknown>;
       return md[key] as T;
     },

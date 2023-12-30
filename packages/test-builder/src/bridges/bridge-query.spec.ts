@@ -2,11 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   ExampleBuilder,
   ExamplesBuilder,
+  FeatureBuilder,
   RuleBuilder,
   ScenarioBuilder,
   StepBuilder
 } from "@autometa/gherkin";
-import {Query} from "./bridge-query";
+import { Query } from "./bridge-query";
 describe("Query", () => {
   describe("testNames", () => {
     it("should return an array of test names", () => {
@@ -46,7 +47,7 @@ describe("Query", () => {
         .name("scenario outline 1")
         .append("children", examples)
         .build();
-      const feature = new ScenarioBuilder()
+      const feature = new FeatureBuilder()
         .keyword("Feature")
         .name("feature 1")
         .append("children", scenario3)
