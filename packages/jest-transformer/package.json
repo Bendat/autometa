@@ -30,7 +30,7 @@
     "@vitest/coverage-istanbul": "^0.31.0",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^9.1.0",
     "istanbul": "^0.4.5",
     "rimraf": "^4.1.2",
     "tsconfig": "workspace: *",
