@@ -1,5 +1,11 @@
 # @autometa/app
 
+## 0.3.1
+
+### Patch Changes
+
+- 6c4bb8d: fix: getApp function not defined
+
 ## 0.3.0
 
 ### Minor Changes
