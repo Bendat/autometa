@@ -37,7 +37,8 @@ export {
   App,
   World,
   INJECTION_SCOPE,
-  InjectionScope
+  InjectionScope,
+  Inject
 } from "./app";
 export { Dates, Time } from "@autometa/datetime";
 export { AutomationError, raise } from "@autometa/errors";
