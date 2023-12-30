@@ -1,5 +1,11 @@
 # @autometa/runner
 
+## 0.3.2
+
+### Patch Changes
+
+- a833a27: fix: Inject decorator not being exported
+
 ## 0.3.1
 
 ### Patch Changes
