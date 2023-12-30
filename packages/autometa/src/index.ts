@@ -32,6 +32,7 @@ export {
   Container,
   Constructor,
   AutometaApp,
+  getApp,
   AutometaWorld,
   App,
   World,

@@ -25,7 +25,7 @@ export const OPTS = {} as Record<string, CoordinatorOpts>;
  * }
  * ```
  * Or with tokens
- * 
+ *
  * ```ts
  * import from "@autometa/runner";
  * import { World } from "./default.world";
@@ -37,3 +37,4 @@ export const OPTS = {} as Record<string, CoordinatorOpts>;
  * ```
  */
 export const AppType = at.bind(null, OPTS);
+export { getApp } from "@autometa/app";
