@@ -16,7 +16,6 @@ export interface Default {
   date(stamp?: string | number): PropertyDecorator;
 }
 
-
 export const DefaultValueDecorators: Default = {
   value: (value: unknown) => (target: object, propertyKey: string | symbol) => {
     const container = metadata(target as Class<unknown>).custom<PropertyMetadata>(

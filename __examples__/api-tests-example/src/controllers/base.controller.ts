@@ -1,16 +1,17 @@
-import { HTTP } from "@autometa/runner";
-import { RequestState, HTTPResponse } from "@autometa/runner";
+import { Constructor, HTTP, HTTPRequest, HTTPResponse } from "@autometa/runner";
+import {} from "@autometa/runner";
 import { Env } from "../app";
+@Constructor(HTTP)
 export abstract class BaseController {
   constructor(protected readonly http: HTTP) {
     this.http
       .url(Env.API_URL)
       .requireSchema(true)
-      .sharedOnBeforeSend(this.logRequest)
-      .sharedOnReceiveResponse(this.logResponse);
+      .sharedOnSend("log request", this.logRequest)
+      .sharedOnReceive("log response", this.logResponse);
   }
 
-  private logRequest(state: RequestState) {
+  private logRequest(state: HTTPRequest) {
     const headers = JSON.stringify(state.headers);
     const data = JSON.stringify(state.data);
     const headerLength = Object.keys(state.headers).length > 0 ? 1 : 0;
@@ -26,7 +27,7 @@ export abstract class BaseController {
 
   private logResponse(response: HTTPResponse<unknown>) {
     const data = JSON.stringify(response.data);
-    const url = response.request.url;
+    const url = response.request.baseUrl;
     const dataString = data === undefined ? `data: ${data}` : "";
     const message = [
       `Received ${response.status} response from ${url}`,

@@ -34,10 +34,9 @@ export class MyClient {
 }
 ```
 
-However when a non shared header or route is set, it creates a new request context,
-which will contain values set in the client, and allow collect any new headers,
-routes, query parameters, or payload data that are set. This context uses the same
-naming scheme for methods as the `Http` class itself.
+However when a non shared header or route is set, it creates a new client with a new
+request context, which will inherit values set in the original client, but
+modifcations happen in this new contex and do not mutate the shared client.
 
 ```ts
 @Fixture
@@ -56,10 +55,10 @@ export class MyClient {
   getProducts(limit?: number) {
     return (
       this.http
-        .route("products")
+        .route("products") // creates a new client with the route set to /v2/products
         // resolves to /v2/products?limit=10
-        .param("limit", limit)
-        .get()
+        .param("limit", limit) // creates a new client with the param set to 10
+        .get() // makes the request and returns the response using all data set thus far
     );
   }
 }
@@ -69,21 +68,20 @@ export class MyClient {
 
 The http client has two hooks:
 
-- `onBeforeSend` which is triggered when the request has been constructed but no request has been made.
-- `onRecievedResponse` which executes after the response has been received, if axios did not throw an error.
+- `onSend` which is triggered when the request has been constructed but no request has been made.
+- `onRecieve` which executes after the response has been received, if axios did not throw an error.
 
-`onBeforeSend` receieves a copy of the current request state, and can be useful for logging.
+`onBeforeSend` receieves a copy of the current request immediately before it is sent. It can be used
+to log the request, or run assertions against it.
 
 ```ts
-export type RequestState = {
-  headers: Map<string, string>;
-  params: Map<string, unknown>;
+export type HTTPRequest<T> = {
   url: string;
-  route: string[];
-  responseType: ResponseType | undefined;
-  data: unknown;
   method: Method;
-  get fullUrl(): string;
+  params?: Record<string, string>;
+  fullUrl: string;
+  headers: Record<string, string>;
+  data?: T;
 };
 ```
 
@@ -105,6 +103,12 @@ export class HTTPResponse<T> {
   };
 }
 ```
+
+## Schemas
+
+Schemas are function or validator objects which are mapped to a response status code.
+A Schema validates the data payload of the response, and throws an error if the response does
+not match the required shape or other validation.
 
 ```ts
 import { z } from "zod";
@@ -133,7 +137,7 @@ export class MyClient {
 }
 ```
 
-## Schema Validation
+### Schema Validation
 
 The client accepts a `schema` map, which is a mapping of a schema parsing object to a HTTP status code
 or list of status codes. A schema is registered as an object with a `parse` method, which accepts the
@@ -174,9 +178,31 @@ export class MyClient {
 }
 ```
 
-## Derived Responses
+### Default Schemas
 
-Responses can be 'derived' from other responses. With this, the status, and header
+A number of default schemas are provided for cases where the response
+is not JSON, or the response is empty.
+
+- AnySchema
+  - Accepts any response and returns it as is
+- EmptySchema
+  - Accepts `null`, `undefined` or the string 'null' and returns `null` or `undefined`.
+- NullSchema
+  - Accepts `null` or the string 'null' and returns `null`.
+- UndefinedSchema
+  - Accepts `undefined` and returns `undefined`.
+- BooleanSchema
+  - Accepts `true`, `false` or the strings 'true' or 'false' and returns a boolean of the same value.
+- NumberSchema
+  - Accepts any number or string which can be parsed as a number and returns a number.
+- StringSchema
+  - Accepts any string and returns it as is.
+- JSONSchema
+  - Accepts any JSON string and returns the parsed JSON object, or accepts a JSON objet and returns it
+    as is.
+## Decomposed Responses
+
+Responses can be 'decomposed' from other responses. With this, the status, and header
 information remains the same but a new response object is produced, using a value
 taken from the original response as it's data.
 
@@ -214,9 +240,9 @@ a new step to add it as `myProduct`, which is a `HTTPResponse<Produxt>`
 Then("I examine product {int}", (index, { world }) => {
   const response = world.productsResponse;
   //   const data = response.data.products[index];
-  world.myProduct = HTTPResponse.derive(
+  world.myProduct = HTTPResponse.decompose<Product>(
     response,
-    ({ products }) => products[index]
+    (products) => products[index]
   ); // now HTTPResponse<Product>
 });
 ```
