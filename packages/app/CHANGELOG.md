@@ -1,5 +1,12 @@
 # @autometa/app
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [d563916]
+  - @autometa/injection@0.1.1
+
 ## 0.3.1
 
 ### Patch Changes

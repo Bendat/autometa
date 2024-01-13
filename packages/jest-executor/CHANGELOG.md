@@ -1,5 +1,18 @@
 # @autometa/jest-executor
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [d563916]
+  - @autometa/test-builder@0.2.0
+  - @autometa/injection@0.1.1
+  - @autometa/gherkin@0.5.8
+  - @autometa/scopes@0.4.14
+  - @autometa/app@0.3.2
+  - @autometa/events@0.2.11
+  - @autometa/config@0.1.21
+
 ## 0.4.1
 
 ### Patch Changes
