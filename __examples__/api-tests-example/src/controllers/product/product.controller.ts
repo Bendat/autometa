@@ -1,10 +1,9 @@
-import { Constructor, Fixture, HTTP } from "@autometa/runner";
+import { Fixture, HTTP } from "@autometa/runner";
 import { Product, ProductList } from "./product.types";
 import { ProductListSchema, ProductSchema } from "./product.schema";
 import { BaseController } from "../base.controller";
 
 @Fixture
-@Constructor(HTTP)
 export class ProductController extends BaseController {
   constructor(http: HTTP) {
     super(http)
@@ -13,7 +12,7 @@ export class ProductController extends BaseController {
   all() {
     return this.http
       .route("products")
-      .schema(ProductListSchema, 200)
+      .schema(ProductListSchema, 201)
       .get<ProductList>();
   }
 
@@ -21,14 +20,14 @@ export class ProductController extends BaseController {
     return this.http
       .route("products")
       .route(id)
-      .schema(ProductSchema, 200)
+      .schema(ProductSchema, 201)
       .get<Product>();
   }
 
   search(query: string) {
     return this.http
       .route("products")
-      .schema(ProductListSchema, 200)
+      .schema(ProductListSchema, 201)
       .param("q", query)
       .get<ProductList>();
   }
@@ -38,7 +37,7 @@ export class ProductController extends BaseController {
       .route("products")
       .route(id)
       .data(data)
-      .schema(ProductSchema, 200)
+      .schema(ProductSchema, 201)
       .put<Product>();
   }
 

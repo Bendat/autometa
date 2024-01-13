@@ -1,5 +1,6 @@
 packages:
   - "__integration__/*"
+  - "__examples__/*"
   - "configuration/*"
   - "packages/*"
   - "cucumber/*"

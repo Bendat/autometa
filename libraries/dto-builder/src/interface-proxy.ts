@@ -31,6 +31,19 @@ export type IBuilder<T> = {
    * @param value
    */
   append<K>(property: string, value: K): IBuilder<T>;
+
+
+  /**
+   * Attach a value to a sub-property of a property.
+   * If the property does not exist, a new empty object will be
+   * assigned to it.
+   *
+   * The value is appended to the child object indexed by the sub-property.
+   * @param property The name of the property to attach key:value pairs to
+   * @param subProperty The name of the sub-property to attach the value to
+   * @param value The value to attach to the child objects property
+   */
+  attach<K>(property: string, subProperty: string, value: K): ClsBuilder<T>;
 };
 export type ClsBuilder<T> = {
   [k in keyof T]-?: BuilderMethod<T, T[k]>;
@@ -56,6 +69,18 @@ export type ClsBuilder<T> = {
    * @param value
    */
   append<K>(property: string, value: K): ClsBuilder<T>;
+
+  /**
+   * Attach a value to a sub-property of a property.
+   * If the property does not exist, a new empty object will be
+   * assigned to it.
+   *
+   * The value is appended to the child object indexed by the sub-property.
+   * @param property The name of the property to attach key:value pairs to
+   * @param subProperty The name of the sub-property to attach the value to
+   * @param value The value to attach to the child objects property
+   */
+  attach<K>(property: string, subProperty: string, value: K): ClsBuilder<T>;
 };
 
 export type BuilderMethod<TTarget, TType> = ((arg: TType) => ClsBuilder<TTarget>) & {
@@ -150,6 +175,17 @@ export function Builder<T>(defaults?: Partial<T> | Class<T>): IBuilder<T> | DtoB
           };
         }
 
+        if ("attach" === prop) {
+          return (property: keyof T, subProperty: string, value: unknown) => {
+            if (typeof built[property.toString()] === undefined) {
+              built[property.toString()] = {};
+            }
+            const dict = built[property.toString()] as Record<string, unknown>;
+            dict[subProperty] = value;
+            return target;
+          };
+        }
+
         if ("append" === prop) {
           return (property: keyof T, value: unknown) => {
             if (!Array.isArray(built[property.toString()])) {
@@ -205,6 +241,16 @@ function classProxy<T>(defaults: Class<T>, built: Record<string, unknown>, inst:
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return fn as any;
+      }
+      if ("attach" === prop) {
+        return (property: keyof T, subProperty: string, value: unknown) => {
+          if (built[property.toString()] === undefined) {
+            built[property.toString()] = {};
+          }
+          const dict = built[property.toString()] as Record<string, unknown>;
+          dict[subProperty] = value;
+          return clsBuilder;
+        };
       }
       const fn = (...args: unknown[]): unknown => {
         // If no arguments passed return current value.

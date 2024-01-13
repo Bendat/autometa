@@ -1,22 +1,37 @@
 import type { StatusCodes } from "@autometa/status-codes";
-import type { Method, ResponseType } from "axios";
-import type { HTTPResponse } from "./http.response";
+import type { HTTPResponse } from "./http-response";
+import type { HTTPRequest } from "./http-request";
+export type HTTPMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "PATCH"
+  | "HEAD"
+  | "OPTIONS"
+  | "TRACE"
+  | "CONNECT"
+  | "get"
+  | "post"
+  | "put"
+  | "delete"
+  | "patch"
+  | "head"
+  | "options"
+  | "trace"
+  | "connect";
 
-export type SchemaParser = { parse: (data: unknown) => unknown };
+export type HTTPAdditionalOptions<T> = {
+  [P in keyof T]: T[P];
+};
+export type SchemaParser =
+  | { parse: (data: unknown) => unknown }
+  | { validate: (data: unknown) => unknown }
+  | ((data: unknown) => unknown);
+
 export type StatusCode<T extends typeof StatusCodes = typeof StatusCodes> = {
   [P in keyof T]: T[P] extends { status: infer U } ? U : never;
 }[keyof T];
 
-export type RequestState = {
-  headers: Record<string, string>;
-  params: Record<string, unknown>;
-  url: string;
-  route: string[];
-  responseType: ResponseType | undefined;
-  data: unknown;
-  method: Method;
-  get fullUrl(): string;
-};
-
-export type RequestHook = (state: RequestState) => unknown;
+export type RequestHook = <T = unknown>(state: HTTPRequest<T>) => unknown;
 export type ResponseHook<T> = (state: HTTPResponse<T>) => unknown;

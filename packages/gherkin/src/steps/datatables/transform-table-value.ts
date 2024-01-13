@@ -35,7 +35,7 @@ function doTransformData(data: TableCell | string) {
   }
 
   if (value === "false" || value === "true") {
-    return value === "true"
+  return value === "true"
   }
   return value;
 }
