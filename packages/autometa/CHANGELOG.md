@@ -1,5 +1,23 @@
 # @autometa/runner
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [d563916]
+- Updated dependencies [82168a2]
+  - @autometa/test-builder@0.2.0
+  - @autometa/injection@0.1.1
+  - @autometa/gherkin@0.5.8
+  - @autometa/scopes@0.4.14
+  - @autometa/file-proxies@0.1.0
+  - @autometa/http@1.3.0
+  - @autometa/coordinator@0.3.2
+  - @autometa/jest-executor@0.4.2
+  - @autometa/app@0.3.2
+  - @autometa/events@0.2.11
+  - @autometa/config@0.1.21
+
 ## 0.3.2
 
 ### Patch Changes
