@@ -1,9 +1,9 @@
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 # DTO and Builder Pattern
 
+[Full documentation](https://bendat.github.io/autometa/docs/libraries/dto-builder/intro)
 This library allows defining DTO classes with decoratated properties.
+You an then automatically create a new builder class that incrementally
+assigns the value of the DTO, and returns the built result.
 
 :::caution
 This library requires experimental decorators and a reflect polyfill
@@ -12,26 +12,17 @@ like [reflect-metadata](https://www.npmjs.com/package/reflect-metadata)
 
 ## Installation
 
-<Tabs>
-  <TabItem value="npm" label="NPM">
+```sh title=npm
+    npm i -D @autometa/dto-builder
+```
 
-    npm i -D @autometa/dto-builer
+```sh title=yarn
+    yarn add -D @autometa/dto-builder
+```
 
-  </TabItem>
-
-  <TabItem value="yarn" label="YARN">
-
-    yarn add -D @autometa/dto-builer
-
-  </TabItem>
-  
-  <TabItem value="pnpm" label="PNPM">
-
-    pnpm add -D @autometa/dto-builer
-
-  </TabItem>
-
-</Tabs>
+```sh title=pnpm
+    pnpm add -D @autometa/dto-builder
+```
 
 ## Use
 
@@ -69,7 +60,7 @@ If the `class validator` package is installed, the DTO will be validated on buil
 import { Builder } from "@autometa/dto-builder";
 import { UserDto } from "./user-dto";
 
-class UserBuilder extends Builder(UserDto) {}
+class UserBuilder extends Builder(UserDto);
 
 const userBuilder = new UserBuilder();
 userBuilder.id(1).name("bob").age(23);
@@ -96,7 +87,7 @@ const userBuilder = new UserBuilder(cachedUser);
 
 # Default Values
 
-You can pass a value into the DTO decorators to provide a default value.
+You can pass a value into the Property decorator to provide a default value.
 The default value will be injected by the Builder class.
 
 ```ts
@@ -105,15 +96,11 @@ import { DTO } from "@autometa/dto-builder";
 export class UserDto {
   @DTO.value(100)
   id: number;
-  @DTO.factory(() => "paul")
+  @DTO.value("paul")
   name: string;
   @DTO.value(20)
   age: number;
-  @DTO.date("2020-01-01")
-  created: Date;
 }
-
-export class UserBuilder extends Builder(UserDto) {}
 
 const user = new UserBuilder().build();
 
@@ -122,37 +109,27 @@ console.log(user.name === "paul"); // true
 console.log(user.age === 20); // true
 ```
 
-## Extending Interfaces
-
-It may be the case you already have interfaces defined and don't want
-to redeclare each property to "implement" it. You can use the `DTO`
-function to "extend" an interface without redeclarations. Note,
-these properties will be `undefined` on the dto and will not appear
-in `Object.keys`, unless a default value or factory is defined for them and they
-and constructed via a builder.
+Factories can also be used:
 
 ```ts
-export interface MyInterface {
+import { Property } from "@autometa/dto-builder";
+
+export class UserDto {
+  @DTO.factory(() => Math.random())
   id: number;
+  @DTO.factory(() => "paul")
   name: string;
-}
-
-export class MyDto extends DTO<MyInterface>() {}
-
-// or with a default value
-
-export class MyDto extends DTO<MyInterface>() {
-  @DTO.value(1)
-  id: number;
+  @DTO.factory(() => 20)
+  age: number;
 }
 ```
 
-This will satisfy the compiler that the DTO implements the interface correctly.
+Note: factories must by synchronous.
 
 ## Nesting DTOs
 
-For complex classes with nested classes or objects it is adiviseable to use a type
-or interface rather than a Dto type for the property type.
+For complex classes with nested classes or objects it is advisable to use a type
+or interface rather than a Dto type.
 
 ```ts
 // prefer not
@@ -161,9 +138,11 @@ class InnerDto {
 }
 
 class OuterDto {
+  @DTO.dto(InnerDto)
   inner: InnerDto;
 }
 
+// prefer
 interface Inner {
   value: number;
 }
@@ -172,10 +151,6 @@ class InnerDto implements Inner {
   value: number;
 }
 
-// alternatively, extend the interface with `DTO` to avoid
-// redeclaring properties
-class InnerDto extends DTO<Inner> {}
-
 class OuterDto {
   @DTO.dto(InnerDto)
   inner: Inner;
@@ -183,12 +158,7 @@ class OuterDto {
 ```
 
 To make a DTO available for nesting, pass its prototype to the Property decorator
-as its default value.
-
-:::hint
-The value passed to the Property decorator for a nested DTO is the _class_
-of the DTO itself (not an instance created with new ...())
-:::
+as its default value. Note, this is the prototype, not an instance.
 
 ```ts
 
@@ -203,15 +173,13 @@ class InnerDto {
 }
 
 class OuterDto {
-
-  @DTO.dto(InnerDto)
+  @DTO.value(InnerDto)
   inner: Inner;
 }
 
 const Outer = new OuterBuilder().build()
-
 console.log(outer.inner instanceOf InnerDto); // true
-console.log(outer.inner.value === 1); // true
+console.log(outer.innerr.value === 1); // true
 ```
 
 You can also create a unique dto with default values by calling the static `default`
@@ -231,6 +199,55 @@ new OuterBuilder(Outer).inner(new InnerBuilder().value(1).build());
 Note that this will mutate the original dto. You do not need to reassign it or
 even `build` it.
 
+## Dates
+
+The `date` decorator will create a new date object for that property
+when the builder is instantiated. If a unix timestamp or parseable
+string is passed, it will be used to create the date.
+
+```ts
+import { DTO } from "@autometa/dto-builder";
+
+export class UserDto {
+  @DTO.date
+  createdAt: Date;
+}
+
+// with unix timestamp
+
+export class UserDto {
+  @DTO.date(1620000000000)
+  createdAt: Date;
+}
+
+// with string
+
+export class UserDto {
+  @DTO.date("2021-05-02T00:00:00.000Z")
+  createdAt: Date;
+}
+```
+
+## Interfaces - reducing duplication
+
+If you define your types initially as interfaces, or generate interfaces from
+validation libraries like `zod` and `myzod`, you can reduce duplication by
+extending the `DTO` function with an interface.
+
+```ts
+import { DTO } from "@autometa/dto-builder";
+
+interface IUser {
+  id: number;
+  name: string;
+  age: number;
+}
+
+export class UserDto extends DTO<IUser> {}
+
+const user = new UserBuilder().id(0).name("bob").build();
+```
+
 # DTO From Raw Object
 
 Sometimes it's necessary to convert a raw object into a DTO. This can be achieved by
@@ -241,4 +258,41 @@ const raw = { Outer: { inner: { value: 1 } } };
 const dto = OuterBuilder.fromRaw(raw);
 
 expect(dto).toBeInstanceOf(Outer);
+```
+
+## Interfaces - Anonymous Object Builders
+
+It might not be desirable to build your object as a class. When not used
+to extend a class, the `DTO` function will return an anonymous object builder,
+with the same interface as the class builder.
+
+```ts
+import { Builder } from "@autometa/dto-builder";
+
+interface IUser {
+  id: number;
+  name: string;
+  age: number;
+}
+
+const UserBuilder = Builder<IUser>();
+```
+
+### Deriving a builder and default values
+
+Since anonymous objects cannot be decorated, they cannot
+accept default values or factories which might change between
+instantiations.
+
+To work around this, an anonymous builder is `derivable`. Any values
+assigned to the builder will stay until the builder is built. However
+when the `derive` method is called, a new builder will be created,
+copying the values from the original. If those values are set agin
+in the derived builder, they will not affect the original.
+
+```ts
+
+const bobBuilder = new UserBuilder().id(1).name("bob").age(23);
+
+const olderBobBuilder = bobBuilder.derive().age(24);
 ```
