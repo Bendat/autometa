@@ -1,5 +1,16 @@
 # Gherkin
 
+## 0.4.14
+
+### Patch Changes
+
+- d563916: feat: replace 'reflect-metadata' with custom solution
+- Updated dependencies [d563916]
+  - @autometa/dto-builder@0.12.0
+  - @autometa/gherkin@0.5.8
+  - @autometa/app@0.3.2
+  - @autometa/events@0.2.11
+
 ## 0.4.13
 
 ### Patch Changes

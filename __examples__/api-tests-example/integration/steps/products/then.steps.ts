@@ -1,4 +1,4 @@
-import { AssertKey, HTTPResponse, Then, VTable } from "@autometa/runner";
+import { AssertKey, Then, VTable } from "@autometa/runner";
 
 Then(
   "the product {product:property} is {primitive}",
@@ -32,13 +32,16 @@ Then(
     const response = world.viewAllProductsResponse;
     const product = response.data.products[index - 1];
     expect(product[target]).toEqual(value);
-    world.viewProductResponse = HTTPResponse.derive(response, product);
+    world.viewProductResponse = response.decompose(product);
   }
 );
 
-Then("the products list {product:property} is {int}", (property, count, { world }) => {
-  const response = world.viewAllProductsResponse;
-  const products = response.data;
-  AssertKey(products, property, `Product property key '${property}'`);
-  expect(products[property]).toEqual(count);
-});
+Then(
+  "the products list {product:property} is {int}",
+  (property, count, { world }) => {
+    const response = world.viewAllProductsResponse;
+    const products = response.data;
+    AssertKey(products, property, `Product property key '${property}'`);
+    expect(products[property]).toEqual(count);
+  }
+);

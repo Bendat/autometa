@@ -1,5 +1,20 @@
 # @autometa/test-builder
 
+## 0.2.0
+
+### Minor Changes
+
+- d563916: feat: replace 'reflect-metadata' with custom solution
+
+### Patch Changes
+
+- Updated dependencies [d563916]
+  - @autometa/dto-builder@0.12.0
+  - @autometa/gherkin@0.5.8
+  - @autometa/scopes@0.4.14
+  - @autometa/app@0.3.2
+  - @autometa/events@0.2.11
+
 ## 0.1.42
 
 ### Patch Changes

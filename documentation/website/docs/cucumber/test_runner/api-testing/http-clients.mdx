@@ -27,7 +27,7 @@ import { Products, Product } from "../models/products";
 @Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
-    this.http.url(Environment.API_URL);
+    this.http.url(Environment.API_URL).sharedRoute("products");
   }
 
   /**
@@ -35,7 +35,7 @@ export class ProductController {
    * [DOCS](https://dummyjson.com/docs/products)
    */
   async getAll() {
-    return this.http.routes("products").get<Products>();
+    return this.http.get<Products>();
   }
 
   /**
@@ -43,7 +43,7 @@ export class ProductController {
    * [DOCS](https://dummyjson.com/docs/product#single)
    */
   async get(id: number) {
-    return this.http.routes("products", id).get<Product>();
+    return this.http.get<Product>();
   }
 
   /**
@@ -51,7 +51,7 @@ export class ProductController {
    * [DOCS](https://dummyjson.com/docs/products#add)
    */
   async add(product: Product) {
-    return this.http.routes("products").post<Product>(product);
+    return this.http.post<Product>(product);
   }
 }
 ```
@@ -139,16 +139,17 @@ import { ProductSchema, ProductListSchema, Products, Product } from "./";
 @Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
-    this.http.url(Environment.API_URL);
+    this.http.url(Environment.API_URL).SharedRoute("product");
   }
 
   /**
    * Get all products on the service.
    * [DOCS](https://dummyjson.com/docs/products)
    */
-  async getAll() {
+  async getAll(page: number) {
     return this.http
-      .routes("products")
+      .route("all")
+      .param("page", page)
       .schema(ProductListSchema, 200)
       .get<Products>();
   }
@@ -158,11 +159,7 @@ export class ProductController {
    * [DOCS](https://dummyjson.com/docs/product#single)
    */
   async get(id: number) {
-    return this.http
-      .route("products")
-      .route(id)
-      .schema(ProductSchema, 200)
-      .get<Product>();
+    return this.http.route(id).schema(ProductSchema, 200).get<Product>();
   }
 
   /**
@@ -170,11 +167,7 @@ export class ProductController {
    * [DOCS](https://dummyjson.com/docs/products#add)
    */
   async add(product: Product) {
-    return this.http
-      .routes("products")
-      .schema(ProductSchema, 200)
-      .data(product)
-      .post<Product>();
+    return this.http.schema(ProductSchema, 200).data(product).post<Product>();
   }
 }
 ```
@@ -198,17 +191,14 @@ export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http
       .url(Environment.API_URL)
+      .sharedRoute("product")
       .sharedSchema(ErrorSchema, { from: 400, to: 500 });
   }
 
   // ...
 
   async get(id: number) {
-    return this.http
-      .route("products")
-      .route(id)
-      .schema(ProductSchema, 200)
-      .get<Product>();
+    return this.http.route(id).schema(ProductSchema, 200).get<Product>();
   }
 
   // ...
@@ -216,28 +206,30 @@ export class ProductController {
 ```
 
 If you wish to construct a log using the builder data before the request is sent, you can register a function
-to run `onBeforeSend`. When executed, the registered function will be passed an object representing the state of the request
+to run `onSend`. When executed, the registered function will be passed an object representing the state of the request
 with the following schema:
 
 ```ts
-interface State {
-  headers: Map<string, string>;
-  params: Map<string, string>;
+interface HTTPRequest<T> {
+  headers: Record<string, string> = {};
+  params: Record<string, string> = {};
+  baseUrl?: string;
+  route: string[] = [];
+  method: HTTPMethod;
   data: T;
-  url: string;
-  route: string[];
-  responseType: string;
+  fullUrl: () => string;
 }
 ```
 
 And upon recieving a response any function registered with `onRecievedResponse` which is passed a `HTTPRequest<T>`:
 
 ```ts
-interface HTTPRequest<T> {
-  data: T;
-  headers: Map<string, string>;
-  status: number;
+interface HTTPResponse<T> {
+  status: StatusCode;
   statusText: string;
+  data: T;
+  headers: Record<string, string>;
+  request: HTTPRequest<unknown>;
 }
 ```
 
@@ -256,16 +248,16 @@ export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http
       .url(Env.API_URL)
+      .sharedRoute("product")
       .sharedSchema(ErrorSchema, { from: 400, to: 500 })
-      .sharedOnBeforeSend(this.logRequest)
-      .sharedOnRecievedResponse(this.logResponse);
+      .sharedOnSend(this.logRequest)
+      .sharedOnReceive(this.logResponse);
   }
 
   // ...
 
   async get(id: number) {
     return this.http
-      .route("products")
       .route(id)
       .schema(ProductSchema, 200)
       .get<Product>();
@@ -273,7 +265,7 @@ export class ProductController {
 
   // ...
 
-  private logRequest(state: RequestState) {
+  private logRequest(state: HTTPRequest) {
     const headers = JSON.stringify(Object.fromEntries(state.headers));
     const data = JSON.stringify(state.data);
     console.log(
@@ -284,7 +276,7 @@ data: ${data}`
     );
   }
 
-  private logResponse(response: HTTPResponse<unknown>) {
+  private logResponse(response: HTTPResponse) {
     const data = JSON.stringify(response.data);
     const url = response.request.url;
     console.log(
@@ -298,7 +290,7 @@ data: ${data}`
 }
 ```
 
-Since we want our logs to be used in all endpoints, we register them with `sharedOnBeforeSend` and `sharedOnRecievedResponse`.
+Since we want our logs to be used in all endpoints, we register them with `sharedOnSend` and `sharedOnRecieve`.
 
 It can be a good idea to use a shared base class for your controllers, so you don't have to register these functions for every controller.
 
@@ -313,8 +305,8 @@ export abstract class BaseController {
   constructor(protected readonly http: HTTP) {
     this.http
       .url(Env.API_URL)
-      .sharedOnBeforeSend(this.logRequest)
-      .sharedOnReceiveResponse(this.logResponse);
+      .sharedOnSend(this.logRequest)
+      .sharedOnReceive(this.logResponse);
   }
 
   private logRequest(state: RequestState) {
@@ -342,4 +334,4 @@ data: ${data}`
 }
 ```
 
-You can register more than one function per hook. They will run in the order they were defined. 
+You can register more than one function per hook. They will run in the order they were defined.

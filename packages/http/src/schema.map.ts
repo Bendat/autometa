@@ -1,110 +1,68 @@
-import { StatusCode, SchemaParser } from "./types";
-import { AutomationError } from "@autometa/errors";
-import { StatusCodes } from "@autometa/status-codes";
-
+import { SchemaParser, StatusCode } from "./types";
 export class SchemaMap {
-  #children: SchemaMap[] = [];
-  #map: Map<StatusCode, SchemaParser> = new Map();
-  register(
-    parser: SchemaParser,
-    ...codes: StatusCode[]
-  ): (typeof parser)["parse"];
-  register(
-    parser: SchemaParser,
-    ...range: { from: StatusCode; to: StatusCode }[]
-  ): (typeof parser)["parse"];
-  register(
-    parser: SchemaParser,
-    ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
-  ): (typeof parser)["parse"];
-  register(
-    parser: SchemaParser,
-    ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
-  ) {
-    args.forEach((arg) => {
-      if (typeof arg === "number") {
-        this.registerSingle(parser, arg);
-      } else {
-        this.registerRange(parser, arg);
-      }
-    });
-    return parser.parse;
+  #map: Map<StatusCode, SchemaParser>;
+  constructor(map?: Map<StatusCode, SchemaParser> | SchemaMap) {
+    if (map instanceof SchemaMap) {
+      this.#map = new Map(map.#map);
+      return;
+    }
+    this.#map = new Map(map);
   }
 
-  registerSingle(parser: SchemaParser, ...codes: StatusCode[]) {
+  derive() {
+    return new SchemaMap(this.#map);
+  }
+
+  registerStatus(parser: SchemaParser, ...codes: StatusCode[]) {
     codes.forEach((code) => {
       if (this.#map.has(code)) {
-        throw new AutomationError(
-          `Status code ${code} is already registered with a parser`
-        );
+        const msg = `Status code ${code} is already registered with a parser`;
+        throw new Error(msg);
       }
-      assertIsStatusCode(code);
       this.#map.set(code, parser);
     });
   }
 
-  including(map: SchemaMap) {
-    this.#children.includes(map);
-    return this;
-  }
-  registerRange(
-    parser: SchemaParser,
-    ...range: { from: StatusCode; to: StatusCode }[]
-  ) {
-    range.forEach(({ from, to }) => {
-      assertIsStatusCode(from);
-      assertIsStatusCode(to);
-      for (let i = from; i <= to; i++) {
-        if (!IsStatusCode(i)) {
-          continue;
-        }
-        if (this.#map.has(i)) {
-          throw new AutomationError(
-            `Status code ${i} is already registered with a parser`
-          );
-        }
-        this.#map.set(i, parser);
+  registerRange(parser: SchemaParser, from: StatusCode, to: StatusCode) {
+    for (let i = from; i <= to; i++) {
+      if (this.#map.has(i)) {
+        throw new Error(`Status code ${i} is already registered with a parser`);
       }
-    });
-  }
-
-  get(status: StatusCode): SchemaParser | undefined {
-    assertIsStatusCode(status);
-    const local = this.#map.get(status);
-    if (local) {
-      return local;
+      this.#map.set(i, parser);
     }
-    const nested = this.#children.find((it) => it.#map.has(status));
-    return nested?.get(status);
   }
 
-  validate<T>(status: StatusCode, response: T, strict: boolean): T {
-    const parser = this.get(status);
-    if (!parser) {
-      if (!strict) {
-        return response;
-      }
-      throw new AutomationError(
-        `No schema parser registered for status code ${status} and 'requireSchema' is set to true`
-      );
+  validate(status: StatusCode, data: unknown, requireSchema: boolean) {
+    const parser = this.getParser(status, requireSchema);
+    if ("parse" in parser) {
+      return parser.parse(data);
     }
-    return parser.parse(response) as T;
+    if('validate' in parser) {
+      return parser.validate(data);
+    }
+    try {
+      return parser(data);
+    } catch (e) {
+      const msg = `Failed to schema parse response data for status code ${status} with data:
+      
+${JSON.stringify(data, null, 2)}}`;
+      throw new Error(msg);
+    }
   }
-}
 
-export function assertIsStatusCode(value: number): asserts value is StatusCode {
-  const result = Object.values(StatusCodes)
-    .map((it) => it.status as number)
-    .includes(value);
-  if (!result) {
-    throw new AutomationError(
-      `Expected status code ${value} to be a valid status code, but it is not a known HTTP codeF`
-    );
+  getParser(status: StatusCode, requireSchema: boolean) {
+    const parser = this.#map.get(status);
+    if (!parser && requireSchema) {
+      const msg = `No parser registered for status code ${status} but 'requireSchema' is true`;
+      throw new Error(msg);
+    }
+    if (parser) {
+      return parser;
+    }
+    return (data: unknown) => data;
   }
-}
 
-export function IsStatusCode(value: number): value is StatusCode {
-  return Object.values(StatusCodes)
-    .map((it) => it.status as number)
-    .includes(value);
+  toObject() {
+    return Object.fromEntries(this.#map) as Record<StatusCode, SchemaParser>;
+  }
 }

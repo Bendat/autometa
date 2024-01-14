@@ -1,5 +1,16 @@
 # @autometa/dto-builder
 
+## 0.12.0
+
+### Minor Changes
+
+- d563916: feat: replace 'reflect-metadata' with custom solution
+
+### Patch Changes
+
+- Updated dependencies [d563916]
+  - @autometa/injection@0.1.1
+
 ## 0.11.1
 
 ### Patch Changes

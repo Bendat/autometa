@@ -4,7 +4,7 @@ import { highlight } from "cli-highlight";
 
 export function transformResponse(
   allowPlainText: boolean,
-  data: string | undefined | null
+  data: null | undefined | string
 ) {
   if (data === null) {
     return null;
@@ -18,21 +18,25 @@ export function transformResponse(
   if (isJson(data)) {
     return JSON.parse(data);
   }
-  if (["true", "false"].includes(data)) {
+  if (typeof data === "string" && ["true", "false"].includes(data)) {
     return JSON.parse(data);
   }
-  if (/^\d*\.?\d+$/.test(data)) {
+  if (typeof data === "string" && /^\d*\.?\d+$/.test(data)) {
     return JSON.parse(data);
   }
 
+  if (typeof data === "object") {
+    return data;
+  }
   if (allowPlainText) {
     return data;
   }
+
   const response = highlight(data, { language: "html" });
   const message = [
     `Could not parse a response as json, and this request was not configured to allow plain text responses.`,
     `To allow plain text responses, use the 'allowPlainText' method on the HTTP client.`,
-    " ",
+    "",
     response
   ];
   throw new AutomationError(message.join("\n"));

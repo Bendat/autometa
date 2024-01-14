@@ -1,5 +1,25 @@
 # @autometa/http
 
+## 1.3.0
+
+### Minor Changes
+
+- 82168a2: fix: `onRecievedResponse` hook not running when response failed schema validation
+
+  - Renamed hooks to `onSend` and `onRecieve`
+  - Rewrote HTTP fixture logic to be constructable and derivable.
+    - `new HTTP().sharedRoute('v1')` constructs a single instance of HTTP with route `v1`
+    - `new HTTP().sharedRoute('v1').route('user') derives a new HTTP fixture which inherits 'v1' and adds 'user' locally.
+  - Support for list based params with `paramList` and `sharedParamList`
+  - Added default schemas for use with simple response types like null, boolean, number etc
+
+### Patch Changes
+
+- Updated dependencies [d563916]
+  - @autometa/dto-builder@0.12.0
+  - @autometa/injection@0.1.1
+  - @autometa/app@0.3.2
+
 ## 1.2.1
 
 ### Patch Changes

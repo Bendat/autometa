@@ -1,6 +1,6 @@
 {
   "name": "@autometa/http",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "An Axios Based HTTP Client for Autometa",
   "type": "module",
   "main": "dist/index.js",
@@ -23,6 +23,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@autometa/types": "workspace:^",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
@@ -30,6 +31,7 @@
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
+    "myzod": "^1.10.2",
     "rimraf": "^4.1.2",
     "tsconfig": "workspace: *",
     "tsup": "^7.2.0",
@@ -38,10 +40,12 @@
   },
   "dependencies": {
     "@autometa/app": "workspace:^",
+    "@autometa/dto-builder": "workspace:^",
     "@autometa/errors": "workspace:^",
     "@autometa/injection": "workspace:^",
     "@autometa/status-codes": "workspace:^",
     "@stdlib/assert-is-json": "^0.1.1",
+    "@types/qs": "^6.9.11",
     "axios": "^1.5.1",
     "class-transformer": "^0.5.1",
     "cli-highlight": "^2.1.11",

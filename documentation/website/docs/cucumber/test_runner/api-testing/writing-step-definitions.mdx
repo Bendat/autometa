@@ -78,12 +78,11 @@ import { Env } from "../../apps";
 @Constructor(HTTP)
 export class ProductController {
   constructor(readonly http: HTTP) {
-    this.http.url(Env.API_URL).requireSchema(true);
+    this.http.url(Env.API_URL).sharedRoute('products').requireSchema(true);
   }
 
   view(id: number) {
     return this.http
-      .route("products")
       .route(id)
       .schema(ProductSchema, 200)
       .get<Product>();
@@ -485,3 +484,19 @@ Then(
 With that we've fully implemented our first test. Full source code for this example,
 including more endpoints and controllers can be found in the [Github Repository](https://github.com/bendat/autometa)
 under the `__examples__/api-tests-example` directory.
+
+
+We can run our test on the command line with  `npx jest integration/features/product/view-product.feature`
+
+```bash
+ PASS  integration/features/product/view-product.feature (9.5 s)
+  Viewing a Product
+    ✓ I view an iPhone (builder) (3 ms)
+    ✓ I view an iPhone (table) (1 ms)
+
+  Test Suites: 1 passed, 1 total
+  Tests:       2 passed, 2 total
+  Snapshots:   0 total
+  Time:        10.016 s
+  Ran all test suites matching /integration\/features\/product\/view-product.feature/i.
+```
