@@ -1,10 +1,11 @@
 import { TableValue } from "../table-value";
 import { CompiledDataTable } from "../compiled-data-table";
 import { overloads, def, string, number, boolean } from "@autometa/overloaded";
+import { Class } from "@autometa/types";
 import { AutomationError } from "@autometa/errors";
 import { Bind } from "@autometa/bind-decorator";
 import { DataTable, mapHeaders } from "./data-table";
-
+import { TableDocument } from "../table-documents";
 /**
  * A horizontal table is a table where the first row is the header row,
  * and each subsequent row is a row of values.
@@ -30,6 +31,9 @@ export class HTable extends DataTable {
     this.headers = mapHeaders(headers);
   }
 
+  get count(): number {
+    return this.rows.length;
+  }
   /**
    * Retrieves a column from the table by it's header.
    * By default the values will be coerced to their typescript types,
@@ -95,6 +99,21 @@ export class HTable extends DataTable {
     ).use(args);
   }
 
+  static cell(title: string, raw?: boolean) {
+    return function (target: object, propertyKey: string) {
+      Object.defineProperty(target, propertyKey, {
+        get: function () {
+          if (!(this.$_table instanceof HTable)) {
+            const msg = `Decorating a table document using HTable, however the defined table type for this object is ${this?._table?.constructor?.name}.`;
+            throw new AutomationError(msg);
+          }
+          const table = this.$_table as HTable;
+          return table.get(title, this.$_index, raw);
+        }
+      });
+    };
+  }
+
   private handleError(
     colIdx: number,
     source: readonly TableValue[][],
@@ -127,11 +146,22 @@ export class HTable extends DataTable {
     return result;
   }
 
+  static Document(){
+    return super.CreateDocument(HTable, HTableDocument);
+  }
   asJson(): Record<string, TableValue[]> {
     const json: Record<string, TableValue[]> = {};
     for (const header in this.headers) {
       json[header] = this.get(header);
     }
     return json;
+  }
+}
+
+class HTableDocument extends TableDocument<HTable> {
+  static readonly TableType = HTable;
+
+  constructor(table: HTable, index: number) {
+    super(table, index);
   }
 }

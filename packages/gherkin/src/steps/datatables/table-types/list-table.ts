@@ -2,13 +2,16 @@ import { overloads, def, number, boolean } from "@autometa/overloaded";
 import { CompiledDataTable } from "../compiled-data-table";
 import { TableValue } from "../table-value";
 import { DataTable } from "./data-table";
+import { AutomationError } from "@autometa/errors";
+import { Class } from "@autometa/types";
+import { TableDocument } from "../table-documents";
 
 /**
  * A list table is a table where each row is a list of values,
  * and which has no defined headers.
- * 
+ *
  * For example:
- * 
+ *
  * ```gherkin
  * Given I have a Table
  * | value 1 | value 2 | value 3 |
@@ -24,12 +27,18 @@ export class ListTable extends DataTable {
     return this.table;
   }
 
+  get count(): number {
+    throw new Error(
+      "List Table is not countable  cannot be used with documents"
+    );
+  }
+  
   /**
    * Retrieves a row from the table by it's index.
    * By default the values will be coerced to their typescript types,
    * i.e a value '1' in a table cell will be coerced into a number,
    * 'true' to a boolean, etc.
-   * 
+   *
    * Specifying the raw flag will return the row with it's original string
    * value.
    * @param row The index of the row to retrieve
@@ -40,7 +49,7 @@ export class ListTable extends DataTable {
     row: number,
     raw?: boolean
   ): T;
-  
+
   get<T extends TableValue = TableValue>(
     row: number,
     col: number,
@@ -70,6 +79,7 @@ export class ListTable extends DataTable {
       throw new Error(msg);
     }
   }
+
   protected construct({ table, raw }: CompiledDataTable) {
     this.table = table;
     this.raw = raw;

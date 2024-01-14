@@ -35,12 +35,12 @@ export class HTTPResponse<T = unknown> {
    * // callback transformer with destructuring
    * const secondProduct = response.decompose(([product]) => product);
    * ```
-   * @param value 
+   * @param value
    */
   decompose<K>(value: K): HTTPResponse<K>;
   decompose<K>(transformFn: (response: T) => K): HTTPResponse<K>;
-  decompose<K>(transformFn: K | ((response: T) => K)): HTTPResponse<K> {
-    const value = getDecompositionValue<T>(this.data, transformFn);
+  decompose<K>(transformFnOrVal: K | ((response: T) => K)): HTTPResponse<K> {
+    const value = getDecompositionValue<T>(this.data, transformFnOrVal);
     return new HTTPResponseBuilder()
       .status(this.status)
       .statusText(this.statusText)
