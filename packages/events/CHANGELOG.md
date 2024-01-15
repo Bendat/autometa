@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.2.16
+
+### Patch Changes
+
+- @autometa/gherkin@0.6.4
+
 ## 0.2.15
 
 ### Patch Changes

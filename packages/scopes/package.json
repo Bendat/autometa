@@ -1,6 +1,6 @@
 {
   "name": "@autometa/scopes",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Test Scopes and Groups for @Autometa",
   "type": "module",
   "main": "dist/index.js",
