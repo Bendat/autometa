@@ -33,6 +33,9 @@ export class MTable extends DataTable {
       .map((row) => row.slice(1, row.length));
     this.raw = raw;
   }
+  get count(): number {
+    throw new Error("MTable is not countable and cannot be used with documents");
+  }
 
   /**
    * Retrieves a value from a specific table cell using

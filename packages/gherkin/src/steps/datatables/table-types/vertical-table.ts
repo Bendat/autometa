@@ -4,13 +4,14 @@ import { Bind } from "@autometa/bind-decorator";
 import { DataTable } from "./data-table";
 import { overloads, def, string, number, boolean } from "@autometa/overloaded";
 import { AutomationError } from "@autometa/errors";
+import { TableDocument } from "../table-documents";
 
 /**
  * A vertical table is a table where the first cell of each row is the header,
  * and each subsequent cell is a value.
- * 
+ *
  * For example:
- * 
+ *
  * ```gherkin
  * Given I have a Table
  * | Header 1 | value 1 |
@@ -23,6 +24,9 @@ export class VTable extends DataTable {
   private columns: readonly TableValue[][];
   private rawColumns: readonly string[][];
   private headerMapping: { [key: string]: number };
+  get count(): number {
+    return this.columns.length;
+  }
 
   protected construct({ table, raw }: CompiledDataTable): void {
     this.headerMapping = {};
@@ -30,7 +34,7 @@ export class VTable extends DataTable {
     this.columns = table.map(([_, ...rows]) => rows);
     this.rawColumns = raw.map(([_, ...rows]) => rows);
     const mapHeaders = (header: string, idx: number) => {
-      const mapping = this.headerMapping
+      const mapping = this.headerMapping;
       mapping[header] = idx;
     };
     this.headers.forEach(mapHeaders);
@@ -41,7 +45,7 @@ export class VTable extends DataTable {
    * By default the values will be coerced to their typescript types,
    * i.e a value '1' in a table cell will be coerced into a number,
    * 'true' to a boolean, etc.
-   * 
+   *
    * Specifying the raw flag will return the row with it's original string
    * value.
    * @param header The header string of the row to retrieve
@@ -55,17 +59,17 @@ export class VTable extends DataTable {
   /**
    * Retrieves a value from a specific table cell using
    * the header and column index.
-   * 
+   *
    * By default the value will be coerced to it's typescript type,
    * i.e a value '1' in a table cell will be coerced into a number,
    * 'true' to a boolean, etc.
-   * 
+   *
    * Specifying the raw flag will return the value with it's original string
    * value.
-   * 
-   * @param header 
-   * @param column 
-   * @param raw 
+   *
+   * @param header
+   * @param column
+   * @param raw
    * @returns The value at the specified cell
    */
   get<T extends TableValue = TableValue>(
@@ -120,10 +124,32 @@ export class VTable extends DataTable {
       const colSug = column !== undefined ? ` at column ${column}` : "";
       const maxSize = Math.max(...this.columns.map((col) => col.length));
       const maxSizeSlug = ` (max size ${maxSize})`;
-      throw new AutomationError(`Could not find row ${header}${colSug}${maxSizeSlug}}`);
+      throw new AutomationError(
+        `Could not find row ${header}${colSug}${maxSizeSlug}}`
+      );
     }
     return result;
   }
+
+  static cell(title: string, raw?: boolean) {
+    return function (target: object, propertyKey: string) {
+      Object.defineProperty(target, propertyKey, {
+        get: function () {
+          if (!(this.$_table instanceof VTable)) {
+            const msg = `Decorating a table document using HTable, however the defined table type for this object is ${this?._table?.constructor?.name}.`;
+            throw new AutomationError(msg);
+          }
+          const table = this.$_table as VTable;
+          return table.get(title, this.$_index, raw);
+        }
+      });
+    };
+  }
+
+  static Document() {
+    return super.CreateDocument(VTable, VTableDocument);
+  }
+
   private handleError(
     rowIdx: number,
     source: readonly TableValue[][],
@@ -143,4 +169,8 @@ export class VTable extends DataTable {
     });
     return json;
   }
+}
+
+class VTableDocument extends TableDocument<VTable> {
+  static readonly TableType = VTable;
 }

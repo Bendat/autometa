@@ -157,3 +157,41 @@ Given(
 
 We could further define the property key as it's own Cucumber Expression, so that it maps
 to `keyof Product`, which we'll look at in the next section.
+
+
+## Interfaces - Anonymous Object Builders
+
+It might not be desirable to build your object as a class. When not used
+to extend a class, the `DTO` function will return an anonymous object builder,
+with the same interface as the class builder.
+
+```ts
+import { Builder } from "@autometa/dto-builder";
+
+interface IUser {
+  id: number;
+  name: string;
+  age: number;
+}
+
+const UserBuilder = Builder<IUser>();
+```
+
+### Deriving a builder and default values
+
+Since anonymous objects cannot be decorated, they cannot
+accept default values or factories which might change between
+instantiations.
+
+To work around this, an anonymous builder is `derivable`. Any values
+assigned to the builder will stay until the builder is built. However
+when the `derive` method is called, a new builder will be created,
+copying the values from the original. If those values are set agin
+in the derived builder, they will not affect the original.
+
+```ts
+
+const bobBuilder = new UserBuilder().id(1).name("bob").age(23);
+
+const olderBobBuilder = bobBuilder.derive().age(24);
+```

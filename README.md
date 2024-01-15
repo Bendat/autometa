@@ -1,3 +1,7 @@
+# Autometa
+
+[Full Docs](https://bendat.github.io/autometa/docs/cucumber/test_runner/intro/)
+
 # NOTICE
 
 Autometa is under construction. It is currently unstable, poorly documented and not production ready for most cases.
@@ -15,6 +19,9 @@ codes and status messages, visible in the editor via `as const`
 
 _Autometa_ is an early-development automation framework toolkit, which provides libraries to help automate the automation process on node with libraries to
 help bootstrap your node automation framework, for API or E2E testing.
+
+[Full Docs](https://bendat.github.io/autometa/docs/cucumber/test_runner/intro/)
+
 
 ## Cucumber Runner
 
@@ -92,13 +99,19 @@ builder classes from a DTO class prototype, with type-safe builder methods in
 place of DTO properties.
 
 ```ts
-import { Property, Builder } from '@autometa/dto-builder'
+import { dto, Builder } from '@autometa/dto-builder'
 export class UserDto {
-    @Property
     id: number
-    @Property
     username: string,
+    // default values, factories, dtos
+    @DTO.dto(AddressDto)
+    address: AddressDto
+    @DTO.date()
+    createdAt: Date
 }
+// or 
+// avoid duplicating interface properties
+export class UserDto extends DTO<IUser> {}
 
 const UserDtoBuilder = Builder(UserDto);
 
@@ -106,4 +119,6 @@ const user = new UserDtoBuilder().id(1).name('bob').build()
 
 // compilation error, 'first argument of "id" must be a number"
  new UserDtoBuilder().id('1').name('bob').build()
+ // force it to pass a string
+ new UserDtoBuilder().id('1' as unknown as number).name('bob').build()
 ```

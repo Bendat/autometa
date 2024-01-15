@@ -1,6 +1,11 @@
 import { test, expectTypeOf } from "vitest";
 import { CucumberExpressionArgs, StepActionFn, StepArgs } from "./types";
-import { HTable, NeverDataTable } from "@autometa/gherkin";
+import {
+  DataTable,
+  HTable,
+  NeverDataTable,
+  TableDocument
+} from "@autometa/gherkin";
 import { App } from "@autometa/app";
 test("should extract a number cucumber expression argument", () => {
   const type = null as unknown as CucumberExpressionArgs<"{number}">;
@@ -64,6 +69,18 @@ test("should create a step function from an expression with a table", () => {
   >;
   expectTypeOf(type).toEqualTypeOf<
     (...args: [number, string, HTable, App]) => unknown | Promise<unknown>
+  >();
+});
+
+test("should create a step function from an expression with a table document", () => {
+  const type = null as unknown as StepActionFn<
+    "I have {number} cukes and a {string}",
+    TableDocument<DataTable>
+  >;
+  expectTypeOf(type).toEqualTypeOf<
+    (
+      ...args: [number, string, TableDocument<DataTable>[], App]
+    ) => unknown | Promise<unknown>
   >();
 });
 

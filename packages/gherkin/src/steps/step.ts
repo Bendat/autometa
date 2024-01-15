@@ -1,5 +1,5 @@
 import { GherkinDocString } from "./doc-string";
-import { Builder, DtoBuilder } from "@autometa/dto-builder";
+import { Builder } from "@autometa/dto-builder";
 import { StepType, StepKeyword } from "./enums";
 import { GherkinNode } from "../gherkin-node";
 import { CompiledDataTable } from "./datatables";
@@ -20,4 +20,4 @@ export class Step extends GherkinNode {
   }
 }
 
-export const StepBuilder: DtoBuilder<Step> = Builder(Step);
+export class StepBuilder extends Builder(Step) {}

@@ -10,12 +10,16 @@ import {
   ScenarioBuilder,
   StepBuilder
 } from "@autometa/gherkin";
-import { AutometaApp, AutometaWorld } from "@autometa/app";
+import { AutometaApp, AutometaWorld, App, World } from "@autometa/app";
 import { AutomationError } from "@autometa/errors";
 import { Class } from "@autometa/types";
-class World extends AutometaWorld {}
-class App extends AutometaApp {
-  world = new World();
+class MyWorld extends AutometaWorld implements World {
+  [key: string]: unknown;
+}
+class MyApp extends AutometaApp implements App {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  di = {} as any;
+  world = new MyWorld();
 }
 describe("step-scope", () => {
   it("should match a text string", () => {
@@ -72,7 +76,7 @@ describe("step-scope", () => {
         .build();
       const scenario = new ScenarioBuilder().build();
 
-      scope.execute(scenario, gherkin, new App());
+      scope.execute(scenario, gherkin, new MyApp());
       expect(fn).toHaveBeenCalled();
     });
 
@@ -106,7 +110,7 @@ describe("step-scope", () => {
         .table(table)
         .build();
       const scenario = new ScenarioBuilder().build();
-      const error = () => scope.execute(scenario, gherkin, new App());
+      const error = () => scope.execute(scenario, gherkin, new MyApp());
       await expect(error).rejects.toThrow(AutomationError);
       await expect(error).rejects
         .toThrow(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
@@ -149,7 +153,7 @@ describe("step-scope", () => {
         .build();
       const scenario = new ScenarioBuilder().build();
 
-      const error = () => scope.execute(scenario, gherkin, new App());
+      const error = () => scope.execute(scenario, gherkin, new MyApp());
       expect(error).rejects.toThrow(
         `Step 'Given I have 42 cukes in my belly now' has a table but the table prototype provided is not a DataTable or DataTableDocument`
       );
@@ -186,7 +190,7 @@ describe("step-scope", () => {
         .build();
       const scenario = new ScenarioBuilder().build();
 
-      const args = await scope.execute(scenario, gherkin, new App());
+      const args = await scope.execute(scenario, gherkin, new MyApp());
       expect(args).toBeUndefined();
     });
 
@@ -222,7 +226,62 @@ describe("step-scope", () => {
         .build();
       const scenario = new ScenarioBuilder().build();
 
-      await scope.execute(scenario, gherkin, new App());
+      await scope.execute(scenario, gherkin, new MyApp());
+      expect(fn).toHaveBeenCalled();
+    });
+  });
+
+  describe("table documents", () => {
+    class MyDocument extends HTable.Document() {
+      @HTable.cell("cukes")
+      cukes!: number;
+      @HTable.cell("belly")
+      belly!: string;
+    }
+
+    it("should fail to execute with a gherkin table and a DataTableDocument prototype", async () => {
+      const text = "I have {int} cukes in my {string} now";
+      const expression = new CucumberExpression(
+        text,
+        new ParameterTypeRegistry()
+      );
+      const fn = vi
+        .fn()
+        .mockImplementation(
+          (num: number, word: string, [doc]: MyDocument[]) => {
+            expect(num).toBe(42);
+            expect(word).toBe("belly");
+            expect(doc).toBeInstanceOf(MyDocument);
+            expect(doc.cukes).toBe(42);
+            expect(doc.belly).toBe("belly");
+          }
+        );
+      const scope = new StepScope<typeof text, MyDocument>(
+        "Given",
+        "Context",
+        expression,
+        fn,
+        MyDocument
+      );
+      const table = new CompiledDataTable(
+        [
+          ["cukes", "belly"],
+          [42, "belly"]
+        ],
+        [
+          ["cukes", "belly"],
+          ["42", "belly"]
+        ]
+      );
+      const gherkin = new StepBuilder()
+        .keyword("Given")
+        .keywordType("Context")
+        .text("I have 42 cukes in my 'belly' now")
+        .table(table)
+        .build();
+      const scenario = new ScenarioBuilder().build();
+
+      await scope.execute(scenario, gherkin, new MyApp());
       expect(fn).toHaveBeenCalled();
     });
   });
