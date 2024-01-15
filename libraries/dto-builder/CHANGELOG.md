@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.13.4
+
+### Patch Changes
+
+- ae7e34f: fix(dto-builder): allow custom properties and symbols on builders
+
 ## 0.13.3
 
 ### Patch Changes

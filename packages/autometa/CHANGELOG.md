@@ -1,5 +1,17 @@
 # @autometa/runner
 
+## 0.4.6
+
+### Patch Changes
+
+- @autometa/gherkin@0.6.4
+- @autometa/http@1.4.5
+- @autometa/scopes@0.5.4
+- @autometa/test-builder@0.2.5
+- @autometa/coordinator@0.3.7
+- @autometa/events@0.2.16
+- @autometa/jest-executor@0.4.7
+
 ## 0.4.5
 
 ### Patch Changes
