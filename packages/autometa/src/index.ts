@@ -42,7 +42,7 @@ export {
 } from "./app";
 export { Dates, Time } from "@autometa/datetime";
 export { AutomationError, raise } from "@autometa/errors";
-export { DataTable, HTable, VTable, MTable } from "@autometa/gherkin";
+export { DataTable, HTable, VTable, MTable, TableDocument } from "@autometa/gherkin";
 export { Bind } from "@autometa/bind-decorator";
 export { Types } from "@autometa/scopes";
 export * from "./events";
