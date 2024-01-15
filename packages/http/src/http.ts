@@ -605,13 +605,25 @@ export class HTTP {
       | number
       | boolean
       | null
+      | (string | number | boolean)[]
       | (() => string | number | boolean | null)
+      | (() => Promise<string | number | boolean | null>)
   ) {
     this.#request.header(name, value);
     return this;
   }
 
-  header(name: string, value: string) {
+  header(
+    name: string,
+    value:
+      | string
+      | number
+      | boolean
+      | null
+      | (string | number | boolean)[]
+      | (() => string | number | boolean | null)
+      | (() => Promise<string | number | boolean | null>)
+  ) {
     return HTTP.create(this.client, this.#request.derive().header(name, value));
   }
 
@@ -812,7 +824,7 @@ export class HTTP {
     builder: HTTPRequestBuilder<HTTPRequest<unknown>>,
     options?: HTTPAdditionalOptions<unknown>
   ) {
-    const request = builder.resolveDynamicHeaders().build();
+    const request = (await builder.resolveDynamicHeaders()).build();
     const meta = this.#metaConfig.derive().build();
     await this.runOnSendHooks(meta, request);
     const result = await this.client.request<unknown, string>(request, options);
