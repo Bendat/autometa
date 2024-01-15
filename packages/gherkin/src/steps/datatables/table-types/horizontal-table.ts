@@ -1,7 +1,6 @@
 import { TableValue } from "../table-value";
 import { CompiledDataTable } from "../compiled-data-table";
 import { overloads, def, string, number, boolean } from "@autometa/overloaded";
-import { Class } from "@autometa/types";
 import { AutomationError } from "@autometa/errors";
 import { Bind } from "@autometa/bind-decorator";
 import { DataTable, mapHeaders } from "./data-table";

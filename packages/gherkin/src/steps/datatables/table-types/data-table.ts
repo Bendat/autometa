@@ -1,7 +1,6 @@
 import { Class } from "@autometa/types";
 import { CompiledDataTable } from "../compiled-data-table";
 import { TableValue } from "../table-value";
-import { HTable } from "./horizontal-table";
 import { TableDocument } from "../table-documents";
 
 export abstract class DataTable {

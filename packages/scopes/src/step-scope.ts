@@ -2,13 +2,11 @@ import { Scope } from "./scope";
 import {
   Background,
   DataTable,
-  DataTableDocument,
   Example,
   Scenario,
   Step,
   StepKeyword,
-  StepType,
-  getDocumentTable
+  StepType
 } from "@autometa/gherkin";
 import { App } from "@autometa/app";
 import { Bind } from "@autometa/bind-decorator";
@@ -19,10 +17,11 @@ import { HookCache } from "./caches/hook-cache";
 import { Empty_Function } from "./novelties";
 import { StepActionFn, StepArgs } from "./types";
 import { interpolateStepText } from "@autometa/gherkin";
+import { TableDocument } from "@autometa/gherkin";
 
 export class StepScope<
   TText extends string,
-  TTable extends DataTable | undefined
+  TTable extends DataTable | TableDocument<DataTable> | undefined
 > extends Scope {
   canHandleAsync = true;
   action = Empty_Function;
@@ -74,7 +73,7 @@ export class StepScope<
     }
     args.push(app);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.stepAction(...args as any);
+    return this.stepAction(...(args as any));
   }
 
   private handleMissingTable(title: string, args: unknown[], gherkin: Step) {
@@ -89,14 +88,20 @@ export class StepScope<
     }
     if (this.tablePrototype.prototype instanceof DataTable) {
       args.push(new this.tablePrototype(gherkin.table));
-    } else if (this.tablePrototype.prototype instanceof DataTableDocument) {
-      const type = this.tablePrototype.prototype;
-      const tableType = getDocumentTable(type);
+    } else if (this.tablePrototype.prototype instanceof TableDocument) {
+      const type = this.tablePrototype as unknown as {
+        TableType: Class<DataTable>;
+
+        new (table: DataTable, index: number): TableDocument<DataTable>;
+      };
+      const tableType = type.TableType;
       const table = new tableType(gherkin.table);
-      args.push(new this.tablePrototype(table));
-      throw new AutomationError(
-        "FIX: this should be an array of documents in the end"
-      );
+      const count = table.count;
+      const docs: TableDocument<DataTable>[] = [];
+      for (let i = 0; i < count; i++) {
+        docs.push(new type(table, i));
+      }
+      args.push(docs);
     } else {
       const message = `Step '${title}' has a table but the table prototype provided is not a DataTable or DataTableDocument`;
       throw new AutomationError(message);

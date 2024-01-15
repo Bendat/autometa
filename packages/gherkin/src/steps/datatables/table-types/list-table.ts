@@ -2,9 +2,6 @@ import { overloads, def, number, boolean } from "@autometa/overloaded";
 import { CompiledDataTable } from "../compiled-data-table";
 import { TableValue } from "../table-value";
 import { DataTable } from "./data-table";
-import { AutomationError } from "@autometa/errors";
-import { Class } from "@autometa/types";
-import { TableDocument } from "../table-documents";
 
 /**
  * A list table is a table where each row is a list of values,
@@ -32,7 +29,7 @@ export class ListTable extends DataTable {
       "List Table is not countable  cannot be used with documents"
     );
   }
-  
+
   /**
    * Retrieves a row from the table by it's index.
    * By default the values will be coerced to their typescript types,
