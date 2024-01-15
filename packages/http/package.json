@@ -26,7 +26,7 @@
     "@autometa/types": "workspace:^",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
