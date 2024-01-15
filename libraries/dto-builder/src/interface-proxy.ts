@@ -32,7 +32,6 @@ export type IBuilder<T> = {
    */
   append<K>(property: string, value: K): IBuilder<T>;
 
-
   /**
    * Attach a value to a sub-property of a property.
    * If the property does not exist, a new empty object will be
@@ -289,14 +288,26 @@ function constructDefaultDto<T>(base: Class<T>): T {
   for (const key of keys) {
     const value = defaultSetters[key];
     if ("value" in value) {
-      Object.defineProperty(instance as object, key, { value: value.value, writable: true });
+      Object.defineProperty(instance as object, key, {
+        value: value.value,
+        writable: true,
+        enumerable: true,
+      });
     }
     if ("factory" in value) {
-      Object.defineProperty(instance as object, key, { value: value.factory(), writable: true });
+      Object.defineProperty(instance as object, key, {
+        value: value.factory(),
+        writable: true,
+        enumerable: true,
+      });
     }
     if ("dtoType" in value) {
       const dtoInst = constructDefaultDto(value.dtoType);
-      Object.defineProperty(instance as object, key, { value: dtoInst, writable: true });
+      Object.defineProperty(instance as object, key, {
+        value: dtoInst,
+        writable: true,
+        enumerable: true,
+      });
     }
   }
   return instance;

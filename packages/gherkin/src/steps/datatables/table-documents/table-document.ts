@@ -5,7 +5,15 @@ export abstract class TableDocument<T extends DataTable> {
   readonly $_table: T;
   readonly $_index: number;
   constructor(table: T, index: number) {
-    this.$_table = table;
-    this.$_index = index;
+    Object.defineProperty(this, "$_table", {
+      enumerable: false,
+      value: table,
+      writable: false,
+    });
+    Object.defineProperty(this, "$_index", {
+      enumerable: false,
+      value: index,
+      writable: false,
+    });
   }
 }
