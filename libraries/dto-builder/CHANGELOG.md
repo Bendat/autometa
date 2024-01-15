@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.13.5
+
+### Patch Changes
+
+- db87a56: fix(dto-builder): expose 'ClsBuilder' type
+
 ## 0.13.4
 
 ### Patch Changes
