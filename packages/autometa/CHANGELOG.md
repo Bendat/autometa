@@ -1,5 +1,27 @@
 # @autometa/runner
 
+## 0.4.0
+
+### Minor Changes
+
+- 7e9d2bc: feat: Table Documents
+
+  Introduces a new way of handling tables which are horizontal (HTable) or vertical (VTable) which maps
+  the headers of a table to an object properties, defined using a class.
+
+  [docs](https://bendat.github.io/autometa/docs/cucumber/test_runner/datatables#table-documents)
+
+### Patch Changes
+
+- Updated dependencies [7e9d2bc]
+  - @autometa/gherkin@0.6.0
+  - @autometa/scopes@0.5.0
+  - @autometa/http@1.4.0
+  - @autometa/test-builder@0.2.1
+  - @autometa/coordinator@0.3.3
+  - @autometa/events@0.2.12
+  - @autometa/jest-executor@0.4.3
+
 ## 0.3.3
 
 ### Patch Changes

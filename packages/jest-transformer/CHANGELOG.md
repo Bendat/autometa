@@ -1,5 +1,12 @@
 # @autometa/jest-transformer
 
+## 0.1.72
+
+### Patch Changes
+
+- Updated dependencies [7e9d2bc]
+  - @autometa/runner@0.4.0
+
 ## 0.1.71
 
 ### Patch Changes

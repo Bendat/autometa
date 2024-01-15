@@ -1,5 +1,21 @@
 # Gherkin
 
+## 0.6.0
+
+### Minor Changes
+
+- 7e9d2bc: feat: Table Documents
+
+  Introduces a new way of handling tables which are horizontal (HTable) or vertical (VTable) which maps
+  the headers of a table to an object properties, defined using a class.
+
+  [docs](https://bendat.github.io/autometa/docs/cucumber/test_runner/datatables#table-documents)
+
+### Patch Changes
+
+- Updated dependencies [7e9d2bc]
+  - @autometa/dto-builder@0.13.0
+
 ## 0.5.8
 
 ### Patch Changes
