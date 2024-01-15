@@ -2,10 +2,18 @@ import { Class } from "@autometa/types";
 import type { DataTable } from "../table-types";
 export abstract class TableDocument<T extends DataTable> {
   static readonly TableType: Class<DataTable>;
-  readonly $_table: T;
-  readonly $_index: number;
+  declare readonly $_table: T;
+  declare readonly $_index: number;
   constructor(table: T, index: number) {
-    this.$_table = table;
-    this.$_index = index;
+    Object.defineProperty(this, "$_table", {
+      enumerable: false,
+      value: table,
+      writable: false,
+    });
+    Object.defineProperty(this, "$_index", {
+      enumerable: false,
+      value: index,
+      writable: false,
+    });
   }
 }
