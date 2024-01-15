@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.13.2
+
+### Patch Changes
+
+- manually releasing new version
+
 ## 0.13.1
 
 ### Patch Changes
