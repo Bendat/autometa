@@ -1,3 +1,3 @@
 export { Property } from './property.decorator'
 export { DTO } from './dto'
-export { Builder, DtoBuilder } from './interface-proxy'
+export { Builder, DtoBuilder, ClsBuilder } from './interface-proxy'
