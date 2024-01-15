@@ -67,12 +67,24 @@ describe("Class Builder", () => {
     c: DefaultsFoo;
   }
   class FooBuilder extends Builder(Foo) {}
-  class DefaultsTestFooBuilder extends Builder(DefaultsTest) {}
+  const symbol = Symbol("foo");
+  class DefaultsTestFooBuilder extends Builder(DefaultsTest) {
+    [symbol] = 3;
+    method() {
+      return 3;
+    }
+  }
 
-  it('should be instanceof', ()=>{
-    const builder = new FooBuilder()
-    expect(builder).toBeInstanceOf(FooBuilder)
-  })
+  it("should have a custom method", () => {
+    const builder = new DefaultsTestFooBuilder();
+    expect(builder[symbol]).toBe(3);
+    expect(builder.method()).toBe(3);
+  });
+
+  it("should be instanceof", () => {
+    const builder = new FooBuilder();
+    expect(builder).toBeInstanceOf(FooBuilder);
+  });
   it("should build a class", () => {
     const foo = new FooBuilder().a("foo").b(1).build();
     expect(foo).toBeInstanceOf(Foo);
@@ -95,6 +107,12 @@ describe("Class Builder", () => {
     expect(foo).toEqual("foo");
   });
 
+  it("should verify a key is in the target", () => {
+    const builder = new FooBuilder().a("foo").b(1);
+
+    expect("a" in builder).toBe(true);
+    expect("b" in builder).toBe(false);
+  });
   it("should build with default values", () => {
     const foo = new DefaultsTestFooBuilder().build();
     const { a, b, c } = foo;
@@ -117,7 +135,7 @@ describe("Class Builder", () => {
   it("should create a builder from a partial dto", () => {
     const partial = { a: "foo1-a" };
     const builder = DefaultsTestFooBuilder.fromRaw(partial);
-    const dto = builder.build()
+    const dto = builder.build();
     expect(builder).toBeInstanceOf(DefaultsTestFooBuilder);
     expect(dto).toBeInstanceOf(DefaultsTest);
     expect(dto.a).toEqual("foo1-a");
