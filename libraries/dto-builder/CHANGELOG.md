@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.13.1
+
+### Patch Changes
+
+- 95512a3: fix(dto-builder): default dto properties are not enumerable
+
 ## 0.13.0
 
 ### Minor Changes
