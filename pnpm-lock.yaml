@@ -446,7 +446,7 @@ importers:
   cucumber/cucumber-transformer-jest:
     dependencies:
       '@autometa/cucumber-runner':
-        specifier: workspace:^0.10.2
+        specifier: workspace:^0.11.0
         version: link:../cucumber-runner
       '@babel/core':
         specifier: ^7.22.11

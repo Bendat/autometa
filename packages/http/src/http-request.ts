@@ -23,12 +23,12 @@ export class HTTPRequest<T = unknown> implements RequestConfig<T> {
    *
    * Note characters may be converted to escape codes. I.e (space => %20) and (comma => %2C)
    *
-   * N.B this method estimates what the url will be. The actual value
+   * N.B this getter estimates what the url will be. The actual value
    * might be different depending on your underlying HTTPClient and
    * configuration. For example, query parameters might
    * use different array formats.
    */
-  fullUrl() {
+  get fullUrl() {
     return urlJoinP(this.baseUrl, this.route, this.params);
   }
 
@@ -49,7 +49,11 @@ export class HTTPRequest<T = unknown> implements RequestConfig<T> {
 
 export class HTTPRequestBuilder<T extends HTTPRequest<unknown>> {
   #request: T;
-  #dynamicHeaders = new Map<string, () => string | number | boolean | null>();
+  #dynamicHeaders = new Map<
+    string,
+    | (() => string | number | boolean | null)
+    | (() => Promise<string | number | boolean | null>)
+  >();
 
   constructor(request: T | (() => T) = () => new HTTPRequest() as T) {
     if (typeof request === "function") {
@@ -67,10 +71,10 @@ export class HTTPRequestBuilder<T extends HTTPRequest<unknown>> {
     return this.#request;
   }
 
-  resolveDynamicHeaders() {
+  async resolveDynamicHeaders() {
     for (const [name, value] of this.#dynamicHeaders) {
       try {
-        this.#request.headers[name] = String(value());
+        this.#request.headers[name] = String(await value());
       } catch (e) {
         const cause = e as Error;
         const msg = `Failed to resolve dynamic header "${name}": 
@@ -130,12 +134,15 @@ ${cause}`;
       | number
       | boolean
       | null
+      | (string | number | boolean)[]
       | (() => string | number | boolean | null)
+      | (() => Promise<string | number | boolean | null>)
   ) {
     if (typeof value === "function") {
-      value = value();
+      this.#dynamicHeaders.set(name, value);
     }
-    this.#request.headers[name] = String(value);
+    const val = Array.isArray(value) ? value.join(",") : String(value);
+    this.#request.headers[name] = val;
     return this;
   }
 
