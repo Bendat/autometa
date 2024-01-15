@@ -1,5 +1,12 @@
 # @autometa/http
 
+## 1.4.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @autometa/dto-builder@0.13.2
+
 ## 1.4.2
 
 ### Patch Changes

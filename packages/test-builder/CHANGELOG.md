@@ -1,5 +1,15 @@
 # @autometa/test-builder
 
+## 0.2.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @autometa/dto-builder@0.13.2
+  - @autometa/gherkin@0.6.2
+  - @autometa/scopes@0.5.2
+  - @autometa/events@0.2.14
+
 ## 0.2.2
 
 ### Patch Changes
