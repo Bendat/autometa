@@ -1,5 +1,12 @@
 # @autometa/http
 
+## 1.4.6
+
+### Patch Changes
+
+- Updated dependencies [db87a56]
+  - @autometa/dto-builder@0.13.5
+
 ## 1.4.5
 
 ### Patch Changes
