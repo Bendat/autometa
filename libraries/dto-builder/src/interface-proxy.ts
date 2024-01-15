@@ -1,7 +1,6 @@
 import { metadata } from "@autometa/injection";
 import { Class, PropertyMetadata } from "./types";
 import { DtoBuilderSymbols } from "./property.enum";
-import { R } from "vitest/dist/reporters-5f784f42";
 export type IBuilder<T> = {
   [k in keyof T]-?: ((arg: T[k]) => IBuilder<T>) & (() => T[k]);
 } & {
