@@ -1,6 +1,7 @@
 import { metadata } from "@autometa/injection";
 import { Class, PropertyMetadata } from "./types";
 import { DtoBuilderSymbols } from "./property.enum";
+import { R } from "vitest/dist/reporters-5f784f42";
 export type IBuilder<T> = {
   [k in keyof T]-?: ((arg: T[k]) => IBuilder<T>) & (() => T[k]);
 } & {
@@ -154,60 +155,57 @@ export function Builder<T>(defaults?: Partial<T> | Class<T>): IBuilder<T> | DtoB
     // return clsBuilder as IBuilder<T>;
   }
   const built: Record<string, unknown> = { ...defaults };
-  const builder = new Proxy(
-    {},
-    {
-      get(target, prop) {
-        if ("build" === prop) {
-          return () => built;
-        }
+  const builder = new Proxy(built, {
+    get(target, prop) {
+      if ("build" === prop) {
+        return () => built;
+      }
 
-        if ("derive" === prop) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return () => Builder<T>({ ...built } as any);
-        }
+      if ("derive" === prop) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return () => Builder<T>({ ...built } as any);
+      }
 
-        if ("assign" === prop) {
-          return (property: keyof T, value: unknown) => {
-            built[property.toString()] = value;
-            return target;
-          };
-        }
-
-        if ("attach" === prop) {
-          return (property: keyof T, subProperty: string, value: unknown) => {
-            if (typeof built[property.toString()] === undefined) {
-              built[property.toString()] = {};
-            }
-            const dict = built[property.toString()] as Record<string, unknown>;
-            dict[subProperty] = value;
-            return target;
-          };
-        }
-
-        if ("append" === prop) {
-          return (property: keyof T, value: unknown) => {
-            if (!Array.isArray(built[property.toString()])) {
-              built[property.toString()] = [value];
-            } else {
-              (built[property.toString()] as unknown[]).push(value);
-            }
-            return target;
-          };
-        }
-
-        return (...args: unknown[]): unknown => {
-          // If no arguments passed return current value.
-          if (0 === args.length) {
-            return built[prop.toString()];
-          }
-
-          built[prop.toString()] = args[0];
-          return builder;
+      if ("assign" === prop) {
+        return (property: keyof T, value: unknown) => {
+          built[property.toString()] = value;
+          return target;
         };
-      },
-    }
-  );
+      }
+
+      if ("attach" === prop) {
+        return (property: keyof T, subProperty: string, value: unknown) => {
+          if (typeof built[property.toString()] === undefined) {
+            built[property.toString()] = {};
+          }
+          const dict = built[property.toString()] as Record<string, unknown>;
+          dict[subProperty] = value;
+          return target;
+        };
+      }
+
+      if ("append" === prop) {
+        return (property: keyof T, value: unknown) => {
+          if (!Array.isArray(built[property.toString()])) {
+            built[property.toString()] = [value];
+          } else {
+            (built[property.toString()] as unknown[]).push(value);
+          }
+          return target;
+        };
+      }
+
+      return (...args: unknown[]): unknown => {
+        // If no arguments passed return current value.
+        if (0 === args.length) {
+          return built[prop.toString()];
+        }
+
+        built[prop.toString()] = args[0];
+        return builder;
+      };
+    },
+  });
 
   return builder as IBuilder<T>;
 }
@@ -250,6 +248,9 @@ function classProxy<T>(defaults: Class<T>, built: Record<string, unknown>, inst:
           dict[subProperty] = value;
           return clsBuilder;
         };
+      }
+      if ((prop) in (inst as Record<string, unknown>)) {
+        return (inst as Record<string, unknown>)[prop as string];
       }
       const fn = (...args: unknown[]): unknown => {
         // If no arguments passed return current value.
