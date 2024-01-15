@@ -144,24 +144,96 @@ and instance of [CompiledDataTable](https://github.com/Bendat/autometa/blob/main
 The compiled table contains two 2d arrays:
 
 - `table`
-    - List of converted types. I.e `| 2 |` will become `2` not `"2"`
+  - List of converted types. I.e `| 2 |` will become `2` not `"2"`
 - `rawTable`
-    - List of unconverted types. I.e `| 2 |` will remain `"2"` not `2`
+  - List of unconverted types. I.e `| 2 |` will remain `"2"` not `2`
 
 ```ts
 import { CompiledDataTable } from "@autometa/runner";
 
 export class MyTable {
-    constructor(private readonly compiledTable: CompiledDataTable) {}
+  constructor(private readonly compiledTable: CompiledDataTable) {}
 
-    get<T>(header: string, row: number, raw = false): T {
-        // Your get logic here
-    }
+  get<T>(header: string, row: number, raw = false): T {
+    // Your get logic here
+  }
 }
-
 ```
 
-_________________________________________________________
+---
 
 There is no common interface for what methods can be on a table, so you will need to
 decide your own.
+
+# Table Documents
+
+Table documents are a way of automatically mapping a table to a js object
+with named properties. Only vertical (`VTable`) and horizontal (`HTable`) tables
+are supported for table documents.
+
+## Defining Table Documents
+
+To declare a table document, you can create a class which extends from
+the return value of the static `.Document` method which exists on
+`HTable` and `VTable`.
+
+Properties can be defined by using the respective tables static
+`.cell` method, which accepts a title for the row or column which defines
+the document.
+
+```ts
+import { HTable } from "@autometa/runner";
+
+class UserTable extends HTable.Document() {
+  @HTable.cell("Username")
+  username: string;
+
+  @HTable.cell("Is Admin")
+  isAdmin: boolean;
+}
+
+// VTable
+
+import { VTable } from "@autometa/runner";
+
+class UserTable extends VTable.Document() {
+  @VTable.cell("Username")
+  username: string;
+
+  @VTable.cell("Is Admin")
+  isAdmin: boolean;
+}
+```
+
+## Using Table Documents
+
+If a table type blueprint (uninstantiated class reference) passed to a Step Definition
+is a TableDocument, then the table will automatically be converted to an array of TableDocument
+instances. This array will be provided to the Step Definition callback where a table would normally be
+if defined.
+
+```ts
+// user.document.ts
+import { HTable } from "@autometa/runner";
+
+class UserTable extends HTable.Document() {
+  @HTable.cell("Username")
+  username: string;
+
+  @HTable.cell("Is Admin")
+  isAdmin: boolean;
+}
+
+// user.given.ts
+Given(
+  "a step with a table",
+  (table) => {
+    const firstUser = table[0];
+    const firstUsername = firstUser.username;
+    const firstIsAdmin = firstUser.isAdmin;
+  },
+  UserTable
+);
+```
+
+As documents are provided as an array, loops. maps, filters and destructuring will all work as expected.
