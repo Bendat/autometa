@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.1
+
+### Patch Changes
+
+- 16634f7: fix(HTTP): dynamic headers not passable nor resolving
+
 ## 1.4.0
 
 ### Minor Changes
