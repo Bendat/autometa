@@ -71,10 +71,13 @@ export class HTTPRequestBuilder<T extends HTTPRequest<unknown>> {
     return this.#request;
   }
 
-  async resolveDynamicHeaders() {
+  async resolveDynamicHeaders(
+    request: HTTPRequest<T> = this.#request as HTTPRequest<T>
+  ) {
     for (const [name, value] of this.#dynamicHeaders) {
       try {
-        this.#request.headers[name] = String(await value());
+        if (!request.headers) request.headers = {};
+        request.headers[name] = String(await value());
       } catch (e) {
         const cause = e as Error;
         const msg = `Failed to resolve dynamic header "${name}": 
@@ -136,12 +139,15 @@ ${cause}`;
       | null
       | (string | number | boolean)[]
       | (() => string | number | boolean | null)
-      | (() => Promise<string | number | boolean | null>)
+      | (() => Promise<string | number | boolean | null>),
+    onArray: (value: (string | number | boolean)[]) => string = (value) =>
+      value.join(",")
   ) {
     if (typeof value === "function") {
       this.#dynamicHeaders.set(name, value);
+      return this;
     }
-    const val = Array.isArray(value) ? value.join(",") : String(value);
+    const val = Array.isArray(value) ? onArray(value) : String(value);
     this.#request.headers[name] = val;
     return this;
   }
@@ -160,12 +166,30 @@ ${cause}`;
     return this;
   }
 
+  #setDynamicHeaders(
+    headers: Map<
+      string,
+      | (() => string | number | boolean | null)
+      | (() => Promise<string | number | boolean | null>)
+    >
+  ) {
+    this.#dynamicHeaders = new Map(headers);
+    return this;
+  }
+
   derive(): HTTPRequestBuilder<T> {
     const request = HTTPRequest.derive(this.#request);
-    return new HTTPRequestBuilder(request) as HTTPRequestBuilder<T>;
+    return new HTTPRequestBuilder(request).#setDynamicHeaders(
+      this.#dynamicHeaders
+    ) as HTTPRequestBuilder<T>;
   }
 
   build(): HTTPRequest<T> {
+    return this.#request as HTTPRequest<T>;
+  }
+
+  async buildAsync(): Promise<HTTPRequest<T>> {
+    await this.resolveDynamicHeaders();
     return this.#request as HTTPRequest<T>;
   }
 }

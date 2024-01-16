@@ -145,7 +145,7 @@ export class HTTP {
     > = new HTTPRequestBuilder(),
     metaConfig: MetaConfigBuilder = new MetaConfigBuilder()
   ) {
-    this.#request = builder.derive();
+    this.#request = builder;
     this.#metaConfig = metaConfig.derive();
   }
 
