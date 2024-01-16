@@ -1,5 +1,18 @@
 # @autometa/runner
 
+## 0.4.8
+
+### Patch Changes
+
+- Updated dependencies [cccedea]
+  - @autometa/http@1.4.7
+  - @autometa/gherkin@0.6.6
+  - @autometa/scopes@0.5.6
+  - @autometa/test-builder@0.2.7
+  - @autometa/coordinator@0.3.9
+  - @autometa/events@0.2.18
+  - @autometa/jest-executor@0.4.9
+
 ## 0.4.7
 
 ### Patch Changes
