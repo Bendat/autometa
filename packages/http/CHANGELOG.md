@@ -1,5 +1,13 @@
 # @autometa/http
 
+## 1.4.7
+
+### Patch Changes
+
+- cccedea: fix(http): dynamic headers not deriving and resolving correctly
+- Updated dependencies [cccedea]
+  - @autometa/dto-builder@0.13.6
+
 ## 1.4.6
 
 ### Patch Changes
