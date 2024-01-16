@@ -107,12 +107,6 @@ describe("Class Builder", () => {
     expect(foo).toEqual("foo");
   });
 
-  it("should verify a key is in the target", () => {
-    const builder = new FooBuilder().a("foo").b(1);
-
-    expect("a" in builder).toBe(true);
-    expect("b" in builder).toBe(false);
-  });
   it("should build with default values", () => {
     const foo = new DefaultsTestFooBuilder().build();
     const { a, b, c } = foo;

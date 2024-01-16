@@ -20,13 +20,33 @@ describe("HTTP", () => {
       request: HTTPRequest<TRequestType>,
       options?: HTTPAdditionalOptions<unknown> | undefined
     ): Promise<HTTPResponse<TResponseType>> {
+      console.log(request);
+
       return this.testFn(request, options) as HTTPResponse<TResponseType>;
     }
   }
+
+  describe("resolving dynamic headers", () => {
+    it("should resolve dynamic headers", async () => {
+      const response = HTTPResponseBuilder.create().status(200).build();
+      const request = HTTPRequestBuilder.create()
+      const fn = vi.fn().mockImplementation((req: HTTPRequest)=>{
+        response.request = req;
+        return response;
+      });
+      const client = new MockClient(fn);
+      const http = new HTTP(client, request).sharedHeader("foo", () => "bar");
+      const result = await http.get();
+      expect(result.request.headers["foo"]).toBe("bar");
+    });
+  });
   describe("allowPlainText", () => {
     it("should throw an error when allowPlainText is false", async () => {
       const response = HTTPResponseBuilder.create().data("Hello World").build();
-      const fn = vi.fn().mockReturnValue(response);
+      const fn = vi.fn().mockImplementation((req: HTTPRequest)=>{
+        response.request = req;
+        return response;
+      })
       const client = new MockClient(fn);
       const http = new HTTP(client).allowPlainText(false);
       await expect(() => http.get()).rejects.toThrowError(
