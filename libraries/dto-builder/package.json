@@ -1,6 +1,6 @@
 {
   "name": "@autometa/dto-builder",
-  "version": "0.13.6",
+  "version": "0.13.7",
   "description": "Define DTOs and Entities and automatically create a builder class.",
   "type": "module",
   "main": "dist/index.js",

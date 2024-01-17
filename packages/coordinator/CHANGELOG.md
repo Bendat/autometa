@@ -1,5 +1,19 @@
 # @autometa/coordinator
 
+## 0.3.10
+
+### Patch Changes
+
+- Updated dependencies [536004e]
+- Updated dependencies [bac2661]
+  - @autometa/app@0.3.3
+  - @autometa/jest-executor@0.4.10
+  - @autometa/gherkin@0.6.7
+  - @autometa/scopes@0.5.7
+  - @autometa/test-builder@0.2.8
+  - @autometa/config@0.1.22
+  - @autometa/events@0.2.19
+
 ## 0.3.9
 
 ### Patch Changes
