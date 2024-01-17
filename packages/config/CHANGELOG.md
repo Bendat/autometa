@@ -1,5 +1,13 @@
 # @autometa/config
 
+## 0.1.22
+
+### Patch Changes
+
+- Updated dependencies [536004e]
+- Updated dependencies [bac2661]
+  - @autometa/app@0.3.3
+
 ## 0.1.21
 
 ### Patch Changes

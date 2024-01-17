@@ -1,5 +1,20 @@
 # @autometa/http
 
+## 1.4.8
+
+### Patch Changes
+
+- 536004e: fix: injection errors and http client hooks
+
+  - The new dependency injection library sometimes returned class prototypes instead of class instances due to inconsistent caching of decorated types.
+  - HTTP client hooks were not executing when certain builder methods were called.
+
+- Updated dependencies [536004e]
+- Updated dependencies [bac2661]
+  - @autometa/dto-builder@0.13.7
+  - @autometa/injection@0.1.2
+  - @autometa/app@0.3.3
+
 ## 1.4.7
 
 ### Patch Changes

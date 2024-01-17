@@ -1,5 +1,20 @@
 # @autometa/jest-executor
 
+## 0.4.10
+
+### Patch Changes
+
+- bac2661: fix: world not defined on app
+- Updated dependencies [536004e]
+- Updated dependencies [bac2661]
+  - @autometa/injection@0.1.2
+  - @autometa/app@0.3.3
+  - @autometa/gherkin@0.6.7
+  - @autometa/scopes@0.5.7
+  - @autometa/test-builder@0.2.8
+  - @autometa/config@0.1.22
+  - @autometa/events@0.2.19
+
 ## 0.4.9
 
 ### Patch Changes

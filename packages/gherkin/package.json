@@ -1,6 +1,6 @@
 {
   "name": "@autometa/gherkin",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "Gherkin implementation for @autometa",
   "type": "module",
   "main": "dist/index.js",
