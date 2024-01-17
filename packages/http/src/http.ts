@@ -156,7 +156,8 @@ export class HTTP {
     > = new HTTPRequestBuilder(),
     metaConfig: MetaConfigBuilder = new MetaConfigBuilder()
   ) {
-    return new HTTP(client, builder, metaConfig);
+    const derived = new HTTP(client, builder, metaConfig);
+    return derived;
   }
 
   /**
@@ -300,7 +301,11 @@ export class HTTP {
    */
   route(...route: (string | number | boolean)[]) {
     const mapped = route.map((r) => String(r));
-    return HTTP.create(this.client, this.#request.derive().route(...mapped));
+    return HTTP.create(
+      this.client,
+      this.#request.derive().route(...mapped),
+      this.#metaConfig.derive()
+    );
   }
 
   /**
@@ -540,7 +545,11 @@ export class HTTP {
   param(name: string, ...value: (string | number | boolean)[]): HTTP;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   param(name: string, value: any) {
-    return HTTP.create(this.client, this.#request.derive().param(name, value));
+    return HTTP.create(
+      this.client,
+      this.#request.derive().param(name, value),
+      this.#metaConfig.derive()
+    );
   }
 
   /**
@@ -564,7 +573,11 @@ export class HTTP {
    */
   params(dict: Record<string, string>) {
     this.#request.params(dict);
-    return HTTP.create(this.client, this.#request.derive().params(dict));
+    return HTTP.create(
+      this.client,
+      this.#request.derive().params(dict),
+      this.#metaConfig.derive()
+    );
   }
 
   /**
@@ -624,7 +637,11 @@ export class HTTP {
       | (() => string | number | boolean | null)
       | (() => Promise<string | number | boolean | null>)
   ) {
-    return HTTP.create(this.client, this.#request.derive().header(name, value));
+    return HTTP.create(
+      this.client,
+      this.#request.derive().header(name, value),
+      this.#metaConfig.derive()
+    );
   }
 
   /**
@@ -640,7 +657,11 @@ export class HTTP {
    */
   data<T>(data: T) {
     this.#request.data(data);
-    return HTTP.create(this.client, this.#request.derive().data(data));
+    return HTTP.create(
+      this.client,
+      this.#request.derive().data(data),
+      this.#metaConfig.derive()
+    );
   }
 
   /**

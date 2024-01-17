@@ -1,6 +1,7 @@
 import { Class } from "@autometa/types";
 import { metadata } from "./metadata";
 import { InjectionToken } from "./token";
+import { getConstructor } from "./get-constructor";
 
 export const Inject = {
   /**
@@ -14,7 +15,7 @@ export const Inject = {
    */
   class: <T>(cls: Class<T> | InjectionToken) => {
     return function (target: unknown, propertyKey: string) {
-      metadata(target as Class<unknown>).set({
+      metadata(getConstructor(target)).set({
         key: propertyKey,
         class: cls
       });
@@ -26,12 +27,12 @@ export const Inject = {
    * called once per injection, and it's return value will be
    * used as the value of the property. Currently only synchronous
    * factory functions are supported.
-   * @param factory 
-   * @returns 
+   * @param factory
+   * @returns
    */
   factory: <T>(factory: () => T) => {
     return function (target: unknown, propertyKey: string) {
-      metadata(target as Class<unknown>).set({
+      metadata(getConstructor(target)).set({
         key: propertyKey,
         factory: factory
       });
@@ -42,16 +43,18 @@ export const Inject = {
    * The value will be injected directly into the property without any
    * further processing. Equivalent to simply assigning the value to the
    * property.
-   * 
-   * @param value 
-   * @returns 
+   *
+   * @param value
+   * @returns
    */
-  value: <T>(value: T) => {
+  value: <T extends Class<unknown> | InjectionToken | string>(value: T) => {
     return function (target: unknown, propertyKey: string) {
-      metadata(target as Class<unknown>).set({
+      metadata(getConstructor(target)).set({
         key: propertyKey,
         value: value
       });
     };
   }
 };
+
+

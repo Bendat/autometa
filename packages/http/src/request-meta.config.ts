@@ -52,6 +52,8 @@ export class MetaConfigBuilder {
     args.forEach((arg) => {
       if (typeof arg === "number") {
         this.#schemaMap.registerStatus(parser, arg);
+      } else if (Array.isArray(arg)) {
+        this.#schemaMap.registerStatus(parser, ...arg);
       } else {
         this.#schemaMap.registerRange(parser, arg.from, arg.to);
       }
@@ -76,7 +78,7 @@ export class MetaConfigBuilder {
   }
 
   #setOnSend(hooks: [string, RequestHook][]) {
-    this.#onBeforeSend = hooks;
+    this.#onBeforeSend = [...hooks];
     return this;
   }
 
@@ -91,7 +93,7 @@ export class MetaConfigBuilder {
   }
 
   #setOnReceive(hooks: [string, ResponseHook<unknown>][]) {
-    this.#onAfterSend = hooks;
+    this.#onAfterSend = [...hooks];
     return this;
   }
 

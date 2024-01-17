@@ -7,7 +7,7 @@
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "coverage": "vitest run --coverage",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",

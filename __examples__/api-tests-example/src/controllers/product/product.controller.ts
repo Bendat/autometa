@@ -6,13 +6,13 @@ import { BaseController } from "../base.controller";
 @Fixture
 export class ProductController extends BaseController {
   constructor(http: HTTP) {
-    super(http)
+    super(http);
   }
 
   all() {
     return this.http
       .route("products")
-      .schema(ProductListSchema, 201)
+      .schema(ProductListSchema, 201, 200)
       .get<ProductList>();
   }
 
@@ -20,14 +20,14 @@ export class ProductController extends BaseController {
     return this.http
       .route("products")
       .route(id)
-      .schema(ProductSchema, 201)
+      .schema(ProductSchema, 201, 200)
       .get<Product>();
   }
 
   search(query: string) {
     return this.http
       .route("products")
-      .schema(ProductListSchema, 201)
+      .schema(ProductListSchema, 201, 200)
       .param("q", query)
       .get<ProductList>();
   }
@@ -37,7 +37,7 @@ export class ProductController extends BaseController {
       .route("products")
       .route(id)
       .data(data)
-      .schema(ProductSchema, 201)
+      .schema(ProductSchema, 201, 200)
       .put<Product>();
   }
 

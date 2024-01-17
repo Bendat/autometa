@@ -6,18 +6,18 @@ export function metadata<T extends object>(target: T) {
     [AutometaSymbol.META_DATA]: AutometaMetadata;
   };
   if (!(AutometaSymbol.META_DATA in target)) {
-    withMetaData[AutometaSymbol.META_DATA] = {};
+    defineNonEnumerable(target, AutometaSymbol.META_DATA, {});
   }
   const metadata = withMetaData[AutometaSymbol.META_DATA];
 
   return {
     set: (info: MetadataInfo, override = true) => {
       if (!metadata[info.key]) {
-        metadata[info.key] = info;
+        defineNonEnumerable(target, AutometaSymbol.META_DATA, metadata);
         return;
       }
       if (override) {
-        metadata[info.key] = info;
+        defineNonEnumerable(target, AutometaSymbol.META_DATA, metadata);
         return;
       }
     },
@@ -33,7 +33,7 @@ export function metadata<T extends object>(target: T) {
     custom: <T>(key: symbol, value: T, override = true) => {
       const md = withMetaData as unknown as Record<symbol, unknown>;
       if (!md[key] || override) {
-        md[key] = value;
+        defineNonEnumerable(target, key, value);
       }
       return md[key] as T;
     },
@@ -52,4 +52,17 @@ export function metadata<T extends object>(target: T) {
       return Object.keys(metadata) as (keyof T)[];
     }
   };
+}
+
+function defineNonEnumerable<T>(
+  target: T,
+  key: string | symbol,
+  value: unknown
+) {
+  Object.defineProperty(target, key, {
+    enumerable: false,
+    configurable: true,
+    writable: false,
+    value
+  });
 }

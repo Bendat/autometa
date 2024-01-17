@@ -1,4 +1,4 @@
 {
   "extends": "tsconfig/base.json",
-  "files": ["src/index.ts", "src/types.ts"],
+  "files": ["src/index.ts", "src/types.ts", "src/get-constructor.ts"],
 }

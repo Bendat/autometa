@@ -21,7 +21,7 @@ class TestClass {
 
 describe("DtoDefault", () => {
   it("should add a value as metadata", () => {
-    const { b } = metadata(TestClass.prototype).getCustom<PropertyMetadata>(
+    const { b } = metadata(TestClass).getCustom<PropertyMetadata>(
       DtoBuilderSymbols.PROPERTY_DEFAULTS
     );
     expect(b).toHaveProperty("value");
@@ -29,7 +29,7 @@ describe("DtoDefault", () => {
   });
 
   it("should add a dto as metadata", () => {
-    const { c } = metadata(TestClass.prototype).getCustom<PropertyMetadata>(
+    const { c } = metadata(TestClass).getCustom<PropertyMetadata>(
       DtoBuilderSymbols.PROPERTY_DEFAULTS
     );
     expect(c).toHaveProperty("dtoType");
@@ -37,7 +37,7 @@ describe("DtoDefault", () => {
   });
 
   it("should add a factory as metadata", () => {
-    const { d } = metadata(TestClass.prototype).getCustom<PropertyMetadata>(
+    const { d } = metadata(TestClass).getCustom<PropertyMetadata>(
       DtoBuilderSymbols.PROPERTY_DEFAULTS
     );
     expect(d).toHaveProperty("factory");

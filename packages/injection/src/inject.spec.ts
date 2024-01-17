@@ -10,7 +10,7 @@ describe("injection", () => {
   }
 
   it("should register a class metadata", () => {
-    const retrieved = metadata(TestClass.prototype).get("foo");
+    const retrieved = metadata(TestClass).get("foo");
     expect(retrieved).toEqual({
       key: "foo",
       class: TestFoo
@@ -23,7 +23,7 @@ describe("injection", () => {
       foo: string;
     }
 
-    const retrieved = metadata(TestClass.prototype).get("foo");
+    const retrieved = metadata(TestClass).get("foo");
     expect(retrieved).toEqual({
       key: "foo",
       value: 'foo'
