@@ -27,7 +27,7 @@ import { chooseTimeout } from "./timeout-selector";
 import { GlobalScope, NullTimeout, Timeout } from "@autometa/scopes";
 import { Container, defineContainerContext } from "@autometa/injection";
 export function execute(
-  { app }: { app: Class<App>; world: Class<World> },
+  { app, world }: { app: Class<App>; world: Class<World> },
   global: GlobalScope,
   bridge: FeatureBridge,
   events: TestEventEmitter,
@@ -55,14 +55,18 @@ export function execute(
     let localApp: App;
     const globalContainerContext = defineContainerContext("global");
     const globalContainer = new Container(globalContainerContext);
+    globalContainer.registerCached(world);
     const staticApp: App = globalContainer.get(app);
+    staticApp.world = globalContainer.get(world);
     staticApp.di = globalContainer;
     beforeEach(() => {
       const name =
         expect.getState().currentTestName ?? raise("A test must have a name");
       testContainerContext = defineContainerContext(name);
       testContainer = new Container(testContainerContext);
+      testContainer.registerCached(world);
       localApp = testContainer.get(app);
+      localApp.world = testContainer.get(world);
       localApp.di = testContainer;
     });
 
