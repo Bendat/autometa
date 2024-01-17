@@ -18,7 +18,7 @@ export interface Default {
 
 export const DefaultValueDecorators: Default = {
   value: (value: unknown) => (target: object, propertyKey: string | symbol) => {
-    const container = metadata(target as Class<unknown>).custom<PropertyMetadata>(
+    const container = metadata(getConstructor(target)).custom<PropertyMetadata>(
       DtoBuilderSymbols.PROPERTY_DEFAULTS,
       {},
       false
@@ -29,7 +29,7 @@ export const DefaultValueDecorators: Default = {
   factory:
     (factory: (...args: unknown[]) => unknown) =>
     (target: object, propertyKey: string | symbol) => {
-      const container = metadata(target as Class<unknown>).custom<PropertyMetadata>(
+      const container = metadata(getConstructor(target)).custom<PropertyMetadata>(
         DtoBuilderSymbols.PROPERTY_DEFAULTS,
         {},
         false
@@ -38,7 +38,7 @@ export const DefaultValueDecorators: Default = {
       container[propertyKey as string] = datum;
     },
   dto: (dtoType: Class<unknown>) => (target: object, propertyKey: string | symbol) => {
-    const container = metadata(target as Class<unknown>).custom<PropertyMetadata>(
+    const container = metadata(getConstructor(target)).custom<PropertyMetadata>(
       DtoBuilderSymbols.PROPERTY_DEFAULTS,
       {},
       false
@@ -48,7 +48,7 @@ export const DefaultValueDecorators: Default = {
   },
   date: (stamp?: string | number | undefined) => {
     return (target: object, propertyKey: string | symbol) => {
-      const container = metadata(target as Class<unknown>).custom<PropertyMetadata>(
+      const container = metadata(getConstructor(target)).custom<PropertyMetadata>(
         DtoBuilderSymbols.PROPERTY_DEFAULTS,
         {},
         false
@@ -68,3 +68,10 @@ export const DefaultValueDecorators: Default = {
     };
   },
 };
+
+export function getConstructor(target: unknown) {
+  if (target && "constructor" in (target as object)) {
+    return target.constructor;
+  }
+  throw new Error(`Cannot get constructor for ${target}`);
+}

@@ -275,7 +275,7 @@ function isClassBuilder<T>(cls: unknown): cls is Class<T> {
 }
 
 function constructDefaultDto<T>(base: Class<T>): T {
-  const defaultSetters = metadata(base.prototype).getCustom<PropertyMetadata>(
+  const defaultSetters = metadata(base).getCustom<PropertyMetadata>(
     DtoBuilderSymbols.PROPERTY_DEFAULTS
   );
   const instance = new base();

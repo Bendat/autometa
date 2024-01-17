@@ -31,7 +31,7 @@ describe("DTO", () => {
   });
 
   it("should contain default value metadata", () => {
-    const { a } = metadata(TestDto2.prototype).getCustom<PropertyMetadata>(
+    const { a } = metadata(TestDto2).getCustom<PropertyMetadata>(
       DtoBuilderSymbols.PROPERTY_DEFAULTS
     );
     expect(a).toHaveProperty("value");

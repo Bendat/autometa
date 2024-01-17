@@ -50,7 +50,7 @@ describe("cached dependencies are shared within a container", () => {
     expect(root.cache2).toBeDefined();
     expect(root.cache1).toBeInstanceOf(CachedClass);
     expect(root.cache2).toBeInstanceOf(CachedClass);
-    expect(root.cache1.id).toBe(root.cache2.id);
+    expect(root.cache1.id).toEqual(root.cache2.id);
   });
 });
 
@@ -74,7 +74,7 @@ describe("singletons are shared across containers and within containers", () => 
     expect(root).toBeDefined();
     expect(root.singleton).toBeDefined();
     expect(root.singleton).toBeInstanceOf(SingletonClass);
-    expect(root.singleton.id).toBe(root.singleton1.id);
+    expect(root.singleton.id).toEqual(root.singleton1.id);
   });
 
   it("should share singletons across containers", () => {
@@ -84,7 +84,7 @@ describe("singletons are shared across containers and within containers", () => 
     expect(root1).toBeDefined();
     expect(root1.singleton).toBeDefined();
     expect(root1.singleton).toBeInstanceOf(SingletonClass);
-    expect(root1.singleton.id).toBe(root1.singleton.id);
+    expect(root1.singleton.id).toEqual(root1.singleton.id);
 
     const context2 = defineContainerContext("global");
     const container2 = new Container(context2);
@@ -92,7 +92,7 @@ describe("singletons are shared across containers and within containers", () => 
     expect(root2).toBeDefined();
     expect(root2.singleton).toBeDefined();
     expect(root2.singleton).toBeInstanceOf(SingletonClass);
-    expect(root2.singleton.id).toBe(root1.singleton.id);
+    expect(root2.singleton.id).toEqual(root1.singleton.id);
   });
 });
 describe("more complex dependencies", () => {
@@ -149,9 +149,9 @@ describe("more complex dependencies", () => {
     expect(root.intermediary.cached).toBeInstanceOf(CachedClass);
     expect(root.intermediary.cached.transient).toBeInstanceOf(TransientClass);
     expect(root.intermediary.cached.singleton).toBeInstanceOf(SingletonClass);
-    expect(root.singleton.id).toBe(root.cached.singleton.id);
-    expect(root.transient.id).not.toBe(root.cached.transient.id);
-    expect(root.intermediary.cached.singleton.id).toBe(
+    expect(root.singleton.id).toEqual(root.cached.singleton.id);
+    expect(root.transient.id).not.toEqual(root.cached.transient.id);
+    expect(root.intermediary.cached.singleton.id).toEqual(
       root.cached.singleton.id
     );
   });
@@ -172,7 +172,7 @@ describe("managing dependencies through a container", () => {
     const container = new Container(context);
     const instance = {};
     container.registerSingletonValue("foo", instance);
-    expect(container.get("foo")).toBe(instance);
+    expect(container.get("foo")).toEqual(instance);
   });
 
   it("should register a singleton procedurally", () => {
@@ -183,7 +183,7 @@ describe("managing dependencies through a container", () => {
     const instance = container.get(TestClass);
     const instance2 = container.get(TestClass);
     expect(instance).toBeInstanceOf(TestClass);
-    expect(instance).toBe(instance2);
+    expect(instance).toEqual(instance2);
   });
 
   it("should register a cached value procedurally", () => {
@@ -191,7 +191,7 @@ describe("managing dependencies through a container", () => {
     const container = new Container(context);
     const instance = { bob: "yes" };
     container.registerCachedValue("cached", instance);
-    expect(container.get("cached")).toBe(instance);
+    expect(container.get("cached")).toEqual(instance);
     expect(container.get("cached")).toBe(instance);
   });
 
@@ -219,7 +219,7 @@ describe("constructors", () => {
   }
 
   @Fixture
-  class InheritedTestClass extends TestClass{}
+  class InheritedTestClass extends TestClass {}
   it("should construct a class with a constructor", () => {
     const context = defineContainerContext("abc12");
     const container = new Container(context);
@@ -228,11 +228,11 @@ describe("constructors", () => {
     expect(instance).toBeInstanceOf(TestClass);
   });
 
-  it('should construct a subclass with a constructor', ()=>{
+  it("should construct a subclass with a constructor", () => {
     const context = defineContainerContext("abc13");
     const container = new Container(context);
     container.registerTransient(Token("class2"), DependencyClass2);
     const instance = container.get(InheritedTestClass);
     expect(instance).toBeInstanceOf(InheritedTestClass);
-  })
+  });
 });

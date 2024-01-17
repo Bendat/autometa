@@ -79,7 +79,8 @@ export class Container {
   get<T>(target: Class<T>): T;
   get<T>(target: InjectorKey | string): T;
   get<T>(target: InjectorKey | string): T {
-    target = typeof target === "string" ? Token(target) : target;
+    target = getRealTarget(target);
+
     if (hasSingleton(target)) {
       return getSingleton(target) as T;
     }
@@ -90,7 +91,7 @@ export class Container {
     const type = getTypeToken(target) ?? (target as Class<unknown>);
     if (scope === INJECTION_SCOPE.SINGLETON) {
       const instance = this.#assembleTarget(type);
-      registerSingleton(type, instance);
+      registerSingleton(target, instance);
       return instance as T;
     }
 
@@ -98,10 +99,11 @@ export class Container {
       if (hasContainerContext(this.reference, target)) {
         return getContainerContexts(this.reference, target) as T;
       }
+      const assembled = this.#assembleTarget(type);
       return registerContainerContext(
         this.reference,
         target,
-        this.#assembleTarget(type)
+        assembled
       ) as T;
     }
 
@@ -112,7 +114,7 @@ export class Container {
     const constructor = this.#getConstructorArgs<T>(target);
     const args = constructor.map((arg) => this.get(arg));
     const instance = new target(...args) as Record<string, unknown>;
-    const meta = metadata(target.prototype);
+    const meta = metadata(target);
     const keys = meta.keys as string[];
     for (const key of keys) {
       const info = meta.get(key);
@@ -146,4 +148,15 @@ Use the \`@Inject.class\`, \`@Inject.factory\` or \`@Inject.value\` decorator to
       []
     );
   }
+}
+
+
+function getRealTarget(target: Class<unknown> | InjectionToken | string) {
+  if(typeof target === "string") {
+    return Token(target);
+  }
+  if(target instanceof InjectionToken) {
+    return target;
+  }
+  return target
 }

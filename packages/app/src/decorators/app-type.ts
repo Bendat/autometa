@@ -8,7 +8,7 @@ export function AppType(
 ) {
   const env = environment ?? "default";
   return (target: Class<unknown>) => {
-    metadata(target.prototype).set({
+    metadata(target).set({
       key: "world",
       class: world
     });
