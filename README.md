@@ -35,14 +35,15 @@ Dependency injection is supported to make initializing client classes needed to 
 provided to each executing tests.
 
 ```ts title='Cucumber like'
-import { Feature, Given, When, Then, Before } from "@autometa/cucumber-runner";
+import { Feature, Given, When, Then, Before } from "@autometa/runner";
 import { App } from "./my-app";
 import * as seedData from "./seed-data";
 
-Before("Seed the database", async ({ dbClient }: App) => {
+Before("Seed the database", async ({ dbClient }) => {
   await dbClient.seed(seedData);
 });
 Given("a user who wants to log in", () => {});
+Given("I have {int} cats", (catCount) =>{}); // `catCount` is automatically inferred as `number`
 When("a user submits their credentials", () => {});
 Then("a user sees their", () => {});
 
