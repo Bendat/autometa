@@ -40,7 +40,7 @@ export class MetaConfigBuilder {
   #options: HTTPAdditionalOptions<unknown> = {};
 
   options(options: HTTPAdditionalOptions<unknown>) {
-    this.#options = { options };
+    this.#options = { ...options };
     return this;
   }
   schemaMap(map: SchemaMap) {
