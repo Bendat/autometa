@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.12
+
+### Patch Changes
+
+- 0a250f4: regression
+
 ## 1.4.11
 
 ### Patch Changes
