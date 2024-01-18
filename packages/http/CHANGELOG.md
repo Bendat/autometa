@@ -1,5 +1,16 @@
 # @autometa/http
 
+## 1.4.9
+
+### Patch Changes
+
+- 2aee2a4: fix(http): spread and array parameters not passed correctly
+- 2aee2a4: fix(http): spread and array parameters not passed correctly
+- Updated dependencies [2aee2a4]
+  - @autometa/injection@0.1.3
+  - @autometa/dto-builder@0.13.8
+  - @autometa/app@0.3.4
+
 ## 1.4.8
 
 ### Patch Changes

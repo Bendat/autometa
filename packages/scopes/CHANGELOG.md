@@ -1,5 +1,14 @@
 # Gherkin
 
+## 0.5.8
+
+### Patch Changes
+
+- @autometa/dto-builder@0.13.8
+- @autometa/app@0.3.4
+- @autometa/gherkin@0.6.8
+- @autometa/events@0.2.20
+
 ## 0.5.7
 
 ### Patch Changes

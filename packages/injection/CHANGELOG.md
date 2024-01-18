@@ -1,5 +1,11 @@
 # @autometa/injection
 
+## 0.1.3
+
+### Patch Changes
+
+- 2aee2a4: fix(http): spread and array parameters not passed correctly
+
 ## 0.1.2
 
 ### Patch Changes

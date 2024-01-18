@@ -1,5 +1,15 @@
 # @autometa/jest-integration
 
+## 0.1.51
+
+### Patch Changes
+
+- 2aee2a4: fix(http): spread and array parameters not passed correctly
+- 2aee2a4: fix(http): spread and array parameters not passed correctly
+  - @autometa/runner@0.4.10
+  - @autometa/dto-builder@0.13.8
+  - @autometa/jest-transformer@0.1.82
+
 ## 0.1.50
 
 ### Patch Changes
