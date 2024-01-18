@@ -419,6 +419,7 @@ export class HTTP {
    */
   sharedParam(name: string, value: Record<string, unknown>): HTTP;
   sharedParam(name: string, ...value: (string | number | boolean)[]): HTTP;
+  sharedParam(name: string, value: (string | number | boolean)[]): HTTP;
   sharedParam(
     name: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -543,8 +544,9 @@ export class HTTP {
    */
   param(name: string, value: Record<string, unknown>): HTTP;
   param(name: string, ...value: (string | number | boolean)[]): HTTP;
+  param(name: string, value: (string | number | boolean)[]): HTTP;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  param(name: string, value: any) {
+  param(name: string, ...value: any) {
     return HTTP.create(
       this.client,
       this.#request.derive().param(name, value),
