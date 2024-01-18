@@ -108,7 +108,7 @@ ${cause}`;
       | Record<string, string | number | boolean>
   ) {
     if (Array.isArray(value)) {
-      const asStr = value.map(String);
+      const asStr = value.flatMap(String);
       this.#request.params[name] = asStr;
       return this;
     }
