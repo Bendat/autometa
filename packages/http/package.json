@@ -1,6 +1,6 @@
 {
   "name": "@autometa/http",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "description": "An Axios Based HTTP Client for Autometa",
   "type": "module",
   "main": "dist/index.js",
