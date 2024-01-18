@@ -1,5 +1,11 @@
 import { SchemaMap } from "./schema.map";
-import { RequestHook, ResponseHook, SchemaParser, StatusCode } from "./types";
+import {
+  HTTPAdditionalOptions,
+  RequestHook,
+  ResponseHook,
+  SchemaParser,
+  StatusCode
+} from "./types";
 
 export interface SchemaConfig {
   schemas: SchemaMap;
@@ -21,6 +27,7 @@ export class MetaConfig implements SchemaConfig, HTTPHooks {
   onSend: [string, RequestHook][] = [];
   onReceive: [string, ResponseHook<unknown>][] = [];
   throwOnServerError: boolean;
+  options: HTTPAdditionalOptions<unknown> = {};
 }
 
 export class MetaConfigBuilder {
@@ -30,7 +37,12 @@ export class MetaConfigBuilder {
   #onBeforeSend: [string, RequestHook][] = [];
   #onAfterSend: [string, ResponseHook<unknown>][] = [];
   #throwOnServerError = false;
+  #options: HTTPAdditionalOptions<unknown> = {};
 
+  options(options: HTTPAdditionalOptions<unknown>) {
+    this.#options = { options };
+    return this;
+  }
   schemaMap(map: SchemaMap) {
     this.#schemaMap = map;
     return this;
@@ -104,6 +116,8 @@ export class MetaConfigBuilder {
     config.allowPlainText = this.#allowPlainText;
     config.onSend = this.#onBeforeSend;
     config.onReceive = this.#onAfterSend;
+    config.options = this.#options;
+    config.throwOnServerError = this.#throwOnServerError;
     return config;
   }
 

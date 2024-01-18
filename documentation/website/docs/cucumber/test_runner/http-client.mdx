@@ -14,8 +14,9 @@ parameter for whatever fixture or App is consuming it.
 
 ```ts
 @Fixture
+@Constructor(HTTP)
 export class MyClient {
-  constructor(private http: Http) {}
+  constructor(private http: HTTP) {}
 }
 ```
 
@@ -24,6 +25,7 @@ such as the API URL, routes or common headers can be stored statefully within th
 
 ```ts
 @Fixture
+@Constructor(HTTP)
 export class MyClient {
   constructor(private http: Http) {
     this.http
@@ -40,6 +42,7 @@ modifcations happen in this new contex and do not mutate the shared client.
 
 ```ts
 @Fixture
+@Constructor(HTTP)
 export class MyClient {
   constructor(private http: Http) {
     this.http
@@ -259,4 +262,36 @@ Scenario: some scenario
     And I examine product 2
     * the product name is 'alice'
     * the product price is 20
+```
+
+## Additional options
+
+Your underlying HTTPClient implementation might not handle Certain
+things the way you want, like how it parses param queries.
+
+We can set additional options on the client to change this behaviour.
+As the default client uses Axios, we can set the `paramsSerializer` option using
+the `qs` query string library
+
+```ts
+// utils.ts
+import qs from "qs";
+export const AxiosSerializer: AxiosRequestConfig = {
+  paramsSerializer: (params) => {
+    return qs.stringify(params, { arrayFormat: "comma" });
+  },
+};
+
+// my-client.ts
+
+@Fixture
+export class MyClient {
+  constructor(private http: Http) {
+    this.http
+      .url("https://api.example.com")
+      .sharedRoute("v2")
+      .sharedHeader("x-example", "true")
+      .sharedOptions(AxiosSerializer);
+  }
+}
 ```

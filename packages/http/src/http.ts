@@ -182,6 +182,11 @@ export class HTTP {
     return this;
   }
 
+  sharedOptions(options: HTTPAdditionalOptions<unknown>) {
+    this.#metaConfig.options(options);
+    return this;
+  }
+
   /**
    * If set to true, all requests derived from this client will require a schema be defined
    * matching any response status code. If set to false, a schema will still be used for validation
@@ -850,7 +855,8 @@ export class HTTP {
     const request = (await builder.resolveDynamicHeaders()).build();
     const meta = this.#metaConfig.derive().build();
     await this.runOnSendHooks(meta, request);
-    const result = await this.client.request<unknown, string>(request, options);
+    const opts = { ...meta.options, ...options };
+    const result = await this.client.request<unknown, string>(request, opts);
     result.data = transformResponse(meta.allowPlainText, result.data);
     await this.runOnReceiveHooks(meta, result);
     const validated = this.#validateResponse(result, meta);
