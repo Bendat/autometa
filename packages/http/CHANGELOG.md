@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.10
+
+### Patch Changes
+
+- dbc0eda: feat(http): allow client options to be created with `sharedOptions`
+
 ## 1.4.9
 
 ### Patch Changes
