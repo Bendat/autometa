@@ -127,6 +127,7 @@ export class MetaConfigBuilder {
       .requireSchema(this.#requireSchema)
       .allowPlainText(this.#allowPlainText)
       .throwOnServerError(this.#throwOnServerError)
+      .options(this.#options)
       .#setOnSend(this.#onBeforeSend)
       .#setOnReceive(this.#onAfterSend);
   }
