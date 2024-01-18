@@ -1,5 +1,11 @@
 # @autometa/cucumber-runner
 
+## 0.11.8
+
+### Patch Changes
+
+- @autometa/dto-builder@0.13.8
+
 ## 0.11.7
 
 ### Patch Changes
