@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.11
+
+### Patch Changes
+
+- b579743: fix(http): options not derived
+
 ## 1.4.10
 
 ### Patch Changes
