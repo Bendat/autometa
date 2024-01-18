@@ -1,0 +1,5 @@
+---
+"@autometa/http": patch
+---
+
+regression
