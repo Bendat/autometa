@@ -64,7 +64,7 @@ import {
   ScenarioOutline,
   Scenario,
   Rule,
-} from "@autometa/cucumber-runner";
+} from "@autometa/runner";
 import { App } from "./my-app";
 import * as seedData from "./seed-data";
 
