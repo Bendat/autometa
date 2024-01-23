@@ -248,7 +248,7 @@ function classProxy<T>(defaults: Class<T>, built: Record<string, unknown>, inst:
           return clsBuilder;
         };
       }
-      if ((prop) in (inst as Record<string, unknown>)) {
+      if (prop in (inst as Record<string, unknown>)) {
         return (inst as Record<string, unknown>)[prop as string];
       }
       const fn = (...args: unknown[]): unknown => {

@@ -14,6 +14,10 @@ import { expect } from "playwright/test";
 export class Component implements Pick<Locator, "screenshot" | "waitFor"> {
   readonly locator: Locator;
   protected readonly page: Page;
+
+  constructor() {
+    constructSelf(this);
+  }
   /**
    * Construct a new chid Component based on it's type
    * and a locator. Optionally, if a property key is provided,
@@ -69,10 +73,11 @@ export class Component implements Pick<Locator, "screenshot" | "waitFor"> {
 }
 
 export abstract class WebPage implements Pick<Page, "screenshot" | "close"> {
-  private declare baseUrl: string;
-  abstract readonly route: string;
   readonly page: Page;
   protected build = constructComponentOrWebpage;
+  constructor() {
+    constructSelf(this);
+  }
   screenshot(options?: PageScreenshotOptions | undefined): Promise<Buffer> {
     return this.page.screenshot(options);
   }
@@ -83,11 +88,9 @@ export abstract class WebPage implements Pick<Page, "screenshot" | "close"> {
     return this.page.close(options);
   }
 
-  goto() {
-    const url = new URL(this.route, this.baseUrl);
-    return this.page.goto(url.href);
-  }
-
+  /**
+   * Collection of wait methods for the page.
+   */
   get wait(): {
     forUrl: Page["waitForURL"];
     forLoadState: Page["waitForLoadState"];

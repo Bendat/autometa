@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { Component, WebPage } from "./component";
 import { ByFactory, ByLabel } from "./decorators";
 import { Page } from "playwright";
+import { constructComponentOrWebpage } from "./construct-components";
 
 const page = vi.fn() as unknown as Page;
 
@@ -27,7 +28,7 @@ class TestPage extends WebPage {
 }
 describe("construct-components", () => {
   it("should construct components", () => {
-    const cc = constructComponents(page, ComposedComponent);
+    const cc = constructComponentOrWebpage(page, ComposedComponent);
     expect(cc.tc1).toBeDefined();
     expect(cc.tc1).toBeInstanceOf(TestComponent1);
     expect(cc.tc2).toBeDefined();
@@ -37,7 +38,7 @@ describe("construct-components", () => {
   });
 
   it("should construct a webpage", () => {
-    const cc = constructComponents(page, TestPage);
+    const cc = constructComponentOrWebpage(page, TestPage);
     expect(cc.tc1).toBeDefined();
     expect(cc.tc1).toBeInstanceOf(TestComponent1);
   });

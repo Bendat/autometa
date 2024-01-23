@@ -89,7 +89,7 @@ export class Image extends Behavior(Readable) {
 }
 
 export class AnchorImage
-  extends Behavior(Readable, Clickable)
+  extends Behavior(Readable, Clickable,)
   implements Anchor, Image
 {
   get href() {

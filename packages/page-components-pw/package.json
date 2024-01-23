@@ -43,6 +43,7 @@
   "dependencies": {
     "@autometa/bind-decorator": "workspace:^",
     "@autometa/errors": "workspace:^",
+    "@autometa/injection": "workspace:^",
     "@autometa/types": "workspace:^",
     "@playwright/test": "^1.39.0",
     "playwright": "^1.39.0",

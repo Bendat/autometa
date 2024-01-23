@@ -22,7 +22,8 @@
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",
-  "devDependencies": {
+  "devDependencies": {cd ..
+  
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",

@@ -15,8 +15,7 @@ type Mixed<T, TAccumulator = unknown> = T extends [infer THead, ...infer TTail]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function Behavior<T extends MixinType<any>[]>(...args: T) {
   return args.reduce(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (superClass, mixinFactory) => mixinFactory(superClass as any),
+    (superClass, mixinFactory) => mixinFactory(superClass),
     Component
   ) as unknown as Mixed<T>;
 }

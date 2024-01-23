@@ -7,6 +7,7 @@ import {
   Page
 } from "playwright";
 import { expect } from "playwright/test";
+import { Class } from "@autometa/types";
 export class SemanticComponent {
   private parent: Page | Locator;
   get expect() {
