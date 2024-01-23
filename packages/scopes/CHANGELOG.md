@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.5.9
+
+### Patch Changes
+
+- 7a10612: fix(scopes): allow table documents to be passed
+
 ## 0.5.8
 
 ### Patch Changes
