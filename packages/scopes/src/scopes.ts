@@ -1,4 +1,4 @@
-import { DataTable, NeverDataTable } from "@autometa/gherkin";
+import { DataTable, NeverDataTable, TableDocument } from "@autometa/gherkin";
 import { Class } from "@autometa/types";
 import { FeatureScope } from "./feature-scope";
 import { RuleScope } from "./rule-scope";
@@ -222,17 +222,17 @@ export interface Scopes {
   Rule(title: string, action: RuleAction, timeout: SizedTimeout): RuleScope;
   Rule(...args: (string | RuleAction | SizedTimeout | number)[]): RuleScope;
 
-  Given<TText extends string, TTable extends DataTable = NeverDataTable>(
+  Given<TText extends string, TTable extends DataTable | TableDocument<DataTable> = NeverDataTable>(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ): void;
-  When<TText extends string, TTable extends DataTable = NeverDataTable>(
+  When<TText extends string, TTable extends DataTable | TableDocument<DataTable> = NeverDataTable>(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
   ): void;
-  Then<TText extends string, TTable extends DataTable = NeverDataTable>(
+  Then<TText extends string, TTable extends DataTable | TableDocument<DataTable> = NeverDataTable>(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
