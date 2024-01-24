@@ -35,7 +35,7 @@ import type {
   SizedTimeout
 } from "./types";
 import { AutomationError } from "@autometa/errors";
-import { DataTable } from "@autometa/gherkin";
+import { DataTable, TableDocument } from "@autometa/gherkin";
 import { Class } from "@autometa/types";
 import getCaller from "get-caller-file";
 import path from "path";
@@ -250,7 +250,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   }
 
   @Bind
-  Given<TText extends string, TTable extends DataTable>(
+  Given<TText extends string, TTable extends  DataTable | TableDocument<DataTable>>(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
@@ -267,7 +267,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   }
 
   @Bind
-  When<TText extends string, TTable extends DataTable>(
+  When<TText extends string, TTable extends  DataTable | TableDocument<DataTable>>(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
@@ -278,7 +278,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   }
 
   @Bind
-  Then<TText extends string, TTable extends DataTable>(
+  Then<TText extends string, TTable extends  DataTable | TableDocument<DataTable>>(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
