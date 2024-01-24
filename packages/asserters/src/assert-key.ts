@@ -3,7 +3,7 @@ import { InvalidKeyError } from "./invalid-key-error";
 
 export function AssertKey<TObj>(
   item: TObj,
-  key: string | keyof TObj,
+  key: unknown,
   context?: string
 ): asserts key is keyof TObj {
   const prefix = context ? `${context}: ` : "";
