@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.5.10
+
+### Patch Changes
+
+- 4e78dc4: fix: release updated scopes library
+
 ## 0.5.9
 
 ### Patch Changes
