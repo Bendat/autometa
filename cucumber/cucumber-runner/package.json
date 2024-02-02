@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-runner",
-  "version": "0.11.8",
+  "version": "0.11.9",
   "description": "Run cucumber with jest or vitest, with superpowers",
   "type": "module",
   "main": "dist/cjs/index.js",

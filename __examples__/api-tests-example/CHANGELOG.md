@@ -1,5 +1,14 @@
 # @autometa/jest-integration
 
+## 0.1.57
+
+### Patch Changes
+
+- Updated dependencies [603d0d0]
+  - @autometa/dto-builder@0.13.9
+  - @autometa/runner@0.4.16
+  - @autometa/jest-transformer@0.1.88
+
 ## 0.1.56
 
 ### Patch Changes
