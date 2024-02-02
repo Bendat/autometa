@@ -8,7 +8,7 @@ export const ProductSchema = object({
   discountPercentage: number(),
   rating: number(),
   stock: number(),
-  brand: string(),
+  brand: string().valid([]),
   category: string(),
   thumbnail: string(),
   images: array(string())

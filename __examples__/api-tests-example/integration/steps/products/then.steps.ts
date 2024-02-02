@@ -17,7 +17,7 @@ Then(
     const expectedPrice = table.get<number>("price", 0);
     const expectedDiscount = table.get<number>("discount", 0);
     const expectedBrand = table.get<string>("brand", 0);
-
+    
     expect(description).toEqual(expectedDescription);
     expect(price).toEqual(expectedPrice);
     expect(discountPercentage).toEqual(expectedDiscount);

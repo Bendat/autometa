@@ -8,7 +8,7 @@ import { StoreMenu } from "./navigation-bar.component";
 export class HomePage extends BasePage {
   @BySelector(StoreMenu, "nav")
   menu: StoreMenu;
-  route = "/";
+
   @BySelector(PageHeader, ".page-header")
   header: PageHeader;
 
