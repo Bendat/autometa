@@ -1,5 +1,14 @@
 # @autometa/jest-executor
 
+## 0.4.14
+
+### Patch Changes
+
+- @autometa/gherkin@0.6.9
+- @autometa/scopes@0.5.11
+- @autometa/test-builder@0.2.12
+- @autometa/events@0.2.21
+
 ## 0.4.13
 
 ### Patch Changes

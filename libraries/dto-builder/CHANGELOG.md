@@ -1,5 +1,11 @@
 # @autometa/dto-builder
 
+## 0.13.9
+
+### Patch Changes
+
+- 603d0d0: fix(dto-builder): default values where being cached within the builder
+
 ## 0.13.8
 
 ### Patch Changes
