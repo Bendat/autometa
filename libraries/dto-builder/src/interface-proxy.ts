@@ -210,11 +210,11 @@ export function Builder<T>(defaults?: Partial<T> | Class<T>): IBuilder<T> | DtoB
 }
 
 function classProxy<T>(defaults: Class<T>, built: Record<string, unknown>, inst: T) {
-  const instance = constructDefaultDto(defaults);
   const clsBuilder = new Proxy(inst as object, {
     get(_, prop) {
       if ("build" === prop) {
         return () => {
+          const instance = constructDefaultDto(defaults);
           return Object.assign(instance as object, { ...built });
         };
       }
@@ -248,7 +248,7 @@ function classProxy<T>(defaults: Class<T>, built: Record<string, unknown>, inst:
           return clsBuilder;
         };
       }
-      if ((prop) in (inst as Record<string, unknown>)) {
+      if (prop in (inst as Record<string, unknown>)) {
         return (inst as Record<string, unknown>)[prop as string];
       }
       const fn = (...args: unknown[]): unknown => {
