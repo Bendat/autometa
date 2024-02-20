@@ -62,7 +62,7 @@ export default defineConfig({
     steps: ["integration/steps"],
     app: ["src/app.ts"],
     // vvvvvvvvvv
-    params: ["src/**/*.params.ts"]
+    parameterTypes: ["src/**/*.params.ts"]
   },
   shim: {
     errorCauses: true
@@ -135,11 +135,9 @@ Since interfaces/types don't exist at run time, and a DTO is empty until it is b
 compare our expression value to those. The builder, however, has a method of the same name as
 the DTO property that is guaranteed to be defined if the DTO was properly decorated with `@Property`.
 
-Autometa includes a helper assertion, `AssertKey` to guarantee the property exists:
-
 ```ts
 // src/product/product.params.ts
-import { defineExpression, AssertKey } from "@autometa/runner";
+import { defineExpression } from "@autometa/runner";
 import { ProductBuilder } from './'
 
  defineExpression({
@@ -149,7 +147,6 @@ import { ProductBuilder } from './'
  }, {
   name: "product:property",
   transform: (value) => {
-    AssertKey(ProductBuilder, value, `Product property key ${value}`)
     return value as keyof Product
   }
  });

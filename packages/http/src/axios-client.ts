@@ -16,7 +16,7 @@ export class AxiosClient extends HTTPClient {
       url,
       params,
       headers,
-      method: method,
+      method,
       data,
       validateStatus: function (status) {
         return status >= 0 && status < 600;
