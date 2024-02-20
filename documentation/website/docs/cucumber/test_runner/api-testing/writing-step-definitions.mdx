@@ -108,7 +108,6 @@ import {
   camel,
   convertPhrase,
   defineParameterType,
-  AssertKey
 } from "@autometa/runner";
 import { ProductBuilder } from "./product.builder";
 import { ProductIdMap } from "./product.static";
@@ -127,7 +126,6 @@ defineParameterType(
     name: "product:static:name",
     regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
     transform: (value) => {
-      AssertKey(ProductIdMap, value, `Product property key '${value}'`);
       return ProductIdMap[value];
     }
   }
@@ -138,10 +136,11 @@ defineParameterType(
 
 ```ts
 // src/controllers/api.ts
-import { Fixture } from "@autometa/runner";
+import { Fixture, Constructor } from "@autometa/runner";
 import { ProductController } from "./product";
 
 @Fixture
+@Constructor(ProductController)
 export class API {
   constructor(readonly products: ProductController) {}
 }
@@ -185,7 +184,6 @@ export interface Types {
   "builder:product": ProductBuilder;
   "product:property": keyof Product;
   "product:static:name": ProductId;
-  "world:property:response": keyof World;
 }
 ```
 

@@ -27,7 +27,7 @@ import { Products, Product } from "../models/products";
 @Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
-    this.http.url(Environment.API_URL).sharedRoute("products");
+    this.http.url(Env.API_URL).sharedRoute("products");
   }
 
   /**
@@ -51,7 +51,7 @@ export class ProductController {
    * [DOCS](https://dummyjson.com/docs/products#add)
    */
   async add(product: Product) {
-    return this.http.post<Product>(product);
+    return this.http.data(product).post<Product>();
   }
 }
 ```
@@ -139,7 +139,7 @@ import { ProductSchema, ProductListSchema, Products, Product } from "./";
 @Constructor(HTTP)
 export class ProductController {
   constructor(private readonly http: HTTP) {
-    this.http.url(Environment.API_URL).SharedRoute("product");
+    this.http.url(Env.API_URL).SharedRoute("product");
   }
 
   /**
@@ -190,7 +190,7 @@ import { ProductSchema, ProductListSchema, Products, Product } from "./";
 export class ProductController {
   constructor(private readonly http: HTTP) {
     this.http
-      .url(Environment.API_URL)
+      .url(Env.API_URL)
       .sharedRoute("product")
       .sharedSchema(ErrorSchema, { from: 400, to: 500 });
   }
@@ -335,3 +335,147 @@ data: ${data}`
 ```
 
 You can register more than one function per hook. They will run in the order they were defined.
+
+## Passing additional configuration
+
+By default the `HTTP` fixture uses axios. The executing methods of HTTP (i.e. `get`, `post`, `put`, `delete`, `patch`) accept an optional `config` object which will be merged with the default configuration.
+
+For example, to customize the way axios handles querystrings, you can pass a `paramsSerializer` function:
+
+```ts
+// ./app/controllers/product/base.controller.ts
+
+import { AxiosRequestConfig } from 'axios';
+import qs from 'qs';
+export const AxiosSerializer: AxiosRequestConfig = {
+  paramsSerializer: (params) => {
+    const str = qs.stringify(params, { arrayFormat: 'comma' });
+    return str;
+  },
+};
+
+```
+
+And then pass it to the `get` method:
+
+```ts
+// ./app/controllers/product/product.controller.ts
+import { HTTP, Fixture } from "@autometa/runner";
+
+@Fixture
+@Constructor(HTTP)
+export class ProductController {
+  constructor(private readonly http: HTTP) {
+    this.http
+      .url(Env.API_URL)
+      .sharedRoute("product")
+      .sharedSchema(ErrorSchema, { from: 400, to: 500 })
+      .sharedOnSend(this.logRequest)
+      .sharedOnReceive(this.logResponse);
+  }
+
+  // ...
+
+  async get(id: number) {
+    return this.http
+      .route(id)
+      .schema(ProductSchema, 200)
+      .get<Product>(AxiosSerializer);
+  }
+
+  // ...
+}
+```
+
+Alternatively if this is a common configuration, it can be set with `sharedOptions`:
+
+```ts
+// ./app/controllers/product/product.controller.ts
+import { HTTP, Fixture } from "@autometa/runner";
+
+@Fixture
+@Constructor(HTTP)
+export class ProductController {
+  constructor(private readonly http: HTTP) {
+    this.http
+      .url(Env.API_URL)
+      .sharedRoute("product")
+      .sharedSchema(ErrorSchema, { from: 400, to: 500 })
+      .sharedOnSend(this.logRequest)
+      .sharedOnReceive(this.logResponse)
+      .sharedOptions(AxiosSerializer);
+  }
+
+  // ...
+
+  async get(id: number) {
+    return this.http
+      .route(id)
+      .schema(ProductSchema, 200)
+      .get<Product>();
+  }
+
+  // ...
+}
+```
+
+## Using a different HTTP client
+
+By default the `HTTP` fixture uses axios, but you can use a client of your choosing
+by implementing the `HTTPClient` abstract class. The `HTTPClient.Use()` decorator
+will register the client with the `HTTP` fixture.
+
+For example here is the Axios implementation:
+
+```ts
+export class AxiosClient extends HTTPClient {
+  async request<TRequestType, TResponseType>(
+    request: HTTPRequest<TRequestType>,
+    options: HTTPAdditionalOptions<AxiosRequestConfig>
+  ): Promise<HTTPResponse<TResponseType>> {
+    const { baseUrl, route, params, headers, method, data } = request;
+    const url = [baseUrl, ...route].join("/");
+    const axiosRequest: AxiosRequestConfig = {
+      url,
+      params,
+      headers,
+      method: method,
+      data,
+      validateStatus: function (status) {
+        return status >= 0 && status < 600;
+      },
+      ...options
+    };
+    const response = await axios(axiosRequest);
+    return HTTPResponseBuilder.create()
+      .status(response.status as StatusCode)
+      .statusText(response.statusText)
+      .data(response.data)
+      .headers(response.headers as Record<string, string>)
+      .request(request)
+      .build() as HTTPResponse<TResponseType>;
+  }
+}
+```
+
+The `options` parameter is an arbitrary object of key:value pairs which can represent
+any additional configuration you want to pass to your underlying client, or use for
+custom logic.
+
+You can make your custom client the default be decorating your
+client or controller classes with `HTTPClient.Use()`:
+
+```ts
+@Fixture
+@HTTPClient.Use(MyCustomClient)
+@Constructor(HTTP)
+export class MyBaseClient {
+  constructor(private readonly http: HTTP) {
+    // ...
+  }
+  // ...
+}
+```
+
+
+

@@ -76,3 +76,50 @@ Teardown("Reset the services 'foo'", (app) => {
   return app.myHttpClient.delete("/foo?type=testType");
 });
 ```
+
+
+## Order Of Execution
+
+Hooks are executed according to 2 orders:
+
+### The order in which the hooks files are loaded.
+
+Hooks will be loaded in filesystem order. Consider the following directory,
+which will be in `test/steps`:
+  
+```plaintext
+  test/steps
+  ├── common.hooks.ts
+  ├── cleanup.hooks.ts
+  ├── products/
+  │   ├── products.hooks.ts
+```
+
+Hooks will be executed in the following file order:
+
+1. `common.hooks.ts`
+2. `cleanup.hooks.ts`
+3. `products/products.hooks.ts`
+
+### The order in which the hooks are defined in the file.
+
+Hooks will be executed in the order they are defined in the file. Consider the following file:
+
+```ts
+// common.hooks.ts
+import { Before, After } from "@autometa/runner";
+
+Before("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+});
+
+Before("Setup the services 'bar'", (app) => {
+  return app.myHttpClient.post("/bar", setupBarObject);
+});
+
+```
+
+The `Setup the services 'foo'` hook will be executed before the `Setup the services 'bar'` hook.
+So the first before hook that will be executed is `Setup the services 'foo'` and the second will be `Setup the services 'bar`,
+followed by the `Before` hooks in the next file and so on.
+

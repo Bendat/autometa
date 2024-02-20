@@ -144,9 +144,10 @@ We can add dependencies to the app by creating classes marked with `@Fixture`:
 ```ts
 // my-client.ts
 
-import { Fixture, HTTP } from "@autometa/runner";
+import { Fixture, Constructor HTTP } from "@autometa/runner";
 
 @Fixture
+@Constructor(HTTP)
 export class MyClient {
   constructor(readonly http: HTTP) {
     this.http.url(Env.API_URL);
@@ -301,8 +302,9 @@ interface Types {
 ```
 
 ```ts
-import type { App as MyApp, World as MyWorld, Types as T } from "../src/app";
+import type { App as MyApp, World as MyWorld } from "../src/app";
 import type { ProductBuilder } from "../src/product/product.builder";
+import type { Types as T } from '@autometa/runner';
 
 declare module "@autometa/runner" {
   interface App extends MyApp {}
