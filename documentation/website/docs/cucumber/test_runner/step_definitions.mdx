@@ -130,3 +130,72 @@ const fooNumString = table.get("foo", 0, true) as string;
 ```
 
 :::
+
+
+### Jest Cucumber Style
+
+It's also possible to use a nested jest-cucumber style to write definitions.
+These can still access globally defined steps but also feature or scenario specific steps.
+
+```ts
+import { Feature, Scenario, ScenarioOutline, Rule Given, HTable } from "@autometa/runner";
+
+Feature("A feature", () => {
+  Given('Feature shared step', ()=>{
+    // ...
+  })
+  Scenario("A scenario", () => {
+    Given("a foo", (app) => {
+      app.world.foo = "foo";
+    });
+
+    Then("the foo should be 'foo'", (app) => {
+      expect(app.world.foo).toBe("foo");
+    });
+  });
+
+  ScenarioOutline("A scenario outline", () => {
+    Given("a foo with <foo>", (table: HTable, app) => {
+      app.world.foo = table.get("foo", 0) as string;
+    });
+
+    Then("the foo should be <foo>", (table: HTable, app) => {
+      expect(app.world.foo).toBe(table.get("foo", 0) as string);
+    });
+  });
+
+  Rule("A rule", () => {
+    Given("a foo", (app) => {
+      app.world.foo = "foo";
+    });
+
+    Then("the foo should be 'foo'", (app) => {
+      expect(app.world.foo).toBe("foo");
+    });
+
+    Scenario("A scenario", () => {
+      Given("a foo", (app) => {
+        app.world.foo = "foo";
+      });
+
+      Then("the foo should be 'foo'", (app) => {
+        expect(app.world.foo).toBe("foo");
+      });
+    });
+  });
+}, 'path/to/feature.feature');
+```
+
+The `path` argument at the end of the `Feature` function can be relative, root-relative,
+absolute, or be relative to a `featuresRoot` based on the following rules:
+
+* If the path starts with a slash, it is absolutel
+* If the path starts with `./` or `../` it is relative
+* If the path starts with neither a `/` or `.` it is relative to the root of the project
+* If the path starts with `~` and a `featuresRoot` is defined in `autometa.config.ts`, it is relative to that root.
+
+:::tip
+Step definitions defined in this style have specificity. I.e. if a step is defined globally and within a feature,
+the feature specific step will be used. This allows for more granular control over step definitions. Likewise,
+if a step is defined globally, within a feature, and within a scenario, the scenario specific step will be used.
+:::
