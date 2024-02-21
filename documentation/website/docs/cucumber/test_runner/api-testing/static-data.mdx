@@ -84,7 +84,7 @@ import { defineParameterType } from "@autometa/runner";
 defineParameterType(
   {
     name: "product:static:name",
-    regexp: /"(.*)"/,
+    regexpPattern: /"(.*)"/,
     transformer: (name: string) => {
       AssertKey(ProductIdMap, name, `Product Map name ${name}`);
       return ProductIdMap[name];

@@ -102,7 +102,7 @@ accepts a collection of ParameterType objects with the following structure:
 ```ts
 {
   name: string;
-  regexp: RegExp;
+  regexpPattern: RegExp;
   transformer?: (arg: string) => any;
   useForSnippets?: boolean;
   preferForRegexpMatch?: boolean;
@@ -134,7 +134,7 @@ import { getUserByUsername } from "./user-service";
 
 defineParameterType({
   name: "user",
-  regexp: /@([a-zA-Z]+)/,
+  regexpPattern: /@([a-zA-Z]+)/,
   transformer: (username) => {
     return getUserByUsername(username);
   }
@@ -148,7 +148,7 @@ import { defineParameterType } from "@autometa/runner";
 
 defineParameterType({
   name: "int",
-  regexp: /[+-]?\d+/,
+  regexpPattern: /[+-]?\d+/,
   primitive: Number
 });
 ```
@@ -164,7 +164,7 @@ import { MyDto } from "./dtos";
 
 defineParameterType({
   name: "myDto",
-  regexp: /@([a-zA-Z]+)/,
+  regexpPattern: /@([a-zA-Z]+)/,
   type: MyDto
 });
 ```
