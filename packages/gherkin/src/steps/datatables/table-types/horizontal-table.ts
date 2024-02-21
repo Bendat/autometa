@@ -98,7 +98,17 @@ export class HTable extends DataTable {
     ).use(args);
   }
 
-  static cell(title: string, raw?: boolean) {
+  static cell(title: string, 
+    /**
+     * If set to true, the values assigned to the document will
+     * all be strings. By default, Autometa will attempt to coerce
+     * obvious numbers or booleans into their respective types in Javascript,
+     * i.e. '1' will be coerced into a number, 'true' into a boolean, etc.
+     * 
+     * When `raw` is set to true, `1` will remain a string of the numeric character 1
+     * and 'true' will remain a string of the boolean character sequence 'true'.
+     */
+    raw?: boolean) {
     return function (target: object, propertyKey: string) {
       Object.defineProperty(target, propertyKey, {
         get: function () {
@@ -148,6 +158,7 @@ export class HTable extends DataTable {
   static Document(){
     return super.CreateDocument(HTable, HTableDocument);
   }
+  
   asJson(): Record<string, TableValue[]> {
     const json: Record<string, TableValue[]> = {};
     for (const header in this.headers) {
