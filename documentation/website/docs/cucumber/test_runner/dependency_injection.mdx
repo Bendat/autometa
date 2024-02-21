@@ -101,3 +101,27 @@ After("I use the registered value", (app) => {
   const asyncData = app.di.get("asyncData");
 });
 ```
+
+## Tokens
+
+Tokens can be used to represent a dependency without a class reference. This can be performed by attaching a token
+based dependency to the `App.di` property. This can be done in a `Before` or `Setup` hook, or in a step definition callback.
+
+```ts
+import { Token } from "@autometa/injection";
+
+Before("I register a token", async (app) => {
+  app.di.register
+});
+
+
+To define a value with a token you can use `registerSingleton` function from `@autometa/injection`.
+
+:::info
+Tokens must be registered before the test container is created. Test containers are created at 2 points:
+- When a `Setup` hook is run. Depdendencies defined here will be available to all scenarios in the feature file.
+- When a `Scenario` is run. Dependencies defined here will not be available during class instantiation time, as that has already occured
+  - However these dependencies are available within scenarios via the `App.di` property
+:::
+
+```ts
