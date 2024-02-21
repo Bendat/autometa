@@ -102,26 +102,135 @@ After("I use the registered value", (app) => {
 });
 ```
 
-## Tokens
+## Dynamically adding dependencies
 
-Tokens can be used to represent a dependency without a class reference. This can be performed by attaching a token
-based dependency to the `App.di` property. This can be done in a `Before` or `Setup` hook, or in a step definition callback.
+Dependencies can be defined or accessed during test execution using the `app.di` property. This property
+allows you to define types or singleton values to be injected.
+
+:::note
+A dependency can only be used in constructors if it is defined before the constructed class is instantiated. That
+means that a dependecy defined in a `Setup` hook is not available as a constructor argument to other `Setup` hooks,
+and a dependency defined in a `Before` or step (`Given`, `When`, `Then`) definition is not available as a constructor argument
+to that, or other, scenarios as constructor parameters, because by the time they are defined, all (or almost all) classes have already
+been instantiated.
+
+i.e calling `app.di.register` in a `Setup` hook cannot be used to construct other Setup hook scope classes, but will be available to classes
+in the same feature file. Similarly, calling `app.di.register` in a `Before` hook will not be available to the constructor of the
+scenario, but will be available to the scenario itself via `app.di.get`.
 
 ```ts
-import { Token } from "@autometa/injection";
-
-Before("I register a token", async (app) => {
-  app.di.register
+// setup.hooks.ts
+Setup("I register a value", async (app) => {
+  app.di.registerSingletonValue(Token('my token'), "Hello World");
 });
 
+// my-class.ts
+@Fixture()
+@Constructor(Token('my token'))
+class MyClass {
+  constructor(myToken: string) {
+    console.log(myToken); // "Hello World"
+  }
+}
 
-To define a value with a token you can use `registerSingleton` function from `@autometa/injection`.
+// before.hooks.ts
 
-:::info
-Tokens must be registered before the test container is created. Test containers are created at 2 points:
-- When a `Setup` hook is run. Depdendencies defined here will be available to all scenarios in the feature file.
-- When a `Scenario` is run. Dependencies defined here will not be available during class instantiation time, as that has already occured
-  - However these dependencies are available within scenarios via the `App.di` property
+Before("I use the registered value", async (app) => {
+  const myToken = app.di.registerSingleton(MyClass, MyClass);
+});
+
+// my-class.ts
+@Fixture()
+@Constructor(Token('my token'), MyClass)
+class MyClass {
+  /**
+   * 'myToken' will be injected with the value "Hello World"
+   * 'myClass' will fail to be injected, as it was already created before the dependency was defined
+   */
+  constructor(myToken: string, myClass: MyClass) {
+    console.log(myToken); // "Hello World"
+    console.log(myClass); // undefined or error thrown
+  }
+}
+```
+
 :::
 
+:::info
+The `Token` function is available from `@autometa/injection` which will be accessible when `@autometa/runner` is installed.
+:::
+
+A dynamic dependency can always be accessed via `app.di.get`, provided it was performed before any attempt to access it.
+I.e, as long as hooks that depenend on it are executed after the defining hook, it is accessible;
+
 ```ts
+Before("I register a value", async (app) => {
+  app.di.get(MyDynamicClass, MyDynamicClass); // fails, as no value has been registered
+});
+
+Before("I register a value", async (app) => {
+  app.di.registerSingletonValue(MyDynamicClass, new MyDynamicClass());
+});
+
+Before("I use the registered value", async (app) => {
+  const myDynamicClass = app.di.get(MyDynamicClass, MyDynamicClass); // succeeds
+});
+```
+
+### Registration methods
+
+The `di` property supports the following methods (and/or overloads)
+
+* `registerCached` - Registers a class as a cached dependency
+  - `registerCached(Token('myToken'), MyClass)`
+  - `registerCached(MyClass, MyClass)
+* `registerSingleton` - Registers a class as a singleton dependency
+  - `registerSingleton(Token('myToken'), MyClass)`
+  - `registerSingleton(MyClass, MyClass)`
+* `registerTransient` - Registers a class as a transient dependency
+  - `registerTransient(Token('myToken'), MyClass)`
+  - `registerTransient(MyClass, MyClass)
+* `registerSingletonValue` - Registers a value as a singleton dependency
+  - `registerSingletonValue(Token('myToken'), "Hello World")`
+  - `registerSingletonValue(MyClass, new MyClass())
+
+
+## Registering values outside of test flow
+
+It is possible to define singleton values outside of all test flow by using the `registerSingleton` function from `@autometa/injection`. This function
+accepts a token and a value, and will make that value available to all classes that depend on it.
+
+```ts
+import { registerSingleton, Token } from '@autometa/injection';
+import { Fixture } from '@autometa/runner';
+
+registerSingleton(Token('myToken'), "Hello World");
+
+@Fixture
+@Constructor(
+  Token('myToken'),
+  MyClass
+)
+class MyOtherClass {
+  constructor(myToken: string, myClass: MyClass) {
+    console.log(myToken); // "Hello World"
+  }
+}
+```
+
+## Tokens
+
+Under the hood, tokens are defined as `symbol` types, however unlike calling `Symbol(key)` directly, the `Token` function
+will always return the same symbol for the same key. This means that you can use the same token in different files and
+they will be treated as the same token.
+
+However it might still be desirable to cache tokens, for example on a InjectionToken object:
+
+```ts
+import { Token } from '@autometa/injection';
+
+const InjectionToken = {
+  myToken: Token('myToken');
+}
+```
+
