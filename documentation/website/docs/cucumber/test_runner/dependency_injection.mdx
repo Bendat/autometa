@@ -94,11 +94,11 @@ if that class is instantiated before the new dependency is registered.
 ```ts
 Before("I register a value", async (app) => {
   const asyncData = await app.myClient.getAsyncData();
-  app.di.registerValue("asyncData", asyncData);
+  app.di.registerValue(Token("asyncData"), asyncData);
 });
 
 After("I use the registered value", (app) => {
-  const asyncData = app.di.get("asyncData");
+  const asyncData = app.di.get(Token("asyncData"));
 });
 ```
 
