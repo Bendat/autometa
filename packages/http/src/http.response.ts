@@ -1,4 +1,4 @@
-import { HTTPRequest } from "./http-request";
+import { HTTPRequest } from "./http.request";
 import { StatusCode } from "./types";
 
 export class HTTPResponse<T = unknown> {

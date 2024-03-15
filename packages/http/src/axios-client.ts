@@ -1,5 +1,5 @@
-import { HTTPRequest } from "./http-request";
-import { HTTPResponse, HTTPResponseBuilder } from "./http-response";
+import { HTTPRequest } from "./http.request";
+import { HTTPResponse, HTTPResponseBuilder } from "./http.response";
 import { HTTPAdditionalOptions, StatusCode } from "./types";
 import axios, { AxiosRequestConfig } from "axios";
 import { HTTPClient } from "./http-client";

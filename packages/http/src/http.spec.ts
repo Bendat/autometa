@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { HTTP } from "./http";
 import { HTTPClient } from "./http-client";
-import { HTTPRequest, HTTPRequestBuilder } from "./http-request";
-import { HTTPResponse, HTTPResponseBuilder } from "./http-response";
+import { HTTPRequest, HTTPRequestBuilder } from "./http.request";
+import { HTTPResponse, HTTPResponseBuilder } from "./http.response";
 import { HTTPAdditionalOptions } from "./types";
+import { HTTPPlugin } from "./http.plugin";
 
 describe("HTTP", () => {
   describe("create", () => {
@@ -29,7 +30,7 @@ describe("HTTP", () => {
   describe("resolving dynamic headers", () => {
     it("should resolve dynamic headers", async () => {
       const response = HTTPResponseBuilder.create().status(200).build();
-      const request = HTTPRequestBuilder.create();
+      const request = HTTPRequestBuilder.create()
       const fn = vi.fn().mockImplementation((req: HTTPRequest) => {
         response.request = req;
         return response;
@@ -140,6 +141,52 @@ Hello World`
         );
       });
     });
+
+    describe('plugins', () => {
+      type Config = Record<string, unknown>
+      let onSendMock: ReturnType<typeof vi.fn>
+      let onReceiveMock: ReturnType<typeof vi.fn>
+
+      beforeEach(() => {
+        onSendMock = vi.fn();
+        onReceiveMock = vi.fn();
+      })
+      class Plugin extends HTTPPlugin<Config> {
+        onSendRequest<T>(request: HTTPRequest<T>): void | Promise<void> {
+          onSendMock(request);
+        }
+        onReceiveResponse<T>(response: HTTPResponse<T>): void | Promise<void> {
+          onReceiveMock(response);
+        }
+      }
+
+      describe('onSend', () => {
+        it("should call the plugin hook when the request is sent", async () => {
+          const request = HTTPRequestBuilder.create()
+            .url(undefined as unknown as string)
+            .method("GET")
+            .data(undefined as unknown as string)
+            .build();
+          const response = HTTPResponseBuilder.create().build();
+          const fn = vi.fn().mockReturnValue(response);
+          const client = new MockClient(fn);
+          const http = new HTTP(client).plugin(Plugin, {});
+          await http.get();
+          expect(onSendMock).toHaveBeenCalledWith(request);
+        });
+      })
+
+      describe('onReceive', () => {
+        it("should call the plugin hook when the response is received", async () => {
+          const response = HTTPResponseBuilder.create().build();
+          const fn = vi.fn().mockReturnValue(response);
+          const client = new MockClient(fn);
+          const http = new HTTP(client).plugin(Plugin, {});
+          await http.get();
+          expect(onReceiveMock).toHaveBeenCalledWith(response);
+        });
+      });
+    })
   });
 
   describe("schemas", () => {

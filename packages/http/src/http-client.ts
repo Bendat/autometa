@@ -1,5 +1,5 @@
-import { HTTPRequest } from "./http-request";
-import { HTTPResponse } from "./http-response";
+import { HTTPRequest } from "./http.request";
+import { HTTPResponse } from "./http.response";
 import { HTTPAdditionalOptions } from "./types";
 import { Class } from "@autometa/types";
 export let defaultClient: Class<HTTPClient>;

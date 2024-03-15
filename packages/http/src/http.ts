@@ -2,8 +2,8 @@ import { Fixture, INJECTION_SCOPE } from "@autometa/injection";
 import { AxiosClient } from "./axios-client";
 import { HTTPClient } from "./http-client";
 import { defaultClientFactory } from "./default-client-factory";
-import { HTTPRequest, HTTPRequestBuilder } from "./http-request";
-import { HTTPResponse } from "./http-response";
+import { HTTPRequest, HTTPRequestBuilder } from "./http.request";
+import { HTTPResponse } from "./http.response";
 import { MetaConfig, MetaConfigBuilder } from "./request-meta.config";
 import {
   HTTPAdditionalOptions,
@@ -14,6 +14,8 @@ import {
 } from "./types";
 import { transformResponse } from "./transform-response";
 import { AutomationError } from "@autometa/errors";
+import { HTTPPlugin } from "./http.plugin";
+import { Class } from "@autometa/types";
 
 /**
  * The HTTP fixture allows requests to be built and sent to a server. In general,
@@ -138,6 +140,7 @@ import { AutomationError } from "@autometa/errors";
 export class HTTP {
   #request: HTTPRequestBuilder<HTTPRequest<unknown>>;
   #metaConfig: MetaConfigBuilder;
+  #initializedPlugins = new Set<Class<HTTPPlugin<object>>>();
   constructor(
     private readonly client: HTTPClient = defaultClientFactory(),
     builder: HTTPRequestBuilder<
@@ -180,6 +183,64 @@ export class HTTP {
   url(url: string) {
     this.#request.url(url);
     return this;
+  }
+
+  /**
+   * Registers a Plugin with the client. A Plugin is an implementation of the HTTPPlugin<T>
+   * class, which has 2 methods: `onSendRequest` and `onReceiveResponse`. These methods are
+   * executed immediately before the request is sent, and immediately after the response is
+   * received, respectively.
+   * 
+   * Plugins are a shared state. All derived HTTP clients will inherit the plugins defined by
+   * this method.
+   * 
+   * ```ts
+   * // plugin.ts
+   * import { HTTPPlugin } from "@autometa/http";
+   * type MyPluginConfig = {
+   *   reportDir: string;
+   * }
+   * export class MyPlugin extends HTTPPlugin<MyPluginConfig> {
+   *  onSendRequest<T>(request: HTTPRequest<T>) {
+   *    // do something with the request
+   *  }
+   * 
+   *  onReceiveResponse<T>(response: HTTPResponse<T>) {
+   *   // do something with the response
+   *  }
+   * }
+   * 
+   * // service.client.ts
+   * \@Fixture()
+   * \@Constructor(HTTP)
+   * export class ServiceClient {
+   *   constructor(private readonly http: HTTP) {
+   *    this.http.plugin(MyPlugin, { reportDir: "path/to/reports" });
+   *   }
+   * }
+   * ```
+   * @param plugin 
+   * @param config 
+   * @returns 
+   */
+  plugin<TConfig extends object>(
+    plugin: Class<HTTPPlugin<TConfig>>,
+    config: TConfig
+  ) {
+    if (!this.#initializedPlugins.has(plugin)) {
+      this.#registerPlugin(plugin, config);
+    }
+    return this;
+  }
+
+  #registerPlugin(plugin: Class<HTTPPlugin<object>>, config: object) {
+    if (!this.#initializedPlugins.has(plugin)) {
+      const instance = new plugin(config);
+      this
+        .sharedOnSend("plugin: " + plugin.name, instance.onSendRequest.bind(instance))
+        .sharedOnReceive("plugin: " + plugin.name, instance.onReceiveResponse.bind(instance));
+      this.#initializedPlugins.add(plugin);
+    }
   }
 
   sharedOptions(options: HTTPAdditionalOptions<unknown>) {

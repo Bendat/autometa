@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HTTPRequest, HTTPRequestBuilder } from "./http-request";
+import { HTTPRequest, HTTPRequestBuilder } from "./http.request";
 
 describe("HTTP Request", () => {
   it("should derive a detailed request", () => {

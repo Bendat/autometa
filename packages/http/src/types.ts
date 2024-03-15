@@ -1,6 +1,6 @@
 import type { StatusCodes } from "@autometa/status-codes";
-import type { HTTPResponse } from "./http-response";
-import type { HTTPRequest } from "./http-request";
+import type { HTTPResponse } from "./http.response";
+import type { HTTPRequest } from "./http.request";
 export type HTTPMethod =
   | "GET"
   | "POST"

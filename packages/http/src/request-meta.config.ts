@@ -6,7 +6,6 @@ import {
   SchemaParser,
   StatusCode,
 } from "./types";
-
 export interface SchemaConfig {
   schemas: SchemaMap;
   requireSchema: boolean;
@@ -47,6 +46,7 @@ export class MetaConfigBuilder {
     this.#schemaMap = map;
     return this;
   }
+
 
   schema(parser: SchemaParser, ...codes: StatusCode[]): MetaConfigBuilder;
   schema(
