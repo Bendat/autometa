@@ -7,10 +7,10 @@ export type SwaggerCoveragePluginConfig = {
   ignorePathMatches?: RegExp[];
 };
 
-export class SwaggerCoveragePlugin extends HTTPPlugin<SwaggerCoveragePlugin>{
+export class SwaggerCoveragePlugin extends HTTPPlugin<SwaggerCoveragePlugin> {
   onSendRequest<T>(request: HTTPRequest<T>) {
-    request
-    return
+    request;
+    return;
   }
   onReceiveResponse<T>(response: HTTPResponse<T>) {
     response;

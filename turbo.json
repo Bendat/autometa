@@ -31,6 +31,9 @@
     "lint": {
       "inputs": ["**/*.ts"]
     },
+    "prettify": {
+      "inputs": ["**/*.ts"]
+    },
     "lint:fix": {
       "inputs": ["**/*.ts"]
     },

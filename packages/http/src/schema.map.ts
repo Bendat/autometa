@@ -1,3 +1,4 @@
+import { AutomationError } from "@autometa/errors";
 import { SchemaParser, StatusCode } from "./types";
 export class SchemaMap {
   #map: Map<StatusCode, SchemaParser>;
@@ -46,7 +47,7 @@ export class SchemaMap {
       const msg = `Failed to schema parse response data for status code ${status} with data:
       
 ${JSON.stringify(data, null, 2)}}`;
-      throw new Error(msg);
+      throw new AutomationError(msg, { cause: e as Error });
     }
   }
 
