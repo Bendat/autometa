@@ -64,6 +64,6 @@
   "dependencies": {
     "@autometa/cucumber-runner": "workspace:^0.11.0",
     "@babel/core": "^7.22.11",
-    "vitest": "0.34.6"
+    "vitest": "1.4.0"
   }
 }

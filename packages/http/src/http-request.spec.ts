@@ -51,6 +51,7 @@ describe("HTTP Request", () => {
         headers: { foo: "bar" },
         method: "GET"
       });
+    });
 
       it("should derive a request builder", () => {
         const builder = new HTTPRequestBuilder()
@@ -64,7 +65,7 @@ describe("HTTP Request", () => {
         expect(derived.request).toEqual(builder.request);
         expect(derived.request).not.toBe(builder.request);
       });
-    });
+
 
     describe("build", () => {
       it("should build a request", () => {
