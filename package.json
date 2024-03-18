@@ -14,7 +14,7 @@
     "test:types": "turbo run test:types --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "vitest:clean": "rm -rf **/*/vitest.config.ts.timestamp-*",
-    "vitest:all": "vitest run . --coverage",
+    "vitest:all": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json-summary --coverage.reporter=json --coverage.reporter=html",
     "lint": "nx run-many -t lint -- --max-warnings=0",
     "lint:fix": "turbo run lint:fix -- --max-warnings=0",
     "clean": "turbo run clean",
@@ -51,6 +51,6 @@
   },
   "dependencies": {
     "@nrwl/linter": "^16.6.0",
-    "@vitest/coverage-istanbul": "^0.31.0"
+    "@vitest/coverage-istanbul": "^1.4.0"
   }
 }

@@ -7,7 +7,7 @@ export default defineConfig({
     setupFiles: ["reflect-metadata"],
     coverage: {
       provider: "v8", // or 'v8'
-      reporter: ["html", "json", "json-summary"],
+      reporter: ["json-summary", "json"],
     },
   },
 });

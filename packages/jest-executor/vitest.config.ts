@@ -8,7 +8,7 @@ export default defineConfig({
     },
     coverage: {
       provider: "v8", // or 'v8'
-      reporter: ["html", "json", "json-summary"],
+      reporter: ["json-summary", "json"],
     },
   },
 });

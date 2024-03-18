@@ -29,7 +29,7 @@
     "@types/uuid": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "@vitest/coverage-istanbul": "^0.31.0",
+    "@vitest/coverage-istanbul": "^1.4.0",
     "@vitest/coverage-v8": "^1.4.0",
     "asserters": "link:packages/asserters",
     "autometa": "link:packages/autometa",
