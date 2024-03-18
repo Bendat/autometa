@@ -1,6 +1,6 @@
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { describe, it, expect } from "vitest";
 import { defineParameterType } from "./parameters";
@@ -25,7 +25,7 @@ describe("defineParameterType", () => {
           const foo = s as Foo;
           foo.name = "foo";
           return foo;
-        }
+        },
       });
       const expression = new CucumberExpression(
         "I have {number} cukes in my belly now",
@@ -45,7 +45,7 @@ describe("defineParameterType", () => {
       defineParameterType(registry, {
         name: "number",
         regexpPattern: /\d+/,
-        type: Foo
+        type: Foo,
       });
       const expression = new CucumberExpression(
         "I have {number} cukes in my belly now",
@@ -71,7 +71,7 @@ describe("defineParameterType", () => {
         transform: (s: unknown) => {
           const foo = s as number;
           return foo * 2;
-        }
+        },
       });
       const expression = new CucumberExpression(
         "I have {number} cukes in my belly now",
@@ -91,7 +91,7 @@ describe("defineParameterType", () => {
       defineParameterType(registry, {
         name: "number",
         regexpPattern: /\d+/,
-        primitive: Number
+        primitive: Number,
       });
       const expression = new CucumberExpression(
         "I have {number} cukes in my belly now",
@@ -116,7 +116,7 @@ describe("defineParameterType", () => {
         transform: (s: unknown) => {
           const foo = s as FooNum;
           return foo.name;
-        }
+        },
       });
       const expression = new CucumberExpression(
         "I have {number} cukes in my belly now",
@@ -143,7 +143,7 @@ describe("defineParameterType", () => {
           const f = new Foo(foo);
           f.name = foo;
           return f;
-        }
+        },
       });
       const expression = new CucumberExpression(
         "I have {number} cukes in my belly now",
@@ -163,7 +163,7 @@ describe("defineParameterType", () => {
     const expected = "boo";
     defineParameterType(registry, {
       name: "str",
-      regexpPattern: /.+/
+      regexpPattern: /.+/,
     });
     const expression = new CucumberExpression(
       "I have {str} cukes in my belly now",

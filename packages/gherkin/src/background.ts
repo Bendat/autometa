@@ -13,4 +13,4 @@ export class Background extends GherkinNode {
   }
 }
 
-export class BackgroundBuilder extends Builder(Background){}
+export class BackgroundBuilder extends Builder(Background) {}

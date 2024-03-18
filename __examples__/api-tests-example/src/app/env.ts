@@ -4,6 +4,6 @@ dotenv.config();
 export const Env = cleanEnv(process.env, {
   API_URL: str({
     example: "https://example.com",
-    default: "https://dummyjson.com"
-  })
+    default: "https://dummyjson.com",
+  }),
 });

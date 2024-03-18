@@ -45,7 +45,7 @@ export function getRealPath(filePath: string, callerFile: string, isFile = true)
 export function loadGlobalStepFiles() {
   if (Config.has("globalsRoot")) {
     const globalsDirs = Config.get<string>("globalsRoot").replace(/\\/g, "/");
-    const resolved = path.resolve(globalsDirs).replace(/\\/g, '/');
+    const resolved = path.resolve(globalsDirs).replace(/\\/g, "/");
     const paths = glob.sync(`${resolved}/**/*.steps.ts`);
     for (const path of paths) {
       require(path.replace(/\\/g, "/"));

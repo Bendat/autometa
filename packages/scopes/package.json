@@ -9,7 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "test:types": "vitest typecheck",
+    "test:types": "vitest run --typecheck",
     "test:watch": "vitest",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
@@ -46,7 +46,7 @@
     "tsconfig": "workspace: *",
     "tsup": "^7.2.0",
     "typescript": "^4.9.5",
-    "vitest": "0.34.6"
+    "vitest": "1.4.0"
   },
   "dependencies": {
     "@autometa/app": "workspace:*",

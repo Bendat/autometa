@@ -9,25 +9,25 @@ import { SemanticComponent } from ".";
 import { Locator } from "@playwright/test";
 import { Role } from "../locator";
 
- /**
-   * Allows locating elements by their alt text. Constructs a PageComponent
-   * from the locator. The PageComponent type can be controlled
-   *
-   * **Usage**
-   *
-   * For example, this method will find the image by alt text "Playwright logo":
-   *
-   * ```html
-   * <img alt='Playwright logo'>
-   * ```
-   *
-   * ```js
-   * await page.getByAltText('Playwright logo').click();
-   * ```
-   *
-   * @param text Text to locate the element for.
-   * @param options
-   */
+/**
+ * Allows locating elements by their alt text. Constructs a PageComponent
+ * from the locator. The PageComponent type can be controlled
+ *
+ * **Usage**
+ *
+ * For example, this method will find the image by alt text "Playwright logo":
+ *
+ * ```html
+ * <img alt='Playwright logo'>
+ * ```
+ *
+ * ```js
+ * await page.getByAltText('Playwright logo').click();
+ * ```
+ *
+ * @param text Text to locate the element for.
+ * @param options
+ */
 export interface GetByAltTextOverloads<TDefault extends SemanticComponent> {
   (text: string | RegExp, options?: FindByTextOptions): TDefault;
   <T extends SemanticComponent = TDefault>(

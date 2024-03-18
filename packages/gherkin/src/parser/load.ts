@@ -3,7 +3,7 @@ import {
   AstBuilder,
   Dialect,
   dialects,
-  GherkinClassicTokenMatcher
+  GherkinClassicTokenMatcher,
 } from "@cucumber/gherkin";
 import { AutomationError } from "@autometa/errors";
 import { v4 as uuidv4 } from "uuid";
@@ -24,7 +24,7 @@ export function parseGherkin(gherkin: string, filePath: string) {
     return convertToClass(ast.feature, filePath);
   } catch (err) {
     const message = `Error parsing feature Gherkin:`;
-    throw new AutomationError(message, { cause: err as Error});
+    throw new AutomationError(message, { cause: err as Error });
   }
 }
 
@@ -75,7 +75,7 @@ const createTranslationMap = (translateDialect: Dialect) => {
     "given",
     "then",
     "when",
-    "rule"
+    "rule",
   ];
 
   for (const prop of props) {
@@ -95,7 +95,9 @@ const createTranslationMap = (translateDialect: Dialect) => {
           if (defaultWordIndex !== null) {
             translationMap[dialectWord] = translationWords[defaultWordIndex];
           } else {
-            throw new AutomationError("No translation found for " + dialectWord);
+            throw new AutomationError(
+              "No translation found for " + dialectWord
+            );
           }
         }
       }

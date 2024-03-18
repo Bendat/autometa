@@ -1,7 +1,7 @@
 import {
   CucumberExpression,
   ParameterType,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { describe, it, expect, vi } from "vitest";
 import {
@@ -10,7 +10,7 @@ import {
   getDiffs,
   isExpressionCandidate,
   limitDiffs,
-  refineDiff
+  refineDiff,
 } from "./step-matcher";
 import { CachedStep } from "./types";
 const registry = new ParameterTypeRegistry();
@@ -26,7 +26,7 @@ describe("step matcher", () => {
       keyword: "Given",
       type: "Context",
       expression,
-      matches: () => true
+      matches: () => true,
     };
 
     const matches = checkMatch("hello world", step);
@@ -55,7 +55,7 @@ describe("step matcher", () => {
         keyword: "Given",
         type: "Context",
         expression,
-        matches: () => true
+        matches: () => true,
       };
 
       const diff = getDiff(text, step);
@@ -65,7 +65,7 @@ describe("step matcher", () => {
         { count: 3, added: true, removed: undefined, value: "{int}" },
         { count: 7, value: " grapes in my " },
         { count: 1, added: undefined, removed: true, value: "bowl" },
-        { count: 3, added: true, removed: undefined, value: "{string}" }
+        { count: 3, added: true, removed: undefined, value: "{string}" },
       ];
       expect(diff).toStrictEqual(expected);
     });
@@ -78,7 +78,7 @@ describe("step matcher", () => {
         { count: 3, added: true, removed: undefined, value: "{int}" },
         { count: 7, value: " grapes in my " },
         { count: 1, added: undefined, removed: true, value: "bowl" },
-        { count: 3, added: true, removed: undefined, value: "{string}" }
+        { count: 3, added: true, removed: undefined, value: "{string}" },
       ]);
       expect(refined).toEqual("I have 2 grapes in my bowl");
     });
@@ -94,7 +94,7 @@ describe("step matcher", () => {
         keyword: "Given",
         type: "Context",
         expression,
-        matches: () => true
+        matches: () => true,
       };
       const diffs = getDiff(text, step);
       const refined = refineDiff(diffs);
@@ -110,13 +110,11 @@ describe("step matcher", () => {
         keyword: "Given",
         type: "Context",
         expression,
-        matches: () => true
+        matches: () => true,
       };
       const diffs = getDiff(text, step);
       const refined = refineDiff(diffs);
-      expect(refined).toEqual(
-        "I have a Social Group 'MyGroupChannel' 1"
-      );
+      expect(refined).toEqual("I have a Social Group 'MyGroupChannel' 1");
     });
     it("should get the diffs of a matching text and expression", () => {
       const text = "I have 2 grapes in my bowl";
@@ -128,7 +126,7 @@ describe("step matcher", () => {
         keyword: "Given",
         type: "Context",
         expression,
-        matches: () => true
+        matches: () => true,
       };
       const diffs = getDiff(text, step);
       const refined = refineDiff(diffs);
@@ -146,7 +144,7 @@ describe("step matcher", () => {
         keyword,
         type: keywordType,
         expression,
-        matches: () => false
+        matches: () => false,
       };
       const [diffs] = getDiffs(text, 1, [scope]);
       expect(diffs).not.toBeUndefined();
@@ -171,13 +169,13 @@ describe("step matcher", () => {
         keyword,
         type: keywordType,
         expression,
-        matches: () => false
+        matches: () => false,
       };
       const scope1 = {
         keyword,
         type: keywordType,
         expression: expression1,
-        matches: () => false
+        matches: () => false,
       } satisfies CachedStep;
       const diffs = getDiffs(text, 1, [scope, scope1]);
       expect(diffs).toHaveLength(1);
@@ -195,25 +193,25 @@ describe("step matcher", () => {
         merged: "",
         step: testStep,
         gherkin: "",
-        distance: 1
+        distance: 1,
       };
       const sameTypeDiff2 = {
         merged: "",
         step: testStep,
         gherkin: "",
-        distance: 2
+        distance: 2,
       };
       const otherTypeDiff = {
         merged: "",
         step: testStepOther,
         gherkin: "",
-        distance: 5
+        distance: 5,
       };
       const otherTypeDiff2 = {
         merged: "I have 2 blue drapes in my bowl",
         step: testStepOther,
         gherkin: "",
-        distance: 6
+        distance: 6,
       };
       //   const diffs = [sameTypeDiff1, sameTypeDiff2, otherTypeDiff];
       const sameDiffs = [sameTypeDiff1, sameTypeDiff2];
@@ -227,25 +225,25 @@ describe("step matcher", () => {
         merged: "",
         step: testStep,
         gherkin: "",
-        distance: 1
+        distance: 1,
       };
       const sameTypeDiff2 = {
         merged: "",
         step: testStep,
         gherkin: "",
-        distance: 6
+        distance: 6,
       };
       const otherTypeDiff = {
         merged: "",
         step: testStepOther,
         gherkin: "",
-        distance: 1
+        distance: 1,
       };
       const otherTypeDiff2 = {
         merged: "I have 2 blue drapes in my bowl",
         step: testStepOther,
         gherkin: "",
-        distance: 6
+        distance: 6,
       };
       const sameDiffs = [sameTypeDiff1, sameTypeDiff2];
       const otherDiffs = [otherTypeDiff, otherTypeDiff2];
@@ -258,25 +256,25 @@ describe("step matcher", () => {
         merged: "",
         step: testStep,
         gherkin: "",
-        distance: 1
+        distance: 1,
       };
       const sameTypeDiff2 = {
         merged: "",
         step: testStep,
         gherkin: "",
-        distance: 2
+        distance: 2,
       };
       const otherTypeDiff = {
         merged: "",
         step: testStepOther,
         gherkin: "",
-        distance: 2
+        distance: 2,
       };
       const otherTypeDiff2 = {
         merged: "I have 2 blue drapes in my bowl",
         step: testStepOther,
         gherkin: "",
-        distance: 6
+        distance: 6,
       };
       const sameDiffs = [sameTypeDiff1, sameTypeDiff2];
       const otherDiffs = [otherTypeDiff, otherTypeDiff2];
@@ -294,7 +292,7 @@ const testStep: CachedStep = {
     "I have {int} blue grapes in my {string}",
     registry
   ),
-  matches: () => false
+  matches: () => false,
 };
 
 const testStepOther = {
@@ -304,5 +302,5 @@ const testStepOther = {
     "I have {int} blue drapes in my {string}",
     registry
   ),
-  matches: () => false
+  matches: () => false,
 };

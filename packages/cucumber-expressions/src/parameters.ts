@@ -1,7 +1,7 @@
 import {
   Argument,
   ParameterType,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { Class } from "@autometa/types";
 import {
@@ -11,7 +11,7 @@ import {
   overloads,
   string,
   nil,
-  array
+  array,
 } from "@autometa/overloaded";
 // todo - this has a bug when dealing with {string} - does not remove quotes
 Argument.prototype.getValue = function () {

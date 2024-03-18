@@ -13,7 +13,7 @@ export class TestEmitter<TArgsStart = never, TArgsEnd = never> extends EventEmit
 
   onStart = (action?: (...args: unknown[]) => void) => {
     if (action) {
-      this.on(`onStart${this.name}`,  this.collectPromises(this.name, action));
+      this.on(`onStart${this.name}`, this.collectPromises(this.name, action));
     }
   };
 

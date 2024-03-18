@@ -4,7 +4,7 @@ import {
   snakeCase,
   constantCase,
   capitalCase,
-  paramCase
+  paramCase,
 } from "change-case-all";
 export abstract class StringTransformer {
   abstract order: number;

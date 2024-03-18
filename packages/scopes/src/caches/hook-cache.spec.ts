@@ -34,9 +34,7 @@ describe("hook-cache", () => {
         name: "test",
         action: vi.fn(),
       };
-      expect(() => hookCache.addHook(hook)).toThrowError(
-        "unrecognized hook"
-      );
+      expect(() => hookCache.addHook(hook)).toThrowError("unrecognized hook");
     });
   });
 });

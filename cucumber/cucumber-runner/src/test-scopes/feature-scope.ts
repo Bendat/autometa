@@ -37,5 +37,3 @@ export class FeatureScope extends Scope {
     super.attach(childScope);
   }
 }
-
-

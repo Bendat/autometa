@@ -6,7 +6,7 @@ import {
   ScenarioOutlineBridge,
   find,
   GlobalBridge,
-  StepBridge
+  StepBridge,
 } from "@autometa/test-builder";
 import {
   describe,
@@ -15,7 +15,7 @@ import {
   beforeEach,
   afterEach,
   afterAll,
-  beforeAll
+  beforeAll,
 } from "@jest/globals";
 import { World, type App } from "@autometa/app";
 import { Class } from "@autometa/types";
@@ -45,7 +45,7 @@ export function execute(
       title: featureTitle,
       path: bridge.data.scope.path,
       modifier,
-      tags: [...bridge.data.gherkin.tags]
+      tags: [...bridge.data.gherkin.tags],
     });
   }, chosenTimeout.milliseconds);
   group(featureTitle, () => {
@@ -72,40 +72,40 @@ export function execute(
 
     bootstrapSetupHooks(globalBridge, staticApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapSetupHooks(bridge, staticApp, events, [config, chosenTimeout]);
     bootstrapBeforeHooks(bridge, globalBridge, () => localApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapBeforeHooks(bridge, bridge, () => localApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapBackground(bridge, bridge, () => localApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapScenarios(bridge, bridge, () => localApp, staticApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapRules(bridge, () => localApp, staticApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapAfterHooks(bridge, bridge, () => localApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapAfterHooks(bridge, globalBridge, () => localApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapTeardownHooks(globalBridge, staticApp, events, [
       config,
-      chosenTimeout
+      chosenTimeout,
     ]);
     bootstrapTeardownHooks(bridge, staticApp, events, [config, chosenTimeout]);
   });
@@ -122,7 +122,7 @@ export function execute(
       title: featureTitle,
       modifier,
       tags: [...bridge.data.gherkin.tags],
-      status: status
+      status: status,
     });
     const settled = await events.settleAsyncEvents();
     const failedCount = settled.filter((e) => e.status === "rejected").length;
@@ -163,7 +163,7 @@ export function bootstrapBackground(
     const title = background.data.scope.title(background.data.gherkin);
     events.before.emitStart({
       title: title,
-      tags: [...tags]
+      tags: [...tags],
     });
     const steps = background.steps;
     try {
@@ -176,7 +176,7 @@ export function bootstrapBackground(
         events.step.emitStart({
           title,
           args: step.args,
-          expression: step.data.scope.expression.source
+          expression: step.data.scope.expression.source,
         });
 
         await step.data.scope.execute(
@@ -188,20 +188,20 @@ export function bootstrapBackground(
         events.step.emitEnd({
           expression: step.data.scope.expression.source,
           title,
-          args: step.args
+          args: step.args,
         });
       }
       events.before.emitEnd({
         title: title,
         tags: [...tags],
-        status: "PASSED"
+        status: "PASSED",
       });
     } catch (e) {
       events.before.emitEnd({
         title: title,
         tags: [...tags],
         status: "FAILED",
-        error: e as Error
+        error: e as Error,
       });
       const message = `${title} failed to execute.
 Test: ${testName}`;
@@ -226,7 +226,7 @@ export function bootstrapScenarios(
     if (isOutline(scenario)) {
       bootstrapScenarioOutline(root, scenario, localApp, staticApp, events, [
         config,
-        chosenTimeout
+        chosenTimeout,
       ]);
       return;
     }
@@ -252,7 +252,7 @@ export function bootstrapScenario(
     async () => {
       events.scenario.emitStart({
         title: bridge.title,
-        tags: bridge.tags
+        tags: bridge.tags,
       });
       try {
         for (const step of bridge.steps) {
@@ -262,7 +262,7 @@ export function bootstrapScenario(
         events.scenario.emitEnd({
           title: bridge.title,
           tags: bridge.tags,
-          status: "PASSED"
+          status: "PASSED",
         });
       } catch (e) {
         const error = e as Error;
@@ -271,7 +271,7 @@ export function bootstrapScenario(
           title: bridge.title,
           tags: bridge.tags,
           status: "FAILED",
-          error: error
+          error: error,
         });
         const message = `${bridge.title} failed while executing a step`;
         const meta = { cause: error };
@@ -304,7 +304,7 @@ async function bootstrapStep(
   events.step.emitStart({
     title,
     args: step.args,
-    expression: step.expressionText
+    expression: step.expressionText,
   });
   try {
     await step.data.scope.execute(
@@ -316,7 +316,7 @@ async function bootstrapStep(
       expression: step.expressionText,
       title,
       args: step.args,
-      status: "PASSED"
+      status: "PASSED",
     });
   } catch (e) {
     const error = e as Error;
@@ -325,7 +325,7 @@ async function bootstrapStep(
       title,
       args: step.args,
       status: "FAILED",
-      error: e as Error
+      error: e as Error,
     });
     const message = `${title} experienced an error`;
     const meta = { cause: error };
@@ -351,7 +351,7 @@ export function bootstrapScenarioOutline(
 ) {
   const {
     data: { scope, gherkin },
-    examples
+    examples,
   } = bridge;
   const title = scope.title(gherkin);
   const [group, modifier] = getGroupOrModifier(bridge);
@@ -364,7 +364,7 @@ export function bootstrapScenarioOutline(
       events.scenarioOutline.emitStart({
         title,
         modifier,
-        tags: [...gherkin.tags]
+        tags: [...gherkin.tags],
       });
     });
     bootstrapSetupHooks(bridge, staticApp, events, [config, timeout]);
@@ -372,7 +372,7 @@ export function bootstrapScenarioOutline(
     examples.forEach((example) => {
       bootstrapExamples(root, example, localApp, staticApp, events, [
         config,
-        timeout
+        timeout,
       ]);
     });
     bootstrapAfterHooks(root, bridge, localApp, events, [config, timeout]);
@@ -384,7 +384,7 @@ export function bootstrapScenarioOutline(
         title,
         modifier,
         tags: [...gherkin.tags],
-        status: status
+        status: status,
       });
     }, chosenTimeout);
   });
@@ -430,7 +430,7 @@ export function bootstrapRules(
         events.rule.emitStart({
           title: ruleName,
           modifier,
-          tags: [...data.gherkin.tags]
+          tags: [...data.gherkin.tags],
         });
       });
       bootstrapSetupHooks(rule, staticApp, events, transferTimeout);
@@ -454,7 +454,7 @@ export function bootstrapRules(
           title: ruleName,
           modifier,
           tags: [...data.gherkin.tags],
-          status: status
+          status: status,
         });
       }, ruleTimeout.milliseconds);
     });
@@ -472,7 +472,7 @@ function getStatus(modifier: string | undefined, failures: unknown[]) {
 }
 
 function getGroupOrModifier({
-  data
+  data,
 }: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge) {
   if (data.gherkin.tags?.has("@skip") || data.gherkin.tags?.has("@skipped")) {
     return [describe.skip, "skip"] as const;
@@ -525,14 +525,14 @@ export function bootstrapBeforeHooks(
       const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
       events.before.emitStart({
         title: `${hook.name}: ${hook.description}`,
-        tags: [...tags]
+        tags: [...tags],
       });
       const report = await hook.execute(localApp(), ...tags);
       events.before.emitEnd({
         title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
         status: report.status,
-        error: report.error
+        error: report.error,
       });
       if (report.error) {
         const message = `${hook.name}: ${hook.description} experienced a failure.`;
@@ -566,7 +566,7 @@ export function bootstrapSetupHooks(
       }
 
       events.setup.emitStart({
-        title: `${hook.name}: ${hook.description}`
+        title: `${hook.name}: ${hook.description}`,
       });
 
       const report = await hook.execute(staticApp, ...tags);
@@ -574,7 +574,7 @@ export function bootstrapSetupHooks(
       events.setup.emitEnd({
         title: `${hook.name}: ${hook.description}`,
         status: report.status,
-        error: report.error
+        error: report.error,
       });
 
       if (report.error) {
@@ -616,7 +616,7 @@ export function bootstrapAfterHooks(
       const tags = scenarioBridge?.data?.gherkin?.tags ?? [];
       events.after.emitStart({
         title: `${hook.name}: ${hook.description}`,
-        tags: [...tags]
+        tags: [...tags],
       });
 
       const report = await hook.execute(localApp(), ...tags);
@@ -624,7 +624,7 @@ export function bootstrapAfterHooks(
         title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
         status: report.status,
-        error: report.error
+        error: report.error,
       });
       if (report.error) {
         const message = `${hook.name}: ${hook.description} failed to execute.`;
@@ -655,14 +655,14 @@ export function bootstrapTeardownHooks(
       }
       event.teardown.emitStart({
         title: `${hook.name}: ${hook.description}`,
-        tags: [...tags]
+        tags: [...tags],
       });
       const report = await hook.execute(staticApp, ...tags);
       event.teardown.emitEnd({
         title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
         status: report.status,
-        error: report.error
+        error: report.error,
       });
 
       if (report.error) {

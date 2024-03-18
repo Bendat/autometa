@@ -41,7 +41,7 @@ export function AccessTracker<T extends AnyFunction | object>(
             ? Array.isArray(closest)
               ? closest.join("\n- ")
               : closest
-            : undefined
+            : undefined,
         ].filter((it) => it);
         throw new AutomationError(messages.join("\n"));
       }
@@ -56,7 +56,7 @@ export function AccessTracker<T extends AnyFunction | object>(
       const obj = target as Record<string | symbol, unknown>;
       obj[prop] = value;
       return true;
-    }
+    },
   });
 }
 

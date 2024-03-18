@@ -5,4 +5,4 @@ export class Example extends Scenario {
   readonly table: { [header: string]: string };
 }
 
-export class ExampleBuilder extends Builder(Example){}
+export class ExampleBuilder extends Builder(Example) {}

@@ -115,9 +115,8 @@ export function StringSchema(data: unknown) {
   return data;
 }
 
-
 export function JSONSchema<T = unknown>(data: unknown) {
-  if(typeof data === 'object') {
+  if (typeof data === "object") {
     return data as T;
   }
   if (!isJson(data)) {

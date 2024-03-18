@@ -10,7 +10,7 @@ export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
 
   match(args: ArgumentType[]) {
     for (const overload of this.overloads) {
-      const match = overload.isMatch(args)
+      const match = overload.isMatch(args);
       if (match && overload.actionOrError instanceof Function) {
         return overload.actionOrError(...args);
       }
@@ -29,7 +29,6 @@ export class Overloads<T extends Overload<AnyArg[], OverloadAction>[]> {
 function(${args.join(", ")}){}
 ${reports}`);
   }
-
 }
 
 /**

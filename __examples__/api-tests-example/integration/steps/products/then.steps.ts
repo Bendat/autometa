@@ -11,7 +11,7 @@ Then(
   "the product has the expected details",
   (table, { world }) => {
     const {
-      data: { description, price, discountPercentage, brand }
+      data: { description, price, discountPercentage, brand },
     } = world.viewProductResponse;
     const expectedDescription = table.get<string>("description", 0);
     const expectedPrice = table.get<number>("price", 0);

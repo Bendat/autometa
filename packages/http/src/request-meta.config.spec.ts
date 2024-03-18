@@ -26,7 +26,7 @@ describe(MetaConfigBuilder.name, () => {
       expect(config.schemas.toObject()).toEqual({
         200: parser,
         201: parser,
-        202: parser
+        202: parser,
       });
     });
   });

@@ -5,7 +5,7 @@ import {
   GherkinCodeBridge,
   ScenarioBridge,
   ScenarioOutlineBridge,
-  RuleBridge
+  RuleBridge,
 } from "./bridge";
 
 export function find(
@@ -99,7 +99,7 @@ export function findRuleOrChild(
   from?: string
 ) {
   const {
-    data: { scope, gherkin }
+    data: { scope, gherkin },
   } = rule;
   const title = scope.title(gherkin);
   if (testName === title) {
@@ -121,7 +121,7 @@ export function findScenarioOutlineOrChild(
   from?: string
 ) {
   const {
-    data: { scope, gherkin }
+    data: { scope, gherkin },
   } = outline;
   const title = scope.title(gherkin);
   if (testName === title) {
@@ -152,7 +152,7 @@ export function findExamplesOrChild(
   from?: string
 ) {
   const {
-    data: { scope, gherkin }
+    data: { scope, gherkin },
   } = example;
   const title = scope.title(gherkin);
   if (testName === title) {
@@ -179,7 +179,7 @@ export function findScenario(
   from?: string
 ) {
   const {
-    data: { scope, gherkin }
+    data: { scope, gherkin },
   } = scenario;
   const title = scope.title(gherkin);
   if (testName === title) {

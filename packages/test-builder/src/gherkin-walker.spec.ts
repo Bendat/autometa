@@ -17,7 +17,9 @@ const gherkinDocument = new FeatureBuilder()
       .children([
         new ScenarioBuilder()
           .name("my scenario")
-          .children([new StepBuilder().keyword("Given").text("my setup").build()])
+          .children([
+            new StepBuilder().keyword("Given").text("my setup").build(),
+          ])
           .build(),
       ])
       .build(),
@@ -29,7 +31,9 @@ const gherkinDocument = new FeatureBuilder()
           .children([
             new ScenarioBuilder()
               .name("my scenario outline")
-              .children([new StepBuilder().keyword("When").text("my action").build()])
+              .children([
+                new StepBuilder().keyword("When").text("my action").build(),
+              ])
               .build(),
           ])
           .build(),
@@ -38,7 +42,9 @@ const gherkinDocument = new FeatureBuilder()
           .children([
             new ScenarioBuilder()
               .name("my scenario outline")
-              .children([new StepBuilder().keyword("When").text("my action").build()])
+              .children([
+                new StepBuilder().keyword("When").text("my action").build(),
+              ])
               .build(),
           ])
           .build(),
@@ -55,8 +61,15 @@ const walkers: WalkFunctionMap<[]> = {
   onExamples: vi.fn().mockReturnValue([]),
   onStep: vi.fn().mockReturnValue([]),
 };
-const { onFeature, onRule, onBackground, onScenario, onScenarioOutline, onExamples, onStep } =
-  walkers;
+const {
+  onFeature,
+  onRule,
+  onBackground,
+  onScenario,
+  onScenarioOutline,
+  onExamples,
+  onStep,
+} = walkers;
 
 beforeEach(() => {
   vi.clearAllMocks();

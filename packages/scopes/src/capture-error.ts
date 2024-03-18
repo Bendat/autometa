@@ -5,9 +5,9 @@ export function safe(
   action: (...args: any[]) => any | Promise<any>,
   ...args: unknown[]
 ): AutomationError | undefined | Promise<AutomationError | undefined> {
-  const result =  action(...args);
-  if(result instanceof Promise){
-    return result.catch(e => e as AutomationError)
+  const result = action(...args);
+  if (result instanceof Promise) {
+    return result.catch((e) => e as AutomationError);
   }
   return result;
 }

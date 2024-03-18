@@ -25,7 +25,11 @@ export const getCacheKey = (
 
 export default {
   getCacheKey,
-  process: (_src: string, filePath: string, jestConfig: Config.ProjectConfig) => {
+  process: (
+    _src: string,
+    filePath: string,
+    jestConfig: Config.ProjectConfig
+  ) => {
     const windowsFix = filePath.replace(/\\/g, "/");
     const testFile = `
 const { Feature } = require('@autometa/runner');            

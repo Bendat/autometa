@@ -6,11 +6,11 @@ export const BaseArgumentSchema = object({
     .or(
       object({
         undefined: boolean().optional(),
-        null: boolean().optional()
+        null: boolean().optional(),
       })
     )
     .optional(),
-  test: unknown().optional()
+  test: unknown().optional(),
 });
 
 export type ArgTestFunction<TArgType> = {

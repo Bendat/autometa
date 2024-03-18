@@ -53,7 +53,7 @@ describe("Type tests", () => {
       Overload<arguments, () => number>,
       Overload<arguments, () => string>
     ];
-    type union = ReturnTypes<testType>
+    type union = ReturnTypes<testType>;
     // type union = ReturnTypes<tuple>
     expectTypeOf<union>().toEqualTypeOf<number | string>();
   });

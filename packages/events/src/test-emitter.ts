@@ -34,7 +34,7 @@ export class TestEmitter<
     this.onStart(onStart);
     this.onEnd(onEnd);
   };
-  
+
   collectPromises = (name: string, action: (...args: unknown[]) => unknown) => {
     return (...args: unknown[]) => {
       try {
@@ -43,7 +43,9 @@ export class TestEmitter<
           this.promises.push(result);
         }
       } catch (e) {
-        console.error(`Event Subscriber ${name} threw an error ${(e as Error).message}`);
+        console.error(
+          `Event Subscriber ${name} threw an error ${(e as Error).message}`
+        );
       }
     };
   };

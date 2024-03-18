@@ -2,7 +2,7 @@ import { AutometaWorld, Fixture } from "@autometa/runner";
 import type {
   ProductId,
   ProductListResponse,
-  ProductResponse
+  ProductResponse,
 } from "../controllers/product";
 
 @Fixture

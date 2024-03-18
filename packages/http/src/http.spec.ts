@@ -29,8 +29,8 @@ describe("HTTP", () => {
   describe("resolving dynamic headers", () => {
     it("should resolve dynamic headers", async () => {
       const response = HTTPResponseBuilder.create().status(200).build();
-      const request = HTTPRequestBuilder.create()
-      const fn = vi.fn().mockImplementation((req: HTTPRequest)=>{
+      const request = HTTPRequestBuilder.create();
+      const fn = vi.fn().mockImplementation((req: HTTPRequest) => {
         response.request = req;
         return response;
       });
@@ -43,10 +43,10 @@ describe("HTTP", () => {
   describe("allowPlainText", () => {
     it("should throw an error when allowPlainText is false", async () => {
       const response = HTTPResponseBuilder.create().data("Hello World").build();
-      const fn = vi.fn().mockImplementation((req: HTTPRequest)=>{
+      const fn = vi.fn().mockImplementation((req: HTTPRequest) => {
         response.request = req;
         return response;
-      })
+      });
       const client = new MockClient(fn);
       const http = new HTTP(client).allowPlainText(false);
       await expect(() => http.get()).rejects.toThrowError(

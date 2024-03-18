@@ -2,7 +2,7 @@ import { Infer } from "myzod";
 import {
   CategoriesSchema,
   ProductListSchema,
-  ProductSchema
+  ProductSchema,
 } from "./product.schema";
 import { HTTPResponse } from "@autometa/runner";
 

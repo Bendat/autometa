@@ -38,6 +38,6 @@ export function defineConfig(config: Config, ...configs: TestExecutorConfig[]) {
     byFactory: (action: () => string) => EnvironmentReader;
   };
   return {
-    env: setters
+    env: setters,
   };
 }

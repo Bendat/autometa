@@ -9,7 +9,7 @@ import {
   pfx,
   sfx,
   snake,
-  trim
+  trim,
 } from "./string-transformer";
 import { CurriedFromPhraseFunction } from "./types";
 import { PhraseParser } from "./from-phrase";
@@ -165,11 +165,10 @@ describe("mixing cases", () => {
       sfx`_`,
       sfx`Bar`,
       sfx("_"),
-      trim,
+      trim
     );
     expect(conversion).toEqual("theTestPhrase_Bar_");
   });
-
 });
 
 @PhraseParser

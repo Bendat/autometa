@@ -5,5 +5,9 @@ export default defineConfig({
   plugins: [],
   test: {
     setupFiles: ["reflect-metadata"],
+    coverage: {
+      provider: "istanbul", // or 'v8'
+      reporter: ["html"],
+    },
   },
 });

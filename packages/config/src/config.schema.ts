@@ -18,11 +18,11 @@ export const TagFilterSchema = string()
 export const TestSchema = object({
   timeout: TimeoutSchema,
   tagFilter: TagFilterSchema,
-  groupLogging: boolean().optional()
+  groupLogging: boolean().optional(),
 }).optional();
 
 export const ShimSchema = object({
-  errorCause: boolean().optional()
+  errorCause: boolean().optional(),
 }).optional();
 
 export const EventsSchema = string().array();
@@ -32,7 +32,7 @@ export const RootSchema = object({
   features: PathSchema,
   steps: PathSchema,
   app: PathSchema,
-  parameterTypes: PathSchema.optional()
+  parameterTypes: PathSchema.optional(),
 });
 
 export const TestExecutorConfigSchema = object({
@@ -41,5 +41,5 @@ export const TestExecutorConfigSchema = object({
   test: TestSchema,
   roots: RootSchema,
   shim: ShimSchema.optional(),
-  events: EventsSchema.optional()
+  events: EventsSchema.optional(),
 });

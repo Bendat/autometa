@@ -7,7 +7,7 @@ import {
   Example,
   Examples,
   Scenario,
-  ScenarioOutline
+  ScenarioOutline,
 } from "@autometa/gherkin";
 import { AutomationError } from "@autometa/errors";
 import { Timeout } from "./timeout";
@@ -19,7 +19,7 @@ export class ScenarioScope extends Scope implements TimedScope {
     public readonly action: ScenarioAction,
     public readonly timeout: Timeout | undefined,
     parentHooksCache: HookCache,
-    parentStepCache: StepCache,
+    parentStepCache: StepCache
   ) {
     super(parentHooksCache, parentStepCache);
   }

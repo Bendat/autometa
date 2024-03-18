@@ -1,4 +1,4 @@
-import { Step } from '@cucumber/messages';
+import { Step } from "@cucumber/messages";
 
 export class GherkinTest {
   constructor(

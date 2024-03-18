@@ -1,6 +1,6 @@
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { describe, it, expect, vi } from "vitest";
 import { HookCache, StepCache } from "./caches";

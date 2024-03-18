@@ -21,7 +21,7 @@ export class AxiosClient extends HTTPClient {
       validateStatus: function (status) {
         return status >= 0 && status < 600;
       },
-      ...options
+      ...options,
     };
     const response = await axios(axiosRequest);
     return HTTPResponseBuilder.create()

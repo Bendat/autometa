@@ -11,7 +11,7 @@ import {
   func,
   fallback,
   number,
-  tuple
+  tuple,
 } from "@autometa/overloaded";
 import { Empty_Function } from "./novelties";
 import { OnFeatureExecuted } from "./decorators";
@@ -22,7 +22,7 @@ import { Scopes } from "./scopes";
 import {
   CucumberExpression,
   ParameterTypeRegistry,
-  RegularExpression
+  RegularExpression,
 } from "@cucumber/cucumber-expressions";
 import { AfterHook, BeforeHook, Hook, SetupHook, TeardownHook } from "./hook";
 import type {
@@ -32,7 +32,7 @@ import type {
   HookAction,
   StepActionFn,
   TestTimeout,
-  SizedTimeout
+  SizedTimeout,
 } from "./types";
 import { AutomationError } from "@autometa/errors";
 import { DataTable, TableDocument } from "@autometa/gherkin";
@@ -250,7 +250,10 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   }
 
   @Bind
-  Given<TText extends string, TTable extends  DataTable | TableDocument<DataTable>>(
+  Given<
+    TText extends string,
+    TTable extends DataTable | TableDocument<DataTable>
+  >(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
@@ -267,7 +270,10 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   }
 
   @Bind
-  When<TText extends string, TTable extends  DataTable | TableDocument<DataTable>>(
+  When<
+    TText extends string,
+    TTable extends DataTable | TableDocument<DataTable>
+  >(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
@@ -278,7 +284,10 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
   }
 
   @Bind
-  Then<TText extends string, TTable extends  DataTable | TableDocument<DataTable>>(
+  Then<
+    TText extends string,
+    TTable extends DataTable | TableDocument<DataTable>
+  >(
     title: TText,
     action: StepActionFn<TText, TTable>,
     tableType?: Class<TTable>
@@ -453,7 +462,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
           action,
           Timeout.from(timeout),
           parentHookCache,
-          parentStepCache
+          parentStepCache,
         ] as const;
       }),
 
@@ -464,7 +473,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
             action,
             Timeout.from(timeout),
             parentHookCache,
-            parentStepCache
+            parentStepCache,
           ] as const;
         }
       ),
@@ -475,7 +484,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
           action,
           Timeout.from(0),
           parentHookCache,
-          parentStepCache
+          parentStepCache,
         ] as const;
       })
     ).use([title, action, timeout]);
@@ -513,7 +522,7 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
             description,
             action,
             testTimeout,
-            tagFilterExpression
+            tagFilterExpression,
           ] as const;
         }
       ),
@@ -531,8 +540,8 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
       def(string(), func<HookAction>()).matches((description, action) => {
         return [description, action] as const;
       }),
-      fallback((...args)=>{
-        throw new Error(`You weren't supposed to see this. args: ${args}`)
+      fallback((...args) => {
+        throw new Error(`You weren't supposed to see this. args: ${args}`);
       })
     ).use([description, action, exprOrTimeout, timeout]);
     const hook = new type(...args);

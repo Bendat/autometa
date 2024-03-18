@@ -18,7 +18,7 @@ describe("HTTP Request", () => {
       params: { foo: "bar" },
       data: { foo: "bar" },
       headers: { foo: "bar" },
-      method: "GET"
+      method: "GET",
     });
   });
 
@@ -49,21 +49,21 @@ describe("HTTP Request", () => {
         params: { foo: "bar" },
         data: { foo: "bar" },
         headers: { foo: "bar" },
-        method: "GET"
+        method: "GET",
       });
+    });
 
-      it("should derive a request builder", () => {
-        const builder = new HTTPRequestBuilder()
-          .url("https://example.com")
-          .route("foo", "bar")
-          .param("foo", "bar")
-          .data({ foo: "bar" })
-          .header("foo", "bar")
-          .method("GET");
-        const derived = builder.derive();
-        expect(derived.request).toEqual(builder.request);
-        expect(derived.request).not.toBe(builder.request);
-      });
+    it("should derive a request builder", () => {
+      const builder = new HTTPRequestBuilder()
+        .url("https://example.com")
+        .route("foo", "bar")
+        .param("foo", "bar")
+        .data({ foo: "bar" })
+        .header("foo", "bar")
+        .method("GET");
+      const derived = builder.derive();
+      expect(derived.request).toEqual(builder.request);
+      expect(derived.request).not.toBe(builder.request);
     });
 
     describe("build", () => {
@@ -82,7 +82,7 @@ describe("HTTP Request", () => {
           params: { foo: "bar" },
           data: { foo: "bar" },
           headers: { foo: "bar" },
-          method: "GET"
+          method: "GET",
         });
       });
     });
@@ -103,7 +103,7 @@ describe("HTTP Request", () => {
           params: { foo: ["bar", "baz"] },
           data: { foo: "bar" },
           headers: { foo: "bar" },
-          method: "GET"
+          method: "GET",
         });
       });
     });
@@ -149,7 +149,7 @@ describe("HTTP Request", () => {
       await builder.resolveDynamicHeaders();
       expect(builder.request.headers).toEqual({
         foo: "bar",
-        dynamic: "foo"
+        dynamic: "foo",
       });
     });
 
@@ -165,7 +165,7 @@ describe("HTTP Request", () => {
       await builder.resolveDynamicHeaders();
       expect(builder.request.headers).toEqual({
         foo: "bar",
-        dynamic: "foo"
+        dynamic: "foo",
       });
     });
   });

@@ -14,9 +14,11 @@
     "test:types": "turbo run test:types --filter='!@autometa/documentation'",
     "integrate": "turbo run integrate",
     "vitest:clean": "rm -rf **/*/vitest.config.ts.timestamp-*",
+    "vitest:all": "vitest run .",
     "lint": "nx run-many -t lint -- --max-warnings=0",
     "lint:fix": "turbo run lint:fix -- --max-warnings=0",
     "clean": "turbo run clean",
+    "prettify": "prettier **/*.{ts,tsx,md} --write",
     "turbo:update": "npx @turbo/codemod migrate",
     "turbo:gen": "turbo gen library && pnpm i",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -37,7 +39,7 @@
     "prettier": "^2.8.3",
     "turbo": "^1.11.0",
     "typescript": "4.9.5",
-    "vitest": "0.34.6"
+    "vitest": "1.4.0"
   },
   "engines": {
     "node": ">=14.0.0"

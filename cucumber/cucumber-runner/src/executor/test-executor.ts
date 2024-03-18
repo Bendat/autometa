@@ -260,12 +260,12 @@ async function runSteps(
         e as Error
       ).message = `Step "${keyword} ${text}" failed with message ${old}. Expression: ${expression.source}`;
       events.step.emitEnd({ expression, text, status: Status.FAILED, error: [e] });
-      for (const { step, found,tableOrDocstring } of stepDefinitions.slice(index + 1)) {
+      for (const { step, found, tableOrDocstring } of stepDefinitions.slice(index + 1)) {
         const params = getRealArgs(tableOrDocstring, found.args, app, tableType);
         events.step.emitStart({ text: step.text, keyword: step.keyword, args: params });
-        const expression = found.step.text
-        const text = step.text
-        events.step.emitEnd({ expression , text, status: Status.BROKEN });
+        const expression = found.step.text;
+        const text = step.text;
+        events.step.emitEnd({ expression, text, status: Status.BROKEN });
       }
       throw e;
     } finally {

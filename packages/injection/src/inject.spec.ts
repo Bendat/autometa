@@ -13,20 +13,20 @@ describe("injection", () => {
     const retrieved = metadata(TestClass).get("foo");
     expect(retrieved).toEqual({
       key: "foo",
-      class: TestFoo
+      class: TestFoo,
     });
   });
 
-  it('should register a value as metadata', ()=>{
+  it("should register a value as metadata", () => {
     class TestClass {
-      @Inject.value('foo')
+      @Inject.value("foo")
       foo: string;
     }
 
     const retrieved = metadata(TestClass).get("foo");
     expect(retrieved).toEqual({
       key: "foo",
-      value: 'foo'
+      value: "foo",
     });
-  })
+  });
 });

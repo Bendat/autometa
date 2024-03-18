@@ -6,7 +6,7 @@ import {
   fallback,
   instance,
   overloads,
-  def
+  def,
 } from "@autometa/overloaded";
 import { CachedStep, StepCache } from "./caches";
 import { StepKeyword, StepType } from "@autometa/gherkin";
@@ -53,7 +53,7 @@ export abstract class Scope {
   get alts() {
     return {
       skip: this.skip,
-      only: this.only
+      only: this.only,
     };
   }
 

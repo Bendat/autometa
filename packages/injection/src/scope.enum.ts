@@ -1,7 +1,7 @@
 export const INJECTION_SCOPE = {
   SINGLETON: 0,
   TRANSIENT: 1,
-  CACHED: 2
+  CACHED: 2,
 } as const;
 
 export type InjectionScope =

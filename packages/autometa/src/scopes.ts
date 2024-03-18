@@ -17,7 +17,7 @@ const {
   After,
   Teardown,
   Setup,
-  Global
+  Global,
 } = GetCucumberFunctions(PARAM_REGISTRY);
 const coordinator = new Coordinator(Global, CONFIG, OPTS);
 Global.onFeatureExecuted = (feature, caller) => {
@@ -38,5 +38,5 @@ export {
   After,
   Teardown,
   Setup,
-  Pass
+  Pass,
 };

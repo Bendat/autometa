@@ -43,7 +43,7 @@ export function From<TObj extends Record<string, unknown> | AnyFunction>(
       AssertPhrase(obj, key, ...mutations);
       const asVariable = convertPhrase(key, ...mutations);
       return FromKey(obj, asVariable) as TObj[keyof TObj];
-    }
+    },
   };
 }
 
@@ -60,9 +60,9 @@ export function AddPhraseImpl<T extends Record<string, unknown> | AnyFunction>(
       value: {
         get() {
           return func;
-        }
-      }
-    }
+        },
+      },
+    },
   }) as unknown as T & { fromPhrase: PhraseConverter };
 }
 

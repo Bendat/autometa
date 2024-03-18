@@ -7,7 +7,7 @@ import {
   StepKeywordType,
   FeatureChild,
   RuleChild,
-  TableCell
+  TableCell,
 } from "@cucumber/messages";
 import { FeatureBuilder } from "../groups/feature";
 import { Rule, RuleBuilder } from "../groups/rule";
@@ -22,7 +22,7 @@ import {
   isRule,
   isScenarioOutline,
   isScenario,
-  notEmpty
+  notEmpty,
 } from "./validators";
 import { FeatureChildType, RuleChildType } from "./child-types";
 import { ExampleBuilder } from "../example";

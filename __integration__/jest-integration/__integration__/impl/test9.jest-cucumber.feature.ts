@@ -3,7 +3,7 @@ import {
   Given,
   Rule,
   Scenario,
-  ScenarioOutline
+  ScenarioOutline,
 } from "@autometa/runner";
 
 Feature(() => {

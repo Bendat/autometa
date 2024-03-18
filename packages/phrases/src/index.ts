@@ -12,7 +12,7 @@ export {
   upper,
   lower,
   collapse,
-  trim
+  trim,
 } from "./string-transformer";
 export * from "./types";
 export {
@@ -20,5 +20,5 @@ export {
   IsPhrase,
   From,
   IFromPhrase,
-  AssertPhrase
+  AssertPhrase,
 } from "./from-phrase";

@@ -37,7 +37,7 @@ export function transformResponse(
     `Could not parse a response as json, and this request was not configured to allow plain text responses.`,
     `To allow plain text responses, use the 'allowPlainText' method on the HTTP client.`,
     "",
-    response
+    response,
   ];
   throw new AutomationError(message.join("\n"));
 }

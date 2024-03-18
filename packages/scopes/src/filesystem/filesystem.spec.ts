@@ -4,7 +4,7 @@ import {
   FeatureRootFileSystem,
   Files,
   HomeDirectoryFileSystem,
-  RelativeFileSystem
+  RelativeFileSystem,
 } from "./filesystem";
 import os from "os";
 
@@ -27,7 +27,9 @@ describe("FileSystem", () => {
       it("should throw an error when the uri does not start with ~", () => {
         const uri = "features";
         const stepDefRoot = "step_definitions";
-        expect(() => new HomeDirectoryFileSystem(uri, [stepDefRoot], [])).toThrow(
+        expect(
+          () => new HomeDirectoryFileSystem(uri, [stepDefRoot], [])
+        ).toThrow(
           "Cannot use home directory path without ~. Stub was features"
         );
       });
@@ -57,7 +59,8 @@ describe("FileSystem", () => {
           const uri = "^/my-feature.feature";
           const stepDefRoot = "step_definitions";
           expect(
-            () => new FeatureRootFileSystem([featureRoot], uri, [stepDefRoot], [])
+            () =>
+              new FeatureRootFileSystem([featureRoot], uri, [stepDefRoot], [])
           ).toThrowError(
             "Cannot use Feature Root path without feature root. Stub was ^/my-feature.feature"
           );
@@ -78,11 +81,14 @@ describe("FileSystem", () => {
         const featureRoot = "/home/user/project/features";
         const uri = "^/my-feature.feature";
         const stepDefRoot = "step_definitions";
-        const fs = new FeatureRootFileSystem([featureRoot], uri, [
-          stepDefRoot
-        ], []);
+        const fs = new FeatureRootFileSystem(
+          [featureRoot],
+          uri,
+          [stepDefRoot],
+          []
+        );
         expect(fs.path).toEqual([
-          "/home/user/project/features/my-feature.feature"
+          "/home/user/project/features/my-feature.feature",
         ]);
       });
     });

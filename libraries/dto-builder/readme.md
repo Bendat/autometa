@@ -291,7 +291,6 @@ copying the values from the original. If those values are set agin
 in the derived builder, they will not affect the original.
 
 ```ts
-
 const bobBuilder = new UserBuilder().id(1).name("bob").age(23);
 
 const olderBobBuilder = bobBuilder.derive().age(24);

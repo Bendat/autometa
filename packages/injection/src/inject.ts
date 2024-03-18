@@ -17,7 +17,7 @@ export const Inject = {
     return function (target: unknown, propertyKey: string) {
       metadata(getConstructor(target)).set({
         key: propertyKey,
-        class: cls
+        class: cls,
       });
     };
   },
@@ -34,7 +34,7 @@ export const Inject = {
     return function (target: unknown, propertyKey: string) {
       metadata(getConstructor(target)).set({
         key: propertyKey,
-        factory: factory
+        factory: factory,
       });
     };
   },
@@ -51,10 +51,8 @@ export const Inject = {
     return function (target: unknown, propertyKey: string) {
       metadata(getConstructor(target)).set({
         key: propertyKey,
-        value: value
+        value: value,
       });
     };
-  }
+  },
 };
-
-

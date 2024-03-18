@@ -10,8 +10,11 @@ export function AppType(
   return (target: Class<unknown>) => {
     metadata(target).set({
       key: "world",
-      class: world
+      class: world,
     });
-    container[env] = { app: target as Class<App>, world: world as Class<World> };
+    container[env] = {
+      app: target as Class<App>,
+      world: world as Class<World>,
+    };
   };
 }

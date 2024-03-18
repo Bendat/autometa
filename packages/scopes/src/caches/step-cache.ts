@@ -6,7 +6,7 @@ import {
   FuzzySearchReport,
   buildFuzzySearchReport,
   getDiffs,
-  limitDiffs
+  limitDiffs,
 } from "@autometa/cucumber-expressions";
 import { interpolateStepText } from "@autometa/gherkin";
 export class StepCache {
@@ -20,7 +20,7 @@ export class StepCache {
     ["Context", new Set<string>()],
     ["Outcome", new Set<string>()],
     ["Conjunction", new Set<string>()],
-    ["Unknown", new Set<string>()]
+    ["Unknown", new Set<string>()],
   ]);
   private stepCount = 0;
 

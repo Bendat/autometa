@@ -2,7 +2,7 @@ import {
   camel,
   convertPhrase,
   defineParameterType,
-  AssertKey
+  AssertKey,
 } from "@autometa/runner";
 import { ProductBuilder } from "./product.builder";
 import { ProductIdMap } from "./product.static";
@@ -10,12 +10,12 @@ defineParameterType(
   {
     name: "builder:product",
     regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
-    transform: (value) => new ProductBuilder().title(value)
+    transform: (value) => new ProductBuilder().title(value),
   },
   {
     name: "product:property",
     regexpPattern: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
-    transform: (value) => convertPhrase(value, camel)
+    transform: (value) => convertPhrase(value, camel),
   },
   {
     name: "product:static:name",
@@ -23,6 +23,6 @@ defineParameterType(
     transform: (value) => {
       AssertKey(ProductIdMap, value, `Product property key '${value}'`);
       return ProductIdMap[value];
-    }
+    },
   }
 );

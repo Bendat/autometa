@@ -50,7 +50,7 @@ export function metadata<T extends object>(target: T) {
     },
     get keys() {
       return Object.keys(metadata) as (keyof T)[];
-    }
+    },
   };
 }
 
@@ -63,19 +63,15 @@ function defineNonEnumerable<T>(
     enumerable: false,
     configurable: true,
     writable: false,
-    value
+    value,
   });
 }
 
-function defineEnumerable<T>(
-  target: T,
-  key: string | symbol,
-  value: unknown
-) {
+function defineEnumerable<T>(target: T, key: string | symbol, value: unknown) {
   Object.defineProperty(target, key, {
     enumerable: true,
     configurable: true,
     writable: true,
-    value
+    value,
   });
 }

@@ -4,9 +4,8 @@ import { FeatureScope } from "./feature-scope";
 import { GetCucumberFunctions } from "./get-scopes";
 import "@autometa/gherkin";
 describe("GetCucumberFunctions", () => {
-  const { Feature, Rule, Scenario, ScenarioOutline, Global } = GetCucumberFunctions(
-    null as unknown as ParameterTypeRegistry
-  );
+  const { Feature, Rule, Scenario, ScenarioOutline, Global } =
+    GetCucumberFunctions(null as unknown as ParameterTypeRegistry);
 
   it("should attach a skip and only to FeatureScope", () => {
     expect(Feature).toHaveProperty("skip");

@@ -3,9 +3,9 @@ import { DateFactory } from "./date-factory";
 import { Dates } from "./dates";
 
 vi.useFakeTimers().setSystemTime(new Date("2023-06-03"));
-it('should parse', ()=>{
-  console.log(Dates.fromPhrase("2021-01-01T00:00:00.000Z"))
-})
+it("should parse", () => {
+  console.log(Dates.fromPhrase("2021-01-01T00:00:00.000Z"));
+});
 describe("DateFactory", () => {
   describe("fromPhrase", () => {
     it("should return the day before yesterday", () => {

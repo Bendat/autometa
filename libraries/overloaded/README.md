@@ -209,9 +209,9 @@ import { overloads, def, string, number } from "@autometa/overloaded";
 function add(a: string, b: string): [string, string];
 function add(a: number, b: number): number;
 function add(
-    // 'unknown' instead of union is also fine here
+  // 'unknown' instead of union is also fine here
   ...args: (string | number)[]
-){
+) {
   return overloads(
     def(string(), string()).match((a, b) => [a, b]),
     def(number(), number()).match((a, b) => a + b),

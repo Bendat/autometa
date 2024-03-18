@@ -4,7 +4,7 @@ import {
   RequestHook,
   ResponseHook,
   SchemaParser,
-  StatusCode
+  StatusCode,
 } from "./types";
 
 export interface SchemaConfig {

@@ -6,7 +6,7 @@ import {
   Scenario,
   Step,
   StepKeyword,
-  StepType
+  StepType,
 } from "@autometa/gherkin";
 import { App } from "@autometa/app";
 import { Bind } from "@autometa/bind-decorator";

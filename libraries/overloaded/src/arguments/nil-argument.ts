@@ -1,7 +1,7 @@
 import z, { Infer, string as zstring, object, tuple } from "myzod";
 import { BaseArgument, BaseArgumentSchema } from "./base-argument";
 export const NilValidatorOpsSchema = object({
-  equals: z.literal("null").or(z.literal("undefined")).optional()
+  equals: z.literal("null").or(z.literal("undefined")).optional(),
 }).and(BaseArgumentSchema);
 
 export type NilValidatorOpts = Infer<typeof NilValidatorOpsSchema> & {

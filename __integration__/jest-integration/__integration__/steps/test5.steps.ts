@@ -12,5 +12,5 @@ When("another outline parameter {int}", (count) => {
 
 Teardown("Count expects", () => {
   expect.assertions(4);
-  console.log('success')
+  console.log("success");
 });

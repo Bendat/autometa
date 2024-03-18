@@ -4,11 +4,11 @@ import {
   DifferentStepTypeMatch,
   FuzzySearchReport,
   SameStepTypeMatch,
-  StepDiff
+  StepDiff,
 } from ".";
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 const registry = new ParameterTypeRegistry();
 describe("StepMatch", () => {
@@ -21,9 +21,12 @@ describe("StepMatch", () => {
         step: {
           keyword: "Given",
           type: "Context",
-          expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-          matches: () => false
-        }
+          expression: new CucumberExpression(
+            "I have {int} blue grapes in my {string}",
+            registry
+          ),
+          matches: () => false,
+        },
       };
       const match = new SameStepTypeMatch(diff);
       expect(stripColor(match.toString())).toEqual(
@@ -40,9 +43,12 @@ describe("StepMatch", () => {
         step: {
           keyword: "When",
           type: "Action",
-          expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-          matches: () => false
-        }
+          expression: new CucumberExpression(
+            "I have {int} blue grapes in my {string}",
+            registry
+          ),
+          matches: () => false,
+        },
       };
       const match = new DifferentStepTypeMatch(diff);
       expect(stripColor(match.toString())).toEqual(
@@ -60,9 +66,12 @@ describe("SearchReport", () => {
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-        matches: () => false
-      }
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registry
+        ),
+        matches: () => false,
+      },
     };
     const match = new SameStepTypeMatch(diff);
     const report = new FuzzySearchReport()
@@ -78,9 +87,12 @@ describe("SearchReport", () => {
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-        matches: () => false
-      }
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registry
+        ),
+        matches: () => false,
+      },
     };
     const match = new DifferentStepTypeMatch(diff);
     const report = new FuzzySearchReport()
@@ -96,9 +108,12 @@ describe("SearchReport", () => {
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-        matches: () => false
-      }
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registry
+        ),
+        matches: () => false,
+      },
     };
     const match = new SameStepTypeMatch(diff);
     const diff2: StepDiff = {
@@ -108,9 +123,12 @@ describe("SearchReport", () => {
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-        matches: () => false
-      }
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registry
+        ),
+        matches: () => false,
+      },
     };
     const match2 = new DifferentStepTypeMatch(diff2);
     const report = new FuzzySearchReport()
@@ -127,9 +145,12 @@ describe("SearchReport", () => {
       step: {
         keyword: "Given",
         type: "Context",
-        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-        matches: () => false
-      }
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registry
+        ),
+        matches: () => false,
+      },
     };
     const match = new SameStepTypeMatch(diff);
     const diff2: StepDiff = {
@@ -139,9 +160,12 @@ describe("SearchReport", () => {
       step: {
         keyword: "When",
         type: "Action",
-        expression: new CucumberExpression("I have {int} blue grapes in my {string}", registry),
-        matches: () => false
-      }
+        expression: new CucumberExpression(
+          "I have {int} blue grapes in my {string}",
+          registry
+        ),
+        matches: () => false,
+      },
     };
     const match2 = new DifferentStepTypeMatch(diff2);
     const report = new FuzzySearchReport()

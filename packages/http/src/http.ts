@@ -10,7 +10,7 @@ import {
   RequestHook,
   ResponseHook,
   SchemaParser,
-  StatusCode
+  StatusCode,
 } from "./types";
 import { transformResponse } from "./transform-response";
 import { AutomationError } from "@autometa/errors";

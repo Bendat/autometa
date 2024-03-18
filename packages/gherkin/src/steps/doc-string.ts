@@ -1,4 +1,4 @@
-import { DocString} from "@cucumber/messages";
+import { DocString } from "@cucumber/messages";
 
 export class GherkinDocString {
   readonly mediaType?: string;

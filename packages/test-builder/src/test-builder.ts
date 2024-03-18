@@ -2,7 +2,7 @@ import {
   FeatureScope,
   RuleScope,
   ScenarioOutlineScope,
-  StepCache
+  StepCache,
 } from "@autometa/scopes";
 import {
   BackgroundBridge,
@@ -13,7 +13,7 @@ import {
   RuleBridge,
   ScenarioBridge,
   ScenarioOutlineBridge,
-  StepBridge
+  StepBridge,
 } from "./bridges";
 import { GherkinWalker } from "./gherkin-walker";
 import { scope } from "./scope-search";
@@ -23,7 +23,7 @@ import {
   Feature,
   GherkinNode,
   Scenario,
-  scenarioExampleTitle
+  scenarioExampleTitle,
 } from "@autometa/gherkin";
 import { raise } from "@autometa/errors";
 import { StepKeyword, StepType } from "@autometa/types";
@@ -97,7 +97,7 @@ export class TestBuilder {
         },
         onBackground(gherkin, accumulator) {
           const backgroundScope = scope(accumulator.data.scope).findBackground({
-            name: gherkin.name
+            name: gherkin.name,
           });
           const bridge = new BackgroundBridge();
           bridge.data = { gherkin, scope: backgroundScope };
@@ -107,7 +107,7 @@ export class TestBuilder {
         },
         onStep: (step, accumulator) => {
           const {
-            data: { scope: parentScope, gherkin }
+            data: { scope: parentScope, gherkin },
           } = accumulator;
           const { keyword, keywordType, text } = step;
           const cache = parentScope.steps;
@@ -130,7 +130,7 @@ export class TestBuilder {
             bridge.data = {
               gherkin: step,
               scope: existing.step,
-              args: existing.args
+              args: existing.args,
             };
           } else {
             raise(`No step definition matching ${step.keyword} ${step.text}`);
@@ -138,7 +138,7 @@ export class TestBuilder {
 
           acc.steps.push(bridge);
           return accumulator;
-        }
+        },
       },
       this.feature,
       bridge
@@ -165,9 +165,6 @@ function getStep(
   } catch (e) {
     const cause = e as Error;
     const { title } = gherkin as Scenario;
-    raise(
-      `'${title}' could not find a step definition`,
-      { cause }
-    );
+    raise(`'${title}' could not find a step definition`, { cause });
   }
 }

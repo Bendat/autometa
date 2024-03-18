@@ -10,7 +10,7 @@ export class DatesObject {
   /**
    * Switches to the ISO factory, which offers an identical interface
    * but returns ISO strings instead of Date objects.
-   * 
+   *
    * Example: `2020-01-01T00:00:00.000Z`
    */
   get iso() {
@@ -20,7 +20,7 @@ export class DatesObject {
   /**
    * Switches to the formatted factory, which offers an identical interface
    * but returns formatted strings instead of Date objects.
-   * 
+   *
    * Example: `2020-01-01`
    */
   get fmt() {
@@ -40,7 +40,7 @@ export class DatesObject {
   get beforeYesterday(): Date {
     return this.#factory.find("beforeYesterday");
   }
-  
+
   /**
    * Returns the date and time of yesterday
    */
@@ -106,8 +106,8 @@ export class DatesObject {
 
   /**
    * Attempts to parse a phrase into a date.
-   * @param phrase 
-   * @returns 
+   * @param phrase
+   * @returns
    */
   fromPhrase(phrase: string) {
     return this.#factory.fromPhrase(phrase);
@@ -116,8 +116,8 @@ export class DatesObject {
   /**
    * Attempts to parse a phrase into a date.
    * If the phrase is invalid, it will return an invalid date instead of throwing.
-   * @param phrase 
-   * @returns 
+   * @param phrase
+   * @returns
    */
   fromPhraseSafe(phrase: string) {
     return this.#factory.fromPhraseSafe(phrase);
@@ -132,7 +132,7 @@ export class DatesObject {
  * Date utility option to easily generate common
  * dates around the current date, like 'today', 'midnight',
  * 'tomorrow', 'nextWeek', etc.
- * 
+ *
  * The Dates utility also supports certain language phrases
  * that might be natural in Cucumber's gherkin syntax, like
  * 'next week', 'last week', 'next fortnight', etc. as well

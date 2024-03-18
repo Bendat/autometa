@@ -4,27 +4,21 @@
 export default {
   clearMocks: true,
 
-  coverageDirectory: 'coverage',
-  testEnvironment: 'node',
-  moduleFileExtensions: ['feature', 'js', 'json', 'ts', 'tsx'],
+  coverageDirectory: "coverage",
+  testEnvironment: "node",
+  moduleFileExtensions: ["feature", "js", "json", "ts", "tsx"],
 
-  testMatch: [
-    '**/?(*.)+(spec|test|feature).[tj]s?(x)',
-    '**/*/*.feature',
-  ],
+  testMatch: ["**/?(*.)+(spec|test|feature).[tj]s?(x)", "**/*/*.feature"],
 
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-    '^.+\\.feature$': '@autometa/jest-transformer',
+    "^.+\\.ts$": "ts-jest",
+    "^.+\\.feature$": "@autometa/jest-transformer",
   },
 
-  setupFilesAfterEnv: [
-    'reflect-metadata',
-    './autometa.config.ts'
-  ],
+  setupFilesAfterEnv: ["reflect-metadata", "./autometa.config.ts"],
   // reporters:
-	// [
-	// 	'<rootDir>/__integration__/reporter.js',
-	// ],
-  testPathIgnorePatterns: ['/node_modules/', '/src/.tools/'],
+  // [
+  // 	'<rootDir>/__integration__/reporter.js',
+  // ],
+  testPathIgnorePatterns: ["/node_modules/", "/src/.tools/"],
 };

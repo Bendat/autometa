@@ -3,5 +3,4 @@ import { Fixture, Persistent } from "@autometa/cucumber-runner";
 @Persistent
 export class World {
   [key: string]: unknown;
-  
 }

@@ -13,7 +13,7 @@ describe("Background Builder", () => {
       description: "foo",
       keyword: "Background",
       children: [],
-      tags: new Set()
+      tags: new Set(),
     };
     expect({ ...background }).toEqual(expected);
     expect(background.title).toEqual("Background: my background");

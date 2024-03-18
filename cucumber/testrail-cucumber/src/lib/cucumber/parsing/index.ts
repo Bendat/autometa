@@ -1,2 +1,2 @@
-export * from './parser';
-export * from './gherkin-objects';
+export * from "./parser";
+export * from "./gherkin-objects";

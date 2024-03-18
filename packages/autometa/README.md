@@ -13,7 +13,7 @@ The following libraries may be considered relatively stable, but may contain bug
 - [Overloaded](libraries/overloaded/) - Function and method overloads that are as pleasant to make as they are to use
 - [Bind Decorator](libraries/bind-decorator/) - Binds the `this` keyword on a class method. Respectfully a fork of [bind-decorator](https://www.npmjs.com/package/autobind-decorator)
 - [Status Codes](libraries/status-codes/) - Object containing HTTP status
-codes and status messages, visible in the editor via `as const`
+  codes and status messages, visible in the editor via `as const`
 
 # Autometa
 
@@ -21,7 +21,6 @@ _Autometa_ is an early-development automation framework toolkit, which provides 
 help bootstrap your node automation framework, for API or E2E testing.
 
 [Full Docs](https://bendat.github.io/autometa/docs/cucumber/test_runner/intro/)
-
 
 ## Cucumber Runner
 
@@ -109,7 +108,7 @@ export class UserDto {
     @DTO.date()
     createdAt: Date
 }
-// or 
+// or
 // avoid duplicating interface properties
 export class UserDto extends DTO<IUser> {}
 

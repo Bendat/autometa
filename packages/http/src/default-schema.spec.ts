@@ -5,7 +5,7 @@ import {
   NullSchema,
   NumberSchema,
   StringSchema,
-  UndefinedSchema
+  UndefinedSchema,
 } from "./default-schema";
 describe("Default Schema Functions", () => {
   describe("AnySchema", () => {

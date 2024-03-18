@@ -11,14 +11,14 @@ export const ProductSchema = object({
   brand: string(),
   category: string(),
   thumbnail: string(),
-  images: array(string())
+  images: array(string()),
 });
 
 export const ProductListSchema = object({
   products: array(ProductSchema),
   total: number(),
   skip: number(),
-  limit: number()
+  limit: number(),
 });
 
 export const CategoriesSchema = array(string());

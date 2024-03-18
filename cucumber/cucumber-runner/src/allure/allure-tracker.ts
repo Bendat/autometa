@@ -67,7 +67,7 @@ export class AllureTracker {
     return actualGroup?.endGroup();
   };
   createTestGroup() {
-     this.startGroup("test group container");
+    this.startGroup("test group container");
   }
   endTestGroup() {
     this.endGroup();
