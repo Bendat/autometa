@@ -5,7 +5,7 @@ export default defineWorkspace([
   {
     test: {
       environment: "node",
-      exclude: ["**/node_modules/**", "**/dist/**"],
+      exclude: ["**/node_modules/**", "**/dist/**", "__examples__/**", "__integration__/**"],
     },
   },
 ]);
