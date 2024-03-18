@@ -1,9 +1,0 @@
-{
-  "extends": "../../packages/tsconfig/base.cjs.json",
-  "compilerOptions": {
-    "module": "commonjs",
-    "outDir": "dist/cjs",
-    "target": "es2020"
-  },
-  "include": ["src"]
-}

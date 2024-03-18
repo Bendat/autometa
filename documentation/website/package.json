@@ -25,7 +25,8 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "2.4.1",
-    "@vitest/coverage-istanbul": "^0.31.0",
+    "@vitest/coverage-istanbul": "^1.4.0",
+    "@vitest/coverage-v8": "^1.4.0",
     "istanbul": "^0.4.5",
     "rimraf": "^4.1.2"
   },

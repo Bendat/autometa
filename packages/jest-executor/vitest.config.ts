@@ -7,8 +7,8 @@ export default defineConfig({
       replacement: "@cucumber/tag-expressions/dist/esm/index.js",
     },
     coverage: {
-      provider: "istanbul", // or 'v8'
-      reporter: ["html"],
+      provider: "v8", // or 'v8'
+      reporter: ["json-summary", "json"],
     },
   },
 });
