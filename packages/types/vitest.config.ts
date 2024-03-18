@@ -5,7 +5,7 @@ export default defineConfig({
     setupFiles: ["reflect-metadata"],
     coverage: {
       provider: "istanbul", // or 'v8'
-      reporter: ["html"]
-    }
+      reporter: ["html"],
+    },
   },
 });

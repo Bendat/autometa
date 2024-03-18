@@ -13,7 +13,7 @@ describe("Scenario Builder", () => {
       description: "foo",
       keyword: "Scenario",
       children: [],
-      tags: new Set()
+      tags: new Set(),
     };
     expect({ ...scenario }).toEqual(expected);
     expect(scenario.title).toEqual("Scenario: my scenario");

@@ -1,4 +1,9 @@
-import { AppType, Constructor, Fixture, INJECTION_SCOPE } from "@autometa/runner";
+import {
+  AppType,
+  Constructor,
+  Fixture,
+  INJECTION_SCOPE,
+} from "@autometa/runner";
 import { World } from "./default.world";
 import { TestContainer } from "../test-container";
 @Fixture(INJECTION_SCOPE.SINGLETON)
@@ -33,6 +38,6 @@ export class DefaultApp {
     rule1scenariostep: false,
     rule2backgroundstep: false,
     rule2scenariostep: false,
-    rule2skippedscenario: false
+    rule2skippedscenario: false,
   };
 }

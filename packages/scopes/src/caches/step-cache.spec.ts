@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { StepCache } from "./step-cache";
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { StepKeyword, StepType } from "@autometa/gherkin";
 import { CachedStep } from "./types";
@@ -33,12 +33,9 @@ describe("StepCache", () => {
       const sut = new StepCache("test");
       const step = makeStep("Given", "Context", "hello {word}");
       sut.add(step);
-      const found = sut.findByExample(
-        "Context",
-        "Given",
-        "hello <thing>",
-        { thing: "world" },
-      );
+      const found = sut.findByExample("Context", "Given", "hello <thing>", {
+        thing: "world",
+      });
       expect(found?.step).toEqual(step);
     });
   });

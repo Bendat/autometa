@@ -8,14 +8,14 @@ export class BackgroundScope extends Scope {
     public readonly name: string | undefined,
     public readonly action: BackgroundAction,
     parentHooksCache: HookCache,
-    parentStepCache: StepCache,
+    parentStepCache: StepCache
   ) {
     super(parentHooksCache, parentStepCache);
   }
   get idString(): string {
     return this.name ?? "";
   }
-  title(gherkin: Background){
-    return `${gherkin.keyword} ${gherkin.name}`
+  title(gherkin: Background) {
+    return `${gherkin.keyword} ${gherkin.name}`;
   }
 }

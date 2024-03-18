@@ -1,9 +1,7 @@
 import "reflect-metadata";
 import type { Class } from "@autometa/shared";
 import { Locator, FrameLocator } from "@playwright/test";
-import {
-  type LocatorFactory,
-} from "../locator";
+import { type LocatorFactory } from "../locator";
 import { Component } from "./component";
 import { FallbackType, SemanticComponent } from "./semantic-component";
 import {

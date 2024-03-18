@@ -43,3 +43,5 @@ tests-out/
 
 .nx
 **/*/vitest.config.ts.timestamp-*
+
+tmp.json

@@ -7,25 +7,25 @@ export const StatusSchema = z.union([
   literal("FAILED"),
   literal("BROKEN"),
   literal("PASSED"),
-  literal("SKIPPED")
+  literal("SKIPPED"),
 ]);
 export const EventOptionsSchema = object({
   title: string().optional(),
   keyword: string().optional(),
   tags: string().array().optional(),
   modifier: literal("skip").or(literal("only")).optional(),
-  status: StatusSchema.optional()
+  status: StatusSchema.optional(),
 });
 
 export const ErrorEventSchema = EventOptionsSchema.extend({
-  error: z.instanceof(Error).optional()
+  error: z.instanceof(Error).optional(),
 });
 export const ArgsEventSchema = EventOptionsSchema.extend({
-  args: z.array(z.unknown()).optional()
+  args: z.array(z.unknown()).optional(),
 });
 
 export const StartFeatureOptsSchema = EventOptionsSchema.extend({
-  path: string().optional()
+  path: string().optional(),
 });
 
 export const EndFeatureOptsSchema = ErrorEventSchema;

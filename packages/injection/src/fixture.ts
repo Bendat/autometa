@@ -6,13 +6,13 @@ import { registerScope } from "./metadata-registry";
  * Marks a class as injectable. Optionally,
  * an Injection Scope can be defined, which determines
  * the strategy used to initialize the decorated class.
- * 
+ *
  * INJECTION_SCOPE.CACHED: The class will be initialized once per container, but behave as a singleton within the container
  * INJECTION_SCOPE.SINGLETON: The class will be initialized once per container, and behave as a singleton across all containers
  * INJECTION_SCOPE.TRANSIENT: The class will be initialized once per injection, it will not be cached.
- * 
+ *
  * By default if no scope is specified, the class will be cached. Once created all dependant sharing a container will share this instance.
- * @param target 
+ * @param target
  */
 export function Fixture(target: Class<unknown>): void;
 export function Fixture<T extends Class<unknown>>(

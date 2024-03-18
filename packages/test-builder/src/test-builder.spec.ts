@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { TestBuilder } from "./test-builder";
 
@@ -13,7 +13,7 @@ import {
   ScenarioBuilder,
   ScenarioOutlineBuilder,
   StepBuilder,
-  FeatureBuilder
+  FeatureBuilder,
 } from "@autometa/gherkin";
 import {
   GlobalScope,
@@ -23,7 +23,7 @@ import {
   StepCache,
   BackgroundScope,
   StepScope,
-  FeatureScope
+  FeatureScope,
 } from "@autometa/scopes";
 import { ScenarioOutlineBridge } from "./bridges";
 const parameterRegistry = new ParameterTypeRegistry();

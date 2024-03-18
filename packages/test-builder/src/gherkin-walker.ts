@@ -6,7 +6,7 @@ import {
   Rule,
   Scenario,
   ScenarioOutline,
-  Step
+  Step,
 } from "@autometa/gherkin";
 import { AutomationError } from "@autometa/errors";
 import { Example } from "@autometa/gherkin";

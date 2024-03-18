@@ -11,13 +11,9 @@ describe("Instance Argument", () => {
     describe("assertDefined", () => {
       it("should pass when undefined is permitted", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const arg: InstanceArgument<any, any> = instance(
-          Foo,
-          undefined,
-          {
-            optional: true,
-          }
-        );
+        const arg: InstanceArgument<any, any> = instance(Foo, undefined, {
+          optional: true,
+        });
         arg.baseAssertions(undefined);
         expect(arg.accumulator).toHaveLength(0);
       });

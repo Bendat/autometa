@@ -17,7 +17,7 @@ import {
   StartScenarioOutlineOpts,
   StartSetupOpts,
   StartStepOpts,
-  StartTeardownOpts
+  StartTeardownOpts,
 } from "@autometa/events";
 import colors from "colors-cli";
 export class GroupLogEvents implements EventSubscriber {
@@ -111,16 +111,16 @@ export class GroupLogEvents implements EventSubscriber {
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
   }
-  onSetupStart({title, status}: StartSetupOpts): void {
+  onSetupStart({ title, status }: StartSetupOpts): void {
     if (status === "SKIPPED") {
-      return
+      return;
     }
     console.group(title);
     console.group();
   }
   onSetupEnd({ title, status }: EndSetupOpts): void {
     if (status === "SKIPPED") {
-      return
+      return;
     }
     console.groupEnd();
     console.log(colorStatus(status, `Ending ${title}`));

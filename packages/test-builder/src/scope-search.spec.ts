@@ -7,11 +7,11 @@ import {
   ScenarioScope,
   ScenarioOutlineScope,
   StepScope,
-  CachedStep
+  CachedStep,
 } from "@autometa/scopes";
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { scope } from "./scope-search";
 import { describe, it, expect } from "vitest";

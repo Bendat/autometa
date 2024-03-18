@@ -13,8 +13,8 @@ defineConfig({
     parameterTypes: ["src/**/*.param.ts"],
   },
   shim: {
-    errorCause: true
-  }
+    errorCause: true,
+  },
   // test: {
   //   timeout: 10000
   //   // tagFilter: "@integration"

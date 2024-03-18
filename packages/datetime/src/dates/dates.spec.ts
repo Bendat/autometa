@@ -4,7 +4,6 @@ vi.useFakeTimers().setSystemTime(new Date("2023-06-03"));
 describe("Dates", () => {
   describe("IsoDateTransformer", () => {
     describe("fromPhrase", () => {
-      
       it("should return the day before yesterday", () => {
         const sut = new DatesObject();
         const expectedDate = new Date();

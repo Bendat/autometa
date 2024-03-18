@@ -4,7 +4,7 @@ export { boolean, BooleanValidatorOpts } from "./boolean-argument";
 export { array, ArrayValidatorOpts } from "./array-argument";
 export {
   tuple,
-  TupleValidatorOpts as TupleValidationOptions
+  TupleValidatorOpts as TupleValidationOptions,
 } from "./tuple-argument";
 export { shape, ShapeValidatorOpts } from "./shape-argument";
 export { date, DateValidatorOpts } from "./date-argument";
@@ -14,11 +14,11 @@ export {
   ArgumentOptions as ArgumentValidatorOpts,
   BaseArgument,
   UnionArgument,
-  or
+  or,
 } from "./base-argument";
 export {
   func,
-  FunctionValidatorOptions as FunctionOptions
+  FunctionValidatorOptions as FunctionOptions,
 } from "./function-argument";
 export { nil, NilValidatorOpts } from "./nil-argument";
 export * from "./types";

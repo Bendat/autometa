@@ -20,8 +20,8 @@ function addAlternatives(
     Before,
     After,
     Teardown,
-    Setup
-  }: Omit<Scopes, 'Global'>,
+    Setup,
+  }: Omit<Scopes, "Global">,
   Global: GlobalScope
 ) {
   addGroupAlternatives(Feature);
@@ -40,7 +40,7 @@ function addAlternatives(
     After,
     Teardown,
     Setup,
-    Global
+    Global,
   };
 }
 
@@ -69,6 +69,6 @@ function configureSkipOption<K extends Scope, T extends (...args: any) => K>(
   Object.defineProperty(group, key, {
     configurable: true,
     writable: true,
-    value: value.bind(group)
+    value: value.bind(group),
   });
 }

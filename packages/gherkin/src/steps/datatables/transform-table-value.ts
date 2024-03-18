@@ -20,7 +20,7 @@ export function transformTableValue(
       value.match(new RegExp(`^<${title}>$`))
     );
     if (matchingTitle) {
-      const val = example.table[matchingTitle]
+      const val = example.table[matchingTitle];
       return doTransformData(val);
     }
   }
@@ -35,7 +35,7 @@ function doTransformData(data: TableCell | string) {
   }
 
   if (value === "false" || value === "true") {
-  return value === "true"
+    return value === "true";
   }
   return value;
 }

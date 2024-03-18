@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseArgument } from "./arguments/base-argument";
 import { ArgumentType } from "./arguments/types";
-import {
-  disposeDescription,
-} from "./dispose-description";
+import { disposeDescription } from "./dispose-description";
 import { Overload } from "./overload";
 import { AnyArg } from "./types";
 

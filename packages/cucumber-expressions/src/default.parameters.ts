@@ -17,22 +17,22 @@ const boolTypes = ["true", "false"];
 export const OrdinalParam: ParamTypeDefinition = {
   name: "ordinal",
   regexpPattern: /(\d+)(?:st|nd|rd|th)/,
-  transform: (value: string) => parseInt(value, 10)
+  transform: (value: string) => parseInt(value, 10),
 };
 
 export const NumberParam: AutoParamTypeDefinition = {
   name: "number",
   regexpPattern: /\d+/,
-  primitive: Number
+  primitive: Number,
 };
 
 export const AnyParam: AutoParamTypeDefinition = {
   name: "any",
-  regexpPattern: /.*/
+  regexpPattern: /.*/,
 };
 export const UnknownParam: AutoParamTypeDefinition = {
   name: "unknown",
-  regexpPattern: /.*/
+  regexpPattern: /.*/,
 };
 export const TextParam: ParamTypeDefinition = {
   name: "text",
@@ -41,7 +41,7 @@ export const TextParam: ParamTypeDefinition = {
   transform: (value: string) => {
     const asStr = value as string;
     return asStr.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
-  }
+  },
 };
 
 export const BooleanParam = {
@@ -57,7 +57,7 @@ export const BoolParam = {
 export const DateParam: AutoParamTypeDefinition = {
   name: "date",
   regexpPattern: [isodateRegexp, shortDateRegex],
-  type: Date
+  type: Date,
 };
 
 export const PrimitiveParam: ParamTypeDefinition = {
@@ -77,7 +77,7 @@ export const PrimitiveParam: ParamTypeDefinition = {
     /-?(\d*\.?\d+|\d{1,3}(,\d{3})*(\.\d+)?)/, // Comma delimited number, e.g. "1", "1,000", "1,000.00"
     /-?(\d*,?\d+|\d{1,3}(.\d{3})*(,\d+))/, // Period delimited number, e.g. "1", "1.000,00"
     /"([^"]*)"/,
-    /'([^']*)'/
+    /'([^']*)'/,
   ],
   transform: (value: unknown) => {
     return overloads(
@@ -113,7 +113,7 @@ export const PrimitiveParam: ParamTypeDefinition = {
         return val.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
       })
     ).use([value]);
-  }
+  },
 };
 
 function boolActive(val: string): boolean {
@@ -135,4 +135,3 @@ function trimQuotes(val: string): string {
 function parseIso(val: string): Date {
   return DateTime.fromISO(val).toJSDate();
 }
-

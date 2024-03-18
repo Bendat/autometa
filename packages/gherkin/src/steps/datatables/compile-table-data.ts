@@ -24,5 +24,3 @@ export function compileDataTable(
 function extractRowValues({ cells }: TableRow) {
   return cells.map((cell) => cell.value);
 }
-
-

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from "vitest";
 import { IsoDateFactory } from "./iso-date-factory";
 import { DateFactory } from "./date-factory";
-vi.useFakeTimers().setSystemTime(new Date('2023-06-03'));
+vi.useFakeTimers().setSystemTime(new Date("2023-06-03"));
 
 describe("IsoDateTransformer", () => {
   describe("fromPhrase", () => {

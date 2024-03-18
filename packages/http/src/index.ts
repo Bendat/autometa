@@ -5,9 +5,9 @@ export * from "./http-request";
 export * from "./http-response";
 export * from "./default-schema";
 export type {
-    HTTPAdditionalOptions,
-    HTTPMethod,
-    SchemaParser,
-    RequestHook,
-    ResponseHook
+  HTTPAdditionalOptions,
+  HTTPMethod,
+  SchemaParser,
+  RequestHook,
+  ResponseHook,
 } from "./types";

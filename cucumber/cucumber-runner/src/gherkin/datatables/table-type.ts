@@ -10,5 +10,5 @@ export function compileDatatable(table?: DataTable): CompiledDataTable | undefin
   if (!table) {
     return undefined;
   }
-  return table.rows.map(({ cells }) => cells.map(cell => cell.value));
+  return table.rows.map(({ cells }) => cells.map((cell) => cell.value));
 }

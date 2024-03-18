@@ -3,7 +3,7 @@ import {
   AccessTracker,
   GetAccessedCount,
   GetAssignedValues,
-  TrackAccess
+  TrackAccess,
 } from "./access-tracker";
 
 describe("AccessTracker", () => {
@@ -28,7 +28,7 @@ describe("AccessTracker", () => {
   });
   describe("assignments", () => {
     it("should get 1 assignments for a new object with a value", () => {
-      const obj = AccessTracker([],{ foo: 1 });
+      const obj = AccessTracker([], { foo: 1 });
       expect(GetAssignedValues(obj, "foo")).toEqual([1]);
     });
     it("should get 0 assignments for a new object", () => {

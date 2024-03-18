@@ -42,7 +42,7 @@ export function AssertLengthAtLeast<TObj extends Array<unknown> | string>(
 }
 export function ConfirmLengthAtLeast<TObj extends Array<unknown> | string>(
   item: TObj,
-  length: number,
+  length: number
 ) {
   AssertKey(item, "length");
   if (item.length < length) {

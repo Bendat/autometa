@@ -25,7 +25,7 @@ export class StepScope extends Scope {
   canAttach<T extends Scope>(_: T): boolean {
     return false;
   }
-  
+
   attach<T extends Scope>(_childScope: T): void {
     throw new Error(
       `Cannot execute a Cucumber function inside a ${this.keyword} Step. Not that you should see this error anyway. What did you do??`

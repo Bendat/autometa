@@ -9,7 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "test:types": "vitest typecheck",
+    "test:types": "vitest run --typecheck",
     "test:watch": "vitest",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",

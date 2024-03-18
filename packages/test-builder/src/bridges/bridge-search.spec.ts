@@ -3,21 +3,21 @@ import {
   FeatureBuilder,
   RuleBuilder,
   ScenarioBuilder,
-  ScenarioOutlineBuilder
+  ScenarioOutlineBuilder,
 } from "@autometa/gherkin";
 import {
   ExamplesBridge,
   FeatureBridge,
   RuleBridge,
   ScenarioBridge,
-  ScenarioOutlineBridge
+  ScenarioOutlineBridge,
 } from "./bridge";
 import {
   find,
   findExamplesOrChild,
   findRuleTypes,
   findScenario,
-  findScenarioOutlineOrChild
+  findScenarioOutlineOrChild,
 } from "./bridge-search";
 import {
   FeatureScope,
@@ -25,7 +25,7 @@ import {
   RuleScope,
   ScenarioOutlineScope,
   ScenarioScope,
-  StepCache
+  StepCache,
 } from "@autometa/scopes";
 import { describe, it, vi, expect } from "vitest";
 
@@ -216,14 +216,14 @@ describe("Bridge Search", () => {
 function makeFeature(name: string) {
   const bridge = new FeatureBridge();
   bridge.data = {
-    gherkin: new FeatureBuilder().name(name).keyword('Feature').build(),
+    gherkin: new FeatureBuilder().name(name).keyword("Feature").build(),
     scope: new FeatureScope(
       "",
       vi.fn(),
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -238,7 +238,7 @@ function makeScenario(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -256,7 +256,7 @@ function makeScenarioOutline(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -271,7 +271,7 @@ function makeExamples(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -286,7 +286,7 @@ function makeRule(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }

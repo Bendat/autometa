@@ -8,7 +8,7 @@ import {
   Rule,
   Scenario,
   ScenarioOutline,
-  Step
+  Step,
 } from "@autometa/gherkin";
 import { BackgroundScope, GlobalScope } from "@autometa/scopes";
 import {
@@ -17,7 +17,7 @@ import {
   ScenarioOutlineScope,
   ScenarioScope,
   Scope,
-  StepScope
+  StepScope,
 } from "@autometa/scopes";
 
 export abstract class GherkinCodeBridge {
@@ -32,7 +32,7 @@ export class GlobalBridge extends GherkinCodeBridge {
     };
     this.data = {
       scope,
-      gherkin: new nullNode()
+      gherkin: new nullNode(),
     };
   }
 }

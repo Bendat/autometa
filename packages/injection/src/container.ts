@@ -10,7 +10,7 @@ import {
   registerContainerContext,
   registerScope,
   registerSingleton,
-  registerTypeToken
+  registerTypeToken,
 } from "./metadata-registry";
 import { metadata } from "./metadata";
 import { INJECTION_SCOPE } from "./scope.enum";
@@ -100,11 +100,7 @@ export class Container {
         return getContainerContexts(this.reference, target) as T;
       }
       const assembled = this.#assembleTarget(type);
-      return registerContainerContext(
-        this.reference,
-        target,
-        assembled
-      ) as T;
+      return registerContainerContext(this.reference, target, assembled) as T;
     }
 
     return this.#assembleTarget(type) as T;
@@ -150,13 +146,12 @@ Use the \`@Inject.class\`, \`@Inject.factory\` or \`@Inject.value\` decorator to
   }
 }
 
-
 function getRealTarget(target: Class<unknown> | InjectionToken | string) {
-  if(typeof target === "string") {
+  if (typeof target === "string") {
     return Token(target);
   }
-  if(target instanceof InjectionToken) {
+  if (target instanceof InjectionToken) {
     return target;
   }
-  return target
+  return target;
 }

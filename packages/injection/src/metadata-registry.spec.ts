@@ -5,7 +5,7 @@ import {
   getSingleton,
   hasContainerContext,
   registerContainerContext,
-  registerSingleton
+  registerSingleton,
 } from "./metadata-registry";
 import { defineContainerContext } from "./container-context";
 import { Token } from "./token";

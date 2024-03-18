@@ -6,5 +6,4 @@ export abstract class ParsedDataTable {
   readonly toCsv = () => {
     return this.raw.map((row) => row.map((value) => value).join(",")).join("\n") || "";
   };
-
 }

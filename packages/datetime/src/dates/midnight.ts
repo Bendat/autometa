@@ -1,4 +1,3 @@
-
 export function midnight() {
   const date = new Date();
   date.setDate(date.getDate() + 1);

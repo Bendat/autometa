@@ -9,7 +9,7 @@ import {
   pascal,
   pfx,
   sfx,
-  snake
+  snake,
 } from "./string-transformer";
 
 describe("StringTransformer", () => {

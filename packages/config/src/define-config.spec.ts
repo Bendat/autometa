@@ -7,14 +7,14 @@ describe("defineConfig", () => {
     const config = new Config(new Map());
     defineConfig(config, {
       runner: "jest",
-      environment: "default"
+      environment: "default",
     });
     expect(config.current?.environment).toBe("default");
   });
   it("should get a default environment that is implicitly defined", () => {
     const config = new Config(new Map());
     defineConfig(config, {
-      runner: "jest"
+      runner: "jest",
     });
     expect(config.current?.environment).toBe("default");
   });
@@ -22,7 +22,7 @@ describe("defineConfig", () => {
     const config = new Config(new Map());
     defineConfig(config, {
       runner: "jest",
-      environment: "foo"
+      environment: "foo",
     }).env.byLiteral("foo");
     expect(config.current?.environment).toBe("foo");
   });
@@ -30,7 +30,7 @@ describe("defineConfig", () => {
     const config = new Config(new Map());
     defineConfig(config, {
       runner: "jest",
-      environment: "foo"
+      environment: "foo",
     }).env.byEnvironmentVariable("MY_ENVIRONMENT");
     // eslint-disable-next-line turbo/no-undeclared-env-vars
     process.env.MY_ENVIRONMENT = "foo";
@@ -40,7 +40,7 @@ describe("defineConfig", () => {
     const config = new Config(new Map());
     defineConfig(config, {
       runner: "jest",
-      environment: "foo"
+      environment: "foo",
     }).env.byFactory(() => "foo");
     expect(config.current?.environment).toBe("foo");
   });
@@ -51,29 +51,28 @@ describe("defineConfig", () => {
         config,
         {
           runner: "jest",
-          environment: "foo"
+          environment: "foo",
         },
         {
           runner: "jest",
-          environment: "foo"
+          environment: "foo",
         }
       )
     ).toThrow();
-    
   });
-  it('should throw an error if an implicit and explicit default is defined', ()=>{
+  it("should throw an error if an implicit and explicit default is defined", () => {
     const config = new Config(new Map());
     expect(() =>
       defineConfig(
         config,
         {
           runner: "jest",
-          environment: "default"
+          environment: "default",
         },
         {
-          runner: "jest"
+          runner: "jest",
         }
       )
     ).toThrow();
-  })
+  });
 });

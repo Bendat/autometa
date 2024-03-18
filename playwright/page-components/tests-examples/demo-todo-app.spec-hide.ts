@@ -11,7 +11,6 @@ const TODO_ITEMS = [
 ];
 
 test.describe("New Todo", () => {
-
   test("should clear text input field when an item is added", async ({
     page,
   }) => {
@@ -19,7 +18,7 @@ test.describe("New Todo", () => {
     const newTodo = page.getByPlaceholder("What needs to be done?");
 
     // Create one todo item.
-    await newTodo.fill(TODO_ITEMS[0]);     
+    await newTodo.fill(TODO_ITEMS[0]);
     await newTodo.press("Enter");
 
     // Check that input is empty.

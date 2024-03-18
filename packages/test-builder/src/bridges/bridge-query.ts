@@ -1,11 +1,9 @@
-import {
-  Background,
-  GherkinNode} from "@autometa/gherkin";
+import { Background, GherkinNode } from "@autometa/gherkin";
 import {
   FeatureBridge,
   RuleBridge,
   ScenarioBridge,
-  ScenarioOutlineBridge
+  ScenarioOutlineBridge,
 } from ".";
 
 function failed(bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge) {
@@ -78,7 +76,7 @@ function gherkinToTestNames(
 
 export const Query = {
   find: {
-    failed
+    failed,
   },
-  testNames: gherkinToTestNames
+  testNames: gherkinToTestNames,
 };

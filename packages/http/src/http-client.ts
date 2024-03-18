@@ -4,13 +4,13 @@ import { HTTPAdditionalOptions } from "./types";
 import { Class } from "@autometa/types";
 export let defaultClient: Class<HTTPClient>;
 export abstract class HTTPClient {
-  static Use(): (target: Class<HTTPClient>) => void
+  static Use(): (target: Class<HTTPClient>) => void;
   static Use(client?: Class<HTTPClient>) {
     if (client) {
-      defaultClient = client
+      defaultClient = client;
     }
     return function (target: Class<HTTPClient>) {
-      defaultClient = target
+      defaultClient = target;
     };
   }
   abstract request<TRequestType, TResponseType>(

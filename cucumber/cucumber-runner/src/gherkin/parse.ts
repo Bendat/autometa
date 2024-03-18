@@ -1,4 +1,10 @@
-import { Parser, AstBuilder, Dialect, dialects, GherkinClassicTokenMatcher } from "@cucumber/gherkin";
+import {
+  Parser,
+  AstBuilder,
+  Dialect,
+  dialects,
+  GherkinClassicTokenMatcher,
+} from "@cucumber/gherkin";
 import { v4 as uuidv4 } from "uuid";
 import type { Feature } from "./parser.types";
 export function parseGherkin(gherkin: string) {
@@ -32,7 +38,8 @@ const translateKeywords = (astFeature: Feature | undefined) => {
 
   for (const child of astFeature.children) {
     if (child.background) {
-      child.background.keyword = translationMap[child.background.keyword] ?? child.background.keyword;
+      child.background.keyword =
+        translationMap[child.background.keyword] ?? child.background.keyword;
     }
 
     if (child.scenario) {

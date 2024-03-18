@@ -139,7 +139,7 @@ export class VTable extends DataTable {
           }
           const table = this.$_table as VTable;
           return table.get(title, this.$_index, raw);
-        }
+        },
       });
     };
   }

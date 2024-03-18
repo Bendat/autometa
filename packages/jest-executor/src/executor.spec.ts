@@ -4,7 +4,7 @@ import {
   describe as group,
   it as test,
   beforeEach as before,
-  expect
+  expect,
 } from "@jest/globals";
 import {
   makeBackground,
@@ -12,7 +12,7 @@ import {
   makeFeature,
   makeRule,
   makeScenario,
-  makeScenarioOutline
+  makeScenarioOutline,
 } from "./__it__/integration.utils";
 import { App } from "@autometa/app";
 import { TestEventEmitter } from "@autometa/events";
@@ -21,7 +21,7 @@ import {
   bootstrapExamples,
   bootstrapScenario,
   bootstrapScenarioOutline,
-  bootstrapScenarios
+  bootstrapScenarios,
 } from "./executor";
 import { Config } from "@autometa/config";
 import { Timeout } from "@autometa/scopes";
@@ -40,14 +40,14 @@ vi.mock("@jest/globals", () => {
     afterEach: vi.fn(),
     afterAll: vi.fn(),
     beforeAll: vi.fn(),
-    expect: vi.fn()
+    expect: vi.fn(),
   };
 });
 const configMap = new Map();
 configMap.set("default", {
   test: {
-    timeout: [1, "s"]
-  }
+    timeout: [1, "s"],
+  },
 });
 const config = new Config(configMap);
 const timeout: [Config, Timeout] = [config, Timeout.from(1)];
@@ -71,7 +71,7 @@ function getExpect() {
 describe("boostrapBackground", () => {
   it("should bootstrap a Background in a Feature", () => {
     getExpect().getState = vi.fn(() => ({
-      currentTestName: "Feature: My Feature Scenario: My Scenario"
+      currentTestName: "Feature: My Feature Scenario: My Scenario",
     }));
 
     const feature = makeFeature("My Feature");
@@ -84,7 +84,7 @@ describe("boostrapBackground", () => {
   });
   it("should bootstrap a Background in a Rule", () => {
     getExpect().getState = vi.fn(() => ({
-      currentTestName: "Rule: My Rule Scenario: My Scenario"
+      currentTestName: "Rule: My Rule Scenario: My Scenario",
     }));
     const feature = makeFeature("My Feature");
     const rule = makeRule("My Rule");
@@ -97,7 +97,7 @@ describe("boostrapBackground", () => {
   });
   it('should skip a Background with the "@skip" tag in the Feature', () => {
     getExpect().getState = vi.fn(() => ({
-      currentTestName: "Feature: My Feature Scenario: My Scenario"
+      currentTestName: "Feature: My Feature Scenario: My Scenario",
     }));
 
     const feature = makeFeature("My Feature");
@@ -111,7 +111,7 @@ describe("boostrapBackground", () => {
   });
   it('should skip a Background with the "@skip" tag', () => {
     getExpect().getState = vi.fn(() => ({
-      currentTestName: "Rule: My Rule Scenario: My Scenario"
+      currentTestName: "Rule: My Rule Scenario: My Scenario",
     }));
     const feature = makeFeature("My Feature");
 
@@ -126,7 +126,7 @@ describe("boostrapBackground", () => {
   });
   it('should skip a Background with the "@skipped" tag', () => {
     getExpect().getState = vi.fn(() => ({
-      currentTestName: "Rule: My Rule Scenario: My Scenario"
+      currentTestName: "Rule: My Rule Scenario: My Scenario",
     }));
 
     const feature = makeFeature("My Feature");

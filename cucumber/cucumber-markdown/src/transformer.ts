@@ -206,9 +206,9 @@ ${cells}|`;
 }
 
 /**
- * Converts a gherkin file to markdown, prints it and formats it 
- * @param featureString 
- * @returns 
+ * Converts a gherkin file to markdown, prints it and formats it
+ * @param featureString
+ * @returns
  */
 export function convertToMarkdown(featureString: string) {
   const gherkin = parser.parse(featureString);
@@ -219,11 +219,10 @@ ${formatMultiline(gherkin.feature?.description ?? "")}
 ${parseChildren(gherkin.feature)}
 `;
   // return prettier.format(template, { parser: "markdown" });
-  return template
-
+  return template;
 }
 export function convertFeatureToMarkdown(feature: Feature) {
-  const gherkin = {feature}
+  const gherkin = { feature };
   const template = `# ${gherkin.feature?.name}
   
 ${formatTags(gherkin.feature?.tags)}
@@ -231,7 +230,7 @@ ${formatMultiline(gherkin.feature?.description ?? "")}
 ${parseChildren(gherkin.feature)}
 `;
   // return prettier.format(template, { parser: "markdown" });
-  return template
+  return template;
 }
 export function serialize(featureString: string) {
   return parser.parse(featureString);

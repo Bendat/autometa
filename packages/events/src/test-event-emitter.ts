@@ -21,9 +21,10 @@ import {
   EndStepOpts,
 } from "./event-options";
 export class TestEventEmitter {
-  scenarioOutline = new TestEmitter<StartScenarioOutlineOpts, EndScenarioOutlineOpts>(
-    "ScenarioOutline"
-  );
+  scenarioOutline = new TestEmitter<
+    StartScenarioOutlineOpts,
+    EndScenarioOutlineOpts
+  >("ScenarioOutline");
   feature = new TestEmitter<StartFeatureOpts, EndFeatureOpts>("Feature");
   rule = new TestEmitter<StartRuleOpts, EndRuleOpts>("Rule");
   scenario = new TestEmitter<StartScenarioOpts, EndScenarioOpts>("Scenario");
@@ -33,7 +34,7 @@ export class TestEventEmitter {
   before = new TestEmitter<StartBeforeOpts, EndBeforeOpts>("Before");
   after = new TestEmitter<StartAfterOpts, EndAfterOpts>("After");
   step = new TestEmitter<StartStepOpts, EndStepOpts>("Step");
-  
+
   settleAsyncEvents = async () => {
     return await Promise.allSettled([
       this.scenarioOutline.waitForPromises(),

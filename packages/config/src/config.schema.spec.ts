@@ -4,7 +4,7 @@ import {
   RunnerSchema,
   TagFilterSchema,
   TestSchema,
-  TimeoutSchema
+  TimeoutSchema,
 } from "./config.schema";
 describe("TestExecutorConfigSchema", () => {
   describe("Configured runner schema should be a literal value", () => {
@@ -56,7 +56,7 @@ describe("TestExecutorConfigSchema", () => {
       expect(() =>
         TestSchema.parse({
           timeout: 123,
-          tagFilter: "@foo"
+          tagFilter: "@foo",
         })
       ).not.toThrow();
     });

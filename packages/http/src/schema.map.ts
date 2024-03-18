@@ -37,7 +37,7 @@ export class SchemaMap {
     if ("parse" in parser) {
       return parser.parse(data);
     }
-    if('validate' in parser) {
+    if ("validate" in parser) {
       return parser.validate(data);
     }
     try {

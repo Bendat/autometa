@@ -38,7 +38,7 @@ export class ListTable extends ParsedDataTable implements IListTable {
     }
     return json;
   }
-  
+
   readonly rows: readonly string[][];
   constructor(protected raw: CompiledDataTable) {
     super();

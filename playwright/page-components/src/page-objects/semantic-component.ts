@@ -98,7 +98,7 @@ export class SemanticComponent {
     selector: string | RegExp,
     options?: FindByTextOptions | Class<T>,
     type?: Class<T>
-  ): T => 
+  ): T =>
     this.transformLocator(this.element.getByAltText, selector, options, type);
   protected transformLocator: TransformLocator<SemanticComponent> = <
     T extends SemanticComponent,

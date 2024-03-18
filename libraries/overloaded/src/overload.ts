@@ -1,7 +1,7 @@
 import type { ArgumentType } from "./arguments/types";
 import { argStringArray, colorCompareArgStrings } from "./formatting";
 import { OverloadAction } from "./overload-actions";
-import type{ AnyArg } from "./types";
+import type { AnyArg } from "./types";
 export class Overload<
   TArgs extends AnyArg[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,7 +31,6 @@ export class Overload<
     }
     return true;
   }
-
 
   typeStringArray() {
     return this.args.map((it) => it.typeName);

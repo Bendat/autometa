@@ -14,9 +14,9 @@ which can be used to run tests.
 npm i -D @autometa/cucumber-markdown
 ```
 
- ```sh title=Yarn
- yarn add -D @autometa/cucumber-markdown
- ```
+```sh title=Yarn
+yarn add -D @autometa/cucumber-markdown
+```
 
 ```sh title=PNPM
 pnpm i -D @autometa/cucumber-markdown
@@ -28,13 +28,13 @@ pnpm i -D @autometa/cucumber-markdown
 $ cucumber-markdown ./inputDir ./outputDir
 ```
 
-
 Options:
+
 ```sh
   -v, --verbose <boolean>    If true, logs show files being read and written
                              (default: false)
-  -f, --flatten <boolean>    If true, flattens output directory 
-                             structure to a depth of 1 
+  -f, --flatten <boolean>    If true, flattens output directory
+                             structure to a depth of 1
                              (default: false)
   -o, --overwrite <boolean>  If true, overwrites existing markdown files (default:
                              true)

@@ -2,7 +2,7 @@ import type { App } from "@autometa/app";
 import type {
   DataTable,
   NeverDataTable,
-  TableDocument
+  TableDocument,
 } from "@autometa/gherkin";
 import type { Timeout } from "./timeout";
 export type FeatureAction = () => void;
@@ -63,8 +63,6 @@ export type StepArgs<
   : TTable extends DataTable
   ? [...CucumberExpressionArgs<TText>, TTable, App]
   : [...CucumberExpressionArgs<TText>, App];
-
-
 
 export type StepActionFn<
   TText extends string,

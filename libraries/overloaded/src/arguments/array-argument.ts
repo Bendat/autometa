@@ -114,7 +114,7 @@ export class ArrayArgument<
     if (!Array.isArray(values)) {
       return;
     }
-    
+
     for (const value of values) {
       if (!this.types.includes(typeof value)) {
         const index = values.indexOf(value);

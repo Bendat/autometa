@@ -5,19 +5,19 @@ import { Scope } from "./scope";
 import { RuleScope } from "./rule-scope";
 import { HookCache } from "./caches/hook-cache";
 import { StepCache } from "./caches";
-import {  Feature } from "@autometa/gherkin";
+import { Feature } from "@autometa/gherkin";
 import { BackgroundScope } from "./background-scope";
 import { AutomationError } from "@autometa/errors";
 import { Timeout } from "./timeout";
 
-export class FeatureScope extends Scope implements TimedScope{
+export class FeatureScope extends Scope implements TimedScope {
   canHandleAsync = true;
   constructor(
     readonly path: string,
     readonly action: FeatureAction | undefined,
     readonly timeout: Timeout | undefined,
     parentHookCache: HookCache,
-    parentStepCache: StepCache,
+    parentStepCache: StepCache
   ) {
     super(parentHookCache, parentStepCache);
     this.path = path;

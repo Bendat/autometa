@@ -5,7 +5,7 @@ import {
   FeatureBuilder,
   RuleBuilder,
   ScenarioBuilder,
-  StepBuilder
+  StepBuilder,
 } from "@autometa/gherkin";
 import { Query } from "./bridge-query";
 describe("Query", () => {
@@ -63,7 +63,7 @@ describe("Query", () => {
         "Feature: feature 1 Scenario Outline: scenario outline 1",
         "Feature: feature 1 Scenario Outline: scenario outline 1 Examples: examples 1",
         "Feature: feature 1 Scenario Outline: scenario outline 1 Examples: examples 1 Example: example 1",
-        "Feature: feature 1 Scenario Outline: scenario outline 1 Examples: examples 1 Example: example 1 Scenario: scenario 2"
+        "Feature: feature 1 Scenario Outline: scenario outline 1 Examples: examples 1 Example: example 1 Scenario: scenario 2",
       ]);
     });
   });

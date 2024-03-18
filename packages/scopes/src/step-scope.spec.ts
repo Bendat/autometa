@@ -2,13 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { StepScope } from "./step-scope";
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import {
   CompiledDataTable,
   HTable,
   ScenarioBuilder,
-  StepBuilder
+  StepBuilder,
 } from "@autometa/gherkin";
 import { AutometaApp, AutometaWorld, App, World } from "@autometa/app";
 import { AutomationError } from "@autometa/errors";
@@ -96,11 +96,11 @@ describe("step-scope", () => {
       const table = new CompiledDataTable(
         [
           ["cukes", "belly"],
-          [42, "belly"]
+          [42, "belly"],
         ],
         [
           ["cukes", "belly"],
-          ["42", "belly"]
+          ["42", "belly"],
         ]
       );
       const gherkin = new StepBuilder()
@@ -138,11 +138,11 @@ describe("step-scope", () => {
       const table = new CompiledDataTable(
         [
           ["cukes", "belly"],
-          [42, "belly"]
+          [42, "belly"],
         ],
         [
           ["cukes", "belly"],
-          ["42", "belly"]
+          ["42", "belly"],
         ]
       );
       const gherkin = new StepBuilder()
@@ -175,11 +175,11 @@ describe("step-scope", () => {
       const table = new CompiledDataTable(
         [
           ["cukes", "belly"],
-          [42, "belly"]
+          [42, "belly"],
         ],
         [
           ["cukes", "belly"],
-          ["42", "belly"]
+          ["42", "belly"],
         ]
       );
       const gherkin = new StepBuilder()
@@ -211,11 +211,11 @@ describe("step-scope", () => {
       const table = new CompiledDataTable(
         [
           ["cukes", "belly"],
-          [42, "belly"]
+          [42, "belly"],
         ],
         [
           ["cukes", "belly"],
-          ["42", "belly"]
+          ["42", "belly"],
         ]
       );
       const gherkin = new StepBuilder()
@@ -266,11 +266,11 @@ describe("step-scope", () => {
       const table = new CompiledDataTable(
         [
           ["cukes", "belly"],
-          [42, "belly"]
+          [42, "belly"],
         ],
         [
           ["cukes", "belly"],
-          ["42", "belly"]
+          ["42", "belly"],
         ]
       );
       const gherkin = new StepBuilder()

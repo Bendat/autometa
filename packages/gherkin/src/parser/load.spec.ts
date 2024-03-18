@@ -61,14 +61,15 @@ Feature: My feature
   it("should have a scenario as the second child", () => {
     const { children } = parsed;
     const [_, scenario] = children as [Background, Scenario];
-    const expectedTable = new CompiledDataTable([
-      ["a", "b", "c"],
-      ["hi", 2, true],
-    ],
-    [
-      ["a", "b", "c"],
-      ["hi", '2', 'true'],
-    ]
+    const expectedTable = new CompiledDataTable(
+      [
+        ["a", "b", "c"],
+        ["hi", 2, true],
+      ],
+      [
+        ["a", "b", "c"],
+        ["hi", "2", "true"],
+      ]
     );
     expect(scenario.name).toEqual("Outer scenario");
     expect([...scenario.tags]).toEqual(["@first", "@second"]);

@@ -20,7 +20,7 @@ export abstract class BaseController {
     const messages = [
       `Sending ${state.method} request to ${state.fullUrl}`,
       headerString,
-      dataString
+      dataString,
     ];
     console.log(messages.join("\n"));
   }
@@ -33,7 +33,7 @@ export abstract class BaseController {
       `Received ${response.status} response from ${url}`,
       " ",
       `statusText: ${response.statusText}`,
-      dataString
+      dataString,
     ];
     console.log(message.join("\n"));
   }

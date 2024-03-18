@@ -15,11 +15,11 @@ describe("transforming a table string value to a JavaScript typed value", () => 
   describe("interpolating example", () => {
     it("should interpolate table values", () => {
       const example = new ExampleBuilder()
-        .attach('table', "a", "hello")
-        .attach('table', 'b', '2').build();
+        .attach("table", "a", "hello")
+        .attach("table", "b", "2")
+        .build();
       expect(transformTableValue("<a>", example)).toBe("hello");
       expect(transformTableValue("<b>", example)).toBe(2);
     });
   });
 });
- 

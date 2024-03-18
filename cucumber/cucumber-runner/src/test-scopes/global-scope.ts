@@ -13,14 +13,18 @@ export class GlobalScope extends Scope {
   idString = () => "global";
   parent: Scope;
   action: (...args: unknown[]) => void;
-  get hookCache(){
+  get hookCache() {
     return this.openChild ? this.openChild.hooks ?? this.hooks : this.hooks;
   }
   override run = () => {
     // do nothing
   };
   override attach<T extends Scope>(childScope: T): void {
-    if (!this.openChild && !(childScope instanceof FeatureScope) && !(childScope instanceof StepScope)) {
+    if (
+      !this.openChild &&
+      !(childScope instanceof FeatureScope) &&
+      !(childScope instanceof StepScope)
+    ) {
       throw new Error(
         `Only ${FeatureScope.name} and ${StepScope.name} can be executed globally. Scenarios, Outlines and Rules must exist inside a Feature}`
       );
@@ -40,6 +44,5 @@ export class GlobalScope extends Scope {
     });
     this.isBuilt = true;
     return this.stepCache;
-
   };
 }

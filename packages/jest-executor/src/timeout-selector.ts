@@ -13,15 +13,15 @@ export function chooseTimeout(
 ) {
   if (timeout2 instanceof Timeout && !(timeout2 instanceof NullTimeout)) {
     return {
-      getTimeout: getTimeout.bind(null, timeout2)
+      getTimeout: getTimeout.bind(null, timeout2),
     };
   }
   if (timeout1 instanceof Timeout && !(timeout1 instanceof NullTimeout)) {
     return {
-      getTimeout: getTimeout.bind(null, timeout1)
+      getTimeout: getTimeout.bind(null, timeout1),
     };
   }
   return {
-    getTimeout: getTimeout.bind(null, Timeout.from(0))
+    getTimeout: getTimeout.bind(null, Timeout.from(0)),
   };
 }

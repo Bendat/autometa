@@ -17,7 +17,7 @@ describe("Param list", () => {
     expect(overload.args.length).toEqual(2);
   });
   it("should create a new overload with a name and description", () => {
-    const wrapper = def`myNamedDef`('optional description', string(), number());
+    const wrapper = def`myNamedDef`("optional description", string(), number());
     const overload = wrapper.matches((_a, _b) => 1);
     const func = overload.actionOrError as (a: string, b: number) => number;
     type returns = ReturnType<typeof func>;

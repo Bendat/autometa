@@ -6,7 +6,7 @@ import {
   RuleScope,
   ScenarioScope,
   ScenarioOutlineScope,
-  BackgroundScope
+  BackgroundScope,
 } from "@autometa/scopes";
 import { Empty_Function } from "@autometa/scopes";
 
@@ -111,6 +111,6 @@ export function scope(value: Scope) {
     },
     findStep: (keywordType: StepType, keyword: StepKeyword, name: string) => {
       return value.steps.find(keywordType, keyword, name);
-    }
+    },
   };
 }

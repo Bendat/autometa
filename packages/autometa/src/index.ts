@@ -4,7 +4,7 @@ import type {
   ScenarioAction,
   ScenarioScope,
   SizedTimeout,
-  TestTimeout
+  TestTimeout,
 } from "@autometa/scopes";
 
 export { defineConfig } from "./config";
@@ -20,7 +20,7 @@ import {
   Before as BeforeDefinition,
   After as AfterDefinition,
   Teardown as TeardownDefinition,
-  Setup as SetupDefinition
+  Setup as SetupDefinition,
 } from "./scopes";
 import { RuleAction } from "@autometa/scopes";
 import { RuleScope } from "@autometa/scopes";
@@ -42,7 +42,13 @@ export {
 } from "./app";
 export { Dates, Time } from "@autometa/datetime";
 export { AutomationError, raise } from "@autometa/errors";
-export { DataTable, HTable, VTable, MTable, TableDocument } from "@autometa/gherkin";
+export {
+  DataTable,
+  HTable,
+  VTable,
+  MTable,
+  TableDocument,
+} from "@autometa/gherkin";
 export { Bind } from "@autometa/bind-decorator";
 export { Types } from "@autometa/scopes";
 export * from "./events";
@@ -51,7 +57,7 @@ export * from "@autometa/asserters";
 export {
   GetAccessedCount,
   GetAssignedValues,
-  TrackAccess
+  TrackAccess,
 } from "@autometa/fixture-proxies";
 
 export { FileObject } from "@autometa/file-proxies";

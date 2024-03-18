@@ -54,7 +54,7 @@ export type TestGroup = ((
   only: (title: string, action: (...args: any[]) => void) => void;
 };
 
-export type Test= ((
+export type Test = ((
   title: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (...args: any[]) => void

@@ -5,7 +5,7 @@ import {
   RuleBridge,
   ScenarioBridge,
   ScenarioOutlineBridge,
-  StepBridge
+  StepBridge,
 } from "@autometa/test-builder";
 import {
   FeatureScope,
@@ -15,7 +15,7 @@ import {
   ScenarioScope,
   StepCache,
   BackgroundScope,
-  StepScope
+  StepScope,
 } from "@autometa/scopes";
 import {
   BackgroundBuilder,
@@ -27,11 +27,11 @@ import {
   StepBuilder,
   StepKeyword,
   StepType,
-  DataTable
+  DataTable,
 } from "@autometa/gherkin";
 import {
   CucumberExpression,
-  ParameterTypeRegistry
+  ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { vi } from "vitest";
 
@@ -46,7 +46,7 @@ export function makeFeature(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -61,7 +61,7 @@ export function makeBackground(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -75,7 +75,7 @@ export function makeScenario(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -93,7 +93,7 @@ export function makeScenarioOutline(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -108,7 +108,7 @@ export function makeExamples(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -123,7 +123,7 @@ export function makeRule(name: string) {
       new HookCache(),
       new StepCache(),
       vi.fn()
-    )
+    ),
   };
   return bridge;
 }
@@ -137,9 +137,9 @@ export function makeStep(keyword: StepKeyword, type: StepType, text: string) {
       type,
       new CucumberExpression(text, TestRegistry),
       vi.fn()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) as any,
-    args: []
+    args: [],
   };
   return bridge;
 }

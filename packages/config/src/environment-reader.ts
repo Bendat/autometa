@@ -5,7 +5,7 @@ export class EnvironmentReader {
   /**
    * Returns the configuration object for the selected
    * environment by weighting.
-   * 
+   *
    * By priority the environment is selected by:
    * 1. Literal
    * 2. Environment Variable
@@ -25,7 +25,7 @@ export class EnvironmentReader {
       return this.#factory();
     }
   }
-  
+
   byEnvironmentVariable(envVar: string) {
     this.#envVar = envVar;
     return this;

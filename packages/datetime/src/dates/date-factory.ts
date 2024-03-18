@@ -2,7 +2,12 @@ import { TimeUnit, camel, convertPhrase, collapse } from "@autometa/phrases";
 import { midnight } from "./midnight";
 import { AutomationError, raise } from "@autometa/errors";
 import { ConfirmDefined, ConfirmLengthAtLeast } from "@autometa/asserters";
-import { isValidDate, isValidISODateString, isValidTime, isValidYearMonth } from "iso-datestring-validator";
+import {
+  isValidDate,
+  isValidISODateString,
+  isValidTime,
+  isValidYearMonth,
+} from "iso-datestring-validator";
 type TimeShortcut =
   | "now"
   | "beforeYesterday"
@@ -29,7 +34,7 @@ function isTimeShortcut(text: string): text is TimeShortcut {
     "lastWeek",
     "nextWeek",
     "lastFortnight",
-    "nextFortnight"
+    "nextFortnight",
   ].includes(converted);
   if (!includes) {
     return false;
@@ -48,7 +53,7 @@ export class DateFactory {
     ["lastWeek", () => this.make(-7, "days")],
     ["nextFortnight", () => this.make(14, "days")],
     ["lastFortnight", () => this.make(-14, "days")],
-    ["midnight", midnight]
+    ["midnight", midnight],
   ]);
 
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -71,7 +76,7 @@ export class DateFactory {
         return this.phraseMap.get(name)?.call(this);
       }
     }
-    
+
     const matchDay = this.#extractTimeFromPhrase(phrase);
     if (matchDay) {
       return matchDay;

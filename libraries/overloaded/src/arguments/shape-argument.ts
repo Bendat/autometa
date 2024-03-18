@@ -23,9 +23,8 @@ export class ShapeArgument<
       this.argName = args.shift() as string;
     }
     if (typeof args[0] === "object") {
-      this.reference = args.shift() as  T;
-      
-    } 
+      this.reference = args.shift() as T;
+    }
     if (typeof args[0] === "object") {
       this.options = args[0] as unknown as ShapeOptions;
     }

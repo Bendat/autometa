@@ -4,7 +4,7 @@ import {
   DataTable,
   HTable,
   NeverDataTable,
-  TableDocument
+  TableDocument,
 } from "@autometa/gherkin";
 import { App } from "@autometa/app";
 test("should extract a number cucumber expression argument", () => {

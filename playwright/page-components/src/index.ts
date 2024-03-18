@@ -1,2 +1,2 @@
-export * from './locator';
-export * from './page-objects';
+export * from "./locator";
+export * from "./page-objects";

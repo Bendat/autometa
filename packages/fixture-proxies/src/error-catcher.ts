@@ -11,7 +11,7 @@ const methodHandler = {
       const message = `An Error occurred in ${targetName} while executing function ${target.name}`;
       throw new AutomationError(message, { cause: error });
     }
-  }
+  },
 } as ProxyHandler<AnyFunction>;
 
 function getObjectName(obj: object) {
@@ -37,14 +37,14 @@ export function ErrorCatcherProxy<T extends object>(target: T) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
 export function DecorateErrorCatch<T extends { new (...args: any[]): {} }>(
-    constructor: T
-  ) {
-    const decorated = class extends constructor {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      constructor(...args: any[]) {
-        super(...args);
-        ErrorCatcherProxy(this);
-      }
-    };
-    return decorated as unknown as T;
+  constructor: T
+) {
+  const decorated = class extends constructor {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(...args: any[]) {
+      super(...args);
+      ErrorCatcherProxy(this);
+    }
+  };
+  return decorated as unknown as T;
 }

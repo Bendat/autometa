@@ -9,5 +9,5 @@ export default defineConfig({
   outDir: "dist",
   legacyOutput: true,
   external: ["dist"],
-  sourcemap:true, // generate sourcemaps
+  sourcemap: true, // generate sourcemaps
 });

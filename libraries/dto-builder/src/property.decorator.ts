@@ -2,9 +2,9 @@ import { DefaultValueDecorators } from "./dto-default.decorator";
 import type { Class } from "./types";
 
 /**
- * 
- * @param defaultValue 
- * 
+ *
+ * @param defaultValue
+ *
  * @deprecated Use `@DTO.value`, `@DTO.factory` and `@DTO.dto` instead
  */
 export function Property<T extends () => unknown>(defaultValue: T): PropertyDecorator;
@@ -12,7 +12,9 @@ export function Property<T>(defaultValue: T): PropertyDecorator;
 export function Property(defaultOrFactory: unknown | (() => unknown)): PropertyDecorator {
   return determineDefaultType(defaultOrFactory);
 }
-function determineDefaultType(defaultOrFactory: unknown | Class<unknown> | (() => unknown)): PropertyDecorator {
+function determineDefaultType(
+  defaultOrFactory: unknown | Class<unknown> | (() => unknown)
+): PropertyDecorator {
   if (isClass(defaultOrFactory)) {
     return DefaultValueDecorators.dto(defaultOrFactory);
   }
