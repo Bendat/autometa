@@ -42,6 +42,7 @@
     "@types/lodash": "^4.14.195",
     "@types/node": "^18.11.18",
     "@vitest/coverage-istanbul": "^0.31.0",
+    "@vitest/coverage-v8": "^1.4.0",
     "eslint-config-custom": "workspace:*",
     "istanbul": "^0.4.5",
     "node": "^19.6.0",
