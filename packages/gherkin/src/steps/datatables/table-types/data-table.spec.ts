@@ -17,12 +17,12 @@ describe("HTable Document", () => {
         [
           ["age", "name"],
           [20, "John"],
-          [21, "Jane"]
+          [21, "Jane"],
         ],
         [
           ["age", "name"],
           ["20", "John"],
-          ["21", "Jane"]
+          ["21", "Jane"],
         ]
       )
     );
@@ -51,11 +51,11 @@ describe("VTable", () => {
       new CompiledDataTable(
         [
           ["name", "John", "Jane"],
-          ["age", 20, 21]
+          ["age", 20, 21],
         ],
         [
           ["name", "John", "Jane"],
-          ["age", "20", "21"]
+          ["age", "20", "21"],
         ]
       )
     );

@@ -76,14 +76,11 @@ export class HTable extends DataTable {
       def(string(), number(), boolean()).matches((header, row, raw) => {
         const colIdx = this.headers[header];
         const source = raw === true ? this.raw : this.rows;
-        this.handleError(colIdx, source, header, row);
-        return source[colIdx][row] as T;
+        return source[colIdx]?.[row] as T;
       }),
       def(string(), number()).matches((header, row) => {
         const colIdx = this.headers[header];
-        const source = this.rows;
         const col = this.rows.map((row) => row[colIdx]);
-        this.handleError(colIdx, source, header, row);
         return col.at(row);
       }),
       def(string(), boolean()).matches((header, raw) => {
@@ -98,17 +95,19 @@ export class HTable extends DataTable {
     ).use(args);
   }
 
-  static cell(title: string, 
+  static cell(
+    title: string,
     /**
      * If set to true, the values assigned to the document will
      * all be strings. By default, Autometa will attempt to coerce
      * obvious numbers or booleans into their respective types in Javascript,
      * i.e. '1' will be coerced into a number, 'true' into a boolean, etc.
-     * 
+     *
      * When `raw` is set to true, `1` will remain a string of the numeric character 1
      * and 'true' will remain a string of the boolean character sequence 'true'.
      */
-    raw?: boolean) {
+    raw?: boolean
+  ) {
     return function (target: object, propertyKey: string) {
       Object.defineProperty(target, propertyKey, {
         get: function () {
@@ -118,22 +117,9 @@ export class HTable extends DataTable {
           }
           const table = this.$_table as HTable;
           return table.get(title, this.$_index, raw);
-        }
+        },
       });
     };
-  }
-
-  private handleError(
-    colIdx: number,
-    source: readonly TableValue[][],
-    header: string,
-    row: number
-  ) {
-    if (colIdx > source.length) {
-      const maxLength = source.length - 1;
-      const msg = `Could not find column ${header} row ${row}. Max length for row is ${maxLength} on ${source}.`;
-      throw new AutomationError(msg);
-    }
   }
 
   getOrThrow<T extends TableValue = TableValue>(header: TableValue): T[];
@@ -155,10 +141,10 @@ export class HTable extends DataTable {
     return result;
   }
 
-  static Document(){
+  static Document() {
     return super.CreateDocument(HTable, HTableDocument);
   }
-  
+
   asJson(): Record<string, TableValue[]> {
     const json: Record<string, TableValue[]> = {};
     for (const header in this.headers) {
