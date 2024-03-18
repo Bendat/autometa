@@ -34,7 +34,9 @@ export class MTable extends DataTable {
     this.raw = raw;
   }
   get count(): number {
-    throw new Error("MTable is not countable and cannot be used with documents");
+    throw new Error(
+      "MTable is not countable and cannot be used with documents"
+    );
   }
 
   /**

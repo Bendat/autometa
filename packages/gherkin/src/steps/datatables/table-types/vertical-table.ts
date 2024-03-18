@@ -86,14 +86,12 @@ export class VTable extends DataTable {
         const rowIdx = this.headerMapping[header];
         const source = raw === true ? this.rawColumns : this.columns;
         const column = source[rowIdx];
-        this.handleError(rowIdx, source, header, col);
         return column[col] as T;
       }),
       def(string(), number()).matches((header, col) => {
         const rowIdx = this.headerMapping[header];
         const source = this.columns;
         const column = source[rowIdx];
-        this.handleError(rowIdx, source, header, col);
         return column[col] as T;
       }),
       def(string(), boolean()).matches((header, raw) => {
@@ -150,18 +148,6 @@ export class VTable extends DataTable {
     return super.CreateDocument(VTable, VTableDocument);
   }
 
-  private handleError(
-    rowIdx: number,
-    source: readonly TableValue[][],
-    header: string,
-    column: number
-  ) {
-    if (rowIdx > source.length) {
-      const maxLength = source.length - 1;
-      const msg = `Could not find column ${header} row ${column}. Max length for row is ${maxLength} on ${source}.`;
-      throw new AutomationError(msg);
-    }
-  }
   asJson(): Record<string, TableValue[]> {
     const json: Record<string, TableValue[]> = {};
     this.headers.forEach((header) => {
