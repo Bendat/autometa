@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.6.10
+
+### Patch Changes
+
+- 51ad241: fix(gherkin): data tables throwing errors for more than 3 cells
+
 ## 0.6.9
 
 ### Patch Changes

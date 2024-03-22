@@ -1,6 +1,6 @@
 {
   "name": "@autometa/jest-executor",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
