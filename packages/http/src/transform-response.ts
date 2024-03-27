@@ -31,8 +31,8 @@ export function transformResponse(
   if (allowPlainText) {
     return data;
   }
-
-  const response = highlight(data, { language: "html" });
+  const dataStr = typeof data === "string" ? data : JSON.stringify(data);
+  const response = highlight(dataStr, { language: "html" });
   const message = [
     `Could not parse a response as json, and this request was not configured to allow plain text responses.`,
     `To allow plain text responses, use the 'allowPlainText' method on the HTTP client.`,
