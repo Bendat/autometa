@@ -57,6 +57,12 @@ export class DTOOptionalPropertyCoverageCalculator {
           addAllProperties(prop, [...currentPath, key]);
         }
       }
+      if ("additionalProperties" in currentSchema) {
+        addAllProperties(
+          currentSchema.additionalProperties as SwaggerProperty,
+          [...currentPath]
+        );
+      }
     };
 
     addAllProperties(this.referenceSchema, path);
@@ -73,7 +79,9 @@ export class DTOOptionalPropertyCoverageCalculator {
         result.present.add(currentPath);
         continue;
       }
-
+      if ("additionalProperties" in schema) {
+        schema.properties = schema.additionalProperties?.properties;
+      }
       for (const key in schema.properties) {
         const prop = schema.properties[key];
         const currentPath = [...path, key].join(".");

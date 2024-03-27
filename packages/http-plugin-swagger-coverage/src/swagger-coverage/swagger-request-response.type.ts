@@ -1,7 +1,8 @@
 export interface SwaggerProperty {
-  type: string;
+  type?: string;
   required?: boolean;
   properties?: { [key: string]: SwaggerProperty };
+  additionalProperties?: SwaggerProperty;
   items?: SwaggerProperty;
 }
 
@@ -29,36 +30,37 @@ export interface SwaggerMethod {
 }
 
 export interface SwaggerResponse {
-
-      description: string;
-      content: {
-        "application/json": {
-          schema?: ComponentSchema;
-          "$ref"?: string;
-        };
-      };
-    
+  description: string;
+  content: {
+    "application/json": {
+      schema?: ComponentSchema;
+      $ref?: string;
+    };
+  };
 }
 export type JsonSchemaRoot = {
   schema?: ComponentSchema;
-  "$ref"?: string;
-}
+  $ref?: string;
+};
 export type ComponentSchema = {
   type: string;
   properties: {
     [key: string]: {
-      type: string;
+      type?: string;
       $ref?: string;
       items?: {
         $ref: string;
       };
     };
   };
+  items?: ComponentSchema;
+
   required?: string[];
 };
+
 export type AllSchemas = {
   [key: string]: ComponentSchema;
-}
+};
 // {
 //   "operationId": "ExampleApiController_get",
 //   "summary": "Example GET request",

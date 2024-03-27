@@ -65,6 +65,12 @@ export class DTORequiredPropertyCoverageCalculator {
           }
         }
       }
+      if ("additionalProperties" in currentSchema) {
+        addAllProperties(
+          currentSchema.additionalProperties as SwaggerProperty,
+          [...currentPath]
+        );
+      }
     };
     addAllProperties(this.referenceSchema, path);
 
@@ -80,6 +86,9 @@ export class DTORequiredPropertyCoverageCalculator {
         continue;
       }
       const schema = this.referenceSchema;
+      if ("additionalProperties" in schema) {
+        schema.properties = schema.additionalProperties?.properties;
+      }
       for (const key in schema.properties) {
         const prop = schema.properties[key];
         if (!prop.required) continue;

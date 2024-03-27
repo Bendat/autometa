@@ -10,9 +10,13 @@ describe("DTORequiredPropertyCoverageCalculator", () => {
       prop2: {
         type: "object",
         required: true,
-        properties: {
-          subprop1: { type: "string", required: true },
-          subprop2: { type: "string" }, // optional property
+        additionalProperties: {
+          type: "object",
+          required: true,
+          properties: {
+            subprop1: { type: "string", required: true },
+            subprop2: { type: "string" }, // optional property
+          },
         },
       },
       prop3: { type: "string" }, // optional property
@@ -34,7 +38,7 @@ describe("DTORequiredPropertyCoverageCalculator", () => {
 
     const result = calculator.matchSwaggerPropertyToDTO([dto]);
 
-    expect(result.present.size).toBe(3);
+    expect(result.present).toHaveLength(3);
     expect(result.present.has("prop1")).toBeTruthy();
     expect(result.present.has("prop2")).toBeTruthy();
     expect(result.present.has("prop2.subprop1")).toBeTruthy();

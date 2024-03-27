@@ -1,5 +1,5 @@
 import { describe, it, expect} from 'vitest'
-import { SwaggerResponseCoverage } from './method.coverage';
+import { SwaggerResponseCoverage } from './response.coverage';
 import { SwaggerMethod } from '../swagger-request-response.type';
 import { HTTPResponse } from '@autometa/http';
 describe("SwaggerResponseCoverage", () => {

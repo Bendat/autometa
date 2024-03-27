@@ -1,91 +1,160 @@
 import { describe, it, expect } from "vitest";
-import { convertToSwaggerProperty } from "./transform-schema-component";
+import { transformSchemaByPath } from "./transform-schema-component";
 import { AllSchemas, ComponentSchema } from "../swagger-request-response.type";
 
 describe("convertToSwaggerProperty", () => {
-  it('should convert a flat schema to a SwaggerProperty', () => {
-    const schema: ComponentSchema = {
-      type: 'object',
-      properties: {
-        prop1: {
-          type: 'string',
-        },
-        prop2: {
-          type: 'number',
-        },
-      },
-      required: ['prop1'],
-    };
-    const allSchemas: AllSchemas = {};
-    const result = convertToSwaggerProperty(schema, allSchemas);
-    expect(result).toEqual({
-      type: 'object',
-      properties: {
-        prop1: {
-          type: 'string',
-          required: true,
-        },
-        prop2: {
-          type: 'number',
-          required: false,
-        },
-      },
-      required: true,
-    });
-  })
-
-  it('should convert a component with nested properties to a SwaggerProperty', () => {
-    const schema: ComponentSchema = {
-      type: 'object',
-      properties: {
-        prop1: {
-          type: 'string',
-        },
-        prop2: {
-          type: 'object',
-          properties: {
-            nestedProp1: {
-              $ref: 'string',
+  it("should convert a flat schema to a SwaggerProperty", () => {
+    const allSchemas = {
+      components: {
+        schemas: {
+          ExampleResponseDto: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+              enabled: { type: "boolean" },
+              dateCreated: { type: "string" },
             },
+            required: ["id", "legacyId", "name", "enabled", "dateCreated"],
           },
-          required: ['nestedProp1'],
         },
       },
-      required: ['prop1'],
     };
 
-    const nestedProp1Schema: ComponentSchema = {
-      type: 'object',
-      properties: {
-        nestedProp1: {
-          type: 'string',
-        },
-      },
-      required: ['nestedProp1'],
-    };
-    const allSchemas: AllSchemas = {
-
-    };
-    const result = convertToSwaggerProperty(schema, allSchemas);
+    const result = transformSchemaByPath(
+      "#/components/schemas/ExampleResponseDto",
+      allSchemas
+    );
     expect(result).toEqual({
-      type: 'object',
+      type: "object",
+      required: true,
       properties: {
-        prop1: {
-          type: 'string',
+        id: {
+          type: "string",
           required: true,
         },
-        prop2: {
-          type: 'object',
+        name: {
+          type: "string",
+          required: true,
+        },
+        enabled: {
+          type: "boolean",
+          required: true,
+        },
+        dateCreated: {
+          type: "string",
+          required: true,
+        },
+      },
+    });
+  });
+
+  it("should transform a schema with a referenced sub-component", () => {
+    const allSchemas = {
+      components: {
+        schemas: {
+          ExampleResponseDto: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              nested: { $ref: "#/components/schemas/NestedDto" },
+            },
+            required: ["id", "nested"],
+          },
+          NestedDto: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+            },
+            required: ["name"],
+          },
+        },
+      },
+    };
+
+    const result = transformSchemaByPath(
+      "#/components/schemas/ExampleResponseDto",
+      allSchemas
+    );
+    expect(result).toEqual({
+      type: "object",
+      required: true,
+      properties: {
+        id: {
+          type: "string",
+          required: true,
+        },
+        nested: {
+          type: "object",
+          required: true,
           properties: {
-            nestedProp1: {
-              type: 'string',
+            name: {
+              type: "string",
               required: true,
             },
           },
-          required: true,
         },
       },
-      required: true,
     });
-  })
-})
+  });
+
+  it("should transform a schema with an array", () => {
+    const allSchemas = {
+      components: {
+        schemas: {
+          ExampleResponseDto: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              array: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/NestedDto",
+                },
+              },
+            },
+            required: ["id", "nested", "array"],
+          },
+          NestedDto: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+            },
+            required: ["name"],
+          },
+        },
+      },
+    };
+
+    const result = transformSchemaByPath(
+      "#/components/schemas/ExampleResponseDto",
+      allSchemas
+    );
+    expect(result).toEqual({
+      type: "object",
+      required: true,
+      properties: {
+        id: {
+          type: "string",
+          required: true,
+        },
+        array: {
+          type: "array",
+          required: true,
+          items: {
+            type: "object",
+            required: true,
+            properties: {
+              name: {
+                type: "string",
+                required: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('should ')
+});
