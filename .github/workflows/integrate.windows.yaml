@@ -1,4 +1,4 @@
-name: Integration Workflow
+name: Integration Workflow (Windows)
 
 on:
   push:
@@ -6,9 +6,9 @@ on:
   pull_request:
     types: [opened, synchronize]
   workflow_run:
-    workflows: ["PR Workflow (linux)"]
-    types:
-      - completed
+      workflows: ['PR Workflow (windows)']
+      types:
+        - completed
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -17,8 +17,7 @@ jobs:
   build:
     name: Build and Integration Test
     timeout-minutes: 15
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v3
