@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.14
+
+### Patch Changes
+
+- d759d5c: fix: value.replace is not a function when allowPlainText is false
+
 ## 1.4.13
 
 ### Patch Changes
