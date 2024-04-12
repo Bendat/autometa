@@ -6,7 +6,11 @@ import {
 import { HTTPResponse } from "@autometa/http";
 import { DTORequiredPropertyCoverageCalculator } from "../dto/required-property-coverage.calculator";
 import { DTOOptionalPropertyCoverageCalculator } from "../dto/optional-property-coverage.calculator";
-import { transformSchema, transformSchemaByPath } from "../transform/transform-schema-component";
+import {
+  transformSchema,
+  transformSchemaByPath,
+} from "../transform/transform-schema-component";
+import { PropertyMatchResult } from "../dto";
 export class SwaggerResponseCoverage {
   #httpCodes: Set<number> = new Set();
   constructor(method: SwaggerMethod) {
@@ -41,13 +45,25 @@ export class SwaggerResponseCoverage {
         };
       };
     }
-  ) {
+  ):
+    | {
+        required: PropertyMatchResult;
+        optional: PropertyMatchResult;
+      }
+    | null
+    | {
+        value: {
+          presenceOf: HTTPResponse | undefined;
+          absenceOf: HTTPResponse | undefined;
+          coverage: number;
+        };
+      } {
     const relevantResponses = responses.filter(
       (response) => response.status === httpCode
     );
     const schema = responseSchema.content["application/json"];
     if (!schema.schema && !schema.$ref) {
-      return;
+      return null;
     }
 
     if (schema?.schema?.type !== "object" && schema.schema?.type !== "array") {
@@ -69,7 +85,10 @@ export class SwaggerResponseCoverage {
       };
     }
     if (schema.$ref) {
-      const property = transformSchemaByPath(schema.$ref, schemas);
+      const property = transformSchemaByPath(
+        schema.$ref,
+        schemas.components.schemas
+      );
       const responseBodyCoverageCalculatorRequired =
         new DTORequiredPropertyCoverageCalculator(property);
       const required =
@@ -89,8 +108,11 @@ export class SwaggerResponseCoverage {
       };
     }
 
-    if(schema.schema) {
-      const property = transformSchema(schema.schema, schemas);
+    if (schema.schema) {
+      const property = transformSchema(
+        schema.schema,
+        schemas.components.schemas
+      );
       const responseBodyCoverageCalculatorRequired =
         new DTORequiredPropertyCoverageCalculator(property);
       const required =
@@ -112,17 +134,19 @@ export class SwaggerResponseCoverage {
 
     return {
       required: {
+        expected: new Set(),
         present: new Set(),
         missing: new Set(),
         unknown: new Set(),
-        total: 100
+        total: 100,
       },
       optional: {
+        expected: new Set(),
         present: new Set(),
         missing: new Set(),
         unknown: new Set(),
-        total: 100
-      }
-    }
+        total: 100,
+      },
+    };
   }
 }

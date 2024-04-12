@@ -1,12 +1,5 @@
 import { SwaggerProperty } from "../swagger-request-response.type";
-
-interface PropertyMatchResult {
-  readonly expected: Set<string>;
-  readonly present: Set<string>;
-  readonly missing: Set<string>;
-  readonly unknown: Set<string>;
-  readonly total: number;
-}
+import { PropertyMatchResult } from "./property-match-result";
 
 /**
  * Generates result lists for the properties of a DTO (request or response) body

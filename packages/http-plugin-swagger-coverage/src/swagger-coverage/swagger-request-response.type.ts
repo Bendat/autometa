@@ -23,6 +23,14 @@ export interface SwaggerMethod {
   summary: string;
   description: string;
   parameters: SwaggerParameter[];
+  requestBody: {
+    required: boolean;
+    content: {
+      "application/json": {
+        schema: ComponentSchema;
+      };
+    };
+  };
   responses: {
     [key: string]: SwaggerResponse;
   };
@@ -55,6 +63,7 @@ export type ComponentSchema = {
   };
   items?: ComponentSchema;
 
+  $ref: string;
   required?: string[];
 };
 

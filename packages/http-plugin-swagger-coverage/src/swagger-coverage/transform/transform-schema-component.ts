@@ -1,67 +1,25 @@
 // import { AllSchemas, ComponentSchema, SwaggerProperty } from "../swagger-request-response.type";
 
 import {
+  AllSchemas,
   ComponentSchema,
   SwaggerProperty,
 } from "../swagger-request-response.type";
 
-// // convert ComponentSchema to SwaggerProperty
-// export function convertToSwaggerProperty(schema: ComponentSchema, allSchemas: AllSchemas): SwaggerProperty {
-//   const properties: { [key: string]: SwaggerProperty } = {};
-//   if (schema.properties) {
-//     for (const key in schema.properties) {
-//       const prop = schema.properties[key];
-//       if (prop.$ref) {
-//         properties[key] = convertToSwaggerProperty(allSchemas[prop.$ref], allSchemas);
-//       } else {
-//         properties[key] = {
-//           type: prop.type,
-//           required: schema?.required?.includes(key),
-//         };
-//       }
-//     }
-//   }
-//   return {
-//     type: schema.type,
-//     properties,
-//     required: (schema?.required?.length ?? 0) > 0,
-//   };
-// }
-
-// "schemas": {
-//   "ExampleResponseDto": {
-//     "type": "object",
-//     "properties": {
-//       "id": { "type": "string" },
-//       "legacyId": { "type": "number" },
-//       "name": { "type": "string" },
-//       "enabled": { "type": "boolean" },
-//       "dateCreated": { "type": "string" }
-//     },
-//     "required": ["id", "legacyId", "name", "enabled", "dateCreated"]
-//   },
-
 export function transformSchemaByPath(
   path: string,
-  schemas: {
-    components: {
-      schemas: {
-        [key: string]: ComponentSchema;
-      };
-    };
-  }
+  schemas: AllSchemas
 ): SwaggerProperty {
   const componentName = path.replace("#/components/schemas/", "");
-  const schema = schemas.components.schemas[componentName];
+  const schema = schemas[componentName];
   return transformSchema(schema, schemas);
 }
 
 export function transformSchema(
   schema: ComponentSchema,
-  schemas: { components: { schemas: { [key: string]: ComponentSchema } } }
+  schemas: AllSchemas
 ) {
   const properties: { [key: string]: SwaggerProperty } = {};
-
   for (const key in schema.properties) {
     const prop = schema.properties[key];
     if (prop.$ref) {

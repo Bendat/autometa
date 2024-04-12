@@ -7,7 +7,7 @@ export class QueryParameterCoverageCalculator {
     this.referenceParameters = referenceParameters;
   }
 
-  calculateRequiredCoverage(params: Record<string, unknown>) {
+  calculateRequiredCoverage(...allParams: Record<string, unknown>[]) {
     const requiredParameters = new Set(
       this.referenceParameters
         .filter((param) => param.in === "query")
@@ -20,12 +20,14 @@ export class QueryParameterCoverageCalculator {
     const missingRequiredParameters: string[] = [];
     const unknownRequiredParameters: string[] = [];
 
-    for (const paramName in params) {
-      if (requiredParameters.has(paramName)) {
-        presentRequiredParameters.push(paramName);
+    for (const params of allParams) {
+      for (const paramName in params) {
+        if (requiredParameters.has(paramName)) {
+          presentRequiredParameters.push(paramName);
+        }
       }
     }
-
+    
     // get missing required parameters
     for (const param of requiredParameters) {
       if (!presentRequiredParameters.includes(param)) {
@@ -47,7 +49,7 @@ export class QueryParameterCoverageCalculator {
     };
   }
 
-  calculateOptionalCoverage(params: Record<string, unknown>) {
+  calculateOptionalCoverage(...allParams: Record<string, unknown>[]) {
     const optionalParameters = new Set(
       this.referenceParameters
         .filter((param) => param.in === "query")
@@ -60,9 +62,16 @@ export class QueryParameterCoverageCalculator {
     const missingOptionalParameters: string[] = [];
     const unknownOptionalParameters: string[] = [];
 
-    for (const paramName in params) {
-      if (optionalParameters.has(paramName)) {
-        presentOptionalParameters.push(paramName);
+    // for (const paramName in params) {
+    //   if (optionalParameters.has(paramName)) {
+    //     presentOptionalParameters.push(paramName);
+    //   }
+    // }
+    for (const params of allParams) {
+      for (const paramName in params) {
+        if (optionalParameters.has(paramName)) {
+          presentOptionalParameters.push(paramName);
+        }
       }
     }
 

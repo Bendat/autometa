@@ -7,7 +7,7 @@ export class HeaderParameterCoverageCalculator {
     this.referenceParameters = referenceParameters;
   }
 
-  calculateRequiredCoverage(params: Record<string, unknown>) {
+  calculateRequiredCoverage(...allParams: Record<string, unknown>[]) {
     const requiredParameters = new Set(
       this.referenceParameters
         .filter((param) => param.in === "header")
@@ -19,13 +19,19 @@ export class HeaderParameterCoverageCalculator {
     const presentRequiredParameters: string[] = [];
     const missingRequiredParameters: string[] = [];
 
-    for (const paramName in params) {
-      if (requiredParameters.has(paramName)) {
-        presentRequiredParameters.push(paramName);
+    // for (const paramName in params) {
+    //   if (requiredParameters.has(paramName)) {
+    //     presentRequiredParameters.push(paramName);
+    //   }
+    // }
+    for (const params of allParams) {
+      for (const paramName in params) {
+        if (requiredParameters.has(paramName)) {
+          presentRequiredParameters.push(paramName);
+        }
       }
     }
 
-    // get missing required parameters
     for (const param of requiredParameters) {
       if (!presentRequiredParameters.includes(param)) {
         missingRequiredParameters.push(param);
@@ -39,7 +45,7 @@ export class HeaderParameterCoverageCalculator {
     };
   }
 
-  calculateOptionalCoverage(params: Record<string, unknown>) {
+  calculateOptionalCoverage(...allParams: Record<string, unknown>[]) {
     const optionalParameters = new Set(
       this.referenceParameters
         .filter((param) => param.in === "header")
@@ -51,9 +57,12 @@ export class HeaderParameterCoverageCalculator {
     const presentOptionalParameters: string[] = [];
     const missingOptionalParameters: string[] = [];
 
-    for (const paramName in params) {
-      if (optionalParameters.has(paramName)) {
-        presentOptionalParameters.push(paramName);
+
+    for (const params of allParams) {
+      for (const paramName in params) {
+        if (optionalParameters.has(paramName)) {
+          presentOptionalParameters.push(paramName);
+        }
       }
     }
 
