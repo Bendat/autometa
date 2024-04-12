@@ -578,8 +578,7 @@ export class HTTP {
    * @param value The value of the query string parameter.
    * @returns This instance of HTTP.
    */
-  params(dict: Record<string, string>) {
-    this.#request.params(dict);
+  params(dict: Record<string, unknown>) {
     return HTTP.create(
       this.client,
       this.#request.derive().params(dict),
