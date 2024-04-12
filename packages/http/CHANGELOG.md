@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.15
+
+### Patch Changes
+
+- fdc17af: fix: params setter only accept string values
+
 ## 1.4.14
 
 ### Patch Changes
