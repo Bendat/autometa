@@ -139,6 +139,7 @@ describe("boostrapBackground", () => {
     bootstrapBackground(feature, rule, localApp, events, timeout);
     assert(before).not.toHaveBeenCalled();
   });
+
 });
 
 describe("bootstrapScenario", () => {

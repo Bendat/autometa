@@ -2057,6 +2057,9 @@ importers:
       '@autometa/types':
         specifier: workspace:^
         version: link:../types
+      '@cucumber/tag-expressions':
+        specifier: ^5.0.1
+        version: 5.0.1
     devDependencies:
       '@cucumber/cucumber-expressions':
         specifier: ^16.1.2
@@ -10006,7 +10009,7 @@ packages:
       magicast: 0.3.3
       picocolors: 1.0.0
       test-exclude: 6.0.0
-      vitest: 1.4.0(@types/node@18.19.24)
+      vitest: 1.4.0(@types/node@18.11.18)
     transitivePeerDependencies:
       - supports-color
 
@@ -10029,7 +10032,7 @@ packages:
       strip-literal: 2.0.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.4.0(@types/node@18.19.24)
+      vitest: 1.4.0(@types/node@18.11.18)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -20283,6 +20286,7 @@ packages:
       - sugarss
       - supports-color
       - terser
+    dev: true
 
   /vite-tsconfig-paths@4.0.5(typescript@4.9.5):
     resolution: {integrity: sha512-/L/eHwySFYjwxoYt1WRJniuK/jPv+WGwgRGBYx3leciR5wBeqntQpUE6Js6+TJemChc+ter7fDBKieyEWDx4yQ==}
@@ -20364,6 +20368,7 @@ packages:
       rollup: 4.13.0
     optionalDependencies:
       fsevents: 2.3.3
+    dev: true
 
   /vitest@1.4.0(@types/node@18.11.18):
     resolution: {integrity: sha512-gujzn0g7fmwf83/WzrDTnncZt2UiXP41mHuFYFrdwaLRVQ6JYQEiME2IfEjU3vcFL3VKa75XhI3lFgn+hfVsQw==}
@@ -20474,6 +20479,7 @@ packages:
       - sugarss
       - supports-color
       - terser
+    dev: true
 
   /wait-on@6.0.1:
     resolution: {integrity: sha512-zht+KASY3usTY5u2LgaNqn/Cd8MukxLGjdcZxT2ns5QzDmTFc4XoWBgC+C/na+sMRZTuVygQoMYwdcVjHnYIVw==}
