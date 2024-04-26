@@ -1,5 +1,12 @@
 # @autometa/jest-integration
 
+## 0.4.21
+
+### Patch Changes
+
+- @autometa/runner@0.4.20
+- @autometa/jest-transformer@0.1.92
+
 ## 0.4.20
 
 ### Patch Changes
