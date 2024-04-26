@@ -1,5 +1,13 @@
 # @autometa/jest-integration
 
+## 0.1.62
+
+### Patch Changes
+
+- 74f7d30: fix(jest-executor): tagFilter not working correctly
+  - @autometa/runner@0.4.21
+  - @autometa/jest-transformer@0.1.93
+
 ## 0.1.61
 
 ### Patch Changes
