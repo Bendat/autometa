@@ -35,7 +35,10 @@ export function execute(
 ) {
   const globalBridge = new GlobalBridge(global);
   const featureTitle = bridge.data.scope.title(bridge.data.gherkin);
-  const [group, modifier] = getGroupOrModifier(bridge);
+  const [group, modifier] = getGroupOrModifier(
+    bridge,
+    config.current.test?.tagFilter
+  );
   const chosenTimeout = chooseTimeout(
     new NullTimeout(),
     bridge.data.scope.timeout
@@ -246,7 +249,7 @@ export function bootstrapScenario(
     bridge.data.scope.timeout
   ).getTimeout(config);
   const scenarioName = data.scope.title(data.gherkin);
-  const test = getTestOrModifier(bridge);
+  const test = getTestOrModifier(bridge, config.current.test?.tagFilter);
   test(
     scenarioName,
     async () => {
@@ -354,7 +357,10 @@ export function bootstrapScenarioOutline(
     examples,
   } = bridge;
   const title = scope.title(gherkin);
-  const [group, modifier] = getGroupOrModifier(bridge);
+  const [group, modifier] = getGroupOrModifier(
+    bridge,
+    config.current.test?.tagFilter
+  );
   const chosenTimeout = chooseTimeout(
     timeout,
     bridge.data.scope.timeout
@@ -398,7 +404,10 @@ export function bootstrapExamples(
   timeout: [Config, Timeout]
 ) {
   const title = example.data.scope.title(example.data.gherkin);
-  const [group] = getGroupOrModifier(example);
+  const [group] = getGroupOrModifier(
+    example,
+    timeout[0].current.test?.tagFilter
+  );
   group(title, () => {
     bootstrapScenarios(root, example, localApp, staticApp, events, timeout);
   });
@@ -423,7 +432,10 @@ export function bootstrapRules(
     const transferTimeout: [Config, Timeout] = [config, ruleTimeout];
     const { data } = rule;
     const ruleName = data.scope.title(data.gherkin);
-    const [group, modifier] = getGroupOrModifier(bridge);
+    const [group, modifier] = getGroupOrModifier(
+      bridge,
+      config.current.test?.tagFilter
+    );
 
     group(ruleName, () => {
       beforeAll(() => {
@@ -471,24 +483,41 @@ function getStatus(modifier: string | undefined, failures: unknown[]) {
   return "FAILED";
 }
 
-function getGroupOrModifier({
-  data,
-}: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge) {
+function getGroupOrModifier(
+  { data }: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge,
+  tagFilter: string | undefined
+) {
   if (data.gherkin.tags?.has("@skip") || data.gherkin.tags?.has("@skipped")) {
     return [describe.skip, "skip"] as const;
   }
   if (data.gherkin.tags?.has("@only")) {
     return [describe.only, "only"] as const;
   }
+  if (tagFilter) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const parse = require("@cucumber/tag-expressions").default;
+    const expression = !parse(tagFilter).evaluate([...data.gherkin.tags]);
+    if (!expression) {
+      return [describe.skip, "skip"] as const;
+    }
+  }
   return [describe, undefined] as const;
 }
 
-function getTestOrModifier({ data }: ScenarioBridge) {
+function getTestOrModifier({ data }: ScenarioBridge, tagFilter?: string) {
   if (data.gherkin.tags?.has("@skip") || data.gherkin.tags?.has("@skipped")) {
     return it.skip;
   }
   if (data.gherkin.tags?.has("@only")) {
     return it.only;
+  }
+  if (tagFilter) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const parse = require("@cucumber/tag-expressions").default;
+    const expression = parse(tagFilter).evaluate([...data.gherkin.tags]);
+    if (!expression) {
+      return it.skip;
+    }
   }
   return it;
 }

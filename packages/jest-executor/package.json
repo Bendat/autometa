@@ -58,6 +58,7 @@
     "@autometa/injection": "workspace:^",
     "@autometa/scopes": "workspace:^",
     "@autometa/test-builder": "workspace:^",
-    "@autometa/types": "workspace:^"
+    "@autometa/types": "workspace:^",
+    "@cucumber/tag-expressions": "^5.0.1"
   }
 }
