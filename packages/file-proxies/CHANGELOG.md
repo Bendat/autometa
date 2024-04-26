@@ -1,5 +1,11 @@
 # @autometa/file-proxies
 
+## 0.2.0
+
+### Minor Changes
+
+- dfd1f81: feat: support arrays and nested objects in file object proxy
+
 ## 0.1.0
 
 ### Minor Changes

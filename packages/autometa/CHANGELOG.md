@@ -1,5 +1,12 @@
 # @autometa/runner
 
+## 0.4.20
+
+### Patch Changes
+
+- Updated dependencies [dfd1f81]
+  - @autometa/file-proxies@0.2.0
+
 ## 0.4.19
 
 ### Patch Changes
