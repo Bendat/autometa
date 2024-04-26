@@ -30,3 +30,35 @@ authFile.refreshToken = refreshToken;
 const token = authFile.token;
 await myClient.get("foo/stuff", token);
 ```
+
+# Arrays and Nested Objects
+
+By default there is no way to determine if a getter is supposed to return
+an array or Object. To enable this, you can pass in a template Object,
+which represents the nested structure of your File.
+
+```ts
+interface AuthFile {
+  token: string;
+  refreshToken: string;
+  user: {
+    name: string;
+    email: string;
+    tags: string[];
+  };
+}
+
+const authFile = FileObject<AuthFile>("./auth.json", {
+  user: {
+    tags: []
+  }
+});
+```
+
+Now the file proxy can be used as expected:
+
+```ts
+authFile.user.name = "John Doe";
+authFile.user.email = "john.doe@email.com"
+authFile.user.tags.push("admin");
+```
