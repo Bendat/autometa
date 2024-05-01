@@ -17,4 +17,5 @@ export abstract class HTTPClient {
     request: HTTPRequest<TRequestType>,
     options?: HTTPAdditionalOptions<unknown>
   ): Promise<HTTPResponse<TResponseType>>;
+  abstract doSomething(): void;
 }
