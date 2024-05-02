@@ -1,5 +1,13 @@
 # @autometa/runner
 
+## 0.4.22
+
+### Patch Changes
+
+- Updated dependencies [7a2a8ba]
+  - @autometa/jest-executor@0.4.17
+  - @autometa/coordinator@0.3.17
+
 ## 0.4.21
 
 ### Patch Changes

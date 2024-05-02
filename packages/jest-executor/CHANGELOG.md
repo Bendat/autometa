@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 0.4.17
+
+### Patch Changes
+
+- 7a2a8ba: fix: features not skipping with tag filter
+
 ## 0.4.16
 
 ### Patch Changes
