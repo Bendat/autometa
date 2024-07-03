@@ -1,5 +1,16 @@
 # @autometa/test-builder
 
+## 0.3.0
+
+### Minor Changes
+
+- 884c9dd: Add support to access App instance from cucumber expression transformer
+
+### Patch Changes
+
+- Updated dependencies [884c9dd]
+  - @autometa/scopes@0.6.0
+
 ## 0.2.13
 
 ### Patch Changes

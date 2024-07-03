@@ -1,5 +1,17 @@
 # @autometa/jest-executor
 
+## 0.5.0
+
+### Minor Changes
+
+- 884c9dd: Add support to access App instance from cucumber expression transformer
+
+### Patch Changes
+
+- Updated dependencies [884c9dd]
+  - @autometa/test-builder@0.3.0
+  - @autometa/scopes@0.6.0
+
 ## 0.4.17
 
 ### Patch Changes

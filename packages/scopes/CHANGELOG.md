@@ -1,5 +1,16 @@
 # Gherkin
 
+## 0.6.0
+
+### Minor Changes
+
+- 884c9dd: Add support to access App instance from cucumber expression transformer
+
+### Patch Changes
+
+- Updated dependencies [884c9dd]
+  - @autometa/cucumber-expressions@0.4.0
+
 ## 0.5.12
 
 ### Patch Changes
