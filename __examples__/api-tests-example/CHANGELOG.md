@@ -1,5 +1,17 @@
 # @autometa/jest-integration
 
+## 0.2.0
+
+### Minor Changes
+
+- 884c9dd: Add support to access App instance from cucumber expression transformer
+
+### Patch Changes
+
+- Updated dependencies [884c9dd]
+  - @autometa/runner@0.5.0
+  - @autometa/jest-transformer@0.1.95
+
 ## 0.1.63
 
 ### Patch Changes

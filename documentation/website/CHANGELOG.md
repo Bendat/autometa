@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.10.0
+
+### Minor Changes
+
+- 884c9dd: Add support to access App instance from cucumber expression transformer
+
 ## 0.9.0
 
 ### Minor Changes
