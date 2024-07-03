@@ -19,7 +19,7 @@ describe("defineParameterType", () => {
       const expected = new Foo("foo");
       defineParameterType(registry, {
         name: "number",
-        regexpPattern: /\d+/,
+        regex: /\d+/,
         type: Foo,
         transform: (s: unknown) => {
           const foo = s as Foo;
@@ -44,7 +44,7 @@ describe("defineParameterType", () => {
       const expected = new Foo("7");
       defineParameterType(registry, {
         name: "number",
-        regexpPattern: /\d+/,
+        regex: /\d+/,
         type: Foo,
       });
       const expression = new CucumberExpression(
@@ -66,7 +66,7 @@ describe("defineParameterType", () => {
       const expected = 14;
       defineParameterType(registry, {
         name: "number",
-        regexpPattern: /\d+/,
+        regex: /\d+/,
         primitive: Number,
         transform: (s: unknown) => {
           const foo = s as number;
@@ -90,7 +90,7 @@ describe("defineParameterType", () => {
       const expected = 7;
       defineParameterType(registry, {
         name: "number",
-        regexpPattern: /\d+/,
+        regex: /\d+/,
         primitive: Number,
       });
       const expression = new CucumberExpression(
@@ -110,7 +110,7 @@ describe("defineParameterType", () => {
       const expected = 7;
       defineParameterType(registry, {
         name: "number",
-        regexpPattern: /\d+/,
+        regex: /\d+/,
         primitive: Number,
         type: FooNum,
         transform: (s: unknown) => {
@@ -137,7 +137,7 @@ describe("defineParameterType", () => {
       const expected = new Foo("7");
       defineParameterType(registry, {
         name: "number",
-        regexpPattern: /\d+/,
+        regex: /\d+/,
         transform: (s: unknown) => {
           const foo = s as string;
           const f = new Foo(foo);
@@ -163,7 +163,7 @@ describe("defineParameterType", () => {
     const expected = "boo";
     defineParameterType(registry, {
       name: "str",
-      regexpPattern: /.+/,
+      regex: /.+/,
     });
     const expression = new CucumberExpression(
       "I have {str} cukes in my belly now",

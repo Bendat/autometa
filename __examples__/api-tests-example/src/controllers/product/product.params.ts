@@ -9,17 +9,17 @@ import { ProductIdMap } from "./product.static";
 defineParameterType(
   {
     name: "builder:product",
-    regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
+    regex: [/'([^']*)'/, /"([^"]*)"/],
     transform: (value) => new ProductBuilder().title(value),
   },
   {
     name: "product:property",
-    regexpPattern: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
+    regex: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
     transform: (value) => convertPhrase(value, camel),
   },
   {
     name: "product:static:name",
-    regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
+    regex: [/'([^']*)'/, /"([^"]*)"/],
     transform: (value) => {
       AssertKey(ProductIdMap, value, `Product property key '${value}'`);
       return ProductIdMap[value];

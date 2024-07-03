@@ -43,6 +43,7 @@
     "vitest": "1.4.0"
   },
   "dependencies": {
+    "@autometa/app": "workspace:^",
     "@autometa/asserters": "workspace:^",
     "@autometa/datetime": "workspace:^",
     "@autometa/errors": "workspace:^",

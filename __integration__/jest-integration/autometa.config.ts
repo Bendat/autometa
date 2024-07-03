@@ -1,4 +1,5 @@
 import { defineConfig } from "@autometa/runner";
+import './src/foo.param'
 defineConfig({
   runner: "jest",
   environment: "default",
@@ -10,13 +11,9 @@ defineConfig({
     features: ["__integration__/features"],
     steps: ["__integration__/steps"],
     app: ["src"],
-    parameterTypes: ["src/**/*.param.ts"],
+    parameterTypes: ["**/*/*.param.ts"],
   },
   shim: {
     errorCause: true,
   },
-  // test: {
-  //   timeout: 10000
-  //   // tagFilter: "@integration"
-  // },
 });

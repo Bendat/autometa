@@ -13,14 +13,31 @@ import {
   nil,
   array,
 } from "@autometa/overloaded";
+import { App } from "@autometa/app";
+declare module "@cucumber/cucumber-expressions" {
+  interface ParameterType<T> {
+    transform(groupValues: string[] | null, app: App): T;
+  }
+}
+ParameterType.prototype.transform = function transform(
+  this: ParameterType<unknown> | undefined,
+  value: string[] | null,
+  app: App
+) {
+  return (
+    this as unknown as { transformFn: (...args: unknown[]) => unknown }
+  ).transformFn.apply(this, [...(value ?? []), app]);
+} as unknown as typeof ParameterType.prototype.transform;
+
 // todo - this has a bug when dealing with {string} - does not remove quotes
-Argument.prototype.getValue = function () {
+Argument.prototype.getValue = function getValue<T>(this: Argument, app: App) {
   if (this.group.children.length > 0) {
     const value = this.group.children
       .filter((it) => it.value !== undefined)
       .map((child) => child.value);
+
     if (value.length > 0) {
-      return this.parameterType.transform(this.parameterType, value);
+      return this.parameterType.transform(value, app) as T;
     }
   }
   const groupValues = this.group
@@ -28,7 +45,7 @@ Argument.prototype.getValue = function () {
       ? [this.group.value]
       : this.group.values
     : null;
-  return this.parameterType.transform(this.parameterType, groupValues);
+  return this.parameterType.transform(groupValues, app) as T;
 };
 type PrimitiveConstructor =
   | typeof Number
@@ -38,9 +55,13 @@ type PrimitiveConstructor =
 
 export type ParamTypeDefinition = {
   name: string;
-  regexpPattern: RegExp | RegExp[];
+  regex: RegExp | RegExp[];
+  /**
+   * @deprecated use regex instead
+   */
+  regexpPattern?: RegExp | RegExp[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transform?: (value: any) => unknown;
+  transform?: (value: any, app: App) => unknown;
   type?: Class<unknown>;
   primitive?:
     | typeof String
@@ -57,12 +78,12 @@ export function defineParameterType<T extends ParamTypeDefinition[]>(
   ...params: T
 ) {
   params.forEach((param) => {
-    const { name, regexpPattern, transform, type, primitive } =
+    const { name, regex, regexpPattern, transform, type, primitive } =
       param as ParamTypeDefinition;
     return registerParameterType(
       registry,
       name,
-      regexpPattern,
+      regexpPattern ?? regex,
       transform,
       type,
       primitive
@@ -73,7 +94,7 @@ function registerParameterType(
   registry: ParameterTypeRegistry,
   name: string,
   regexpPattern: RegExp | RegExp[],
-  transform: ((value: unknown) => unknown) | undefined,
+  transform: ((value: unknown, app: App) => unknown) | undefined,
   type: Class<unknown> | undefined,
   primitive:
     | NumberConstructor

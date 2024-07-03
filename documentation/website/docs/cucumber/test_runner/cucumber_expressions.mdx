@@ -102,7 +102,7 @@ accepts a collection of ParameterType objects with the following structure:
 ```ts
 {
   name: string;
-  regexpPattern: RegExp;
+  regex: RegExp;
   transformer?: (arg: string) => any;
   useForSnippets?: boolean;
   preferForRegexpMatch?: boolean;
@@ -134,7 +134,7 @@ import { getUserByUsername } from "./user-service";
 
 defineParameterType({
   name: "user",
-  regexpPattern: /@([a-zA-Z]+)/,
+  regex: /@([a-zA-Z]+)/,
   transformer: (username) => {
     return getUserByUsername(username);
   }
@@ -148,7 +148,7 @@ import { defineParameterType } from "@autometa/runner";
 
 defineParameterType({
   name: "int",
-  regexpPattern: /[+-]?\d+/,
+  regex: /[+-]?\d+/,
   primitive: Number
 });
 ```
@@ -164,7 +164,7 @@ import { MyDto } from "./dtos";
 
 defineParameterType({
   name: "myDto",
-  regexpPattern: /@([a-zA-Z]+)/,
+  regex: /@([a-zA-Z]+)/,
   type: MyDto
 });
 ```
@@ -233,3 +233,68 @@ Given("I have a {myDto}", (myDto) => {
   // myDto is inferred as MyDto
 });
 ```
+
+
+## Accessing the App In Expressions
+
+It is possible to access the running tests `App` context from expressions,
+in the transformer. The app will be passed as the last-most value pased to the transformer
+arguments.
+
+For example an expression can be configured to create a builder,
+assign it to the world, and in future steps retrieve it.
+
+
+
+<Tabs>
+  <TabItem value="expression" label="Cucumber Expression">
+
+```ts title='expression'
+defineParameterType({
+  name: "builder:widget",
+  regex: [/"([^"]*)"/, /'([^']*)'/],
+  transform: (value: string, app: App) => {
+    const key = `$builder_${value}`;
+
+    if(!app.world[key]){
+      app.world[key]= new FooBuilder().name(value);
+    }
+
+    return app.world[key]
+  }
+})
+```
+
+  </TabItem>
+  <TabItem value="gherkin" label="Gherkin Step">
+
+```gherkin title='gherkin'
+Scenario: my foo scenario
+  Given a widget 'User Creator'
+  * the 'User Creator' widget domain is 'Admin'
+  * the 'User Creator' widget cache is 'Dynamic'
+  When I execute the 'User Creator' widget
+```
+
+  </TabItem>
+  <TabItem value="definition" label="Step Definition">
+
+```ts title='step'
+Given('a widget {builder:widget}', Pass)
+Given(
+  'the {builder:widget} widget {word} is {string}',
+  (widgetBuilder, propertyName, propertyValue) => {
+    widgetBuilder.assign(propertyName, propertyValue)
+  }
+)
+When(
+  'I execute the {builder:widget} widget',
+  (widgetBuilder, app) => {
+    const widget = widgetBuilder.build();
+    await app.widgetClient.post(widget);
+  }
+)
+```
+
+  </TabItem>
+</Tabs>

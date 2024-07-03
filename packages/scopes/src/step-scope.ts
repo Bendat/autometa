@@ -1,9 +1,6 @@
 import { Scope } from "./scope";
 import {
-  Background,
   DataTable,
-  Example,
-  Scenario,
   Step,
   StepKeyword,
   StepType,
@@ -15,10 +12,13 @@ import { Class } from "@autometa/types";
 import { Expression } from "@cucumber/cucumber-expressions";
 import { HookCache } from "./caches/hook-cache";
 import { Empty_Function } from "./novelties";
-import { StepActionFn, StepArgs } from "./types";
-import { interpolateStepText } from "@autometa/gherkin";
+import { StepActionFn } from "./types";
 import { TableDocument } from "@autometa/gherkin";
-
+declare module "@cucumber/cucumber-expressions" {
+  interface Argument {
+    getValue(thisObj: Argument, app: App): unknown;
+  }
+}
 export class StepScope<
   TText extends string,
   TTable extends DataTable | TableDocument<DataTable> | undefined
@@ -47,27 +47,24 @@ export class StepScope<
   }
 
   @Bind
-  getArgs(text: string): unknown[] {
+  getArgs(text: string, app: App): unknown[] {
     const match = this.expression.match(text);
     if (text === this.expression.source || match !== null) {
-      return match?.map((it) => it.getValue(null)) ?? [];
+      return match?.map((it) => it.getValue(app)) ?? [];
     }
     return [];
   }
 
   @Bind
-  async execute(scenario: Scenario | Background, gherkin: Step, app: App) {
+  async execute(
+    gherkin: Step,
+    expressionArgs: unknown[],
+    app: App
+  ) {
     const args: unknown[] = [];
     const title = this.stepText(gherkin.keyword, gherkin.text);
-    let gotArgs: StepArgs<string, DataTable>;
-    if (scenario instanceof Example) {
-      const realText = interpolateStepText(gherkin.text, scenario.table);
-      gotArgs = this.getArgs(realText) as StepArgs<string, DataTable>;
-    } else {
-      gotArgs = this.getArgs(gherkin.text) as StepArgs<string, DataTable>;
-    }
 
-    args.push(...gotArgs);
+    args.push(...expressionArgs);
     if (gherkin.table) {
       this.handleMissingTable(title, args, gherkin);
     }

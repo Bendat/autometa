@@ -9,6 +9,7 @@ import {
   limitDiffs,
 } from "@autometa/cucumber-expressions";
 import { interpolateStepText } from "@autometa/gherkin";
+import { App } from "@autometa/app";
 export class StepCache {
   private Context: CachedStep[] = [];
   private Action: CachedStep[] = [];
@@ -55,17 +56,17 @@ export class StepCache {
   findLocal(keywordType: StepType, text: string) {
     let bucket = this[keywordType];
     let step = bucket.find((it) => it.matches(text));
-    let args: unknown[] = [];
+    let args: undefined | ((app: App) => unknown[]);
 
     if (step) {
-      args = step.getArgs(text);
+      args = step.getArgs.bind(step, text);
       return { step: step, args: args ?? [] };
     }
 
     if (!step && (keywordType === "Conjunction" || keywordType === "Unknown")) {
       bucket = [...this.Context, ...this.Action, ...this.Outcome];
       step = bucket.find((it) => it.matches(text));
-      args = step?.getArgs(text) ?? [];
+      args = step?.getArgs.bind(step, text);
     }
     return { step: step, args };
   }
@@ -74,13 +75,13 @@ export class StepCache {
     keywordType: StepType,
     keyword: StepKeyword,
     text: string
-  ): { step: CachedStep; args: unknown[] };
+  ): { step: CachedStep; args: undefined | ((app: App) => unknown[]) };
   find(
     keywordType: StepType,
     keyword: StepKeyword,
     text: string,
     throwOnNotFound?: boolean
-  ): { step: CachedStep; args: unknown[] };
+  ): { step: CachedStep; args: undefined | ((app: App) => unknown[]) };
   @Bind
   find(
     keywordType: StepType,
@@ -91,17 +92,17 @@ export class StepCache {
     errorOnUndefined(keywordType, keyword, text);
     let bucket = this[keywordType];
     let step = bucket.find((it) => it.matches(text));
-    let args: unknown[] = [];
+    let args: undefined | ((app: App) => unknown[]);
 
     if (step) {
-      args = step.getArgs(text);
+      args = step.getArgs.bind(step, text);
       return { step: step, args: args ?? [] };
     }
 
     if (!step && (keywordType === "Conjunction" || keywordType === "Unknown")) {
       bucket = [...this.Context, ...this.Action, ...this.Outcome];
       step = bucket.find((it) => it.matches(text));
-      args = step?.getArgs(text) ?? [];
+      args = step?.getArgs.bind(step, text);
     }
 
     ({ found: step, args } = this.searchParent(
@@ -148,7 +149,7 @@ export class StepCache {
         depth + 1
       );
       parentReport.addChild(report);
-      return parentReport;
+      return parentReport
     }
     return report;
   }
@@ -196,7 +197,7 @@ export class StepCache {
     keyword: StepKeyword,
     text: string,
     found: CachedStep | undefined,
-    args: unknown[]
+    args: undefined | ((app: App) => unknown[])
   ) {
     const parentFound = this.parent?.find(keywordType, keyword, text, false);
     if (parentFound) {

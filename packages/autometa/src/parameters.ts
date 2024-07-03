@@ -19,14 +19,14 @@ export const PARAM_REGISTRY = new ParameterTypeRegistry();
  *
  * defineParameterType({
  *  name: "color",
- *  regexpPattern: /red|blue|yellow/,
+ *  regex: /red|blue|yellow/,
  *  transform: (value: string) => Color(value)
  * })
  *
  * // using regex arrays
  * defineParameterType({
  *  name: "color",
- *  regexpPattern: [/red/, /blue/, /yellow/],
+ *  regex: [/red/, /blue/, /yellow/],
  *  transform: (value: string) => Color(value)
  * })
  * ```

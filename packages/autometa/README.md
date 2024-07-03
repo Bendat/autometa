@@ -24,8 +24,7 @@ help bootstrap your node automation framework, for API or E2E testing.
 
 ## Cucumber Runner
 
-The Cucumber Runner lets you build and execute Cucumber style tests with alternative test runners. Currently supported are `jest` and `vitest`. Mocha
-likely works but has not been tested.
+The Cucumber Runner lets you build and execute Cucumber style tests with alternative test runners. Currently supported are `jest`.
 
 Initially inspired by [jest-cucumber](github.com/bencompton/jest-cucumber) provides a customizable hybrid approach between cucumbers flat global steps
 and jest-cucumbers nested spec-like tests.
@@ -34,7 +33,7 @@ Dependency injection is supported to make initializing client classes needed to 
 provided to each executing tests.
 
 ```ts title='Cucumber like'
-import { Feature, Given, When, Then, Before } from "@autometa/cucumber-runner";
+import { Feature, Given, When, Then, Before } from "@autometa/runner";
 import { App } from "./my-app";
 import * as seedData from "./seed-data";
 
@@ -62,7 +61,7 @@ import {
   ScenarioOutline,
   Scenario,
   Rule,
-} from "@autometa/cucumber-runner";
+} from "@autometa/runner";
 import { App } from "./my-app";
 import * as seedData from "./seed-data";
 

@@ -60,7 +60,7 @@ We can add this as a suffix using the `sfx` transformer:
 import { defineExpression, AssertKey, sfx, camel } from "@autometa/runner";
 defineExpression({
   name: "world:property:response",
-  regexpPattern: [/"(.*)"/, /'(.*)'/]
+  regex: [/"(.*)"/, /'(.*)'/]
   transform: (value) => {
     const property = convertPhrase(value, sfx`Response`, camel);
     return value;

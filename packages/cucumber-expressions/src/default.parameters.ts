@@ -16,27 +16,27 @@ const boolTypes = ["true", "false"];
 
 export const OrdinalParam: ParamTypeDefinition = {
   name: "ordinal",
-  regexpPattern: /(\d+)(?:st|nd|rd|th)/,
+  regex: /(\d+)(?:st|nd|rd|th)/,
   transform: (value: string) => parseInt(value, 10),
 };
 
 export const NumberParam: AutoParamTypeDefinition = {
   name: "number",
-  regexpPattern: /\d+/,
+  regex: /\d+/,
   primitive: Number,
 };
 
 export const AnyParam: AutoParamTypeDefinition = {
   name: "any",
-  regexpPattern: /.*/,
+  regex: /.*/,
 };
 export const UnknownParam: AutoParamTypeDefinition = {
   name: "unknown",
-  regexpPattern: /.*/,
+  regex: /.*/,
 };
 export const TextParam: ParamTypeDefinition = {
   name: "text",
-  regexpPattern: /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/,
+  regex: /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/,
   primitive: String,
   transform: (value: string) => {
     const asStr = value as string;
@@ -46,23 +46,23 @@ export const TextParam: ParamTypeDefinition = {
 
 export const BooleanParam = {
   name: "boolean",
-  regexpPattern: /true|false/,
+  regex: /true|false/,
   primitive: Boolean,
 };
 export const BoolParam = {
   name: "bool",
-  regexpPattern: /true|false/,
+  regex: /true|false/,
   primitive: Boolean,
 };
 export const DateParam: AutoParamTypeDefinition = {
   name: "date",
-  regexpPattern: [isodateRegexp, shortDateRegex],
+  regex: [isodateRegexp, shortDateRegex],
   type: Date,
 };
 
 export const PrimitiveParam: ParamTypeDefinition = {
   name: "primitive",
-  regexpPattern: [
+  regex: [
     /true|false/,
     /enabled|disabled/,
     /active|inactive/,

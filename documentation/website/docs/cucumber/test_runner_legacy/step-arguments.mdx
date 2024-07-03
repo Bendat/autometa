@@ -71,7 +71,7 @@ to call this function is your `autometa.config.ts` file.
 defineParameterType(
   {
     name: "boolean",
-    regexpPattern: /true|false/,
+    regex: /true|false/,
     type: Number,
     transform: (value): boolean => {
       if (value === "true") {
@@ -85,7 +85,7 @@ defineParameterType(
   },
   {
     name: "number",
-    regexpPattern: FLOAT_REGEXP,
+    regex: FLOAT_REGEXP,
     type: Number,
     transform: (value) => {
       const transformed = Number(value);
