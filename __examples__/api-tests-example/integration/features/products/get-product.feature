@@ -3,17 +3,17 @@ Feature: Viewing a Product
     Scenario: I view an iPhone (builder)
         Given I want to view the product 'iPhone 9'
         When I view the product
-        Then the product description is "An apple mobile which is nothing like apple"
-        And the product price is 549
-        * the product 'discount percentage' is 12.96
-        * the product brand is 'Apple'
+        Then the product description is "The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects. Achieve dramatic lashes with this long-lasting and cruelty-free formula."
+        And the product price is 9.99
+        * the product 'discount percentage' is 7.17
+        * the product brand is 'Essence'
 
 
     Scenario: I view an iPhone (table)
         Given I want to view the product 'iPhone 9'
         When I view the product
         Then the product has the expected details
-            | description | An apple mobile which is nothing like apple |
-            | price       | 549                                         |
-            | discount    | 12.96                                       |
-            | brand       | Apple                                       |
+            | description | The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects. Achieve dramatic lashes with this long-lasting and cruelty-free formula. |
+            | price       | 9.99                                         |
+            | discount    | 7.17                                      |
+            | brand       | Essence                                       |

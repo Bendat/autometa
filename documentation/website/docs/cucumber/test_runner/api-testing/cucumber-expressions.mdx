@@ -40,7 +40,7 @@ import { defineExpression } from "@autometa/runner";
 
  defineExpression({
   name: "builder:product"
-  regexpPattern: [/'([^']*)'/, /"([^"]*)"/],
+  regex: [/'([^']*)'/, /"([^"]*)"/],
   transform: (name: string) => new ProductBuilder().name(name)
  });
 ```
@@ -104,7 +104,7 @@ import { defineExpression } from "@autometa/runner";
 
  defineExpression({
   name: "builder:product"
-  regexpPattern: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
+  regex: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
   transform: (name: string) => new ProductBuilder().name(name)
  }, {
   name: "product:property",
@@ -142,7 +142,7 @@ import { ProductBuilder } from './'
 
  defineExpression({
   name: "builder:product"
-  regexpPattern: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
+  regex: [/'([^']*)'/, /"([^"]*)"/, /[^\s]+/],
   transform: (name: string) => new ProductBuilder().name(name)
  }, {
   name: "product:property",

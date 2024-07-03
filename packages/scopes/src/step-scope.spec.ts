@@ -4,12 +4,7 @@ import {
   CucumberExpression,
   ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
-import {
-  CompiledDataTable,
-  HTable,
-  ScenarioBuilder,
-  StepBuilder,
-} from "@autometa/gherkin";
+import { CompiledDataTable, HTable, StepBuilder } from "@autometa/gherkin";
 import { AutometaApp, AutometaWorld, App, World } from "@autometa/app";
 import { AutomationError } from "@autometa/errors";
 import { Class } from "@autometa/types";
@@ -21,6 +16,7 @@ class MyApp extends AutometaApp implements App {
   di = {} as any;
   world = new MyWorld();
 }
+const app = new MyApp();
 describe("step-scope", () => {
   it("should match a text string", () => {
     const text = "I have {int} cukes in my {string} now";
@@ -36,7 +32,7 @@ describe("step-scope", () => {
     );
     const match = scope.matches("I have 42 cukes in my 'belly' now");
     expect(match).toBe(true);
-    const args = scope.getArgs("I have 42 cukes in my 'belly' now");
+    const args = scope.getArgs("I have 42 cukes in my 'belly' now", app);
     expect(args).toEqual([42, "belly"]);
   });
   it("it should get the args of a text string", () => {
@@ -51,7 +47,7 @@ describe("step-scope", () => {
       expression,
       () => undefined
     );
-    const args = scope.getArgs("I have 42 cukes in my 'belly' now");
+    const args = scope.getArgs("I have 42 cukes in my 'belly' now", app);
     expect(args).toEqual([42, "belly"]);
   });
 
@@ -74,9 +70,8 @@ describe("step-scope", () => {
         .keywordType("Context")
         .text("I have 42 cukes in my belly now")
         .build();
-      const scenario = new ScenarioBuilder().build();
 
-      scope.execute(scenario, gherkin, new MyApp());
+      scope.execute(gherkin, [], app);
       expect(fn).toHaveBeenCalled();
     });
 
@@ -109,8 +104,7 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const scenario = new ScenarioBuilder().build();
-      const error = () => scope.execute(scenario, gherkin, new MyApp());
+      const error = () => scope.execute(gherkin, [], app);
       await expect(error).rejects.toThrow(AutomationError);
       await expect(error).rejects
         .toThrow(`Step 'Given I have 42 cukes in my belly now' has a table but no table prototype was provided.
@@ -151,9 +145,8 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my belly now")
         .table(table)
         .build();
-      const scenario = new ScenarioBuilder().build();
 
-      const error = () => scope.execute(scenario, gherkin, new MyApp());
+      const error = () => scope.execute(gherkin, [], app);
       expect(error).rejects.toThrow(
         `Step 'Given I have 42 cukes in my belly now' has a table but the table prototype provided is not a DataTable or DataTableDocument`
       );
@@ -188,9 +181,7 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const scenario = new ScenarioBuilder().build();
-
-      const args = await scope.execute(scenario, gherkin, new MyApp());
+      const args = await scope.execute(gherkin, [], app);
       expect(args).toBeUndefined();
     });
 
@@ -224,9 +215,8 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const scenario = new ScenarioBuilder().build();
 
-      await scope.execute(scenario, gherkin, new MyApp());
+      await scope.execute(gherkin, [], app);
       expect(fn).toHaveBeenCalled();
     });
   });
@@ -279,9 +269,8 @@ describe("step-scope", () => {
         .text("I have 42 cukes in my 'belly' now")
         .table(table)
         .build();
-      const scenario = new ScenarioBuilder().build();
 
-      await scope.execute(scenario, gherkin, new MyApp());
+      await scope.execute(gherkin, [42, "belly"], app);
       expect(fn).toHaveBeenCalled();
     });
   });

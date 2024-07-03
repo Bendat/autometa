@@ -171,6 +171,8 @@ export function bootstrapBackground(
     const steps = background.steps;
     try {
       for (const step of steps) {
+        const app = localApp();
+        const args = step.args?.(app) ?? [];
         const title = step.data.scope.stepText(
           step.data.gherkin.keyword,
           step.data.gherkin.text
@@ -178,20 +180,16 @@ export function bootstrapBackground(
 
         events.step.emitStart({
           title,
-          args: step.args,
+          args: args,
           expression: step.data.scope.expression.source,
         });
 
-        await step.data.scope.execute(
-          background.data.gherkin,
-          step.data.gherkin,
-          localApp()
-        );
+        await step.data.scope.execute(step.data.gherkin, args, app);
 
         events.step.emitEnd({
           expression: step.data.scope.expression.source,
           title,
-          args: step.args,
+          args: args,
         });
       }
       events.before.emitEnd({
@@ -304,21 +302,21 @@ async function bootstrapStep(
     step.data.gherkin.keyword,
     step.data.gherkin.text
   );
-  events.step.emitStart({
-    title,
-    args: step.args,
-    expression: step.expressionText,
-  });
+  let args: unknown[] = [];
   try {
-    await step.data.scope.execute(
-      bridge.data.gherkin,
-      step.data.gherkin,
-      localApp()
-    );
+    const app = localApp();
+    args = step.args?.(app) ?? [];
+
+    events.step.emitStart({
+      title,
+      args,
+      expression: step.expressionText,
+    });
+    await step.data.scope.execute(step.data.gherkin, args, app);
     events.step.emitEnd({
       expression: step.expressionText,
       title,
-      args: step.args,
+      args,
       status: "PASSED",
     });
   } catch (e) {
@@ -326,7 +324,7 @@ async function bootstrapStep(
     events.step.emitEnd({
       expression: step.expressionText,
       title,
-      args: step.args,
+      args,
       status: "FAILED",
       error: e as Error,
     });

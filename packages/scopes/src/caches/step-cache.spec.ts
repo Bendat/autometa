@@ -77,11 +77,11 @@ describe("StepCache", () => {
       const step = makeStep("Given", "Context", "hello {string} {int}");
       sut.add(step);
       const found = sut.find("Context", "Given", "hello 'world' 1");
-      expect(found?.args).toEqual(["world", 1]);
+      expect(found?.args).toBeTypeOf('function');
     });
   });
 });
-function makeStep(keyword: StepKeyword, context: StepType, text: string) {
+function makeStep(keyword: StepKeyword, context: StepType, text: string): CachedStep {
   return new StepScope(
     keyword,
     context,

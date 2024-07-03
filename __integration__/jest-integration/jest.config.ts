@@ -16,6 +16,5 @@ export default {
   },
 
   setupFilesAfterEnv: ["reflect-metadata", "./autometa.config.ts"],
-  reporters: ["<rootDir>/__integration__/reporter.js"],
   testPathIgnorePatterns: ["/node_modules/", "/src/.tools/"],
 };

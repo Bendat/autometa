@@ -1398,6 +1398,9 @@ importers:
 
   packages/cucumber-expressions:
     dependencies:
+      '@autometa/app':
+        specifier: workspace:^
+        version: link:../app
       '@autometa/asserters':
         specifier: workspace:^
         version: link:../asserters

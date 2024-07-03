@@ -28,12 +28,11 @@ export abstract class BaseController {
   private logResponse(response: HTTPResponse<unknown>) {
     const data = JSON.stringify(response.data);
     const url = response.request.baseUrl;
-    const dataString = data === undefined ? `data: ${data}` : "";
     const message = [
       `Received ${response.status} response from ${url}`,
       " ",
       `statusText: ${response.statusText}`,
-      dataString,
+      'data: '+ data,
     ];
     console.log(message.join("\n"));
   }

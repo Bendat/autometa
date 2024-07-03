@@ -1,3 +1,4 @@
+import { App } from "@autometa/app";
 import {
   Background,
   DataTable,
@@ -112,11 +113,11 @@ export class StepBridge extends GherkinCodeBridge {
   data: {
     gherkin: Step;
     scope: StepScope<string, DataTable | undefined>;
-    args: unknown[];
+    args: undefined | ((app: App) => unknown[]);
   };
 
   get args() {
-    return this.data.scope.getArgs(this.data.gherkin.text);
+    return this.data.args
   }
 
   get expressionText() {
