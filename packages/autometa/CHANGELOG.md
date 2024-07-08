@@ -1,5 +1,12 @@
 # @autometa/runner
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [f60af5c]
+  - @autometa/http@1.4.16
+
 ## 0.5.0
 
 ### Minor Changes

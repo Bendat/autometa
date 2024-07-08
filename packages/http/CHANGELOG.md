@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 1.4.16
+
+### Patch Changes
+
+- f60af5c: fix(http): dynamic headers could not be replaced with static headers
+
 ## 1.4.15
 
 ### Patch Changes
