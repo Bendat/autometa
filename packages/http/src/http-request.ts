@@ -144,8 +144,14 @@ ${cause}`;
       value.join(",")
   ) {
     if (typeof value === "function") {
+      if (this.#request.headers[name]) {
+        delete this.#request.headers[name];
+      }
       this.#dynamicHeaders.set(name, value);
       return this;
+    }
+    if (this.#dynamicHeaders.has(name)) {
+      this.#dynamicHeaders.delete(name);
     }
     const val = Array.isArray(value) ? onArray(value) : String(value);
     this.#request.headers[name] = val;
