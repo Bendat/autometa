@@ -2,7 +2,7 @@ import { Given, Teardown, When } from "@autometa/runner";
 import { expect } from "@jest/globals";
 const things = ["one", "three"];
 const counts = [1, 3];
-Given("an outline parameter {word}", (thing) => {
+Given("an outline parameter {word} {word}", (thing) => {
   expect(thing).toBe(things.shift());
 });
 

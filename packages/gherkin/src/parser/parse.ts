@@ -27,6 +27,7 @@ import {
 import { FeatureChildType, RuleChildType } from "./child-types";
 import { ExampleBuilder } from "../example";
 import { AutomationError } from "@autometa/errors";
+import { interpolateStepText } from "./interpolate-step-text";
 
 export function convertToClass(feature: GherkinFeature, filePath: string) {
   return new FeatureBuilder()
@@ -188,6 +189,12 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
           return { ...old, ...current };
         }, {});
       const steps = makeSteps(scenario);
+      steps.forEach((step) => {
+        (step as { text: string }).text = interpolateStepText(
+          step.text,
+          exampleValues
+        );
+      });
       const tags = new Set([...tagsNew, ...buildTags(example.tags)]);
       return new ExampleBuilder()
         .name(name)
@@ -244,7 +251,9 @@ export function interpolateExamples(
   for (let i = 0; i < titles.length; i++) {
     const title = titles[i];
     const value = values[i];
-    name = name.replace(`<${title}>`, value);
+    while (name.includes(`<${title}>`)) {
+      name = name.replace(`<${title}>`, value);
+    }
   }
   return name;
 }
