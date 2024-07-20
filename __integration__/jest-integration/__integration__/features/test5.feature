@@ -1,7 +1,7 @@
 Feature: Feature with Scenario Outline
 
-    Scenario Outline: A Scenario Outline
-        Given an outline parameter <thing>
+    Scenario Outline: A Scenario Outline <thing> <count> <thing>
+        Given an outline parameter <thing> <thing>
         When another outline parameter <count>
 
         Examples:

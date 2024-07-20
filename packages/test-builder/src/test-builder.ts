@@ -18,13 +18,7 @@ import {
 import { GherkinWalker } from "./gherkin-walker";
 import { scope } from "./scope-search";
 import { Bind } from "@autometa/bind-decorator";
-import {
-  Example,
-  Feature,
-  GherkinNode,
-  Scenario,
-  scenarioExampleTitle,
-} from "@autometa/gherkin";
+import { Example, Feature, GherkinNode, Scenario } from "@autometa/gherkin";
 import { raise } from "@autometa/errors";
 import { StepKeyword, StepType } from "@autometa/types";
 export class TestBuilder {
@@ -80,13 +74,7 @@ export class TestBuilder {
               `Example ${gherkin.name} has no Example Table data. A Row of data is required.`
             );
           }
-          const titleSegments = Object.keys(gherkin.table);
-          const values = Object.values(gherkin.table);
-          const title = scenarioExampleTitle(
-            titleSegments,
-            gherkin.name,
-            values
-          );
+          const title = gherkin.name;
 
           const exampleScope = scope(accumulator.data.scope).findExample(title);
           const bridge = new ExampleBridge();
