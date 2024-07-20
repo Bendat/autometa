@@ -241,7 +241,7 @@ export function interpolateExamples(
     const message = `Titles must have the same length as values in an example Table but there was ${titles.length} titles and ${values.length} values.`;
     throw new AutomationError(message);
   }
-  for (let i = 0; i > titles.length; ) {
+  for (let i = 0; i < titles.length; i++) {
     const title = titles[i];
     const value = values[i];
     name = name.replace(`<${title}>`, value);

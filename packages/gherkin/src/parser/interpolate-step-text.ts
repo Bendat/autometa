@@ -7,7 +7,9 @@ export function interpolateStepText(
 
   let str = text;
   for (const key of tableKeys) {
-    str = str.replace(`<${key}>`, table[key]);
+    while (str.includes(`<${key}>`)) {
+      str = str.replace(`<${key}>`, table[key]);
+    }
   }
   return str;
 }

@@ -103,7 +103,7 @@ Feature: My feature
     expect(exampleA.titles).toEqual(["a", "b"]);
     expect(exampleA.values).toEqual([["1", "2"]]);
     expect(exampleA.children.length).toEqual(1);
-    expect(scenario.name).toEqual("Outer outline with <a> and <b>");
+    expect(scenario.name).toEqual("Outer outline with 1 and 2");
     expect(scenario.children.length).toEqual(1);
   });
   describe("rule", () => {
