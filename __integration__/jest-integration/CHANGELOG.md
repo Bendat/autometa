@@ -1,5 +1,13 @@
 # @autometa/jest-integration
 
+## 0.5.3
+
+### Patch Changes
+
+- c9cc41c: fix: additional example interpolation fixes
+  - @autometa/runner@0.5.3
+  - @autometa/jest-transformer@0.1.98
+
 ## 0.5.2
 
 ### Patch Changes

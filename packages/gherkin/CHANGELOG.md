@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.6.12
+
+### Patch Changes
+
+- c9cc41c: fix: additional example interpolation fixes
+
 ## 0.6.11
 
 ### Patch Changes
