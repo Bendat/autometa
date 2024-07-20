@@ -1,5 +1,12 @@
 # Gherkin
 
+## 0.2.23
+
+### Patch Changes
+
+- Updated dependencies [be770fc]
+  - @autometa/gherkin@0.6.11
+
 ## 0.2.22
 
 ### Patch Changes

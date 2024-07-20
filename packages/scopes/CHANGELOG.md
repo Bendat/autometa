@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [be770fc]
+  - @autometa/gherkin@0.6.11
+  - @autometa/events@0.2.23
+
 ## 0.6.0
 
 ### Minor Changes

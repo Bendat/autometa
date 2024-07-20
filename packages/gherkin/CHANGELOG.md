@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.6.11
+
+### Patch Changes
+
+- be770fc: fix: title interpolation for outlines and their steps
+
 ## 0.6.10
 
 ### Patch Changes
