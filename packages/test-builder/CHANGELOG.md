@@ -1,5 +1,15 @@
 # @autometa/test-builder
 
+## 0.3.2
+
+### Patch Changes
+
+- c9cc41c: fix: additional example interpolation fixes
+- Updated dependencies [c9cc41c]
+  - @autometa/gherkin@0.6.12
+  - @autometa/events@0.2.24
+  - @autometa/scopes@0.6.2
+
 ## 0.3.1
 
 ### Patch Changes
