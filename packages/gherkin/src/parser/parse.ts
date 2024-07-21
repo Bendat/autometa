@@ -227,7 +227,7 @@ export function scenarioExampleTitle(
     scenarioName.includes(`<${title}>`)
   );
   let name: string = scenarioName;
-  if (hasVariables.length > 0 && !hasVariables.includes(false)) {
+  if (hasVariables.length > 0 && hasVariables.includes(true)) {
     name = interpolateExamples(scenarioName, titleSegments, row);
   } else {
     const suffixVars = titleSegments
