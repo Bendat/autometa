@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.6.13
+
+### Patch Changes
+
+- bf6e5dd: fix: examples with multiple headers not interpolating correctly
+
 ## 0.6.12
 
 ### Patch Changes
