@@ -16,6 +16,7 @@ import {
   afterEach,
   afterAll,
   beforeAll,
+  jest,
 } from "@jest/globals";
 import { World, type App } from "@autometa/app";
 import { Class } from "@autometa/types";
@@ -52,6 +53,9 @@ export function execute(
     });
   }, chosenTimeout.milliseconds);
   group(featureTitle, () => {
+    const tags = [...bridge.data.gherkin.tags] ?? [];
+    const retries = tags.find((tag) => tag.startsWith("@retries="));
+
     let testContainerContext: symbol;
     let testContainer: Container;
     // = registerContainerContext(app, world);
@@ -71,6 +75,11 @@ export function execute(
       localApp = testContainer.get(app);
       localApp.world = testContainer.get(world);
       localApp.di = testContainer;
+
+      if (retries) {
+        const count = parseInt(retries.split("=")[1]);
+        jest.retryTimes(count);
+      }
     });
 
     bootstrapSetupHooks(globalBridge, staticApp, events, [
@@ -423,6 +432,8 @@ export function bootstrapRules(
     bridge.data.scope.timeout
   ).getTimeout(config);
   bridge.rules.forEach((rule) => {
+    const tags = [...rule.data.gherkin.tags] ?? [];
+    const retry = tags.find((tag) => tag.startsWith("@retries="));
     const ruleTimeout = chooseTimeout(
       chosenTimeout,
       rule.data.scope.timeout
@@ -442,6 +453,11 @@ export function bootstrapRules(
           modifier,
           tags: [...data.gherkin.tags],
         });
+
+        if (retry) {
+          const count = parseInt(retry.split("=")[1]);
+          jest.retryTimes(count);
+        }
       });
       bootstrapSetupHooks(rule, staticApp, events, transferTimeout);
       bootstrapBeforeHooks(bridge, rule, localApp, events, transferTimeout);
