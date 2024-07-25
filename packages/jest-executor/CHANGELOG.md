@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 0.5.4
+
+### Patch Changes
+
+- ba8c1f7: feat: use tags to retry feature or rule groups
+
 ## 0.5.3
 
 ### Patch Changes
