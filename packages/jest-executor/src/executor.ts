@@ -66,6 +66,12 @@ export function execute(
     const staticApp: App = globalContainer.get(app);
     staticApp.world = globalContainer.get(world);
     staticApp.di = globalContainer;
+    beforeAll(() => {
+      if (retries) {
+        const count = parseInt(retries.split("=")[1]);
+        jest.retryTimes(count);
+      }
+    });
     beforeEach(() => {
       const name =
         expect.getState().currentTestName ?? raise("A test must have a name");
@@ -75,11 +81,6 @@ export function execute(
       localApp = testContainer.get(app);
       localApp.world = testContainer.get(world);
       localApp.di = testContainer;
-
-      if (retries) {
-        const count = parseInt(retries.split("=")[1]);
-        jest.retryTimes(count);
-      }
     });
 
     bootstrapSetupHooks(globalBridge, staticApp, events, [
