@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 0.5.5
+
+### Patch Changes
+
+- f7fb5ae: fix: move retry logic to beforeAll hook
+
 ## 0.5.4
 
 ### Patch Changes

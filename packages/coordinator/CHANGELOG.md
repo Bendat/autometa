@@ -1,5 +1,12 @@
 # @autometa/coordinator
 
+## 0.3.23
+
+### Patch Changes
+
+- Updated dependencies [f7fb5ae]
+  - @autometa/jest-executor@0.5.5
+
 ## 0.3.22
 
 ### Patch Changes
