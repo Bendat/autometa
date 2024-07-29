@@ -1,6 +1,6 @@
 {
   "name": "@autometa/jest-transformer",
-  "version": "0.1.100",
+  "version": "0.1.101",
   "description": "",
   "type": "commonjs",
   "main": "dist/index.js",
