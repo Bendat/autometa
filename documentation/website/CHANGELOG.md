@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.10.1
+
+### Patch Changes
+
+- 6e2203c: feat: transformers for table documents, retry scenarios and examples
+
 ## 0.10.0
 
 ### Minor Changes
