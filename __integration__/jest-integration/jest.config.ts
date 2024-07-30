@@ -17,4 +17,8 @@ export default {
 
   setupFilesAfterEnv: ["reflect-metadata", "./autometa.config.ts"],
   testPathIgnorePatterns: ["/node_modules/", "/src/.tools/"],
+  reporters: [
+    'default',
+    ['jest-summary-reporter', { failuresOnly: false }],
+  ],
 };

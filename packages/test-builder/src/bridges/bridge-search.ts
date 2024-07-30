@@ -152,9 +152,9 @@ export function findExamplesOrChild(
   from?: string
 ) {
   const {
-    data: { scope, gherkin },
+    data: { gherkin },
   } = example;
-  const title = scope.title(gherkin);
+  const title = `${gherkin.keyword}: ${gherkin.name}`;
   if (testName === title) {
     return example;
   }

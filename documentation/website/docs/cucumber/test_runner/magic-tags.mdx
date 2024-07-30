@@ -10,7 +10,8 @@ Currently the magic tags available are:
   - aliases: `@ignore`, `@skipped`
 - `@only` - Only runs the test or suite it tags within that file.
 - `@retries=3` - Retries the test 3 times if it fails
-  - Can be used on a `Feature` or `Rule`
+  - Can be used on a `Feature`, `Rule`, `Scenario Outline`, or `Examples`.
+    - individual scenarios cannot be retried
   - Any number of retries can be specified
   - version >= 0.5.5
 
@@ -79,4 +80,66 @@ Scenario Outline: my scenario
     | thing |
     | fizz  |
     | buzz  |
+```
+
+## Retries
+
+You can retry tests in a feature or rule if they fail up to some
+number of times. This is useful for flaky tests.
+
+
+```gherkin title='feature file'
+@retries=3
+Feature: My Feature
+  Scenario: My Scenario
+    Given I have a test
+    When I run the test
+    Then the test should pass
+```
+
+```gherkin title='rule'
+Feature: My Feature
+  @retries=3
+  Rule: My Rule
+    Scenario: My Scenario
+      Given I have a test
+      When I run the test
+      Then the test should pass
+```
+
+```gherkin title='scenario outline'
+Feature: My Feature
+  @retries=3
+  Scenario Outline: My Scenario
+    Given I have a test
+    When I run the test
+    Then the test should pass
+
+    Examples:
+      | thing |
+      | foo   |
+      | bar   |
+      | baz   |
+```
+
+The following will retry only the Examples A scenarios.
+
+```gherkin title='examples'
+Feature: My Feature
+  Scenario Outline: My Scenario
+    Given I have a test
+    When I run the test
+    Then the test should pass
+
+    @retries=3
+    Examples: Examples A
+      | thing |
+      | foo   |
+      | bar   |
+      | baz   |
+    
+    Examples: Examples B
+      | thing |
+      | fizz  |
+      | buzz  |
 ```
