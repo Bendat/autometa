@@ -365,6 +365,8 @@ export function bootstrapScenarioOutline(
     examples,
   } = bridge;
   const title = scope.title(gherkin);
+  const retry = [...gherkin.tags].find((tag) => tag.startsWith("@retries="));
+
   const [group, modifier] = getGroupOrModifier(
     bridge,
     config.current.test?.tagFilter
@@ -375,6 +377,10 @@ export function bootstrapScenarioOutline(
   ).getTimeout(config).milliseconds;
   group(title, () => {
     beforeAll(() => {
+      if (retry) {
+        const count = parseInt(retry.split("=")[1]);
+        jest.retryTimes(count);
+      }
       events.scenarioOutline.emitStart({
         title,
         modifier,
@@ -411,12 +417,23 @@ export function bootstrapExamples(
   events: TestEventEmitter,
   timeout: [Config, Timeout]
 ) {
-  const title = example.data.scope.title(example.data.gherkin);
+  const { gherkin } = example.data;
+  const title = `${gherkin.keyword}: ${gherkin.name}`;
+  const retry = [...example.data.gherkin.tags].find((tag) =>
+    tag.startsWith("@retries=")
+  );
+
   const [group] = getGroupOrModifier(
     example,
     timeout[0].current.test?.tagFilter
   );
   group(title, () => {
+    beforeAll(() => {
+      if (retry) {
+        const count = parseInt(retry.split("=")[1]);
+        jest.retryTimes(count);
+      }
+    });
     bootstrapScenarios(root, example, localApp, staticApp, events, timeout);
   });
 }

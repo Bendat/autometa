@@ -237,3 +237,20 @@ Given(
 ```
 
 As documents are provided as an array, loops. maps, filters and destructuring will all work as expected.
+
+### Transformers
+
+Transformers can be used to convert the raw value of a cell into a different type.
+This can be useful for converting strings into numbers, dates etc.
+
+```ts
+import { HTable } from "@autometa/runner";
+
+class UserTable extends HTable.Document() {
+  @HTable.cell("Username")
+  username: string;
+
+  @HTable.cell("Date Of Birth", (dob) => new Date(dob))
+  age: Date;
+}
+```

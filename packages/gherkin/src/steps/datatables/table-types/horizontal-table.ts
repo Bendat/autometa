@@ -94,7 +94,10 @@ export class HTable extends DataTable {
       })
     ).use(args);
   }
-
+  static cell(
+    title: string,
+    transformer: (value: string) => unknown
+  ): PropertyDecorator
   static cell(
     title: string,
     /**
@@ -107,6 +110,10 @@ export class HTable extends DataTable {
      * and 'true' will remain a string of the boolean character sequence 'true'.
      */
     raw?: boolean
+  ): PropertyDecorator;
+  static cell(
+    title: string,
+    raw?: boolean | ((value: string) => unknown)
   ) {
     return function (target: object, propertyKey: string) {
       Object.defineProperty(target, propertyKey, {
@@ -116,6 +123,9 @@ export class HTable extends DataTable {
             throw new AutomationError(msg);
           }
           const table = this.$_table as HTable;
+          if(typeof raw === 'function') {
+            return raw(table.get(title,this.$_index, true) as string);
+          }
           return table.get(title, this.$_index, raw);
         },
       });

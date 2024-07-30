@@ -46,7 +46,12 @@ Feature: A Representitive feature
         Scenario Outline: Rule Scenario Outline <count>
             Given a rule scenario outline
 
-            Examples:
+            Examples: Examples A
                 | count |
                 | 1     |
                 | 2     |
+            
+            Examples: Examples B
+                | count |
+                | 3     |
+                | 4     |

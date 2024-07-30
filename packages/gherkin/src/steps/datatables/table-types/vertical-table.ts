@@ -129,15 +129,23 @@ export class VTable extends DataTable {
     return result;
   }
 
-  static cell(title: string, raw?: boolean) {
+  static cell(
+    title: string,
+    transformer?: (value: string) => unknown
+  ): PropertyDecorator;
+  static cell(title: string, raw?: boolean): PropertyDecorator;
+  static cell(title: string, raw?: boolean | ((value: string) => unknown)) {
     return function (target: object, propertyKey: string) {
       Object.defineProperty(target, propertyKey, {
         get: function () {
           if (!(this.$_table instanceof VTable)) {
-            const msg = `Decorating a table document using HTable, however the defined table type for this object is ${this?._table?.constructor?.name}.`;
+            const msg = `Decorating a table document using VTable, however the defined table type for this object is ${this?._table?.constructor?.name}.`;
             throw new AutomationError(msg);
           }
           const table = this.$_table as VTable;
+          if(typeof raw === 'function') {
+            return raw(table.get(title,this.$_index, true) as string);
+          }
           return table.get(title, this.$_index, raw);
         },
       });
