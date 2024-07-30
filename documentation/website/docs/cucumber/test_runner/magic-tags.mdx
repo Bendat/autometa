@@ -1,0 +1,82 @@
+# Magic tags
+
+Magic tags are Gherkin tags with special functionality within
+Autometa and can be used to manipulate test flow.
+
+Currently the magic tags available are:
+
+- `@skip` - Skips the test
+  - Can be used on a `Feature`, `Scenario`, `ScenarioOutline`, or `Rule`
+  - aliases: `@ignore`, `@skipped`
+- `@only` - Only runs the test or suite it tags within that file.
+- `@retries=3` - Retries the test 3 times if it fails
+  - Can be used on a `Feature` or `Rule`
+  - Any number of retries can be specified
+  - version >= 0.5.5
+
+## Scenario Outlines
+
+Scenario Outlines can be tagged with magic tags and are run as a group of tests,
+however it is possible to use multiple Examples tables to control the flow of the tests.
+
+
+Skips all scenarios:
+```gherkin
+@skip
+Scenario Outline: my scenario
+  Given a <thing>
+  When I do a thing
+  Then I should see a thing
+
+  Examples: My Example A
+    | thing |
+    | foo   |
+    | bar   |
+    | baz   |
+
+  Examples: My Example B
+    | thing |
+    | fizz  |
+    | buzz  |
+```
+
+Skips all Scenarios in example A:
+```gherkin
+Scenario Outline: my scenario
+  Given a <thing>
+  When I do a thing
+  Then I should see a thing
+
+  @skip
+  Examples: My Example A
+    | thing |
+    | foo   |
+    | bar   |
+    | baz   |
+
+  Examples: My Example B
+    | thing |
+    | fizz  |
+    | buzz  |
+```
+
+Only run Scenarios in example B:
+
+```gherkin
+Scenario Outline: my scenario
+  Given a <thing>
+  When I do a thing
+  Then I should see a thing
+
+  Examples: My Example A
+    | thing |
+    | foo   |
+    | bar   |
+    | baz   |
+
+  @only
+  Examples: My Example B
+    | thing |
+    | fizz  |
+    | buzz  |
+```
