@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.6.14
+
+### Patch Changes
+
+- 6e2203c: feat: transformers for table documents, retry scenarios and examples
+
 ## 0.6.13
 
 ### Patch Changes

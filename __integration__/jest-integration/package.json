@@ -1,6 +1,6 @@
 {
   "name": "@autometa/jest-integration",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "",
   "private": true,
   "type": "commonjs",

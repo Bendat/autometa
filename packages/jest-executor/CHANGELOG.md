@@ -1,5 +1,16 @@
 # @autometa/jest-executor
 
+## 0.5.6
+
+### Patch Changes
+
+- 6e2203c: feat: transformers for table documents, retry scenarios and examples
+- Updated dependencies [6e2203c]
+  - @autometa/gherkin@0.6.14
+  - @autometa/events@0.2.26
+  - @autometa/scopes@0.6.4
+  - @autometa/test-builder@0.3.4
+
 ## 0.5.5
 
 ### Patch Changes
