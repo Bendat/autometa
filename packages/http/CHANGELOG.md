@@ -1,5 +1,12 @@
 # @autometa/http
 
+## 1.4.17
+
+### Patch Changes
+
+- Updated dependencies [1d3f84e]
+  - @autometa/app@0.3.5
+
 ## 1.4.16
 
 ### Patch Changes

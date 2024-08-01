@@ -1,5 +1,11 @@
 # @autometa/app
 
+## 0.3.5
+
+### Patch Changes
+
+- 1d3f84e: fix: getApp returned app without di container reference
+
 ## 0.3.4
 
 ### Patch Changes
