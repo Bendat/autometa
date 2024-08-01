@@ -10,5 +10,6 @@ export function getApp<T extends AutometaApp>(
   const context = defineContainerContext(containerName);
   const container = new Container(context);
   const app = container.get<App>(appType);
+  app.di = container;
   return app;
 }
