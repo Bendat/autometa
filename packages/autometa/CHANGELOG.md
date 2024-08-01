@@ -1,5 +1,19 @@
 # @autometa/runner
 
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [1d3f84e]
+  - @autometa/app@0.3.5
+  - @autometa/config@0.1.24
+  - @autometa/coordinator@0.3.25
+  - @autometa/cucumber-expressions@0.4.1
+  - @autometa/http@1.4.17
+  - @autometa/jest-executor@0.5.7
+  - @autometa/scopes@0.6.5
+  - @autometa/test-builder@0.3.5
+
 ## 0.5.7
 
 ### Patch Changes
