@@ -10,7 +10,7 @@ export class Step extends GherkinNode {
   readonly text: string;
   readonly docstring?: GherkinDocString;
   readonly table?: CompiledDataTable;
-
+  readonly lineNumber: number;
   get hasDocstring() {
     return this.docstring !== undefined;
   }

@@ -21,6 +21,14 @@ function addAlternatives(
     After,
     Teardown,
     Setup,
+    BeforeFeature,
+    AfterFeature,
+    BeforeScenarioOutline,
+    AfterScenarioOutline,
+    BeforeExamples,
+    AfterExamples,
+    BeforeRule,
+    AfterRule,
   }: Omit<Scopes, "Global">,
   Global: GlobalScope
 ) {
@@ -41,6 +49,14 @@ function addAlternatives(
     Teardown,
     Setup,
     Global,
+    BeforeFeature,
+    AfterFeature,
+    BeforeScenarioOutline,
+    AfterScenarioOutline,
+    BeforeExamples,
+    AfterExamples,
+    BeforeRule,
+    AfterRule,
   };
 }
 

@@ -1,3 +1,4 @@
+@UseGroupHooks
 Feature: A Representitive feature
   Full scale test, rules, scenarios, scenario outlines
 
@@ -19,7 +20,6 @@ Feature: A Representitive feature
   @test3
   Scenario: outerscenario2
     Given the outer scenario 2 executed
-
 
   @skipped
   Scenario: outerskippedScenario

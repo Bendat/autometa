@@ -126,6 +126,82 @@ export class GroupLogEvents implements EventSubscriber {
     console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
   }
+  onBeforeFeatureStart(opts: StartFeatureOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onBeforeFeatureEnd(opts: EndFeatureOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
+
+  onAfterFeatureStart(opts: StartFeatureOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onAfterFeatureEnd(opts: EndFeatureOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
+
+  onBeforeRuleStart(opts: StartRuleOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onBeforeRuleEnd(opts: EndRuleOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
+
+  onAfterRuleStart(opts: StartRuleOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onAfterRuleEnd(opts: EndRuleOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
+
+  onBeforeScenarioOutlineStart(opts: StartScenarioOutlineOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onBeforeScenarioOutlineEnd(opts: EndScenarioOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
+
+  onBeforeExamplesStart(opts: StartScenarioOutlineOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onBeforeExamplesEnd(opts: EndScenarioOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
+
+  onAfterExamplesStart(opts: StartScenarioOutlineOpts): void {
+    console.group(opts.title);
+    console.group();
+  }
+
+  onAfterExamplesEnd(opts: EndScenarioOpts): void {
+    console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
+    console.groupEnd();
+  }
 }
 function colorStatus(
   status: "FAILED" | "PASSED" | "SKIPPED" | "BROKEN" | undefined,

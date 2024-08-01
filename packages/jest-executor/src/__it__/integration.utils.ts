@@ -43,9 +43,9 @@ export function makeFeature(name: string) {
     scope: new FeatureScope(
       "",
       vi.fn(),
+      undefined,
       new HookCache(),
-      new StepCache(),
-      vi.fn()
+      new StepCache()
     ),
   };
   return bridge;
@@ -55,13 +55,7 @@ export function makeBackground(name: string) {
   const bridge = new BackgroundBridge();
   bridge.data = {
     gherkin: new BackgroundBuilder().name(name).keyword("Background").build(),
-    scope: new BackgroundScope(
-      name,
-      vi.fn(),
-      new HookCache(),
-      new StepCache(),
-      vi.fn()
-    ),
+    scope: new BackgroundScope(name, vi.fn(), new HookCache(), new StepCache()),
   };
   return bridge;
 }
@@ -72,9 +66,9 @@ export function makeScenario(name: string) {
     scope: new ScenarioScope(
       name,
       vi.fn(),
+      undefined,
       new HookCache(),
-      new StepCache(),
-      vi.fn()
+      new StepCache()
     ),
   };
   return bridge;
@@ -90,9 +84,9 @@ export function makeScenarioOutline(name: string) {
     scope: new ScenarioOutlineScope(
       name,
       vi.fn(),
+      undefined,
       new HookCache(),
-      new StepCache(),
-      vi.fn()
+      new StepCache()
     ),
   };
   return bridge;
@@ -105,9 +99,9 @@ export function makeExamples(name: string) {
     scope: new ScenarioOutlineScope(
       name,
       vi.fn(),
+      undefined,
       new HookCache(),
-      new StepCache(),
-      vi.fn()
+      new StepCache()
     ),
   };
   return bridge;
@@ -120,9 +114,9 @@ export function makeRule(name: string) {
     scope: new RuleScope(
       name,
       vi.fn(),
+      undefined,
       new HookCache(),
-      new StepCache(),
-      vi.fn()
+      new StepCache()
     ),
   };
   return bridge;
@@ -139,7 +133,8 @@ export function makeStep(keyword: StepKeyword, type: StepType, text: string) {
       vi.fn()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) as any,
-    args: [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    args: [] as any,
   };
   return bridge;
 }

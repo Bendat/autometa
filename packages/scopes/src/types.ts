@@ -1,7 +1,10 @@
 import type { App } from "@autometa/app";
 import type {
+  Background,
   DataTable,
   NeverDataTable,
+  Scenario,
+  Step,
   TableDocument,
 } from "@autometa/gherkin";
 import type { Timeout } from "./timeout";
@@ -11,8 +14,44 @@ export type ScenarioAction = () => void;
 export type BackgroundAction = () => void;
 export type StepText = string | RegExp;
 export type RawStepAction = (...args: unknown[]) => unknown | Promise<unknown>;
-export type HookArguments = [App];
+export type Tags = string[];
+export type StepHookArguments = [
+  App,
+  { step: Step; Background?: Background; Scenario?: Scenario }
+];
+export type StepHookAction = (
+  ...args: StepHookArguments
+) => unknown | Promise<unknown>;
+export type HookArguments = [App, Tags];
+export type TeardownHookArguments = [App, Tags];
+export type AfterGroupHookArguments = [App, { tags: Tags; apps: App[] }];
+export type TeardownHookAction = (
+  ...args: TeardownHookArguments
+) => unknown | Promise<unknown>;
 export type HookAction = (...args: HookArguments) => unknown | Promise<unknown>;
+export type AfterGroupHookAction = (
+  ...args: AfterGroupHookArguments
+) => unknown | Promise<unknown>;
+export type HookOptions = {
+  order?: number;
+  timeout?: Timeout;
+};
+export type ConfigurableHook = {
+  order(order: number): ConfigurableHook;
+};
+
+export type ConfigurableTaggedHook = {
+  timeout(ms: number): ConfigurableTaggedHook;
+  timeout(num: number, timeunit: TimeoutUnit): ConfigurableTaggedHook;
+
+  tagFilter(tagFilter: string): ConfigurableTaggedHook;
+  customFilter(filter: (tags: Tags) => boolean): ConfigurableTaggedHook;
+};
+
+export type TaggedHookOptions = HookOptions & {
+  tagFilter?: string;
+  customFilter?: (tags: Tags, description?: string) => boolean;
+};
 
 export type StepArguments = [...unknown[], App] | [App];
 
@@ -40,18 +79,6 @@ export type CucumberExpressionArgs<
     ? CucumberExpressionArgs<TRemainder, [...TAccumulator, Types[TArg]]>
     : "unknown expression"
   : TAccumulator;
-
-// export type StepArgs<TText extends string, TTable> = TTable extends
-//   | NeverDataTable
-//   | undefined
-//   ? [...CucumberExpressionArgs<TText>, App]
-//   : TTable extends TableDocument<DataTable>
-//   ? [...CucumberExpressionArgs<TText>, TableDocument<any>[], App]
-//   : TTable extends DataTable
-//   ? [...CucumberExpressionArgs<TText>, TTable, App]
-//   : [...CucumberExpressionArgs<TText>, App];
-// // ? [...CucumberExpressionArgs<TText>, [TableD], App]
-// // : [...CucumberExpressionArgs<TText>, TTable, App];
 
 export type StepArgs<
   TText extends string,

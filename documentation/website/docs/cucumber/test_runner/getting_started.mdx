@@ -146,7 +146,7 @@ You can also safely destructure app properties
 ```ts
 import { Given } from "@autometa/runner";
 
-Given("my simple step", ({ World }) => {
+Given("my simple step", (app) => {
   app.world.foo = 2;
 });
 ```

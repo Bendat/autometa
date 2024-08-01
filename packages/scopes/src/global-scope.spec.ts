@@ -219,7 +219,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Before("test hook", action, 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
       });
 
       it("should attach a Before hook with a name action and timeout", () => {
@@ -230,7 +230,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Before("test hook", action, [1, "s"]);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from([1, "s"]));
+        expect(hook.options.timeout).toEqual(Timeout.from([1, "s"]));
       });
 
       it("should attach a Before hook with a filter expression", () => {
@@ -241,7 +241,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Before("test hook", action, "@tag");
         expect(hook.action).toBeDefined();
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.tagFilter).toBe("@tag");
       });
 
       it("should attach a Before hook with a filter expression and numeric timeout", () => {
@@ -252,8 +252,8 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Before("test hook", action, "@tag", 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.tagFilter).toBe("@tag");
       });
 
       it("should attach a Before hook with a filter expression and timeout", () => {
@@ -264,8 +264,8 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Before("test hook", action, "@tag", [1, "s"]);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from([1, "s"]));
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.timeout).toEqual(Timeout.from([1, "s"]));
+        expect(hook.options.tagFilter).toBe("@tag");
       });
     });
 
@@ -288,7 +288,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.After("test hook", action, 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
       });
 
       it("should attach an After hook with a name action and timeout", () => {
@@ -299,7 +299,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.After("test hook", action, [1, "s"]);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from([1, "s"]));
+        expect(hook.options.timeout).toEqual(Timeout.from([1, "s"]));
       });
 
       it("should attach an After hook with a filter expression", () => {
@@ -310,7 +310,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.After("test hook", action, "@tag");
         expect(hook.action).toBeDefined();
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.tagFilter).toBe("@tag");
       });
 
       it("should attach an After hook with a filter expression and numeric timeout", () => {
@@ -321,8 +321,8 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.After("test hook", action, "@tag", 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.tagFilter).toBe("@tag");
       });
 
       it("should attach an After hook with a filter expression and timeout", () => {
@@ -333,8 +333,8 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.After("test hook", action, "@tag", [1, "s"]);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from([1, "s"]));
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.timeout).toEqual(Timeout.from([1, "s"]));
+        expect(hook.options.tagFilter).toBe("@tag");
       });
     });
 
@@ -357,7 +357,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Setup("test hook", action, 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
       });
 
       it("should attach a Setup hook with a name action and timeout", () => {
@@ -368,7 +368,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Setup("test hook", action, [1, "s"]);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from([1, "s"]));
+        expect(hook.options.timeout).toEqual(Timeout.from([1, "s"]));
       });
 
       it("should attach a Setup hook with a filter expression", () => {
@@ -379,7 +379,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Setup("test hook", action, "@tag");
         expect(hook.action).toBeDefined();
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.tagFilter).toBe("@tag");
       });
 
       it("should attach a Setup hook with a filter expression and numeric timeout", () => {
@@ -390,8 +390,8 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Setup("test hook", action, "@tag", 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.tagFilter).toBe("@tag");
       });
     });
     describe("Teardown", () => {
@@ -412,7 +412,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Teardown("test hook", action, 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from(1000));
+        expect(hook.options.timeout).toEqual(Timeout.from(1000));
       });
       it("should attach a Teardown hook with a name action and timeout", () => {
         const action = vi.fn();
@@ -422,7 +422,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Teardown("test hook", action, [1, "s"]);
         expect(hook.action).toBeDefined();
-        expect(hook.timeout).toEqual(Timeout.from([1, "s"]));
+        expect(hook.options.timeout).toEqual(Timeout.from([1, "s"]));
       });
       it("should attach a Teardown hook with a filter expression", () => {
         const action = vi.fn();
@@ -432,7 +432,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Teardown("test hook", action, "@tag");
         expect(hook.action).toBeDefined();
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.tagFilter).toBe("@tag");
       });
       it("should attach a Teardown hook with a filter expression and numeric timeout", () => {
         const action = vi.fn();
@@ -442,7 +442,7 @@ describe("Global Scope", () => {
         sut.openChild = feature;
         const hook = sut.Teardown("test hook", action, "@tag", 1000);
         expect(hook.action).toBeDefined();
-        expect(hook.tagFilterExpression).toBe("@tag");
+        expect(hook.options.tagFilter).toBe("@tag");
       });
     });
   });
