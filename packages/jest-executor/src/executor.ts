@@ -516,9 +516,10 @@ function getStatus(modifier: string | undefined, failures: unknown[]) {
 }
 
 function getGroupOrModifier(
-  { data }: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge,
+  bridge: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge,
   tagFilter: string | undefined
 ) {
+  const { data } = bridge;
   if (data.gherkin.tags?.has("@skip") || data.gherkin.tags?.has("@skipped")) {
     return [describe.skip, "skip"] as const;
   }
@@ -528,8 +529,10 @@ function getGroupOrModifier(
   if (tagFilter) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const parse = require("@cucumber/tag-expressions").default;
-    const expression = parse(tagFilter).evaluate([...data.gherkin.tags]);
+    
+    const expression = parse(tagFilter).evaluate(bridge.accumulateTags());
     if (!expression) {
+      
       return [describe.skip, "skip"] as const;
     }
   }
