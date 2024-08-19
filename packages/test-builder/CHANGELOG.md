@@ -1,5 +1,11 @@
 # @autometa/test-builder
 
+## 0.3.6
+
+### Patch Changes
+
+- 23dacf2: fix: non negative tag filters being skipped when group is untagged
+
 ## 0.3.5
 
 ### Patch Changes
