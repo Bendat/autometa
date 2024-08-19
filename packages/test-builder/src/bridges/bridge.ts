@@ -43,6 +43,13 @@ export class FeatureBridge extends GherkinCodeBridge {
   scenarios: (ScenarioBridge | ScenarioOutlineBridge)[] = [];
   rules: RuleBridge[] = [];
   steps: StepBridge[] = [];
+
+  accumulateTags() {
+    const scenarioTags = this.scenarios.map((scenario) => scenario.accumulateTags()).flat();
+    const ruleTags = this.rules.map((rule) => rule.accumulateTags()).flat();
+    const allTags = [...this.data.gherkin.tags, ...scenarioTags, ...ruleTags];
+    return [...new Set(allTags)];
+  }
 }
 export class BackgroundBridge extends GherkinCodeBridge {
   data: { gherkin: Background; scope: BackgroundScope };
@@ -54,6 +61,12 @@ export class RuleBridge extends GherkinCodeBridge {
   background: BackgroundBridge;
   scenarios: (ScenarioBridge | ScenarioOutlineBridge)[] = [];
   steps: StepBridge[] = [];
+
+  accumulateTags() {
+    const scenarioTags = this.scenarios.map((scenario) => scenario.accumulateTags()).flat();
+    const allTags = [...this.data.gherkin.tags, ...scenarioTags];
+    return [...new Set(allTags)];
+  }
 }
 
 export class ScenarioBridge extends GherkinCodeBridge {
@@ -70,6 +83,10 @@ export class ScenarioBridge extends GherkinCodeBridge {
   get tags() {
     return [...this.data.gherkin.tags];
   }
+
+  accumulateTags() {
+    return this.tags;
+  }
 }
 export class ExampleBridge extends GherkinCodeBridge {
   data: { gherkin: Example; scope: ScenarioScope };
@@ -84,6 +101,10 @@ export class ExampleBridge extends GherkinCodeBridge {
   get tags() {
     return [...this.data.gherkin.tags];
   }
+
+  accumulateTags() {
+    return this.tags;
+  }
 }
 export class ScenarioOutlineBridge extends GherkinCodeBridge {
   data: { gherkin: ScenarioOutline; scope: ScenarioOutlineScope };
@@ -95,6 +116,12 @@ export class ScenarioOutlineBridge extends GherkinCodeBridge {
   get tags() {
     return [...this.data.gherkin.tags];
   }
+
+  accumulateTags() {
+    const exampleTags = this.examples.map((example) => example.tags).flat();
+    const allTags = [...this.data.gherkin.tags, ...exampleTags];
+    return [...new Set(allTags)];
+  }
 }
 
 export class ExamplesBridge extends GherkinCodeBridge {
@@ -104,8 +131,15 @@ export class ExamplesBridge extends GherkinCodeBridge {
   get title() {
     return this.data.scope.title(this.data.gherkin);
   }
+  
   get tags() {
     return [...this.data.gherkin.tags];
+  }
+
+  accumulateTags() {
+    const scenarioTags = this.scenarios.map((scenario) => scenario.accumulateTags()).flat();
+    const allTags = [...this.data.gherkin.tags, ...scenarioTags];
+    return [...new Set(allTags)];
   }
 }
 
@@ -117,7 +151,7 @@ export class StepBridge extends GherkinCodeBridge {
   };
 
   get args() {
-    return this.data.args
+    return this.data.args;
   }
 
   get expressionText() {
