@@ -14,7 +14,7 @@ function failed(bridge: FeatureBridge | RuleBridge | ScenarioOutlineBridge) {
   for (const scenario of bridge.scenarios) {
     if (scenario instanceof ScenarioOutlineBridge) {
       accumulator.push(...failedOutline(scenario));
-    } else if (!scenario.report.passed && scenario.report.error !== undefined) {
+    } else if (scenario.report.error !== undefined) {
       accumulator.push(scenario);
     }
   }
@@ -29,7 +29,7 @@ function failedOutline(bridge: ScenarioOutlineBridge) {
 
   for (const example of bridge.examples) {
     for (const scenario of example.scenarios) {
-      if (!scenario.report.passed) {
+      if (scenario.report.error) {
         accumulator.push(scenario);
       }
     }
@@ -43,7 +43,7 @@ function failedRule(bridge: FeatureBridge) {
     for (const scenario of rule.scenarios) {
       if (scenario instanceof ScenarioOutlineBridge) {
         accumulator.push(...failedOutline(scenario));
-      } else if (!scenario.report.passed) {
+      } else if (scenario.report.error) {
         accumulator.push(scenario);
       }
     }
