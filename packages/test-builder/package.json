@@ -1,6 +1,6 @@
 {
   "name": "@autometa/test-builder",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "internal library for autometa",
   "type": "module",
   "main": "dist/index.js",

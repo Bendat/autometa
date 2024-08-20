@@ -1,5 +1,11 @@
 # @autometa/test-builder
 
+## 0.3.7
+
+### Patch Changes
+
+- bc46a37: fix: logging reported groups with skipped tests and failed
+
 ## 0.3.6
 
 ### Patch Changes
