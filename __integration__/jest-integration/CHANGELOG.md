@@ -1,5 +1,13 @@
 # @autometa/jest-integration
 
+## 0.5.11
+
+### Patch Changes
+
+- 205ee3b: fix: data tables not interpolated in Examples
+  - @autometa/runner@0.5.11
+  - @autometa/jest-transformer@0.1.106
+
 ## 0.5.10
 
 ### Patch Changes

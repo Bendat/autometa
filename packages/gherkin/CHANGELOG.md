@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.6.15
+
+### Patch Changes
+
+- 205ee3b: fix: data tables not interpolated in Examples
+
 ## 0.6.14
 
 ### Patch Changes

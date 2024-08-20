@@ -1,5 +1,13 @@
 # Gherkin
 
+## 0.6.6
+
+### Patch Changes
+
+- Updated dependencies [205ee3b]
+  - @autometa/gherkin@0.6.15
+  - @autometa/events@0.2.27
+
 ## 0.6.5
 
 ### Patch Changes
