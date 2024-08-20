@@ -1,4 +1,4 @@
-import { Given, Pass } from "@autometa/runner";
+import { Given, HTable, Pass } from "@autometa/runner";
 
 Given("the outer background executed", ({ report }) => {
   report.outterbackgroundstep = true;
@@ -41,6 +41,16 @@ Given("the rule2 skipped scenario executed", ({ report }) => {
 });
 
 Given("a rule scenario outline", Pass);
+
+Given(
+  "a table to test",
+  (table) => {
+    console.log(
+      `interpolated table is ${JSON.stringify(table.asJson(), null, 2)}`
+    );
+  },
+  HTable
+);
 // After(
 //   "verify outerscenario",
 //   ({ report }) => {

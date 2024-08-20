@@ -1,5 +1,8 @@
 import { DataTable, TableRow } from "@cucumber/messages";
-import { transformTableValue } from "./transform-table-value";
+import {
+  interpolateRawValue,
+  transformTableValue,
+} from "./transform-table-value";
 import { Example } from "../../example";
 import { CompiledDataTable } from "./compiled-data-table";
 
@@ -16,11 +19,13 @@ export function compileDataTable(
   function transformRowValues({ cells }: TableRow) {
     return cells.map((cell) => transformTableValue(cell, example));
   }
-  const raw = table.rows.map(extractRowValues);
+  const raw = table.rows.map(extractRowValues.bind(null, example));
   const transformed = table.rows.map(transformRowValues);
   return new CompiledDataTable(transformed, raw);
 }
 
-function extractRowValues({ cells }: TableRow) {
-  return cells.map((cell) => cell.value);
+function extractRowValues(example: Example | undefined, { cells }: TableRow) {
+  return cells
+    .map((cell) => cell.value)
+    .map((value) => interpolateRawValue(value, example));
 }
