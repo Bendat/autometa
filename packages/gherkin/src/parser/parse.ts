@@ -25,7 +25,7 @@ import {
   notEmpty,
 } from "./validators";
 import { FeatureChildType, RuleChildType } from "./child-types";
-import { ExampleBuilder } from "../example";
+import { Example, ExampleBuilder } from "../example";
 import { AutomationError } from "@autometa/errors";
 import { interpolateStepText } from "./interpolate-step-text";
 
@@ -105,7 +105,7 @@ export function buildScenario(
   backgrounds: Background[] | undefined,
   tagsNew: string[]
 ) {
-  const steps = makeSteps(scenario);
+  const steps = makeSteps(scenario, undefined);
   const [bg1, bg2] = backgrounds ?? [];
   const scen = new ScenarioBuilder()
     .name(scenario.name)
@@ -130,7 +130,7 @@ export function buildOutline(scenario: GherkinScenario, tags: string[]) {
 
 export function buildBackground(child: { background: GherkinBackground }) {
   const { background } = child;
-  const steps = makeSteps(background);
+  const steps = makeSteps(background, undefined);
   const bg = new BackgroundBuilder()
     .name(background.name)
     .description(background.description)
@@ -140,7 +140,10 @@ export function buildBackground(child: { background: GherkinBackground }) {
   return bg;
 }
 
-function makeSteps(background: GherkinBackground | GherkinScenario) {
+function makeSteps(
+  background: GherkinBackground | GherkinScenario,
+  example: Example | undefined
+) {
   return background.steps.map((step) => {
     const doc = step.docString
       ? new GherkinDocString(step.docString)
@@ -148,7 +151,7 @@ function makeSteps(background: GherkinBackground | GherkinScenario) {
     return new StepBuilder()
       .text(step.text)
       .docstring(doc)
-      .table(compileDataTable(step.dataTable))
+      .table(compileDataTable(step.dataTable, example))
       .keyword(step.keyword.trim() as StepKeyword)
       .keywordType(step.keywordType?.trim() as StepKeywordType)
       .build();
@@ -188,7 +191,13 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
         .reduce((old, current) => {
           return { ...old, ...current };
         }, {});
-      const steps = makeSteps(scenario);
+      const exampleBuilder = new ExampleBuilder()
+        .name(name)
+        .description(scenario.description)
+        .keyword("Example")
+        .table(exampleValues);
+
+      const steps = makeSteps(scenario, exampleBuilder.build());
       steps.forEach((step) => {
         (step as { text: string }).text = interpolateStepText(
           step.text,
@@ -196,14 +205,7 @@ export function buildExamples(scenario: GherkinScenario, tagsNew: string[]) {
         );
       });
       const tags = new Set([...tagsNew, ...buildTags(example.tags)]);
-      return new ExampleBuilder()
-        .name(name)
-        .description(scenario.description)
-        .tags(tags)
-        .keyword("Example")
-        .table(exampleValues)
-        .children(steps)
-        .build();
+      return exampleBuilder.tags(tags).children(steps).build();
     });
     const tags = new Set([...tagsNew, ...buildTags(example.tags)]);
     return new ExamplesBuilder()
