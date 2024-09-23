@@ -108,6 +108,7 @@ export function buildScenario(
   const steps = makeSteps(scenario, undefined);
   const [bg1, bg2] = backgrounds ?? [];
   const scen = new ScenarioBuilder()
+    .lineNumber(scenario.location.line)
     .name(scenario.name)
     .description(scenario.description)
     .tags(new Set(tagsNew))
@@ -132,6 +133,7 @@ export function buildBackground(child: { background: GherkinBackground }) {
   const { background } = child;
   const steps = makeSteps(background, undefined);
   const bg = new BackgroundBuilder()
+    .lineNumber(background.location.line)
     .name(background.name)
     .description(background.description)
     .keyword(background.keyword.trim())
@@ -145,10 +147,12 @@ function makeSteps(
   example: Example | undefined
 ) {
   return background.steps.map((step) => {
+    step.location;
     const doc = step.docString
       ? new GherkinDocString(step.docString)
       : undefined;
     return new StepBuilder()
+      .lineNumber(step.location.line)
       .text(step.text)
       .docstring(doc)
       .table(compileDataTable(step.dataTable, example))

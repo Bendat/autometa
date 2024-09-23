@@ -9,6 +9,7 @@ export class Scenario extends GherkinNode {
   readonly name: string;
   readonly description: string;
   declare children: Step[];
+  readonly lineNumber: number;
 
   get title() {
     return `${this.keyword}: ${this.name}`;

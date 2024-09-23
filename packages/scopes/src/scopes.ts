@@ -11,9 +11,23 @@ import type {
   StepActionFn,
   TestTimeout,
   SizedTimeout,
+  AfterGroupHookAction,
 } from "./types";
 import { GlobalScope } from "./global-scope";
-import { AfterHook, BeforeHook, SetupHook, TeardownHook } from "./hook";
+import {
+  AfterExamplesHook,
+  AfterFeatureHook,
+  AfterHook,
+  AfterRuleHook,
+  AfterScenarioOutlineHook,
+  BeforeExamplesHook,
+  BeforeFeatureHook,
+  BeforeHook,
+  BeforeRuleHook,
+  BeforeScenarioOutlineHook,
+  SetupHook,
+  TeardownHook,
+} from "./hook";
 
 export interface Scopes {
   Global: GlobalScope;
@@ -183,9 +197,12 @@ export interface Scopes {
     filepath: string,
     timeout: SizedTimeout
   ): FeatureScope;
-
   Feature(...args: (FeatureAction | string | TestTimeout)[]): FeatureScope;
-
+  BeforeFeature(description: string, action: HookAction): BeforeFeatureHook;
+  AfterFeature(
+    description: string,
+    action: AfterGroupHookAction
+  ): AfterFeatureHook;
   Scenario(title: string, action: ScenarioAction): ScenarioScope;
   Scenario(
     title: string,
@@ -201,6 +218,14 @@ export interface Scopes {
     ...args: (string | ScenarioAction | SizedTimeout | number)[]
   ): ScenarioScope;
 
+  BeforeScenarioOutline(
+    description: string,
+    action: HookAction
+  ): BeforeScenarioOutlineHook;
+  AfterScenarioOutline(
+    description: string,
+    action: AfterGroupHookAction
+  ): AfterScenarioOutlineHook;
   ScenarioOutline(title: string, action: ScenarioAction): ScenarioScope;
   ScenarioOutline(
     title: string,
@@ -215,7 +240,13 @@ export interface Scopes {
   ScenarioOutline(
     ...args: (string | ScenarioAction | SizedTimeout | number)[]
   ): ScenarioScope;
-
+  BeforeExamples(description: string, action: HookAction): BeforeExamplesHook;
+  AfterExamples(
+    description: string,
+    action: AfterGroupHookAction
+  ): AfterExamplesHook;
+  BeforeRule(description: string, action: HookAction): BeforeRuleHook;
+  AfterRule(description: string, action: AfterGroupHookAction): AfterRuleHook;
   Rule(title: string, action: RuleAction): RuleScope;
   Rule(title: string, action: RuleAction, timeout: number): RuleScope;
   Rule(title: string, action: RuleAction, timeout: SizedTimeout): RuleScope;

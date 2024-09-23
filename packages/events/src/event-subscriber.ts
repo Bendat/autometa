@@ -29,10 +29,26 @@ export const EventSubscriberSchema = object({
   onFeature: fun(),
 });
 export interface EventSubscriber {
+  onBeforeFeatureStart?(opts: StartFeatureOpts): void;
+  onBeforeFeatureEnd?(opts: EndFeatureOpts): void;
+  onAfterFeatureStart?(opts: StartFeatureOpts): void;
+  onAfterFeatureEnd?(opts: EndFeatureOpts): void;
   onFeatureStart?(opts: StartFeatureOpts): void;
   onFeatureEnd?(opts: EndFeatureOpts): void;
+  onBeforeRuleStart?(opts: StartRuleOpts): void;
+  onBeforeRuleEnd?(opts: EndRuleOpts): void;
+  onAfterRuleStart?(opts: StartRuleOpts): void;
+  onAfterRuleEnd?(opts: EndRuleOpts): void;
   onRuleStart?(opts: StartRuleOpts): void;
   onRuleEnd?(opts: EndRuleOpts): void;
+  onBeforeScenarioOutlineStart?(opts: StartScenarioOutlineOpts): void;
+  onBeforeScenarioOutlineEnd?(opts: EndScenarioOpts): void;
+  onAfterScenarioOutlineStart?(opts: StartScenarioOutlineOpts): void;
+  onAfterScenarioOutlineEnd?(opts: EndScenarioOpts): void;
+  onBeforeExamplesStart?(opts: StartScenarioOutlineOpts): void;
+  onBeforeExamplesEnd?(opts: EndScenarioOpts): void;
+  onAfterExamplesStart?(opts: StartScenarioOutlineOpts): void;
+  onAfterExamplesEnd?(opts: EndScenarioOpts): void;
   onScenarioOutlineStart?(opts: StartScenarioOutlineOpts): void;
   onScenarioOutlineEnd?(opts: EndScenarioOpts): void;
   onPreScenarioStart?(): void;
@@ -49,6 +65,10 @@ export interface EventSubscriber {
   onBeforeEnd?(opts: EndBeforeOpts): void;
   onAfterStart?(opts: StartAfterOpts): void;
   onAfterEnd?(opts: EndAfterOpts): void;
+  onBeforeStepStart?(opts: StartStepOpts): void;
+  onBeforeStepEnd?(opts: EndStepOpts): void;
+  onAfterStepStart?(opts: StartStepOpts): void;
+  onAfterStepEnd?(opts: EndStepOpts): void;
 }
 
 export abstract class ProviderSubscriber implements EventSubscriber {

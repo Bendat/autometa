@@ -6,6 +6,14 @@ import { makeTestEmitter } from "./events";
 import { executor } from "./executor";
 import { OPTS } from "./app";
 const {
+  BeforeFeature,
+  AfterFeature,
+  BeforeScenarioOutline,
+  AfterScenarioOutline,
+  BeforeExamples,
+  AfterExamples,
+  BeforeRule,
+  AfterRule,
   Feature,
   Scenario,
   ScenarioOutline,
@@ -38,5 +46,13 @@ export {
   After,
   Teardown,
   Setup,
+  BeforeFeature,
+  AfterFeature,
+  BeforeScenarioOutline,
+  AfterScenarioOutline,
+  BeforeExamples,
+  AfterExamples,
+  BeforeRule,
+  AfterRule,
   Pass,
 };

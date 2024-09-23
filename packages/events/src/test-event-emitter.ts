@@ -30,10 +30,30 @@ export class TestEventEmitter {
   scenario = new TestEmitter<StartScenarioOpts, EndScenarioOpts>("Scenario");
   scenarioWrapper = new TestEmitter<never, never>("Scenario Wrapper");
   setup = new TestEmitter<StartSetupOpts, EndSetupOpts>("Setup");
+  beforeFeature = new TestEmitter<StartSetupOpts, EndSetupOpts>(
+    "BeforeFeature"
+  );
+  afterFeature = new TestEmitter<StartSetupOpts, EndSetupOpts>("AfterFeature");
+  beforeRule = new TestEmitter<StartSetupOpts, EndSetupOpts>("BeforeRule");
+  afterRule = new TestEmitter<StartSetupOpts, EndSetupOpts>("AfterRule");
+  beforeScenarioOutline = new TestEmitter<StartSetupOpts, EndSetupOpts>(
+    "BeforeScenarioOutline"
+  );
+  afterScenarioOutline = new TestEmitter<StartSetupOpts, EndSetupOpts>(
+    "AfterScenarioOutline"
+  );
+  beforeExamples = new TestEmitter<StartSetupOpts, EndSetupOpts>(
+    "BeforeExamples"
+  );
+  afterExamples = new TestEmitter<StartSetupOpts, EndSetupOpts>(
+    "AfterExamples"
+  );
   teardown = new TestEmitter<StartTeardownOpts, EndTeardownOpts>("Teardown");
   before = new TestEmitter<StartBeforeOpts, EndBeforeOpts>("Before");
   after = new TestEmitter<StartAfterOpts, EndAfterOpts>("After");
   step = new TestEmitter<StartStepOpts, EndStepOpts>("Step");
+  beforeStep = new TestEmitter<StartStepOpts, EndStepOpts>("BeforeStep");
+  afterStep = new TestEmitter<StartStepOpts, EndStepOpts>("AfterStep");
 
   settleAsyncEvents = async () => {
     return await Promise.allSettled([
@@ -71,6 +91,25 @@ export class TestEventEmitter {
     onTeardownEnd,
     onPreScenarioStart,
     onPostScenarioEnd,
+    onBeforeFeatureStart,
+    onBeforeFeatureEnd,
+    onAfterFeatureStart,
+    onAfterFeatureEnd,
+    onBeforeRuleStart,
+    onBeforeRuleEnd,
+    onAfterRuleStart,
+    onAfterRuleEnd,
+    onBeforeScenarioOutlineStart,
+    onBeforeScenarioOutlineEnd,
+    onAfterScenarioOutlineStart,
+    onAfterScenarioOutlineEnd,
+    onBeforeExamplesStart,
+    onBeforeExamplesEnd,
+    onAfterExamplesStart,
+    onBeforeStepStart,
+    onBeforeStepEnd,
+    onAfterStepStart,
+    onAfterStepEnd,
   }: EventSubscriber) => {
     this.feature.load(onFeatureStart, onFeatureEnd);
     this.rule.load(onRuleStart, onRuleEnd);
@@ -82,6 +121,22 @@ export class TestEventEmitter {
     this.setup.load(onSetupStart, onSetupEnd);
     this.teardown.load(onTeardownStart, onTeardownEnd);
     this.scenarioWrapper.load(onPreScenarioStart, onPostScenarioEnd);
+    this.beforeFeature.load(onBeforeFeatureStart, onBeforeFeatureEnd);
+    this.afterFeature.load(onAfterFeatureStart, onAfterFeatureEnd);
+    this.beforeRule.load(onBeforeRuleStart, onBeforeRuleEnd);
+    this.afterRule.load(onAfterRuleStart, onAfterRuleEnd);
+    this.beforeScenarioOutline.load(
+      onBeforeScenarioOutlineStart,
+      onBeforeScenarioOutlineEnd
+    );
+    this.afterScenarioOutline.load(
+      onAfterScenarioOutlineStart,
+      onAfterScenarioOutlineEnd
+    );
+    this.beforeExamples.load(onBeforeExamplesStart, onBeforeExamplesEnd);
+    this.afterExamples.load(onAfterExamplesStart, onBeforeStepStart);
+    this.beforeStep.load(onBeforeStepStart, onBeforeStepEnd);
+    this.afterStep.load(onAfterStepStart, onAfterStepEnd);
   };
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

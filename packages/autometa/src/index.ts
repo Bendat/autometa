@@ -21,6 +21,14 @@ import {
   After as AfterDefinition,
   Teardown as TeardownDefinition,
   Setup as SetupDefinition,
+  BeforeFeature as BeforeFeatureDefinition,
+  AfterFeature as AfterFeatureDefinition,
+  BeforeScenarioOutline as BeforeScenarioOutlineDefinition,
+  AfterScenarioOutline as AfterScenarioOutlineDefinition,
+  BeforeExamples as BeforeExamplesDefinition,
+  AfterExamples as AfterExamplesDefinition,
+  BeforeRule as BeforeRuleDefinition,
+  AfterRule as AfterRuleDefinition,
 } from "./scopes";
 import { RuleAction } from "@autometa/scopes";
 import { RuleScope } from "@autometa/scopes";
@@ -512,3 +520,167 @@ export const Teardown = TeardownDefinition;
  * @param action The hook action to execute.
  */
 export const Setup = SetupDefinition;
+
+/**
+ * Defines a `BeforeFeature` hook. Executes before each feature.
+ *
+ * ```ts
+ * import { BeforeFeature } from '@autometa/runner'
+ *
+ * BeforeFeature(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * BeforeFeature(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+export const BeforeFeature = BeforeFeatureDefinition;
+
+/**
+ * Defines a `AfterFeature` hook. Executes after each feature.
+ *
+ * ```ts
+ * import { AfterFeature } from '@autometa/runner'
+ *
+ * AfterFeature(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * AfterFeature(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+export const AfterFeature = AfterFeatureDefinition;
+
+/**
+ * Defines a `BeforeScenarioOutline` hook. Executes before each scenario outline.
+ *
+ * ```ts
+ * import { BeforeScenarioOutline } from '@autometa/runner'
+ *
+ * BeforeScenarioOutline(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * BeforeScenarioOutline(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+export const BeforeScenarioOutline = BeforeScenarioOutlineDefinition;
+
+/**
+ * Defines a `AfterScenarioOutline` hook. Executes after each scenario outline.
+ *
+ * ```ts
+ * import { AfterScenarioOutline } from '@autometa/runner'
+ *
+ * AfterScenarioOutline(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * AfterScenarioOutline(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+
+export const AfterScenarioOutline = AfterScenarioOutlineDefinition;
+
+/**
+ * Defines a `BeforeExamples` hook. Executes before each examples table.
+ *
+ * ```ts
+ * import { BeforeExamples } from '@autometa/runner'
+ *
+ * BeforeExamples(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * BeforeExamples(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+
+export const BeforeExamples = BeforeExamplesDefinition;
+
+/**
+ * Defines a `AfterExamples` hook. Executes after each examples table.
+ *
+ * ```ts
+ * import { AfterExamples } from '@autometa/runner'
+ *
+ * AfterExamples(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * AfterExamples(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+export const AfterExamples = AfterExamplesDefinition;
+
+/**
+ * Defines a `BeforeRule` hook. Executes before each rule.
+ *
+ * ```ts
+ * import { BeforeRule } from '@autometa/runner'
+ *
+ * BeforeRule(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * BeforeRule(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+
+export const BeforeRule = BeforeRuleDefinition;
+
+/**
+ * Defines a `AfterRule` hook. Executes after each rule.
+ *
+ * ```ts
+ * import { AfterRule } from '@autometa/runner'
+ *
+ * AfterRule(async (app) => {
+ *   await app.webdriver.click('#some-button')
+ * })
+ *
+ * // using destructuring
+ * AfterRule(async ({ webdriver }) => {
+ *  await webdriver.click('#some-button')
+ * })
+ * ```
+ *
+ * @param action The hook action to execute.
+ */
+
+export const AfterRule = AfterRuleDefinition;

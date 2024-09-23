@@ -24,7 +24,22 @@ import {
   ParameterTypeRegistry,
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
-import { AfterHook, BeforeHook, Hook, SetupHook, TeardownHook } from "./hook";
+import {
+  AfterExamplesHook,
+  AfterFeatureHook,
+  AfterHook,
+  AfterRuleHook,
+  AfterScenarioOutlineHook,
+  BeforeExamplesHook,
+  BeforeFeatureHook,
+  BeforeHook,
+  BeforeRuleHook,
+  BeforeScenarioOutlineHook,
+  Hook,
+  SetupHook,
+  TaggedHook,
+  TeardownHook,
+} from "./hook";
 import type {
   FeatureAction,
   RuleAction,
@@ -33,6 +48,7 @@ import type {
   StepActionFn,
   TestTimeout,
   SizedTimeout,
+  AfterGroupHookAction,
 } from "./types";
 import { AutomationError } from "@autometa/errors";
 import { DataTable, TableDocument } from "@autometa/gherkin";
@@ -443,6 +459,55 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
     return this.hook(TeardownHook, description, action, exprOrTimeout, timeout);
   }
 
+  @Bind
+  BeforeFeature(description: string, action: HookAction): BeforeFeatureHook {
+    return this.hook(BeforeFeatureHook, description, action);
+  }
+
+  @Bind
+  AfterFeature(
+    description: string,
+    action: AfterGroupHookAction
+  ): AfterFeatureHook {
+    return this.hook(AfterFeatureHook, description, action);
+  }
+
+  @Bind
+  BeforeScenarioOutline(
+    description: string,
+    action: HookAction
+  ): BeforeScenarioOutlineHook {
+    return this.hook(BeforeScenarioOutlineHook, description, action);
+  }
+
+  @Bind
+  AfterScenarioOutline(
+    description: string,
+    action: AfterGroupHookAction
+  ): AfterScenarioOutlineHook {
+    return this.hook(AfterScenarioOutlineHook, description, action);
+  }
+
+  @Bind
+  BeforeExamples(description: string, action: HookAction) {
+    return this.hook(BeforeExamplesHook, description, action);
+  }
+
+  @Bind
+  AfterExamples(description: string, action: AfterGroupHookAction) {
+    return this.hook(AfterExamplesHook, description, action);
+  }
+
+  @Bind
+  BeforeRule(description: string, action: HookAction) {
+    return this.hook(BeforeRuleHook, description, action);
+  }
+
+  @Bind
+  AfterRule(description: string, action: AfterGroupHookAction) {
+    return this.hook(AfterRuleHook, description, action);
+  }
+
   private scenarioArgs(
     title: string,
     action: ScenarioAction,
@@ -490,61 +555,46 @@ export class GlobalScope extends Scope implements Omit<Scopes, "Global"> {
     ).use([title, action, timeout]);
   }
 
-  hook<T extends Hook>(
+  hook<T extends Hook | TaggedHook>(
     type: Class<T>,
     description: string,
-    action: HookAction,
+    action: HookAction | AfterGroupHookAction,
     exprOrTimeout?: string | TestTimeout,
     timeout?: TestTimeout
   ) {
-    const args = overloads(
-      def(
-        string(),
-        func<HookAction>(),
-        string(),
-        tuple([number(), string()])
-      ).matches((description, action, tagFilterExpression, timeout) => {
-        assertTimeout(timeout);
-        const testTimeout = Timeout.from(timeout);
-        return [description, action, testTimeout, tagFilterExpression] as const;
-      }),
-      def(string(), func<HookAction>(), tuple([number(), string()])).matches(
-        (description, action, timeout) => {
+    const hook = new type(description, action) as TaggedHook;
+
+    overloads(
+      def(string(), tuple([number(), string()])).matches(
+        (tagFilterExpression, timeout) => {
           assertTimeout(timeout);
           const testTimeout = Timeout.from(timeout);
-          return [description, action, testTimeout, undefined] as const;
+          hook.tagFilter(tagFilterExpression).timeout(testTimeout);
         }
       ),
-      def(string(), func<HookAction>(), string(), number()).matches(
-        (description, action, tagFilterExpression, timeout) => {
-          const testTimeout = Timeout.from(timeout);
-          return [
-            description,
-            action,
-            testTimeout,
-            tagFilterExpression,
-          ] as const;
-        }
-      ),
-      def(string(), func<HookAction>(), string()).matches(
-        (description, action, tagFilterExpression) => {
-          return [description, action, undefined, tagFilterExpression] as const;
-        }
-      ),
-      def(string(), func<HookAction>(), number()).matches(
-        (description, action, timeout) => {
-          const testTimeout = Timeout.from(timeout);
-          return [description, action, testTimeout, undefined] as const;
-        }
-      ),
-      def(string(), func<HookAction>()).matches((description, action) => {
-        return [description, action] as const;
+      def(tuple([number(), string()])).matches((timeout) => {
+        assertTimeout(timeout);
+        const testTimeout = Timeout.from(timeout);
+        hook.timeout(testTimeout);
+      }),
+      def(string(), number()).matches((tagFilterExpression, timeout) => {
+        const testTimeout = Timeout.from(timeout);
+        hook.tagFilter(tagFilterExpression).timeout(testTimeout);
+      }),
+      def(string()).matches((tagFilterExpression) => {
+        hook.tagFilter(tagFilterExpression);
+      }),
+      def(number()).matches((timeout) => {
+        const testTimeout = Timeout.from(timeout);
+        hook.timeout(testTimeout);
+      }),
+      def().matches(() => {
+        // noop
       }),
       fallback((...args) => {
         throw new Error(`You weren't supposed to see this. args: ${args}`);
       })
-    ).use([description, action, exprOrTimeout, timeout]);
-    const hook = new type(...args);
+    ).use([exprOrTimeout, timeout]);
     return this.attachHook(hook) as T;
   }
 

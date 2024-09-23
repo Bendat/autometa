@@ -1,4 +1,16 @@
-import { Given, HTable, Pass } from "@autometa/runner";
+import {
+  AfterExamples,
+  AfterFeature,
+  AfterRule,
+  AfterScenarioOutline,
+  BeforeExamples,
+  BeforeFeature,
+  BeforeRule,
+  BeforeScenarioOutline,
+  Given,
+  HTable,
+  Pass,
+} from "@autometa/runner";
 
 Given("the outer background executed", ({ report }) => {
   report.outterbackgroundstep = true;
@@ -51,6 +63,46 @@ Given(
   },
   HTable
 );
+BeforeFeature("test", () => {
+  console.log("BeforeFeature 2");
+}).order(6);
+
+BeforeFeature("test", () => {
+  console.log("BeforeFeature 1");
+}).order(1);
+
+BeforeFeature("test", () => {
+  console.log("BeforeFeature 3");
+}).order(10);
+
+AfterFeature("test", () => {
+  console.log("AfterFeature");
+});
+
+BeforeScenarioOutline("test", () => {
+  console.log("BeforeScenarioOutline");
+});
+
+AfterScenarioOutline("test", () => {
+  console.log("AfterScenarioOutline");
+});
+
+BeforeExamples("test", () => {
+  console.log("BeforeExamples");
+});
+
+AfterExamples("test", () => {
+  console.log("AfterExamples");
+});
+
+BeforeRule("test", () => {
+  console.log("BeforeRule");
+});
+
+AfterRule("test", () => {
+  console.log("AfterRule");
+});
+
 // After(
 //   "verify outerscenario",
 //   ({ report }) => {

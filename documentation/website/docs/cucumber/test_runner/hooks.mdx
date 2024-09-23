@@ -123,3 +123,88 @@ The `Setup the services 'foo'` hook will be executed before the `Setup the servi
 So the first before hook that will be executed is `Setup the services 'foo'` and the second will be `Setup the services 'bar`,
 followed by the `Before` hooks in the next file and so on.
 
+# Grouped Hooks
+<sub>available in version >0.5.8</sub>
+
+Specific hooks exist for group types in Cucumber, such as Features, Rules, Scenario Outlines and Examples. Each grouping
+has a Before and After hook which can be filtered using cucumber tags.
+
+**Hook names**:
+* BeforeFeature
+* AfterFeature
+* BeforeRule
+* AfterRule
+* BeforeScenarioOutline
+* AfterScenarioOutline
+* BeforeExamples
+* AfterExamples
+
+## Filtering
+Hooks can be filtered using a cucumber expression, or a custom filter function which
+accepts a list of the current tests tags.
+
+```ts
+import { BeforeFeature } from "@autometa/runner";
+
+BeforeFeature("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+}).tagFilter("@foo and not @bar");
+
+BeforeFeature("Setup the services 'bar'", (app) => {
+  return app.myHttpClient.post("/bar", setupBarObject);
+}).customFilter((tags) => tags.includes("@bar=2"));
+```
+
+Note: CustomFilters take priority over TagFilters. 
+
+
+## Ordering
+By default, hooks are executed in file order, so files in a higher directory will be executed before files in a lower directory,
+while hooks in the same file will be executed in the order they are defined.
+
+The default ordering can be overridden by setting the `order` property on the hook.
+
+```ts
+import { BeforeFeature } from "@autometa/runner";
+
+BeforeFeature("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+}).order(1);
+```
+
+By default, all hooks have an order of 5. Lower orders have higher priority. So an order of 1 will execute before 
+the same hook type with an order of 5.
+
+## Timeouts
+Hooks can have a timeout set on them, which will cause the hook to fail if it takes longer than the specified time to execute.
+
+```ts
+import { BeforeFeature } from "@autometa/runner";
+
+BeforeFeature("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+}).timeout(5000);
+```
+Timeouts can also be specified with a time unit:
+
+```ts
+import { BeforeFeature } from "@autometa/runner";
+
+BeforeFeature("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+}).timeout(5, 's');
+```
+
+## Chaining
+
+Options can be chained together to create a more complex hook.
+
+```ts
+import { BeforeFeature } from "@autometa/runner";
+
+BeforeFeature("Setup the services 'foo'", (app) => {
+  return app.myHttpClient.post("/foo", setupFooObject);
+}).tagFilter("@foo and not @bar")
+  .order(1)
+  .timeout(5000);
+```
