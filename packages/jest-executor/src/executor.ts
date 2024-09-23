@@ -170,7 +170,15 @@ export function execute(
       chosenTimeout,
     ]);
     bootstrapTeardownHooks(bridge, staticApp, events, [config, chosenTimeout]);
+
+    afterEach(async () => {
+      await testContainer.disposeAll();
+    });
+    afterAll(async () => {
+      await globalContainer.disposeGlobal();
+    });
   });
+
   afterAll(async () => {
     // events.
     const failures = Query.find.failed(bridge);
@@ -834,10 +842,9 @@ function getGroupOrModifier(
   if (tagFilter) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const parse = require("@cucumber/tag-expressions").default;
-    
+
     const expression = parse(tagFilter).evaluate(bridge.accumulateTags());
     if (!expression) {
-      
       return [describe.skip, "skip"] as const;
     }
   }

@@ -234,3 +234,30 @@ const InjectionToken = {
 }
 ```
 
+## Disposable Dependencies
+
+A dependency can be made disposable by implementing the `Disposable` interface. This interface requires a method defined
+using the `DisposeMethod` symbol on the class or object. This method will be called at the end of a scenario.
+
+Alternativiely, `DisposeGlobal` can be used to define a method that will be called at the end of the test run, when
+all tests have completed. This is used to clean up resources in the copy of the `App` available to
+the `Feature` scope and `Setup` and `Teardown` hooks, as well as `BeforeFeature`, `AfterFeature`, `BeforeScenarioOutline` etc. hooks.
+
+```ts
+import { DisposeMethod, DisposeGlobal } from '@autometa/injection';
+
+@Fixture()
+class DisposableClass implements Disposable {
+  [DisposeMethod]() {
+    console.log("I am being disposed");
+  }
+
+  [DisposeGlobalMethod]() {
+    console.log("I am being disposed globally");
+  }
+}
+```
+
+### Singletons
+Singletons exist in all scopes within a test suite. Be careful when disposing of singletons,
+as they might have unexpected behavior.
