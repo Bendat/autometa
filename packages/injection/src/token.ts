@@ -11,3 +11,6 @@ export function Token(name: string): InjectionToken {
 
   return tokenMap.get(name) as InjectionToken;
 }
+
+export const DisposeMethod = Symbol("DisposeMethod");
+export const DisposeGlobalMethod = Symbol("DisposeGlobalMethod");

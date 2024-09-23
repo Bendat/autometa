@@ -14,11 +14,13 @@ import {
 } from "./metadata-registry";
 import { metadata } from "./metadata";
 import { INJECTION_SCOPE } from "./scope.enum";
-import { InjectionToken, Token } from "./token";
+import { DisposeMethod, InjectionToken, Token } from "./token";
 import { InjectorKey } from "./types";
 import { AutometaSymbol } from "./symbol";
 
 export class Container {
+  #disposables = new Set<{ [DisposeMethod](): unknown }>();
+  #globalDisposables = new Set<{ [DisposeMethod](): unknown }>();
   constructor(readonly reference: symbol) {}
 
   registerSingleton<T>(token: InjectionToken, type: Class<T>): Container;
@@ -106,6 +108,18 @@ export class Container {
     return this.#assembleTarget(type) as T;
   }
 
+  async disposeAll() {
+    for (const disposable of this.#disposables) {
+      await disposable[DisposeMethod]();
+    }
+  }
+
+  async disposeGlobal() {
+    for (const disposable of this.#globalDisposables) {
+      await disposable[DisposeMethod]();
+    }
+  }
+  
   #assembleTarget<T>(target: Class<T>): T {
     const constructor = this.#getConstructorArgs<T>(target);
     const args = constructor.map((arg) => this.get(arg));
@@ -134,6 +148,12 @@ Use the \`@Inject.class\`, \`@Inject.factory\` or \`@Inject.value\` decorator to
         const dependency = info.value;
         instance[key] = dependency;
       }
+    }
+    if (
+      DisposeMethod in instance &&
+      typeof instance[DisposeMethod] === "function"
+    ) {
+      this.#disposables.add(instance as { [DisposeMethod](): unknown });
     }
     return instance as T;
   }
