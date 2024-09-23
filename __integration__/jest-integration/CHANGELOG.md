@@ -1,5 +1,15 @@
 # @autometa/jest-integration
 
+## 0.6.1
+
+### Patch Changes
+
+- da669a3: feat: disposable injectables
+- Updated dependencies [da669a3]
+  - @autometa/runner@0.6.1
+  - @autometa/app@0.4.1
+  - @autometa/jest-transformer@0.1.108
+
 ## 0.6.0
 
 ### Minor Changes

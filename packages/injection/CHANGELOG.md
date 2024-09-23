@@ -1,5 +1,11 @@
 # @autometa/injection
 
+## 0.1.4
+
+### Patch Changes
+
+- da669a3: feat: disposable injectables
+
 ## 0.1.3
 
 ### Patch Changes

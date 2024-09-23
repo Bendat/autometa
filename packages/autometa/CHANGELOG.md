@@ -1,5 +1,23 @@
 # @autometa/runner
 
+## 0.6.1
+
+### Patch Changes
+
+- da669a3: feat: disposable injectables
+- Updated dependencies [da669a3]
+  - @autometa/jest-executor@0.6.1
+  - @autometa/injection@0.1.4
+  - @autometa/app@0.4.1
+  - @autometa/coordinator@0.3.30
+  - @autometa/http@1.4.19
+  - @autometa/config@0.1.26
+  - @autometa/cucumber-expressions@0.4.3
+  - @autometa/scopes@0.7.1
+  - @autometa/test-builder@0.4.1
+  - @autometa/gherkin@0.7.1
+  - @autometa/events@0.3.1
+
 ## 0.6.0
 
 ### Minor Changes
