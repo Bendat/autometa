@@ -1,6 +1,6 @@
 {
   "name": "@autometa/example-jest-integration",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "",
   "private": true,
   "type": "commonjs",

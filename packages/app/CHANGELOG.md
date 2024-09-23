@@ -1,5 +1,13 @@
 # @autometa/app
 
+## 0.4.1
+
+### Patch Changes
+
+- da669a3: feat: disposable injectables
+- Updated dependencies [da669a3]
+  - @autometa/injection@0.1.4
+
 ## 0.4.0
 
 ### Minor Changes
