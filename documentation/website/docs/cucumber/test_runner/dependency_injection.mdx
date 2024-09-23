@@ -247,7 +247,7 @@ the `Feature` scope and `Setup` and `Teardown` hooks, as well as `BeforeFeature`
 import { DisposeMethod, DisposeGlobal } from '@autometa/injection';
 
 @Fixture()
-class DisposableClass implements Disposable {
+class DisposableClass {
   [DisposeMethod]() {
     console.log("I am being disposed");
   }
