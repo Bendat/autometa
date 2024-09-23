@@ -1,5 +1,18 @@
 # @autometa/jest-integration
 
+## 0.6.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
+### Patch Changes
+
+- Updated dependencies [7440e9f]
+  - @autometa/runner@0.6.0
+  - @autometa/app@0.4.0
+  - @autometa/jest-transformer@0.1.107
+
 ## 0.5.11
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.11.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
 ## 0.10.1
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @autometa/jest-executor
 
+## 0.6.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
+### Patch Changes
+
+- Updated dependencies [7440e9f]
+  - @autometa/test-builder@0.4.0
+  - @autometa/gherkin@0.7.0
+  - @autometa/events@0.3.0
+  - @autometa/scopes@0.7.0
+  - @autometa/app@0.4.0
+  - @autometa/config@0.1.25
+
 ## 0.5.10
 
 ### Patch Changes

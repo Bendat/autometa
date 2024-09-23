@@ -1,5 +1,16 @@
 # Gherkin
 
+## 0.3.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
+### Patch Changes
+
+- Updated dependencies [7440e9f]
+  - @autometa/gherkin@0.7.0
+
 ## 0.2.27
 
 ### Patch Changes

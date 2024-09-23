@@ -1,5 +1,19 @@
 # Gherkin
 
+## 0.7.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
+### Patch Changes
+
+- Updated dependencies [7440e9f]
+  - @autometa/gherkin@0.7.0
+  - @autometa/events@0.3.0
+  - @autometa/app@0.4.0
+  - @autometa/cucumber-expressions@0.4.2
+
 ## 0.6.6
 
 ### Patch Changes
