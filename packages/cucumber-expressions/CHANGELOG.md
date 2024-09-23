@@ -1,5 +1,12 @@
 # @autometa/cucumber-expressions
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [7440e9f]
+  - @autometa/app@0.4.0
+
 ## 0.4.1
 
 ### Patch Changes

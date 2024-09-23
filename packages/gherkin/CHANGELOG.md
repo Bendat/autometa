@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.7.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
 ## 0.6.15
 
 ### Patch Changes

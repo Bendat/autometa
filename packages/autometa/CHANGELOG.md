@@ -1,5 +1,25 @@
 # @autometa/runner
 
+## 0.6.0
+
+### Minor Changes
+
+- 7440e9f: feat: new group based hooks for feature, rule, outline and examples
+
+### Patch Changes
+
+- Updated dependencies [7440e9f]
+  - @autometa/jest-executor@0.6.0
+  - @autometa/test-builder@0.4.0
+  - @autometa/gherkin@0.7.0
+  - @autometa/events@0.3.0
+  - @autometa/scopes@0.7.0
+  - @autometa/app@0.4.0
+  - @autometa/coordinator@0.3.29
+  - @autometa/config@0.1.25
+  - @autometa/cucumber-expressions@0.4.2
+  - @autometa/http@1.4.18
+
 ## 0.5.11
 
 ### Patch Changes
