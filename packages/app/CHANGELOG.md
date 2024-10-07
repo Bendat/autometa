@@ -1,5 +1,12 @@
 # @autometa/app
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [8df323c]
+  - @autometa/injection@0.1.5
+
 ## 0.4.1
 
 ### Patch Changes

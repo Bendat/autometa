@@ -1,5 +1,12 @@
 # @autometa/dto-builder
 
+## 0.13.11
+
+### Patch Changes
+
+- Updated dependencies [8df323c]
+  - @autometa/injection@0.1.5
+
 ## 0.13.10
 
 ### Patch Changes

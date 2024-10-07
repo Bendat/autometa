@@ -1,5 +1,15 @@
 # Gherkin
 
+## 0.7.2
+
+### Patch Changes
+
+- @autometa/dto-builder@0.13.11
+- @autometa/app@0.4.2
+- @autometa/gherkin@0.7.2
+- @autometa/cucumber-expressions@0.4.4
+- @autometa/events@0.3.2
+
 ## 0.7.1
 
 ### Patch Changes

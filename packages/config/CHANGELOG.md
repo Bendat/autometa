@@ -1,5 +1,11 @@
 # @autometa/config
 
+## 0.1.27
+
+### Patch Changes
+
+- @autometa/app@0.4.2
+
 ## 0.1.26
 
 ### Patch Changes

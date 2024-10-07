@@ -1,5 +1,11 @@
 # Gherkin
 
+## 0.7.2
+
+### Patch Changes
+
+- @autometa/dto-builder@0.13.11
+
 ## 0.7.1
 
 ### Patch Changes
