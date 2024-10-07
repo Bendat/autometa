@@ -1,5 +1,23 @@
 # @autometa/runner
 
+## 0.6.2
+
+### Patch Changes
+
+- 8df323c: feat: tag filters for disposer methods
+- Updated dependencies [8df323c]
+  - @autometa/jest-executor@0.6.2
+  - @autometa/injection@0.1.5
+  - @autometa/coordinator@0.3.31
+  - @autometa/app@0.4.2
+  - @autometa/http@1.4.20
+  - @autometa/gherkin@0.7.2
+  - @autometa/scopes@0.7.2
+  - @autometa/test-builder@0.4.2
+  - @autometa/config@0.1.27
+  - @autometa/cucumber-expressions@0.4.4
+  - @autometa/events@0.3.2
+
 ## 0.6.1
 
 ### Patch Changes

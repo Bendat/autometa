@@ -1,5 +1,11 @@
 # @autometa/documentation
 
+## 0.11.2
+
+### Patch Changes
+
+- 8df323c: feat: tag filters for disposer methods
+
 ## 0.11.1
 
 ### Patch Changes

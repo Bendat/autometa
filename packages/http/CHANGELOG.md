@@ -1,5 +1,14 @@
 # @autometa/http
 
+## 1.4.20
+
+### Patch Changes
+
+- Updated dependencies [8df323c]
+  - @autometa/injection@0.1.5
+  - @autometa/dto-builder@0.13.11
+  - @autometa/app@0.4.2
+
 ## 1.4.19
 
 ### Patch Changes

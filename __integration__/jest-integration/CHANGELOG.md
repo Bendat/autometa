@@ -1,5 +1,15 @@
 # @autometa/jest-integration
 
+## 0.6.2
+
+### Patch Changes
+
+- 8df323c: feat: tag filters for disposer methods
+- Updated dependencies [8df323c]
+  - @autometa/runner@0.6.2
+  - @autometa/app@0.4.2
+  - @autometa/jest-transformer@0.1.109
+
 ## 0.6.1
 
 ### Patch Changes
