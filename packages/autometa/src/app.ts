@@ -39,4 +39,4 @@ export const OPTS = {} as Record<string, CoordinatorOpts>;
  */
 export const AppType = at.bind(null, OPTS);
 export { getApp } from "@autometa/app";
-export { DisposeMethod } from "@autometa/injection";
+export { DisposeMethod, DisposeTagFilter } from "@autometa/injection";

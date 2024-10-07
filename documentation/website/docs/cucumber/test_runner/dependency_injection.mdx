@@ -258,6 +258,23 @@ class DisposableClass {
 }
 ```
 
+### Filtering Disposable Dependencies
+
+A disposer method can be filtered by the test (or features) tags using
+tag expressions. This is added with the `DisposeTagFilter` decorator.
+
+```ts
+import { DisposeMethod, DisposeTagFilter } from '@autometa/injection';
+
+@Fixture()
+class DisposableClass {
+  @DisposeTagFilter("@tag1 and not @tag2")
+  [DisposeMethod]() {
+    console.log("I am being disposed");
+  }
+}
+```
+
 ### Singletons
 Singletons exist in all scopes within a test suite. Be careful when disposing of singletons,
 as they might have unexpected behavior.

@@ -19,8 +19,18 @@ import { InjectorKey } from "./types";
 import { AutometaSymbol } from "./symbol";
 
 export class Container {
-  #disposables = new Set<{ [DisposeMethod](): unknown }>();
-  #globalDisposables = new Set<{ [DisposeMethod](): unknown }>();
+  #disposables = new Set<{
+    [DisposeMethod](
+      tags: string[],
+      isTagsMatch: (tags: string[], filter: string) => boolean
+    ): unknown;
+  }>();
+  #globalDisposables = new Set<{
+    [DisposeMethod](
+      tags: string[],
+      isTagsMatch: (tags: string[], filter: string) => boolean
+    ): unknown;
+  }>();
   constructor(readonly reference: symbol) {}
 
   registerSingleton<T>(token: InjectionToken, type: Class<T>): Container;
@@ -108,18 +118,24 @@ export class Container {
     return this.#assembleTarget(type) as T;
   }
 
-  async disposeAll() {
+  async disposeAll(
+    tags: string[],
+    isTagsMatch: (tags: string[], filter: string) => boolean
+  ) {
     for (const disposable of this.#disposables) {
-      await disposable[DisposeMethod]();
+      await disposable[DisposeMethod](tags, isTagsMatch);
     }
   }
 
-  async disposeGlobal() {
+  async disposeGlobal(
+    tags: string[],
+    isTagsMatch: (tags: string[], filter: string) => boolean
+  ) {
     for (const disposable of this.#globalDisposables) {
-      await disposable[DisposeMethod]();
+      await disposable[DisposeMethod](tags, isTagsMatch);
     }
   }
-  
+
   #assembleTarget<T>(target: Class<T>): T {
     const constructor = this.#getConstructorArgs<T>(target);
     const args = constructor.map((arg) => this.get(arg));

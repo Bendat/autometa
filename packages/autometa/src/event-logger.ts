@@ -27,8 +27,8 @@ export class GroupLogEvents implements EventSubscriber {
   }
   onFeatureEnd({ title, status }: EndFeatureOpts): void {
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onScenarioStart({ title }: StartScenarioOpts): void {
     console.group(title);
@@ -36,8 +36,8 @@ export class GroupLogEvents implements EventSubscriber {
   }
   onScenarioEnd({ title, status }: EndScenarioOpts): void {
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onScenarioOutlineStart(opts: StartScenarioOutlineOpts): void {
     console.group(opts.title);
@@ -45,8 +45,8 @@ export class GroupLogEvents implements EventSubscriber {
   }
   onScenarioOutlineEnd({ title, status }: EndScenarioOutlineOpts): void {
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onRuleStart({ title }: StartRuleOpts): void {
     console.group(title);
@@ -54,8 +54,8 @@ export class GroupLogEvents implements EventSubscriber {
   }
   onRuleEnd({ title, status }: EndRuleOpts): void {
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onStepStart({ title }: StartStepOpts) {
     console.group(title);
@@ -63,8 +63,8 @@ export class GroupLogEvents implements EventSubscriber {
   }
   onStepEnd({ title, status }: EndStepOpts) {
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onBeforeStart({ title, status }: StartBeforeOpts): void {
     if (status === "SKIPPED") {
@@ -78,8 +78,8 @@ export class GroupLogEvents implements EventSubscriber {
       return;
     }
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onAfterStart({ title, status }: StartAfterOpts): void {
     if (status === "SKIPPED") {
@@ -93,8 +93,8 @@ export class GroupLogEvents implements EventSubscriber {
       return;
     }
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onTeardownStart({ title, status }: StartTeardownOpts): void {
     if (status === "SKIPPED") {
@@ -108,8 +108,8 @@ export class GroupLogEvents implements EventSubscriber {
       return;
     }
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onSetupStart({ title, status }: StartSetupOpts): void {
     if (status === "SKIPPED") {
@@ -123,8 +123,8 @@ export class GroupLogEvents implements EventSubscriber {
       return;
     }
     console.groupEnd();
-    console.log(colorStatus(status, `Ending ${title}`));
     console.groupEnd();
+    console.log(colorStatus(status, `Ending ${title}`));
   }
   onBeforeFeatureStart(opts: StartFeatureOpts): void {
     console.group(opts.title);
@@ -133,8 +133,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onBeforeFeatureEnd(opts: EndFeatureOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 
   onAfterFeatureStart(opts: StartFeatureOpts): void {
@@ -144,8 +144,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onAfterFeatureEnd(opts: EndFeatureOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 
   onBeforeRuleStart(opts: StartRuleOpts): void {
@@ -155,8 +155,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onBeforeRuleEnd(opts: EndRuleOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 
   onAfterRuleStart(opts: StartRuleOpts): void {
@@ -166,8 +166,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onAfterRuleEnd(opts: EndRuleOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 
   onBeforeScenarioOutlineStart(opts: StartScenarioOutlineOpts): void {
@@ -177,8 +177,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onBeforeScenarioOutlineEnd(opts: EndScenarioOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 
   onBeforeExamplesStart(opts: StartScenarioOutlineOpts): void {
@@ -188,8 +188,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onBeforeExamplesEnd(opts: EndScenarioOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 
   onAfterExamplesStart(opts: StartScenarioOutlineOpts): void {
@@ -199,8 +199,8 @@ export class GroupLogEvents implements EventSubscriber {
 
   onAfterExamplesEnd(opts: EndScenarioOpts): void {
     console.groupEnd();
-    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
     console.groupEnd();
+    console.log(colorStatus(opts.status, `Ending ${opts.title}`));
   }
 }
 function colorStatus(
