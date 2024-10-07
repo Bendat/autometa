@@ -27,6 +27,7 @@ import { Config } from "@autometa/config";
 import { chooseTimeout } from "./timeout-selector";
 import { GlobalScope, NullTimeout, Timeout } from "@autometa/scopes";
 import { Container, defineContainerContext } from "@autometa/injection";
+import { isTagsMatch } from "@autometa/gherkin";
 
 const outlineApps = new Map<string, App[]>();
 const examplesApps = new Map<string, App[]>();
@@ -100,15 +101,30 @@ export function execute(
         hook.options.timeout
       ).getTimeout(config).milliseconds;
       beforeAll(async () => {
-        if (!hook.canExecute(...bridge.data.gherkin.tags)) {
+        const tags = bridge?.data?.gherkin?.tags ?? [];
+        if (!hook.canExecute(...tags)) {
           return;
         }
-        const tags = bridge?.data?.gherkin?.tags ?? [];
+        events.beforeFeature.emitStart({
+          title: hook.description,
+          tags: [...tags],
+        });
         const report = await hook.execute(staticApp, ...tags);
         if (report.error) {
           const message = `${hook.name}: ${hook.description} failed to execute.`;
+          events.beforeFeature.emitEnd({
+            title: hook.description,
+            tags: [...tags],
+            status: "FAILED",
+            error: report.error,
+          });
           throw new AutomationError(message, { cause: report.error });
         }
+        events.beforeFeature.emitEnd({
+          title: hook.description,
+          tags: [...tags],
+          status: "PASSED",
+        });
       }, hookTimeout);
     });
 
@@ -118,17 +134,33 @@ export function execute(
         hook.options.timeout
       ).getTimeout(config).milliseconds;
       afterAll(async () => {
+        const tags = bridge?.data?.gherkin?.tags ?? [];
         if (!hook.canExecute(...bridge.data.gherkin.tags)) {
           return;
         }
+        events.afterFeature.emitStart({
+          title: hook.description,
+          tags: [...tags],
+        });
+
         const testName = expect.getState().currentTestName as string;
-        const tags = bridge?.data?.gherkin?.tags ?? [];
         const apps = featureApps.get(testName) as App[];
         const report = await hook.execute(staticApp, apps, ...tags);
         if (report.error) {
           const message = `${hook.name}: ${hook.description} failed to execute.`;
+          events.afterFeature.emitEnd({
+            title: hook.description,
+            tags: [...tags],
+            status: "FAILED",
+            error: report.error,
+          });
           throw new AutomationError(message, { cause: report.error });
         }
+        events.afterFeature.emitEnd({
+          title: hook.description,
+          tags: [...tags],
+          status: "PASSED",
+        });
       }, hookTimeout);
     });
 
@@ -137,31 +169,41 @@ export function execute(
       chosenTimeout,
     ]);
     bootstrapSetupHooks(bridge, staticApp, events, [config, chosenTimeout]);
-    bootstrapBeforeHooks(bridge, globalBridge, () => localApp, events, [
+    bootstrapBeforeHooks(
+      bridge,
+      globalBridge,
+      () => [testContainer, localApp],
+      events,
+      [config, chosenTimeout]
+    );
+    bootstrapBeforeHooks(
+      bridge,
+      bridge,
+      () => [testContainer, localApp],
+      events,
+      [config, chosenTimeout]
+    );
+    bootstrapBackground(bridge, bridge, () => [testContainer, localApp], events, [
       config,
       chosenTimeout,
     ]);
-    bootstrapBeforeHooks(bridge, bridge, () => localApp, events, [
+    bootstrapScenarios(
+      bridge,
+      bridge,
+      () => [testContainer, localApp],
+      staticApp,
+      events,
+      [config, chosenTimeout]
+    );
+    bootstrapRules(bridge, () => [testContainer, localApp], staticApp, events, [
       config,
       chosenTimeout,
     ]);
-    bootstrapBackground(bridge, bridge, () => localApp, events, [
+    bootstrapAfterHooks(bridge, bridge, () => [testContainer, localApp], events, [
       config,
       chosenTimeout,
     ]);
-    bootstrapScenarios(bridge, bridge, () => localApp, staticApp, events, [
-      config,
-      chosenTimeout,
-    ]);
-    bootstrapRules(bridge, () => localApp, staticApp, events, [
-      config,
-      chosenTimeout,
-    ]);
-    bootstrapAfterHooks(bridge, bridge, () => localApp, events, [
-      config,
-      chosenTimeout,
-    ]);
-    bootstrapAfterHooks(bridge, globalBridge, () => localApp, events, [
+    bootstrapAfterHooks(bridge, globalBridge, () => [testContainer, localApp], events, [
       config,
       chosenTimeout,
     ]);
@@ -171,11 +213,9 @@ export function execute(
     ]);
     bootstrapTeardownHooks(bridge, staticApp, events, [config, chosenTimeout]);
 
-    afterEach(async () => {
-      await testContainer.disposeAll();
-    });
+
     afterAll(async () => {
-      await globalContainer.disposeGlobal();
+      await globalContainer.disposeGlobal(tags, isTagsMatch);
     });
   });
 
@@ -211,7 +251,7 @@ export function execute(
 export function bootstrapBackground(
   root: FeatureBridge,
   bridge: FeatureBridge | RuleBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
 ) {
@@ -242,7 +282,7 @@ export function bootstrapBackground(
     const steps = background.steps;
     try {
       for (const step of steps) {
-        const app = localApp();
+        const [_, app] = localApp();
         const args = step.args?.(app) ?? [];
         const title = step.data.scope.stepText(
           step.data.gherkin.keyword,
@@ -284,7 +324,7 @@ Test: ${testName}`;
 export function bootstrapScenarios(
   root: FeatureBridge,
   bridge: FeatureBridge | RuleBridge | ExamplesBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   staticApp: App,
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -308,7 +348,7 @@ export function bootstrapScenarios(
 
 export function bootstrapScenario(
   bridge: ScenarioBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
 ) {
@@ -326,9 +366,10 @@ export function bootstrapScenario(
         title: bridge.title,
         tags: bridge.tags,
       });
+      const [container, app] = localApp();
       try {
         for (const step of bridge.steps) {
-          await tryRunStep(step, events, bridge, localApp);
+          await tryRunStep(step, events, bridge, () => app);
         }
         bridge.report = { passed: true };
         events.scenario.emitEnd({
@@ -348,6 +389,8 @@ export function bootstrapScenario(
         const message = `${bridge.title} failed while executing a step`;
         const meta = { cause: error };
         throw new AutomationError(message, meta);
+      } finally {
+        await container.disposeAll(bridge.tags, isTagsMatch);
       }
     },
     chosenTimeout.milliseconds
@@ -416,7 +459,7 @@ function isOutline(
 export function bootstrapScenarioOutline(
   root: FeatureBridge,
   bridge: ScenarioOutlineBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   staticApp: App,
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -444,9 +487,9 @@ export function bootstrapScenarioOutline(
       outlineApps.set(testName, []);
     }
     const apps = outlineApps.get(testName) as App[];
-    const app = original();
+    const [container, app] = original();
     apps.push(app);
-    return app;
+    return [container, app];
   };
 
   group(title, () => {
@@ -568,7 +611,7 @@ export function bootstrapScenarioOutline(
 export function bootstrapExamples(
   root: FeatureBridge,
   example: ExamplesBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   staticApp: App,
   events: TestEventEmitter,
   timeout: [Config, Timeout]
@@ -585,9 +628,9 @@ export function bootstrapExamples(
       examplesApps.set(testName, []);
     }
     const apps = examplesApps.get(testName) as App[];
-    const app = original();
+    const [container, app] = original();
     apps.push(app);
-    return app;
+    return [container, app];
   };
 
   const [group] = getGroupOrModifier(
@@ -673,7 +716,7 @@ export function bootstrapExamples(
 
 export function bootstrapRules(
   bridge: FeatureBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   staticApp: App,
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
@@ -716,9 +759,9 @@ export function bootstrapRules(
             ruleApps.set(testName, []);
           }
           const apps = ruleApps.get(testName) as App[];
-          const app = original();
+          const [container, app] = original();
           apps.push(app);
-          return app;
+          return [container, app];
         };
       });
       bridge.data.scope.hooks.beforeRuleHooks.forEach((hook) => {
@@ -872,7 +915,7 @@ function getTestOrModifier({ data }: ScenarioBridge, tagFilter?: string) {
 export function bootstrapBeforeHooks(
   root: FeatureBridge,
   bridge: GlobalBridge | FeatureBridge | RuleBridge | ScenarioOutlineBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
 ) {
@@ -904,7 +947,7 @@ export function bootstrapBeforeHooks(
         title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
       });
-      const report = await hook.execute(localApp(), ...tags);
+      const report = await hook.execute(localApp()[1], ...tags);
       events.before.emitEnd({
         title: `${hook.name}: ${hook.description}`,
         tags: [...tags],
@@ -965,7 +1008,7 @@ export function bootstrapSetupHooks(
 export function bootstrapAfterHooks(
   root: FeatureBridge,
   bridge: GlobalBridge | FeatureBridge | RuleBridge | ScenarioOutlineBridge,
-  localApp: () => App,
+  localApp: () => [Container, App],
   events: TestEventEmitter,
   [config, timeout]: [Config, Timeout]
 ) {
@@ -996,7 +1039,7 @@ export function bootstrapAfterHooks(
         tags: [...tags],
       });
 
-      const report = await hook.execute(localApp(), ...tags);
+      const report = await hook.execute(localApp()[1], ...tags);
       events.after.emitEnd({
         title: `${hook.name}: ${hook.description}`,
         tags: [...tags],

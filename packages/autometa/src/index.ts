@@ -47,6 +47,8 @@ export {
   INJECTION_SCOPE,
   InjectionScope,
   Inject,
+  DisposeTagFilter,
+  DisposeMethod,
 } from "./app";
 export { Dates, Time } from "@autometa/datetime";
 export { AutomationError, raise } from "@autometa/errors";

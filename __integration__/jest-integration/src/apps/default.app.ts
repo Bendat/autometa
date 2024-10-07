@@ -3,6 +3,8 @@ import {
   Constructor,
   Fixture,
   INJECTION_SCOPE,
+  DisposeTagFilter,
+  DisposeMethod,
 } from "@autometa/runner";
 import { World } from "./default.world";
 import { TestContainer } from "../test-container";
@@ -40,4 +42,9 @@ export class DefaultApp {
     rule2scenariostep: false,
     rule2skippedscenario: false,
   };
+
+  @DisposeTagFilter("@test1")
+  [DisposeMethod]() {
+    console.log('DisposeMethoded');
+  }
 }
