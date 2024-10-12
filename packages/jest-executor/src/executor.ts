@@ -43,10 +43,7 @@ export function execute(
 ) {
   const globalBridge = new GlobalBridge(global);
   const featureTitle = bridge.data.scope.title(bridge.data.gherkin);
-  const [group, modifier] = getGroupOrModifier(
-    bridge,
-    config.current.test?.tagFilter
-  );
+  const [group, modifier] = getGroupOrModifier(bridge);
   const chosenTimeout = chooseTimeout(
     new NullTimeout(),
     bridge.data.scope.timeout
@@ -183,10 +180,13 @@ export function execute(
       events,
       [config, chosenTimeout]
     );
-    bootstrapBackground(bridge, bridge, () => [testContainer, localApp], events, [
-      config,
-      chosenTimeout,
-    ]);
+    bootstrapBackground(
+      bridge,
+      bridge,
+      () => [testContainer, localApp],
+      events,
+      [config, chosenTimeout]
+    );
     bootstrapScenarios(
       bridge,
       bridge,
@@ -199,20 +199,25 @@ export function execute(
       config,
       chosenTimeout,
     ]);
-    bootstrapAfterHooks(bridge, bridge, () => [testContainer, localApp], events, [
-      config,
-      chosenTimeout,
-    ]);
-    bootstrapAfterHooks(bridge, globalBridge, () => [testContainer, localApp], events, [
-      config,
-      chosenTimeout,
-    ]);
+    bootstrapAfterHooks(
+      bridge,
+      bridge,
+      () => [testContainer, localApp],
+      events,
+      [config, chosenTimeout]
+    );
+    bootstrapAfterHooks(
+      bridge,
+      globalBridge,
+      () => [testContainer, localApp],
+      events,
+      [config, chosenTimeout]
+    );
     bootstrapTeardownHooks(globalBridge, staticApp, events, [
       config,
       chosenTimeout,
     ]);
     bootstrapTeardownHooks(bridge, staticApp, events, [config, chosenTimeout]);
-
 
     afterAll(async () => {
       await globalContainer.disposeGlobal(tags, isTagsMatch);
@@ -472,10 +477,7 @@ export function bootstrapScenarioOutline(
   const retry = [...gherkin.tags].find((tag) => tag.startsWith("@retries="));
   const { beforeScenarioOutlineHooks, afterScenarioOutlineHooks } = scope.hooks;
 
-  const [group, modifier] = getGroupOrModifier(
-    bridge,
-    config.current.test?.tagFilter
-  );
+  const [group, modifier] = getGroupOrModifier(bridge);
   const chosenTimeout = chooseTimeout(
     timeout,
     bridge.data.scope.timeout
@@ -633,10 +635,7 @@ export function bootstrapExamples(
     return [container, app];
   };
 
-  const [group] = getGroupOrModifier(
-    example,
-    timeout[0].current.test?.tagFilter
-  );
+  const [group] = getGroupOrModifier(example);
   group(title, () => {
     beforeAll(() => {
       if (retry) {
@@ -735,10 +734,7 @@ export function bootstrapRules(
     const transferTimeout: [Config, Timeout] = [config, ruleTimeout];
     const { data } = rule;
     const ruleName = data.scope.title(data.gherkin);
-    const [group, modifier] = getGroupOrModifier(
-      bridge,
-      config.current.test?.tagFilter
-    );
+    const [group, modifier] = getGroupOrModifier(bridge);
 
     group(ruleName, () => {
       beforeAll(() => {
@@ -872,8 +868,7 @@ function getStatus(modifier: string | undefined, failures: unknown[]) {
 }
 
 function getGroupOrModifier(
-  bridge: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge,
-  tagFilter: string | undefined
+  bridge: RuleBridge | FeatureBridge | ScenarioOutlineBridge | ExamplesBridge
 ) {
   const { data } = bridge;
   if (data.gherkin.tags?.has("@skip") || data.gherkin.tags?.has("@skipped")) {
@@ -881,15 +876,6 @@ function getGroupOrModifier(
   }
   if (data.gherkin.tags?.has("@only")) {
     return [describe.only, "only"] as const;
-  }
-  if (tagFilter) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const parse = require("@cucumber/tag-expressions").default;
-
-    const expression = parse(tagFilter).evaluate([...bridge.data.gherkin.tags]);
-    if (!expression) {
-      return [describe.skip, "skip"] as const;
-    }
   }
   return [describe, undefined] as const;
 }
