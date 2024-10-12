@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 0.6.3
+
+### Patch Changes
+
+- 57e6e0e: fix(jest): incorrectly skipping groups with skipped children
+
 ## 0.6.2
 
 ### Patch Changes

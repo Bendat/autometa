@@ -1,6 +1,6 @@
 {
   "name": "@autometa/coordinator",
-  "version": "0.3.31",
+  "version": "0.3.32",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
