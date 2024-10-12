@@ -886,7 +886,7 @@ function getGroupOrModifier(
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const parse = require("@cucumber/tag-expressions").default;
 
-    const expression = parse(tagFilter).evaluate(bridge.accumulateTags());
+    const expression = parse(tagFilter).evaluate([...bridge.data.gherkin.tags]);
     if (!expression) {
       return [describe.skip, "skip"] as const;
     }
