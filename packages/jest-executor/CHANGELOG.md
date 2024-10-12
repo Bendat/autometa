@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 0.6.4
+
+### Patch Changes
+
+- 11859b0: fix: incorrect group filtering pt 2
+
 ## 0.6.3
 
 ### Patch Changes
