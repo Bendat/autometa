@@ -1,0 +1,7 @@
+src/
+.reference/
+node_modules/
+tsconfig.json
+tsconfig.*.json
+vitest.config.*
+jest.config.*

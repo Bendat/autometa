@@ -41,7 +41,6 @@ tests-out/
 .allure
 .allure-reports
 
-.nx
 **/*/vitest.config.ts.timestamp-*
 
 tmp*/

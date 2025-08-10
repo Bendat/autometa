@@ -1,12 +1,32 @@
-export * from "./symbol";
-export * from "./metadata";
-export * from "./metadata-registry";
-export * from "./scope.enum";
-export * from "./fixture";
-export * from "./inject";
-export * from "./types";
-export * from "./token";
-export * from "./constructor";
-export * from "./container";
-export * from "./container-context";
-// throw new Error("Double check exports");
+/**
+ * @autometa/injection - Dependency Injection Framework
+ * 
+ * A modern, type-safe dependency injection framework with:
+ * - Container-based system with child container support
+ * - Class, value, factory, and token-based registration
+ * - Scoped instances (singleton, transient, request, session)
+ * - Circular dependency detection
+ * - Lazy resolution
+ */
+
+// Core types
+export * from './types';
+
+// Container implementation
+export * from './container';
+
+// Re-export commonly used items for convenience
+export {
+  Container,
+  createContainer,
+  createChildContainer
+} from './container';
+
+export {
+  Scope,
+  createToken,
+  type IContainer,
+  type Identifier,
+  type Constructor,
+  type Token
+} from './types';

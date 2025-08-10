@@ -1,4 +1,10 @@
 {
-  "extends": "tsconfig/base.json",
-  "files": ["src/index.ts"],
+  "extends": "tsconfig/package.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist/types",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "references": []
 }

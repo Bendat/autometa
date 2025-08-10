@@ -2,6 +2,9 @@
   "extends": "./base.json",
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": "dist/cjs"
+    "outDir": "dist/cjs",
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": true
   }
 }

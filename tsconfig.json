@@ -1,0 +1,21 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/injection"
+    },
+    {
+      "path": "packages/gherkin"
+    },
+    {
+      "path": "packages/dto-builder"
+    }
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "skipLibCheck": true
+  }
+}

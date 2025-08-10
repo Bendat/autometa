@@ -1,193 +1,448 @@
-import { Class } from "@autometa/types";
+/**
+ * Core container implementation for dependency injection
+ */
+
 import {
-  getContainerContexts,
-  getScope,
-  getSingleton,
-  getTypeToken,
-  hasContainerContext,
-  hasScope,
-  hasSingleton,
-  registerContainerContext,
-  registerScope,
-  registerSingleton,
-  registerTypeToken,
-} from "./metadata-registry";
-import { metadata } from "./metadata";
-import { INJECTION_SCOPE } from "./scope.enum";
-import { DisposeMethod, InjectionToken, Token } from "./token";
-import { InjectorKey } from "./types";
-import { AutometaSymbol } from "./symbol";
+  IContainer,
+  Identifier,
+  Constructor,
+  Token,
+  Binding,
+  ClassBinding,
+  ValueBinding,
+  FactoryBinding,
+  TokenBinding,
+  Scope,
+  RegistrationOptions,
+  ResolutionContext,
+  CircularDependencyError,
+  UnregisteredDependencyError,
+} from "./types";
 
-export class Container {
-  #disposables = new Set<{
-    [DisposeMethod](
-      tags: string[],
-      isTagsMatch: (tags: string[], filter: string) => boolean
-    ): unknown;
-  }>();
-  #globalDisposables = new Set<{
-    [DisposeMethod](
-      tags: string[],
-      isTagsMatch: (tags: string[], filter: string) => boolean
-    ): unknown;
-  }>();
-  constructor(readonly reference: symbol) {}
+export class Container implements IContainer {
+  private readonly bindings = new Map<Identifier, Binding>();
+  private readonly instances = new Map<Identifier, unknown>();
+  private readonly scopedInstances = new Map<
+    string,
+    Map<Identifier, unknown>
+  >();
+  private readonly children = new Set<Container>();
 
-  registerSingleton<T>(token: InjectionToken, type: Class<T>): Container;
-  registerSingleton<T>(type: Class<T>): Container;
-  registerSingleton<T>(token: Class<T> | InjectionToken, type?: Class<T>) {
-    registerScope(token, INJECTION_SCOPE.SINGLETON);
-    if (token instanceof InjectionToken && type) {
-      registerTypeToken(token, type);
+  constructor(public readonly parent?: IContainer) {}
+
+  // Registration methods
+  register<T>(
+    identifier: Identifier<T>,
+    binding: Partial<Binding<T>>
+  ): IContainer {
+    const fullBinding: Binding<T> = {
+      scope: Scope.TRANSIENT,
+      tags: [],
+      ...binding,
+    } as Binding<T>;
+
+    this.bindings.set(identifier as Identifier, fullBinding as Binding);
+    return this;
+  }
+
+  registerClass<T>(
+    target: Constructor<T>,
+    options: RegistrationOptions = {}
+  ): IContainer {
+    const binding: ClassBinding<T> = {
+      type: "class",
+      target,
+      scope: options.scope || Scope.TRANSIENT,
+      tags: options.tags || [],
+      deps: options.deps || [],
+    };
+
+    this.bindings.set(target as Identifier, binding as Binding);
+    return this;
+  }
+
+  registerValue<T>(
+    identifier: Identifier<T>,
+    value: T,
+    options: RegistrationOptions = {}
+  ): IContainer {
+    const binding: ValueBinding<T> = {
+      type: "value",
+      value,
+      scope: options.scope || Scope.SINGLETON,
+      tags: options.tags || [],
+    };
+
+    this.bindings.set(identifier as Identifier, binding as Binding);
+    return this;
+  }
+
+  registerFactory<T>(
+    identifier: Identifier<T>,
+    factory: (container: IContainer) => T,
+    options: RegistrationOptions = {}
+  ): IContainer {
+    const binding: FactoryBinding<T> = {
+      type: "factory",
+      factory,
+      scope: options.scope || Scope.TRANSIENT,
+      tags: options.tags || [],
+    };
+
+    this.bindings.set(identifier as Identifier, binding as Binding);
+    return this;
+  }
+
+  registerToken<T>(
+    token: Token<T>,
+    target: Constructor<T> | ((container: IContainer) => T),
+    options: RegistrationOptions = {}
+  ): IContainer {
+    const binding: TokenBinding<T> = {
+      type: "token",
+      token,
+      target,
+      scope: options.scope || Scope.TRANSIENT,
+      tags: options.tags || [],
+    };
+
+    this.bindings.set(token as Identifier, binding as Binding);
+    return this;
+  }
+
+  // Resolution methods
+  resolve<T>(identifier: Identifier<T>): T {
+    const context: ResolutionContext = {
+      path: new Set(),
+      depth: 0,
+      maxDepth: 50,
+    };
+
+    return this.resolveWithContext(identifier as Identifier, context) as T;
+  }
+
+  resolveAll<T>(identifier: Identifier<T>): T[] {
+    const results: T[] = [];
+
+    // Collect from this container
+    for (const [key, binding] of this.bindings.entries()) {
+      if (
+        this.identifierMatches(key, identifier as Identifier) ||
+        this.bindingHasMatchingTag(binding, identifier as Identifier)
+      ) {
+        try {
+          const instance = this.resolve(key as Identifier<T>);
+          results.push(instance);
+        } catch {
+          // Skip failed resolutions
+        }
+      }
     }
-    return this;
-  }
 
-  registerCached<T>(token: InjectionToken, type: Class<T>): Container;
-  registerCached<T>(type: Class<T>): Container;
-  registerCached<T>(token: Class<T> | InjectionToken, type?: Class<T>) {
-    registerScope(token, INJECTION_SCOPE.CACHED);
-    if (token instanceof InjectionToken && type) {
-      registerTypeToken(token, type);
+    // Collect from parent
+    if (this.parent) {
+      results.push(...this.parent.resolveAll(identifier));
     }
-    return this;
+
+    return results;
   }
 
-  registerTransient<T>(target: Class<T>): Container;
-  registerTransient<T>(token: InjectionToken, target: Class<T>): Container;
-  registerTransient(
-    target: Class<unknown> | InjectionToken,
-    type?: Class<unknown>
-  ) {
-    this.#throwOnSingletonTokenClash(target);
-    registerScope(target, INJECTION_SCOPE.TRANSIENT);
-    if (target instanceof InjectionToken && type) {
-      registerTypeToken(target, type);
+  tryResolve<T>(identifier: Identifier<T>): T | undefined {
+    try {
+      return this.resolve(identifier);
+    } catch {
+      return undefined;
     }
-    return this;
   }
 
-  registerSingletonValue(identifier: string, value: unknown) {
-    registerSingleton(Token(identifier), value);
-    return this;
+  // Introspection
+  isRegistered<T>(identifier: Identifier<T>): boolean {
+    return (
+      this.bindings.has(identifier as Identifier) ||
+      (this.parent?.isRegistered(identifier) ?? false)
+    );
   }
 
-  registerCachedValue(identifier: string, value: unknown) {
-    this.#throwOnSingletonTokenClash(Token(identifier));
-    registerScope(Token(identifier), INJECTION_SCOPE.CACHED);
-    registerContainerContext(this.reference, Token(identifier), value);
-    return this;
+  getBinding<T>(identifier: Identifier<T>): Binding<T> | undefined {
+    const binding = this.bindings.get(identifier as Identifier) as
+      | Binding<T>
+      | undefined;
+    return binding || this.parent?.getBinding(identifier);
   }
 
-  #throwOnSingletonTokenClash(token: InjectorKey) {
-    if (hasSingleton(token)) {
+  // Container hierarchy
+  createChild(): IContainer {
+    const child = new Container(this);
+    this.children.add(child);
+    return child;
+  }
+
+  // Tagged resolution
+  resolveByTag<T>(tag: string): T[] {
+    const results: T[] = [];
+
+    for (const [identifier, binding] of this.bindings.entries()) {
+      if (binding.tags.includes(tag)) {
+        try {
+          const instance = this.resolve(identifier as Identifier<T>);
+          results.push(instance);
+        } catch {
+          // Skip failed resolutions
+        }
+      }
+    }
+
+    if (this.parent) {
+      results.push(...this.parent.resolveByTag<T>(tag));
+    }
+
+    return results;
+  }
+
+  // Lifecycle
+  async dispose(): Promise<void> {
+    // Dispose children first
+    await Promise.all([...this.children].map((child) => child.dispose()));
+    this.children.clear();
+
+    // Dispose instances that implement disposal
+    for (const instance of this.instances.values()) {
+      if (instance && typeof instance === "object" && "dispose" in instance) {
+        const disposable = instance as { dispose(): Promise<void> | void };
+        await disposable.dispose();
+      }
+    }
+
+    // Clear all caches
+    this.instances.clear();
+    this.scopedInstances.clear();
+    this.bindings.clear();
+  }
+
+  // Private resolution implementation
+  private resolveWithContext<T>(
+    identifier: Identifier,
+    context: ResolutionContext
+  ): T {
+    // Check for circular dependencies
+    if (context.path.has(identifier)) {
+      throw new CircularDependencyError(identifier, context);
+    }
+
+    if (context.depth >= context.maxDepth) {
       throw new Error(
-        `Singleton token ${token.name} is already registered. Use a different token or register a cached dependency`
+        `Maximum resolution depth exceeded (${context.maxDepth})`
       );
     }
-  }
-  get<T>(token: string): T;
-  get<T>(token: InjectionToken): T;
-  get<T>(target: Class<T>): T;
-  get<T>(target: InjectorKey | string): T;
-  get<T>(target: InjectorKey | string): T {
-    target = getRealTarget(target);
 
-    if (hasSingleton(target)) {
-      return getSingleton(target) as T;
-    }
-    const scope = getScope(target);
-    if (!hasScope(target)) {
-      registerScope(target, INJECTION_SCOPE.CACHED);
-    }
-    const type = getTypeToken(target) ?? (target as Class<unknown>);
-    if (scope === INJECTION_SCOPE.SINGLETON) {
-      const instance = this.#assembleTarget(type);
-      registerSingleton(target, instance);
-      return instance as T;
+    // Get binding first to check scope
+    const binding = this.getBindingInternal(identifier);
+    if (!binding) {
+      throw new UnregisteredDependencyError(identifier);
     }
 
-    if (scope === INJECTION_SCOPE.CACHED) {
-      if (hasContainerContext(this.reference, target)) {
-        return getContainerContexts(this.reference, target) as T;
+    // Check for cached instances based on scope
+    if (binding.scope === Scope.SINGLETON && this.instances.has(identifier)) {
+      return this.instances.get(identifier) as T;
+    }
+
+    // Check scoped cache for other scopes
+    const scopedCache = this.getScopedCache(binding.scope);
+    if (scopedCache?.has(identifier)) {
+      return scopedCache.get(identifier) as T;
+    }
+
+    // Add to resolution path
+    context.path.add(identifier);
+    context.depth++;
+
+    try {
+      // Create instance
+      const instance = this.createInstance(binding, context) as T;
+
+      // Cache based on scope
+      if (binding.scope === Scope.SINGLETON) {
+        this.instances.set(identifier, instance);
+      } else if (scopedCache) {
+        scopedCache.set(identifier, instance);
       }
-      const assembled = this.#assembleTarget(type);
-      return registerContainerContext(this.reference, target, assembled) as T;
-    }
 
-    return this.#assembleTarget(type) as T;
-  }
-
-  async disposeAll(
-    tags: string[],
-    isTagsMatch: (tags: string[], filter: string) => boolean
-  ) {
-    for (const disposable of this.#disposables) {
-      await disposable[DisposeMethod](tags, isTagsMatch);
+      return instance;
+    } finally {
+      // Clean up resolution path
+      context.path.delete(identifier);
+      context.depth--;
     }
   }
 
-  async disposeGlobal(
-    tags: string[],
-    isTagsMatch: (tags: string[], filter: string) => boolean
-  ) {
-    for (const disposable of this.#globalDisposables) {
-      await disposable[DisposeMethod](tags, isTagsMatch);
-    }
+  private getBindingInternal<T>(
+    identifier: Identifier<T>
+  ): Binding<T> | undefined {
+    const binding = this.bindings.get(identifier as Identifier);
+    return (binding ||
+      (this.parent as Container)?.getBindingInternal?.(identifier)) as
+      | Binding<T>
+      | undefined;
   }
 
-  #assembleTarget<T>(target: Class<T>): T {
-    const constructor = this.#getConstructorArgs<T>(target);
-    const args = constructor.map((arg) => this.get(arg));
-    const instance = new target(...args) as Record<string, unknown>;
-    const meta = metadata(target);
-    const keys = meta.keys as string[];
-    for (const key of keys) {
-      const info = meta.get(key);
-      if (!info) {
+  private createInstance<T>(
+    binding: Binding<T>,
+    context: ResolutionContext
+  ): T {
+    switch (binding.type) {
+      case "value":
+        return binding.value;
+
+      case "factory": {
+        // Create a context-aware container for factories
+        const contextAwareContainer = this.createContextAwareContainer(context);
+        return binding.factory(contextAwareContainer);
+      }
+
+      case "class":
+        return this.instantiateClass(
+          binding.target as unknown as Constructor<T & object>,
+          context
+        ) as T;
+
+      case "token": {
+        if (typeof binding.target === "function") {
+          if (this.isConstructor(binding.target)) {
+            return this.instantiateClass(
+              binding.target as Constructor<T & object>,
+              context
+            );
+          } else {
+            // Create a context-aware container for token factories
+            const contextAwareContainer =
+              this.createContextAwareContainer(context);
+            return (binding.target as (container: IContainer) => T)(
+              contextAwareContainer
+            );
+          }
+        }
         throw new Error(
-          `No metadata found for ${key} in ${target.name}. Did you forget to decorate it? 
-Use the \`@Inject.class\`, \`@Inject.factory\` or \`@Inject.value\` decorator to register a dependency type or value`
+          `Invalid token binding target for ${binding.token.toString()}`
         );
       }
-      if (info && "class" in info) {
-        const dependency = this.get(info.class);
-        instance[key] = dependency;
-      }
 
-      if (info && "factory" in info) {
-        const dependency = info.factory();
-        instance[key] = dependency;
-      }
-
-      if (info && "value" in info) {
-        const dependency = info.value;
-        instance[key] = dependency;
-      }
+      default:
+        throw new Error(`Unknown binding type: ${(binding as Binding).type}`);
     }
-    if (
-      DisposeMethod in instance &&
-      typeof instance[DisposeMethod] === "function"
-    ) {
-      this.#disposables.add(instance as { [DisposeMethod](): unknown });
-    }
-    return instance as T;
   }
 
-  #getConstructorArgs<T>(target: Class<T>) {
-    return (
-      metadata(target).getCustom<InjectorKey[]>(AutometaSymbol.CONSTRUCTOR) ??
-      []
-    );
+  private instantiateClass<T extends object>(
+    constructor: Constructor<T>,
+    context: ResolutionContext
+  ): T {
+    console.log(`Instantiating class: ${constructor.name}`);
+    const binding = this.getBindingInternal(constructor) as ClassBinding<T>;
+    if (!binding || binding.type !== "class") {
+      throw new Error(
+        `No class binding found for constructor: ${constructor.name}`
+      );
+    }
+
+    // Resolve constructor dependencies from the 'deps' array
+    console.log(`Resolving constructor args for ${constructor.name}. Deps:`, binding.deps);
+    const constructorArgs = (binding.deps || []).map((dep) => {
+      return this.resolveWithContext(dep, context);
+    });
+    console.log(`Resolved constructor args for ${constructor.name}. Args:`, constructorArgs);
+
+    // Create the instance
+    console.log(`Creating new instance of ${constructor.name}`);
+    const instance = new constructor(...constructorArgs);
+
+    // Resolve and set property dependencies from the 'props' array
+    if (binding.props) {
+      for (const prop of binding.props) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (instance as any)[prop.property] = this.resolveWithContext(
+          prop.token,
+          context
+        );
+      }
+    }
+
+    return instance;
+  }
+
+  private isConstructor(fn: unknown): fn is Constructor {
+    return typeof fn === "function" && fn.prototype !== undefined;
+  }
+
+  private createContextAwareContainer(context: ResolutionContext): IContainer {
+    return {
+      register: <T>(identifier: Identifier<T>, binding: Partial<Binding<T>>) =>
+        this.register(identifier, binding),
+      registerClass: <T>(
+        target: Constructor<T>,
+        options?: RegistrationOptions
+      ) => this.registerClass(target, options),
+      registerValue: <T>(
+        identifier: Identifier<T>,
+        value: T,
+        options?: RegistrationOptions
+      ) => this.registerValue(identifier, value, options),
+      registerFactory: <T>(
+        identifier: Identifier<T>,
+        factory: (container: IContainer) => T,
+        options?: RegistrationOptions
+      ) => this.registerFactory(identifier, factory, options),
+      registerToken: <T>(
+        token: Token<T>,
+        target: Constructor<T> | ((container: IContainer) => T),
+        options?: RegistrationOptions
+      ) => this.registerToken(token, target, options),
+
+      resolve: <T>(identifier: Identifier<T>): T => {
+        return this.resolveWithContext(identifier as Identifier, context) as T;
+      },
+
+      resolveAll: <T>(identifier: Identifier<T>) => this.resolveAll(identifier),
+      tryResolve: <T>(identifier: Identifier<T>) => this.tryResolve(identifier),
+      isRegistered: <T>(identifier: Identifier<T>) =>
+        this.isRegistered(identifier),
+      getBinding: <T>(identifier: Identifier<T>) => this.getBinding(identifier),
+      createChild: () => this.createChild(),
+      resolveByTag: <T>(tag: string) => this.resolveByTag<T>(tag),
+      dispose: () => this.dispose(),
+    };
+  }
+
+  private getScopedCache(scope: Scope): Map<Identifier, unknown> | undefined {
+    if (scope === Scope.SINGLETON || scope === Scope.TRANSIENT) {
+      return undefined; // Singletons use global cache, transients are never cached
+    }
+
+    if (!this.scopedInstances.has(scope)) {
+      this.scopedInstances.set(scope, new Map());
+    }
+
+    return this.scopedInstances.get(scope);
+  }
+
+  private identifierMatches(a: Identifier, b: Identifier): boolean {
+    return a === b;
+  }
+
+  private bindingHasMatchingTag(
+    binding: Binding,
+    identifier: Identifier
+  ): boolean {
+    if (typeof identifier !== "string") {
+      return false;
+    }
+    return binding.tags.includes(identifier);
   }
 }
 
-function getRealTarget(target: Class<unknown> | InjectionToken | string) {
-  if (typeof target === "string") {
-    return Token(target);
-  }
-  if (target instanceof InjectionToken) {
-    return target;
-  }
-  return target;
+// Export convenience functions
+export function createContainer(): IContainer {
+  return new Container();
+}
+
+export function createChildContainer(parent: IContainer): IContainer {
+  return parent.createChild();
 }

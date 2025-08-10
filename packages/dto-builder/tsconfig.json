@@ -1,0 +1,14 @@
+{
+  "extends": "../../configuration/tsconfig/package.config.json",
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    ".reference"
+  ],
+  "references": [
+    {
+      "path": "../injection"
+    }
+  ]
+}
