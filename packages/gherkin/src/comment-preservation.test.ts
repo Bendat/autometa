@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseGherkin, astToSimple } from './parsers';
 import { simpleToAst } from './converters';
-import { SimpleScenario, SimpleRule, SimpleRuleElement } from './types';
+import { SimpleScenario, SimpleRule } from './types';
 
 describe('Comment and Location Preservation', () => {
   it('should preserve comments and location metadata', () => {

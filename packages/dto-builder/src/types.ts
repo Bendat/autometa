@@ -1,3 +1,7 @@
+import type { ArrayElement, Constructor } from "@autometa/types";
+
+export type { ArrayElement } from "@autometa/types";
+
 export type DefaultSupplier<T> = () => T;
 
 export type DefaultsRecord<T> = Partial<{
@@ -25,9 +29,7 @@ export interface InterfaceBuilderOptions<T> {
 
 export type ClassBuilderOptions<T> = InterfaceBuilderOptions<T>;
 
-export type ClassConstructor<T> = new (...args: unknown[]) => T;
-
-export type ArrayElement<T> = T extends Array<infer U> ? U : never;
+export type ClassConstructor<T> = Constructor<T>;
 
 export type ArrayKeys<T> = {
   [K in keyof T]-?: NonNullable<T[K]> extends Array<unknown> ? K : never;
@@ -72,10 +74,10 @@ type ArrayCallbackParam<T, K extends keyof T> = NonNullable<T[K]> extends Array<
   : never;
 
 type CallbackSetterOverloads<T, K extends keyof T> = (ArrayCallbackParam<T, K> extends never
-  ? {}
+  ? unknown
   : (configure: ArrayCallbackParam<T, K>) => BuilderInstance<T>) &
   (ObjectCallbackParam<T, K> extends never
-    ? {}
+    ? unknown
     : (configure: ObjectCallbackParam<T, K>) => BuilderInstance<T>);
 
 type FluentSetter<T, K extends keyof T> = ((value: T[K]) => BuilderInstance<T>) &

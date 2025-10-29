@@ -11,7 +11,8 @@
   },
   "files": [
     "index.js",
-    "base.js"
+    "base.js",
+    "index.d.ts"
   ],
   "dependencies": {
     "tsup": "^7.2.0"

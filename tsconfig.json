@@ -9,6 +9,9 @@
     },
     {
       "path": "packages/dto-builder"
+    },
+    {
+      "path": "packages/types"
     }
   ],
   "compilerOptions": {

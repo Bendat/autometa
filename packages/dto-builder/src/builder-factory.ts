@@ -388,7 +388,7 @@ class FluentCallbackContext<T, K extends keyof T> {
     return new Proxy(
       {},
       {
-        get: (_, prop, receiver) => {
+  get: (_, prop, _receiver) => {
           if (typeof prop === "symbol") {
             if (prop === Symbol.toStringTag) {
               return "FluentCallbackContext";

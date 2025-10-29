@@ -3,6 +3,124 @@
   "globalDependencies": [
     "env"
   ],
+  "pipeline": {
+    "type-check": {
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "outputs": [
+        "dist/types/**"
+      ],
+      "dependsOn": ["^type-check"]
+    },
+    "build": {
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.js",
+        "src/**/*.jsx",
+        "!src/**/*.spec.ts",
+        "!src/**/*.test.ts",
+        "!src/**/*.test-d.ts",
+        "package.json",
+        "tsconfig.json",
+        "tsup.config.ts"
+      ],
+      "outputs": [
+        "dist/**",
+        "lib/**",
+        "build/**"
+      ],
+      "dependsOn": ["^build", "type-check"]
+    },
+    "build:docs": {
+      "outputs": [
+        "build/**",
+        ".docusaurus/**"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "inputs": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "!dist/**",
+        "package.json",
+        "tsconfig.json",
+        "vitest.config.ts"
+      ],
+      "dependsOn": ["type-check"]
+    },
+    "test:types": {
+      "inputs": [
+        "src/**/*.test-d.ts",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "!dist/**",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "dependsOn": ["type-check"]
+    },
+    "coverage": {
+      "inputs": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "!dist/**",
+        "package.json",
+        "tsconfig.json",
+        "vitest.config.ts"
+      ],
+      "outputs": [
+        "coverage/**"
+      ],
+      "dependsOn": ["type-check"]
+    },
+    "lint": {
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.js",
+        "src/**/*.jsx",
+        "package.json",
+        ".eslintrc.*",
+        "eslint.config.*"
+      ]
+    },
+    "lint:fix": {
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.js",
+        "src/**/*.jsx",
+        "package.json",
+        ".eslintrc.*",
+        "eslint.config.*"
+      ]
+    },
+    "clean": {
+      "cache": false
+    },
+    "sync-ts-references": {
+      "cache": false,
+      "inputs": [
+        "packages/*/package.json",
+        "libraries/*/package.json",
+        "*/*/tsconfig.json"
+      ]
+    }
+  },
   "tasks": {
     "type-check": {
       "inputs": [

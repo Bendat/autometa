@@ -6,12 +6,5 @@
   "exclude": [
     ".reference"
   ],
-  "references": [
-    {
-      "path": "../injection"
-    },
-    {
-      "path": "../types"
-    }
-  ]
+  "references": []
 }
