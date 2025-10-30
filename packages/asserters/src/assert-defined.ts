@@ -1,25 +1,28 @@
 import { AutomationError } from "@autometa/errors";
 
-export function AssertDefined<TObj>(
-  item: TObj | null | undefined,
+/**
+ * Asserts that a value is not null or undefined, narrowing its type.
+ * 
+ * @param value - The value to check
+ * @param context - Optional context for error messages
+ * @throws {AutomationError} If value is null or undefined
+ * 
+ * @example
+ * ```ts
+ * const maybeValue: string | undefined = getValue();
+ * assertDefined(maybeValue, "getValue");
+ * // maybeValue is now typed as string
+ * console.log(maybeValue.toUpperCase());
+ * ```
+ */
+export function assertDefined<T>(
+  value: T,
   context?: string
-): asserts item is TObj {
-  const prefix = context ? `${context}: ` : "";
-  if (item === null || item === undefined) {
+): asserts value is NonNullable<T> {
+  if (value === null || value === undefined) {
+    const prefix = context ? `[${context}] ` : "";
     throw new AutomationError(
-      `${prefix}Item was expected to be defined but was ${item}. Full Item: ${JSON.stringify(
-        item,
-        null,
-        2
-      )}`
+      `${prefix}Expected value to be defined, but got ${value}`
     );
   }
-}
-export function ConfirmDefined<TObj>(
-  item: TObj | null | undefined
-): item is TObj {
-  if (item === null || item === undefined) {
-    return false;
-  }
-  return true;
 }
