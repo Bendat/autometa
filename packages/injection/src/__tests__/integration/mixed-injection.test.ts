@@ -1,13 +1,13 @@
 import "reflect-metadata";
 import { Container } from "../../container";
-import { createDecorators, InjectableOptions } from "../../decorators";
+import { createDecorators } from "../../decorators";
 import { createToken } from "../../types";
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("Mixed Injection Tests", () => {
   let container: Container;
-  let Injectable: (options?: InjectableOptions) => ClassDecorator;
-  let Inject: (token: any) => any;
+  let Injectable: ReturnType<typeof createDecorators>["Injectable"];
+  let Inject: ReturnType<typeof createDecorators>["Inject"];
 
   beforeEach(() => {
     container = new Container();
@@ -89,11 +89,9 @@ describe("Mixed Injection Tests", () => {
       id = "TopLevelService";
     }
 
-    container.registerClass(ServiceA);
-    container.registerToken(SERVICE_C_TOKEN, ServiceCImpl);
-    container.registerClass(ServiceD);
-    container.registerClass(ServiceE);
-    container.registerClass(TopLevelService);
+  container.registerClass(ServiceA);
+  container.registerToken(SERVICE_C_TOKEN, ServiceCImpl);
+  container.registerClass(ServiceD);
 
     const topService = container.resolve(TopLevelService);
 
@@ -118,15 +116,8 @@ describe("Mixed Injection Tests", () => {
       id = "ServiceB";
     }
 
-    interface IServiceC {
-      id: string;
-      getBId(): string;
-      b: ServiceB;
-    }
-    const SERVICE_C_TOKEN = createToken<IServiceC>("IServiceC");
-
     @Injectable({ deps: [ServiceB] })
-    class ServiceCImpl implements IServiceC {
+    class ServiceCImpl {
       constructor(public b: ServiceB) {}
       id = "ServiceCImpl";
       getBId(): string {
@@ -134,7 +125,7 @@ describe("Mixed Injection Tests", () => {
       }
     }
 
-    container.registerClass(ServiceA);
+  container.registerClass(ServiceA);
 
     const serviceC = container.resolve(ServiceCImpl);
 

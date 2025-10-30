@@ -1,21 +1,21 @@
 import "reflect-metadata";
 import { Container } from "../../container";
-import { createDecorators, InjectableOptions } from "../../decorators";
-import { createToken, Scope } from "../../types";
-import { describe, it, expect, beforeEach } from "vitest";
+import { createDecorators } from "../../decorators";
+import { createToken } from "../../types";
+import { beforeEach, describe, expect, it } from "vitest";
+
+interface ILogger {
+  log(message: string): void;
+}
+
+const LOGGER_TOKEN = createToken<ILogger>("ILogger");
 
 describe("Property Injection with Token-based Dependency", () => {
   let container: Container;
-  let Injectable: (options?: InjectableOptions) => ClassDecorator;
-  let Inject: (token: any) => any;
-
-  // Define a token for ILogger
-  const LOGGER_TOKEN = createToken<ILogger>('ILogger');
-
-  // Define the ILogger interface
-  interface ILogger {
-    log(message: string): void;
-  }
+  let Injectable: ReturnType<typeof createDecorators>["Injectable"];
+  let Inject: ReturnType<typeof createDecorators>["Inject"];
+  let ServiceWithLogger: new () => { logger: ILogger; doSomething(): void };
+  let ConsoleLogger: new () => ILogger;
 
   beforeEach(() => {
     container = new Container();
@@ -23,20 +23,15 @@ describe("Property Injection with Token-based Dependency", () => {
     Injectable = decorators.Injectable;
     Inject = decorators.Inject;
 
-    // Concrete implementation of ILogger
     @Injectable()
-    class ConsoleLogger implements ILogger {
-      log(message: string): void {
-        console.log(`[ConsoleLogger]: ${message}`);
+    class ConsoleLoggerImpl implements ILogger {
+      log(_message: string): void {
+        // Intentionally empty: the fake logger only verifies injection wiring.
       }
     }
 
-    // Register ConsoleLogger as the implementation for LOGGER_TOKEN
-    container.registerToken(LOGGER_TOKEN, ConsoleLogger);
-
-    // Define ServiceWithLogger inside beforeEach or it block
     @Injectable()
-    class ServiceWithLogger {
+    class ServiceWithLoggerImpl {
       @Inject(LOGGER_TOKEN)
       public logger!: ILogger;
 
@@ -45,13 +40,17 @@ describe("Property Injection with Token-based Dependency", () => {
       }
     }
 
-    // The test itself
-    it("should inject a logger into a property using a token", () => {
-      const service = container.resolve(ServiceWithLogger);
-      expect(service).toBeInstanceOf(ServiceWithLogger);
-      expect(service.logger).toBeInstanceOf(ConsoleLogger);
-      // Optionally, you can call the method to ensure it works
-      // service.doSomething();
-    });
+    container.registerToken(LOGGER_TOKEN, ConsoleLoggerImpl);
+    container.registerClass(ServiceWithLoggerImpl);
+
+    ConsoleLogger = ConsoleLoggerImpl;
+    ServiceWithLogger = ServiceWithLoggerImpl;
+  });
+
+  it("should inject a logger into a property using a token", () => {
+    const service = container.resolve(ServiceWithLogger);
+
+    expect(service).toBeInstanceOf(ServiceWithLogger);
+    expect(service.logger).toBeInstanceOf(ConsoleLogger);
   });
 });

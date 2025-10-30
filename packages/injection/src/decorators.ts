@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import type { Container } from "./container";
-import { Token, Scope, PropertyDep, Identifier } from "./types";
+import { Scope } from "./types";
+import type { Identifier, PropertyDep } from "./types";
 
 // Define unique keys for storing metadata via reflect-metadata
 const INJECT_PARAM_KEY = "autometa:inject_param";
@@ -10,6 +11,8 @@ export interface InjectableOptions {
   scope?: Scope;
   deps?: Identifier[];
 }
+
+type InjectableTarget = new (...args: unknown[]) => object;
 
 /**
  * Creates a set of decorators bound to a specific container instance.
@@ -24,28 +27,26 @@ export function createDecorators(container: Container) {
    * `reflect-metadata` and registers the class with the container.
    */
   function Injectable(options: InjectableOptions = {}): ClassDecorator {
-    return function (target: any) {
+    return (target) => {
+      const ctor = target as InjectableTarget;
       // --- Constructor Injection ---
       const deps = options.deps || [];
 
       // --- Property Injection ---
-      const props: PropertyDep<any>[] =
-        Reflect.getMetadata(INJECT_PROP_KEY, target.prototype) || [];
+      const props =
+        (Reflect.getMetadata(INJECT_PROP_KEY, ctor.prototype) as PropertyDep[] | undefined) || [];
 
       // --- Registration ---
       // The container's `register` method expects an identifier and a binding object.
-      const identifier = target;
+      const identifier = ctor as unknown as Identifier;
       const binding = {
         type: "class" as const,
-        target: target,
+        target: ctor,
         scope: options.scope || Scope.TRANSIENT,
         tags: [],
-        deps: deps,
-        props: props,
+        deps,
+        props,
       };
-
-      console.log(`Registering ${target.name} with deps:`, deps);
-      console.log(`Registering ${target.name} with props:`, props);
 
       container.register(identifier, binding);
     };
@@ -56,27 +57,25 @@ export function createDecorators(container: Container) {
    * to specify a dependency token.
    * @param token The token representing the dependency to inject.
    */
-  function Inject(token: Token<any>) {
-    return function (
-      target: any,
-      propertyKey: string | symbol,
-      parameterIndex?: number
-    ) {
-      // If `parameterIndex` is a number, it's a constructor parameter decorator
+  function Inject(token: Identifier): PropertyDecorator & ParameterDecorator {
+    return ((...args: [object, string | symbol, number?]) => {
+      const [target, propertyKey, parameterIndex] = args;
+
       if (typeof parameterIndex === "number") {
+        const ctor = target as InjectableTarget;
         const paramTokens =
-          Reflect.getMetadata(INJECT_PARAM_KEY, target) ||
-          new Map<number, any>();
+          (Reflect.getMetadata(INJECT_PARAM_KEY, ctor) as Map<number, Identifier> | undefined) ||
+          new Map<number, Identifier>();
         paramTokens.set(parameterIndex, token);
-        Reflect.defineMetadata(INJECT_PARAM_KEY, paramTokens, target);
+        Reflect.defineMetadata(INJECT_PARAM_KEY, paramTokens, ctor);
+        return;
       }
-      // Otherwise, it's a property decorator
-      else {
-        const props = Reflect.getMetadata(INJECT_PROP_KEY, target) || [];
-        props.push({ property: propertyKey, token });
-        Reflect.defineMetadata(INJECT_PROP_KEY, props, target);
-      }
-    };
+
+      const props =
+        (Reflect.getMetadata(INJECT_PROP_KEY, target) as PropertyDep[] | undefined) || [];
+      props.push({ property: propertyKey, token });
+      Reflect.defineMetadata(INJECT_PROP_KEY, props, target);
+    }) as PropertyDecorator & ParameterDecorator;
   }
 
   return { Injectable, Inject };

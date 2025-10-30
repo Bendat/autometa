@@ -335,7 +335,6 @@ export class Container implements IContainer {
     constructor: Constructor<T>,
     context: ResolutionContext
   ): T {
-    console.log(`Instantiating class: ${constructor.name}`);
     const binding = this.getBindingInternal(constructor) as ClassBinding<T>;
     if (!binding || binding.type !== "class") {
       throw new Error(
@@ -344,14 +343,11 @@ export class Container implements IContainer {
     }
 
     // Resolve constructor dependencies from the 'deps' array
-    console.log(`Resolving constructor args for ${constructor.name}. Deps:`, binding.deps);
     const constructorArgs = (binding.deps || []).map((dep) => {
       return this.resolveWithContext(dep, context);
     });
-    console.log(`Resolved constructor args for ${constructor.name}. Args:`, constructorArgs);
 
     // Create the instance
-    console.log(`Creating new instance of ${constructor.name}`);
     const instance = new constructor(...constructorArgs);
 
     // Resolve and set property dependencies from the 'props' array

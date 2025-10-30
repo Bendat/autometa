@@ -2,6 +2,12 @@
   "files": [],
   "references": [
     {
+      "path": "packages/types"
+    },
+    {
+      "path": "packages/overloaded"
+    },
+    {
       "path": "packages/injection"
     },
     {
@@ -9,9 +15,6 @@
     },
     {
       "path": "packages/dto-builder"
-    },
-    {
-      "path": "packages/types"
     }
   ],
   "compilerOptions": {

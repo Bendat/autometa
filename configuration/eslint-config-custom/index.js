@@ -1,21 +1,20 @@
 const extendsConfig = ["prettier"];
 
 try {
-  require("eslint-config-turbo");
-  extendsConfig.push("turbo");
+
+  require("eslint-plugin-turbo");
+  extendsConfig.push("plugin:turbo/recommended");
 } catch (error) {
   if (process.env.CI) {
     // Fail loudly in CI so we do not silently skip important lint rules.
     throw error;
   }
 
-  // eslint-config-turbo currently crashes when the project uses the new
-  // "tasks" schema. Until the upstream package is updated we fall back to a
-  // configuration without the plugin so developers can run lint locally.
-  // See https://github.com/vercel/turbo/issues/XXXXX (placeholder).
+  // eslint-config-turbo was not available; fall back to a configuration
+  // without the plugin so developers can run lint locally.
   // eslint-disable-next-line no-console
   console.warn(
-    "[eslint-config-custom] Skipping eslint-config-turbo – falling back to core rules only.",
+    "[eslint-config-custom] Skipping eslint-plugin-turbo – falling back to core rules only.",
     error.message
   );
 }

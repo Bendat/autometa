@@ -1,23 +1,23 @@
 import "reflect-metadata";
 import { Container } from "../../container";
-import { createDecorators, InjectableOptions, Scope } from "../../decorators";
-import { describe, it, expect, beforeEach } from "vitest";
+import { createDecorators } from "../../decorators";
+import { beforeEach, describe, it } from "vitest";
 
 describe("Scope Interaction Tests", () => {
   let container: Container;
-  let Injectable: (options?: InjectableOptions) => ClassDecorator;
+  let _Injectable: ReturnType<typeof createDecorators>["Injectable"];
 
   beforeEach(() => {
     container = new Container();
-    const decorators = createDecorators(container);
-    Injectable = decorators.Injectable;
+  const decorators = createDecorators(container);
+  _Injectable = decorators.Injectable;
   });
 
-  it("should resolve a singleton service with a transient dependency correctly", () => {
+  it.skip("should resolve a singleton service with a transient dependency correctly", () => {
     // Placeholder for test logic
   });
 
-  it("should resolve a transient service with a singleton dependency correctly", () => {
+  it.skip("should resolve a transient service with a singleton dependency correctly", () => {
     // Placeholder for test logic
   });
 });

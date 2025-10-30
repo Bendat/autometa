@@ -1,17 +1,13 @@
 import "reflect-metadata";
 import { Container } from "../../container";
-import { createDecorators, InjectableOptions } from "../../decorators";
 import { describe, it, expect, beforeEach } from "vitest";
 import { Scope } from "../../types";
 
 describe("Factory Binding Tests", () => {
   let container: Container;
-  let Injectable: (options?: InjectableOptions) => ClassDecorator;
 
   beforeEach(() => {
     container = new Container();
-    const decorators = createDecorators(container);
-    Injectable = decorators.Injectable;
   });
 
   it("should resolve a service registered with a factory", () => {

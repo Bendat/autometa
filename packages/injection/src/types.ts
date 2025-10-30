@@ -4,7 +4,7 @@
 
 // Constructor type for classes
 export interface Constructor<T = object> {
-  new (...args: any[]): T;
+  new (...args: unknown[]): T;
   name?: string;
   prototype?: T;
 }
@@ -38,7 +38,7 @@ export interface ClassBinding<T = object> {
   scope: Scope;
   tags: string[];
   deps?: Identifier[];
-  props?: PropertyDep<any>[];
+  props?: PropertyDep[];
 }
 
 export interface ValueBinding<T = object> {
@@ -175,7 +175,7 @@ export function createToken<T>(description?: string): Token<T> {
   return Symbol(description) as Token<T>;
 }
 
-export interface PropertyDep<T> {
+export interface PropertyDep {
   property: string | symbol;
-  token: Token<T>;
+  token: Identifier;
 }

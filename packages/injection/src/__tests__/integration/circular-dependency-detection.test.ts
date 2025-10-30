@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Container } from "../../container";
-import { createDecorators, InjectableOptions } from "../../decorators";
+import { createDecorators } from "../../decorators";
 import { CircularDependencyError } from "../../types";
 import { describe, it, expect, beforeEach } from "vitest";
 const container = new Container();

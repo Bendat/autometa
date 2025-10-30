@@ -1,19 +1,16 @@
 import "reflect-metadata";
 import { Container } from "../../container";
-import { createDecorators, InjectableOptions } from "../../decorators";
-import { Scope } from "../../types";
-import { describe, it, expect, beforeEach } from "vitest";
+import { createDecorators } from "../../decorators";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("Container and Decorator Integration", () => {
   let container: Container;
-  let Injectable: (options?: InjectableOptions) => ClassDecorator;
-  let Inject: (token: any) => any;
+  let Injectable: ReturnType<typeof createDecorators>["Injectable"];
 
   beforeEach(() => {
     container = new Container();
     const decorators = createDecorators(container);
     Injectable = decorators.Injectable;
-    Inject = decorators.Inject;
   });
 
   it("should resolve a simple dependency", () => {
