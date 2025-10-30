@@ -1,12 +1,15 @@
 {
   "extends": "../../configuration/tsconfig/package.config.json",
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     ".reference"
-  ]
+  ],
+  "references": []
 }

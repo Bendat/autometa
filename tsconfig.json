@@ -18,6 +18,9 @@
     },
     {
       "path": "packages/dto-builder"
+    },
+    {
+      "path": "packages/asserters"
     }
   ],
   "compilerOptions": {
