@@ -83,7 +83,11 @@ function runValidators<T>(
   index: number
 ): MaybePromise<void> {
   for (let cursor = index; cursor < validators.length; cursor += 1) {
-    const result = validators[cursor](value);
+    const validator = validators[cursor];
+    if (!validator) {
+      continue;
+    }
+    const result = validator(value);
     if (isPromiseLike(result)) {
       return result.then(() => runValidators(value, validators, cursor + 1));
     }

@@ -14,6 +14,14 @@ export interface InjectableOptions {
 
 type InjectableTarget = new (...args: unknown[]) => object;
 
+function ensureInjectableTarget(value: unknown, decorator: string): asserts value is InjectableTarget {
+  if (typeof value !== "function") {
+    throw new TypeError(
+      `[${decorator}] can only be used on classes. Received ${typeof value}.`
+    );
+  }
+}
+
 /**
  * Creates a set of decorators bound to a specific container instance.
  * This factory pattern ensures the decorators are decoupled from a global
@@ -28,7 +36,8 @@ export function createDecorators(container: Container) {
    */
   function Injectable(options: InjectableOptions = {}): ClassDecorator {
     return (target) => {
-      const ctor = target as InjectableTarget;
+      ensureInjectableTarget(target, "Injectable");
+      const ctor = target;
       // --- Constructor Injection ---
       const deps = options.deps || [];
 
@@ -62,7 +71,8 @@ export function createDecorators(container: Container) {
       const [target, propertyKey, parameterIndex] = args;
 
       if (typeof parameterIndex === "number") {
-        const ctor = target as InjectableTarget;
+        ensureInjectableTarget(target, "Inject parameter");
+        const ctor = target;
         const paramTokens =
           (Reflect.getMetadata(INJECT_PARAM_KEY, ctor) as Map<number, Identifier> | undefined) ||
           new Map<number, Identifier>();

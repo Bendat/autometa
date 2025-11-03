@@ -11,9 +11,10 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "clean": "rimraf dist",
-    "build": "tsup",
-    "build:watch": "tsup --watch"
+  "clean": "rimraf dist",
+  "build": "tsup && pnpm run build:types",
+  "build:types": "tsc --build --force tsconfig.types.json",
+  "build:watch": "tsup --watch"
   },
   "exports": {
     "import": "./dist/esm/index.js",

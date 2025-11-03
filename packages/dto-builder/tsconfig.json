@@ -4,14 +4,10 @@
     "src/**/*"
   ],
   "exclude": [
-    ".reference"
-  ],
-  "references": [
-    {
-      "path": "../injection"
-    },
-    {
-      "path": "../types"
-    }
+    ".reference",
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ]
 }

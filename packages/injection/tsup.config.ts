@@ -1,10 +1,10 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  clean: true, // clean up the dist folder
-  format: ["cjs", "esm"], // generate cjs and esm files
-  dts: true,
-  sourcemap: true, // generate sourcemaps
+  clean: true,
+  format: ["cjs", "esm"],
+  dts: false, // Declarations emitted via tsc --project tsconfig.types.json
+  sourcemap: true,
   skipNodeModulesBundle: true,
   entryPoints: ["src/index.ts"],
   target: "es2020",

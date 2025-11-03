@@ -9,7 +9,8 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
-    "build": "tsup",
+  "build": "tsup && pnpm run build:types",
+  "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",

@@ -1,13 +1,14 @@
 {
   "extends": "../../configuration/tsconfig/package.config.json",
-  "compilerOptions": {
-    "composite": true
-  },
   "include": [
     "src/**/*"
   ],
   "exclude": [
-    ".reference"
+    ".reference",
+    "dist",
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ],
   "references": []
 }

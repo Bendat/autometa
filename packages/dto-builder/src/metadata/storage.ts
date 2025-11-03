@@ -37,7 +37,11 @@ export function getAggregatedDecoratorDefaults(
   }
 
   for (let index = chain.length - 1; index >= 0; index -= 1) {
-    const defaults = registry.get(chain[index]);
+    const ctor = chain[index];
+    if (!ctor) {
+      continue;
+    }
+    const defaults = registry.get(ctor);
     if (!defaults) {
       continue;
     }

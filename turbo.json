@@ -11,9 +11,6 @@
         "package.json",
         "tsconfig.json"
       ],
-      "outputs": [
-        "dist/types/**"
-      ],
       "dependsOn": ["^type-check"]
     },
     "build": {

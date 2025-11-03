@@ -4,7 +4,11 @@
     "src/**/*"
   ],
   "exclude": [
-    ".reference"
+    ".reference",
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ],
   "references": []
 }
