@@ -20,6 +20,9 @@
       "path": "packages/dto-builder"
     },
     {
+      "path": "packages/bind-decorator"
+    },
+    {
       "path": "packages/asserters"
     }
   ],

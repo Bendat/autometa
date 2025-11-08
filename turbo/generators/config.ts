@@ -44,6 +44,11 @@ export default function (plop: PlopTypes.NodePlopAPI) {
       },
       {
         type: "add",
+        path: "{{root}}/{{kebabCase name}}/tsconfig.types.json",
+        templateFile: "plop-templates/library/tsconfig.types.json.hbs",
+      },
+      {
+        type: "add",
         path: "{{root}}/{{kebabCase name}}/README.md",
         templateFile: "plop-templates/library/README.md.hbs",
       },

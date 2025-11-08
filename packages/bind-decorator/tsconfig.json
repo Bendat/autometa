@@ -1,0 +1,10 @@
+{
+  "extends": "../../configuration/tsconfig/package.config.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "importHelpers": false
+  },
+  "include": ["src/**/*"],
+  "exclude": [".reference"],
+  "references": []
+}

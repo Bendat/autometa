@@ -9,5 +9,13 @@
     "dist",
     "**/*.spec.ts",
     "**/*.test.ts"
+  ],
+  "references": [
+    {
+      "path": "../injection"
+    },
+    {
+      "path": "../types"
+    }
   ]
 }

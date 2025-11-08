@@ -1,7 +1,7 @@
 {
-  "name": "@autometa/{{kebabCase name}}",
+  "name": "@autometa/bind-decorator",
   "version": "0.0.0",
-  "description": "{{description}}",
+  "description": "Decorators that bind or freeze class methods for Autometa consumers.",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -39,8 +39,8 @@
     "eslint-config-prettier": "^8.3.0",
     "rimraf": "^4.1.2",
     "tsconfig": "workspace:*",
-    "tsup-config": "workspace:*",
     "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
     "typescript": "^4.9.5",
     "vitest": "1.4.0"
   }
