@@ -26,6 +26,9 @@
       "path": "packages/dto-builder"
     },
     {
+      "path": "packages/datetime"
+    },
+    {
       "path": "packages/bind-decorator"
     },
     {

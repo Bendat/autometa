@@ -128,14 +128,14 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 ## Level 3: Depends on Level 0-2
 
-### ⏸️ @autometa/datetime
+### ✅ @autometa/datetime
 **Location:** `packages/datetime`  
 **Dependencies:**
 - ✅ @autometa/asserters
 - ✅ @autometa/errors
 - ✅ @autometa/phrases
 
-**Status:** Ready to migrate ⏳
+**Status:** Migrated ✅ (injectable clock, modern date/time factories, full coverage)
 
 ### ⏸️ @autometa/config
 **Location:** `packages/config`  
