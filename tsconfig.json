@@ -17,6 +17,9 @@
       "path": "packages/gherkin"
     },
     {
+      "path": "packages/fixture-proxies"
+    },
+    {
       "path": "packages/events"
     },
     {
@@ -33,6 +36,9 @@
     },
     {
       "path": "packages/asserters"
+    },
+    {
+      "path": "packages/app"
     }
   ],
   "compilerOptions": {
