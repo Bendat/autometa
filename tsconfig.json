@@ -5,6 +5,9 @@
       "path": "packages/types"
     },
     {
+      "path": "packages/phrases"
+    },
+    {
       "path": "packages/overloaded"
     },
     {
@@ -12,9 +15,6 @@
     },
     {
       "path": "packages/gherkin"
-    },
-    {
-      "path": "packages/phrases"
     },
     {
       "path": "packages/errors"

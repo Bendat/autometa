@@ -31,7 +31,13 @@ async function updateProjectReferences() {
         const packageJson = JSON.parse(
           fs.readFileSync(packageJsonPath, 'utf-8')
         );
-        packageMap.set(packageJson.name, packageDir);
+
+        const typesConfigPath = path.join(packageDir, 'tsconfig.types.json');
+
+        packageMap.set(packageJson.name, {
+          dir: packageDir,
+          hasTypesConfig: fs.existsSync(typesConfigPath)
+        });
       } catch (error) {
         console.warn(`⚠️  Failed to read ${packageJsonPath}:`, error);
       }
@@ -64,9 +70,13 @@ async function updateProjectReferences() {
       
       for (const [depName] of Object.entries(allDeps || {})) {
         if (packageMap.has(depName)) {
-          const depPath = packageMap.get(depName);
-          const relativePath = path.relative(packageDir, depPath);
-          references.push({ path: relativePath });
+          const depInfo = packageMap.get(depName);
+          const relativeDir = path.relative(packageDir, depInfo.dir);
+          const referencePath = depInfo.hasTypesConfig
+            ? path.join(relativeDir, 'tsconfig.types.json')
+            : path.join(relativeDir, 'tsconfig.json');
+
+          references.push({ path: referencePath });
         }
       }
 
@@ -92,8 +102,8 @@ async function updateProjectReferences() {
         fs.readFileSync(rootTsconfigPath, 'utf-8')
       );
 
-      rootTsconfig.references = Array.from(packageMap.values()).map(packageDir => ({
-        path: packageDir
+      rootTsconfig.references = Array.from(packageMap.values()).map(({ dir }) => ({
+        path: dir
       }));
 
       fs.writeFileSync(

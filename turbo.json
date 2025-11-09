@@ -9,7 +9,7 @@
         "package.json",
         "tsconfig.json"
       ],
-      "dependsOn": ["^type-check"]
+      "dependsOn": ["^build:types", "^type-check"]
     },
     "build": {
       "inputs": [
@@ -97,6 +97,10 @@
     },
     "clean": {
       "cache": false
+    },
+    "build:types": {
+      "outputs": ["dist/**/*.d.ts", "dist/**/*.tsbuildinfo"],
+      "dependsOn": ["^build:types"]
     },
     "sync-ts-references": {
       "cache": false,

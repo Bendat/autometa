@@ -16,7 +16,7 @@
   ],
   "references": [
     {
-      "path": "../errors"
+      "path": "../errors/tsconfig.types.json"
     }
   ]
 }
