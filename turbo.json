@@ -1,8 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "env"
-  ],
+  "globalDependencies": ["env"],
   "tasks": {
     "type-check": {
       "inputs": [
@@ -26,18 +24,11 @@
         "tsconfig.json",
         "tsup.config.ts"
       ],
-      "outputs": [
-        "dist/**",
-        "lib/**",
-        "build/**"
-      ],
+      "outputs": ["dist/**", "lib/**", "build/**"],
       "dependsOn": ["^build", "type-check"]
     },
     "build:docs": {
-      "outputs": [
-        "build/**",
-        ".docusaurus/**"
-      ]
+      "outputs": ["build/**", ".docusaurus/**"]
     },
     "dev": {
       "cache": false,
@@ -79,9 +70,7 @@
         "tsconfig.json",
         "vitest.config.ts"
       ],
-      "outputs": [
-        "coverage/**"
-      ],
+      "outputs": ["coverage/**"],
       "dependsOn": ["type-check"]
     },
     "lint": {
@@ -116,6 +105,11 @@
         "libraries/*/package.json",
         "*/*/tsconfig.json"
       ]
+    },
+    "verify:packages": {
+      "cache": false,
+      "inputs": [],
+      "dependsOn": ["sync-ts-references", "type-check", "lint", "test", "build"]
     }
   }
 }

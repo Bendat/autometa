@@ -14,6 +14,9 @@
       "path": "packages/gherkin"
     },
     {
+      "path": "packages/phrases"
+    },
+    {
       "path": "packages/errors"
     },
     {

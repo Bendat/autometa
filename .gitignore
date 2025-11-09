@@ -35,6 +35,7 @@ yarn-error.log*
 # build
 test-out/
 dist/
+*.tsbuildinfo
 *.tgz
 tests-out/
 

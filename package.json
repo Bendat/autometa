@@ -25,7 +25,9 @@
     "prepublish": "pnpm run build",
     "release": "pnpm run build && changeset version && changeset publish",
     "local:unpublish": "pnpm unpublish --registry http://localhost:4873/ --force",
-    "local:publish": "pnpm publish --registry http://localhost:4873/ --force"
+    "local:publish": "pnpm publish --registry http://localhost:4873/ --force",
+    "update:references": "node scripts/update-ts-references.mjs",
+    "verify:packages": "turbo run verify:packages"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.2",

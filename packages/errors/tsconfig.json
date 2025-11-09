@@ -1,5 +1,9 @@
 {
   "extends": "../../configuration/tsconfig/package.config.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+  },
   "include": [
     "src/**/*"
   ],

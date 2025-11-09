@@ -4,7 +4,11 @@
     "experimentalDecorators": true,
     "importHelpers": false
   },
-  "include": ["src/**/*"],
-  "exclude": [".reference"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    ".reference"
+  ],
   "references": []
 }
