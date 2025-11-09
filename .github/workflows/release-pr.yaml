@@ -1,34 +1,28 @@
-name: Deploy Docs
+name: Release PR
 
 on:
-  workflow_run:
-    workflows: ["Publish Packages"]
-    types:
-      - completed
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 concurrency:
-  group: docs-${{ github.event.workflow_run.head_branch || github.ref }}
+  group: release-pr-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+  prepare-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Resolve checkout ref
-        id: ref
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "value=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=main" >> "$GITHUB_OUTPUT"
-          fi
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ steps.ref.outputs.value }}
       - name: Determine tool versions
         id: versions
         run: |
@@ -47,12 +41,11 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build website
-        run: pnpm build:docs
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Create or update release PR
+        uses: changesets/action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./documentation/website/build
-          user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          version: pnpm release:prepare
+          commit: "chore(release): version packages"
+          title: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,29 +1,31 @@
-name: Deploy Docs
+name: Publish Packages
 
 on:
   workflow_run:
-    workflows: ["Publish Packages"]
+    workflows: ["CI"]
     types:
       - completed
-  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
 
 concurrency:
-  group: docs-${{ github.event.workflow_run.head_branch || github.ref }}
-  cancel-in-progress: true
+  group: publish-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+  publish:
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          startsWith(github.event.workflow_run.head_commit.message, 'chore: release packages') }}
     runs-on: ubuntu-latest
+    environment:
+      name: release
     steps:
       - name: Resolve checkout ref
         id: ref
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "value=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=main" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "value=${{ github.event.workflow_run.head_branch || 'main' }}" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -47,12 +49,9 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build website
-        run: pnpm build:docs
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./documentation/website/build
-          user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Build packages
+        run: pnpm build
+      - name: Publish with Changesets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm release
