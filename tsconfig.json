@@ -17,6 +17,9 @@
       "path": "packages/gherkin"
     },
     {
+      "path": "packages/events"
+    },
+    {
       "path": "packages/errors"
     },
     {
