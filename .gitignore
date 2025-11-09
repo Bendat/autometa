@@ -45,3 +45,5 @@ tests-out/
 **/*/vitest.config.ts.timestamp-*
 
 tmp*/
+# temporarily ignore migratory cache files for packages
+.reference

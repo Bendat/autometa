@@ -120,6 +120,13 @@ importers:
         version: 4.1.2
 
   packages/app:
+    dependencies:
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@autometa/injection':
+        specifier: workspace:*
+        version: link:../injection
     devDependencies:
       '@types/node':
         specifier: ^18.11.18

@@ -93,15 +93,15 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 ## Level 2: Depends on Level 0-1
 
-### 🚧 @autometa/events
+### ✅ @autometa/events
 **Location:** `packages/events`  
 **Dependencies:**
 - ✅ @autometa/errors
 - ✅ @autometa/gherkin
 - ✅ @autometa/types
 
-**Status:** In Progress 🚧 (rewriting dispatcher + lifecycle payloads)
-**Notes:** New hook kinds and lifecycle event names land with the v1 emitter/dispatcher updates—downstream packages will need to replace legacy beforeEach/afterEach handlers with stage-specific hooks before migration.
+**Status:** Migrated ✅ (new dispatcher/emitter API with lifecycle payloads)
+**Notes:** Downstream packages must adopt the stage-specific hook helpers introduced in the v1 emitter/dispatcher.
 
 ### ✅ @autometa/phrases
 **Location:** `packages/phrases`  
@@ -293,7 +293,7 @@ Based on the dependency graph, here's the optimal migration sequence:
 10. ✅ @autometa/gherkin (already done)
 
 ### Phase 4: Level 2 Dependencies
-11. 🚧 @autometa/events (depends on errors, gherkin, types) *(in progress)*
+11. ✅ @autometa/events (depends on errors, gherkin, types)
 12. ✅ @autometa/phrases (depends on asserters, bind-decorator, errors)
 13. ✅ @autometa/dto-builder (depends on injection)
 
@@ -328,10 +328,10 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 9 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases)  
-**Ready to migrate:** 1 package (datetime)  
-**In progress:** 1 package (events)  
+**Migrated:** 11 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, datetime, events)  
+**Ready to migrate:** 0 packages  
+**In progress:** 0 packages  
 **Blocked:** 11 active packages (app, config, http, cucumber-expressions, scopes, test-builder, jest-executor, coordinator, runner, plus pending decisions on fixture-proxies/status-codes replacements)  
 **Total:** 22 tracked packages (including legacy slots)
 
-**Next Up:** @autometa/datetime ⭐
+**Next Up:** Resolve blockers for @autometa/app to unblock higher-level packages
