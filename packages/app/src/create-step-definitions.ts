@@ -9,7 +9,6 @@ import type {
   StepFlowBuilder,
 } from "./types";
 import type { WorldCtor, ScopeKeyResolver, StepRuntimeContext } from "./types";
-import { loadDefaultDsl } from "./internal/default-dsl";
 import { ScopeManager } from "./internal/scope-manager";
 
 interface FlowCreator {
@@ -129,17 +128,13 @@ export const createStepDefinitions: StepDefinitionsFactory = Object.assign(
 );
 
 function resolveDsl(dsl: StepDsl | undefined): StepDsl {
-  if (dsl) {
-    return ensureRegistrars(dsl);
-  }
-
-  const auto = loadDefaultDsl();
-  if (!auto) {
+  if (!dsl) {
     throw new AutomationError(
-      "No step-definition DSL provided. Either install @cucumber/cucumber or pass an explicit dsl option."
+      "Step-definition DSL is required. Pass an explicit dsl option when creating step definitions."
     );
   }
-  return ensureRegistrars(auto);
+
+  return ensureRegistrars(dsl);
 }
 
 function ensureRegistrars(dsl: StepDsl): StepDsl {
