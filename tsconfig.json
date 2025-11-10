@@ -5,6 +5,9 @@
       "path": "packages/types"
     },
     {
+      "path": "packages/status-codes"
+    },
+    {
       "path": "packages/phrases"
     },
     {
