@@ -6,7 +6,6 @@ export {
 } from "./parameter-types";
 
 export type {
-	ParameterPrimitive,
 	ParameterTransformContext,
 	ParameterTransformer,
 	ParameterTypeDefinition,
