@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ReadableStream } from "node:stream/web";
 import { HTTP } from "../src/http";
 import type { HTTPPlugin } from "../src/plugins";
 
@@ -166,4 +167,49 @@ describe("HTTP integration with JSONPlaceholder", () => {
 
     expect(response.data.args["tags[]"]).toStrictEqual(["alpha", "beta"]);
   });
+
+  it(
+    "streams responses without JSON parsing when stream() is used",
+    async () => {
+      const result = await HTTP.create()
+        .url(HTTP_BIN)
+        .route("stream", 3)
+        .stream<ReadableStream<Uint8Array | string | null>>();
+
+      const stream = result.data;
+      expect(stream).toBeDefined();
+
+  const reader = (stream as ReadableStream<Uint8Array>).getReader();
+  const chunks: Uint8Array[] = [];
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        if (value) {
+          chunks.push(value);
+        }
+      }
+
+      const decoder = new TextDecoder("utf8");
+      let text = "";
+      for (const chunk of chunks) {
+        text += decoder.decode(chunk, { stream: true });
+      }
+      text += decoder.decode();
+      const lines = text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+
+      expect(lines.length).toBe(3);
+      for (const line of lines) {
+        const payload = JSON.parse(line);
+        expect(typeof payload.id).toBe("number");
+      }
+    },
+    15000
+  );
 });

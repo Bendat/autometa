@@ -7,6 +7,7 @@ export interface FetchRequestOptions extends Record<string, unknown> {
   body?: unknown;
   method?: string;
   signal?: AbortSignal;
+  streamResponse?: boolean;
 }
 
 export interface FetchResponseLike {
@@ -14,6 +15,7 @@ export interface FetchResponseLike {
   statusText: string;
   headers: HeadersLike;
   text(): Promise<string>;
+  body?: unknown;
 }
 
 export interface HeadersLike {
@@ -39,20 +41,32 @@ export function createFetchTransport(
       request: HTTPRequest<TRequest>,
       options: HTTPAdditionalOptions<FetchRequestOptions> = {}
     ) {
-      const { headers: optionHeaders, body: optionBody, ...restOptions } = options;
+      const {
+        headers: optionHeaders,
+        body: optionBody,
+        signal: optionSignal,
+        streamResponse,
+        ...restOptions
+      } = options;
       const headers = mergeHeaders(request.headers, optionHeaders);
 
       const body = optionBody ?? createBody(request, headers);
 
       const url = request.fullUrl ?? "";
-      const response = await fetchImpl(url, {
+      const fetchOptions: FetchRequestOptions = {
         ...restOptions,
         method: request.method ?? "GET",
         headers,
         body,
-      });
+      };
 
-      const data = await readBody(response);
+      if (optionSignal !== undefined) {
+        fetchOptions.signal = optionSignal;
+      }
+
+      const response = await fetchImpl(url, fetchOptions);
+
+      const data = streamResponse ? response.body ?? null : await readBody(response);
       return {
         status: response.status as StatusCode,
         statusText: response.statusText,

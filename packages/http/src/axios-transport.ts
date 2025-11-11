@@ -10,6 +10,7 @@ export interface AxiosRequestConfigLike extends Record<string, unknown> {
   data?: unknown;
   validateStatus?: (status: number) => boolean;
   signal?: AbortSignal;
+  responseType?: string;
 }
 
 export interface AxiosResponseLike<T = unknown> {
@@ -37,6 +38,12 @@ export function createAxiosTransport(
       request: HTTPRequest<TRequest>,
       options: HTTPAdditionalOptions<AxiosRequestConfigLike> = {}
     ) {
+      const {
+        headers: optionHeaders,
+        streamResponse,
+        ...restOptions
+      } = options;
+
       const config: AxiosRequestConfigLike = {
         url: request.fullUrl ?? "",
         method: request.method ?? "GET",
@@ -44,11 +51,15 @@ export function createAxiosTransport(
         params: request.params,
         data: request.data,
         validateStatus: () => true,
-        ...options,
+        ...restOptions,
       };
 
-      if (options.headers) {
-        config.headers = mergeHeaders(config.headers ?? {}, options.headers);
+      if (optionHeaders) {
+        config.headers = mergeHeaders(config.headers ?? {}, optionHeaders);
+      }
+
+      if (streamResponse) {
+        config.responseType = config.responseType ?? "stream";
       }
 
       const response = await axios.request<TResponse>(config);

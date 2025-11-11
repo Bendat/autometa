@@ -28,6 +28,8 @@ export class MetaConfig implements SchemaConfig, HTTPHooks {
   throwOnServerError = false;
   options: HTTPAdditionalOptions<unknown> = {};
   retry?: HTTPRetryOptions;
+  streamResponse = false;
+  timeoutMs: number | undefined = undefined;
 
   constructor(init?: Partial<MetaConfig>) {
     Object.assign(this, init);
@@ -43,6 +45,8 @@ export class MetaConfigBuilder {
   private throwOnServerErrorValue = false;
   private optionsValue: HTTPAdditionalOptions<unknown> = {};
   private retryOptionsValue: HTTPRetryOptions | undefined;
+  private streamResponseValue = false;
+  private timeoutMsValue: number | undefined;
 
   merge(builder: MetaConfigBuilder) {
     this.schemaMapValue = builder.schemaMapValue.derive();
@@ -55,6 +59,8 @@ export class MetaConfigBuilder {
     this.retryOptionsValue = builder.retryOptionsValue
       ? { ...builder.retryOptionsValue }
       : undefined;
+    this.streamResponseValue = builder.streamResponseValue;
+    this.timeoutMsValue = builder.timeoutMsValue;
     return this;
   }
 
@@ -121,6 +127,20 @@ export class MetaConfigBuilder {
     return this;
   }
 
+  streamResponse(value: boolean) {
+    this.streamResponseValue = value;
+    return this;
+  }
+
+  timeout(duration: number | null | undefined) {
+    if (typeof duration === "number" && duration > 0) {
+      this.timeoutMsValue = duration;
+    } else {
+      this.timeoutMsValue = undefined;
+    }
+    return this;
+  }
+
   build() {
     const retry = this.retryOptionsValue
       ? { ...this.retryOptionsValue }
@@ -135,6 +155,8 @@ export class MetaConfigBuilder {
       options: { ...this.optionsValue },
       throwOnServerError: this.throwOnServerErrorValue,
       ...(retry ? { retry } : {}),
+      streamResponse: this.streamResponseValue,
+      timeoutMs: this.timeoutMsValue,
     });
   }
 
@@ -146,6 +168,8 @@ export class MetaConfigBuilder {
       .throwOnServerError(this.throwOnServerErrorValue)
       .options(this.optionsValue)
       .retry(this.retryOptionsValue ?? null)
+      .streamResponse(this.streamResponseValue)
+      .timeout(this.timeoutMsValue)
       .setOnBeforeSend(this.onBeforeSendHooks)
       .setOnAfterReceive(this.onAfterReceiveHooks);
   }

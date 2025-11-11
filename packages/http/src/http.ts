@@ -208,6 +208,54 @@ export class HTTP {
   }
 
   /**
+   * Forces subsequent requests to return raw response streams without parsing.
+   */
+  sharedStreamResponse(enabled: boolean) {
+    this.meta.streamResponse(enabled);
+    return this;
+  }
+
+  /**
+   * Returns a derived client configured for streaming responses.
+   */
+  streamResponse(enabled: boolean) {
+    return this.derive(({ meta }) => {
+      meta.streamResponse(enabled);
+    });
+  }
+
+  /**
+   * Convenience helper that returns a clone configured for streaming responses.
+   */
+  asStream() {
+    return this.streamResponse(true);
+  }
+
+  /**
+   * Executes a GET request while preserving the raw response stream.
+   */
+  stream<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.streamResponse(true).get<TResponse>(options);
+  }
+
+  /**
+   * Sets a shared timeout (in milliseconds) applied to every request from this instance.
+   */
+  sharedTimeout(duration: number | null) {
+    this.meta.timeout(duration);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with a per-request timeout in milliseconds.
+   */
+  timeout(duration: number | null) {
+    return this.derive(({ meta }) => {
+      meta.timeout(duration);
+    });
+  }
+
+  /**
    * Configures whether schema validation is required before resolving a response.
    */
   requireSchema(required: boolean) {
@@ -534,7 +582,10 @@ export class HTTP {
   ) {
     const baseBuilder = this.builder.clone().method(method);
     const meta = this.meta.derive().build();
-    const mergedOptions = mergeOptions(meta.options, options);
+    const baseOptions = mergeOptions(meta.options, options);
+    if (meta.streamResponse) {
+      (baseOptions as Record<string, unknown>).streamResponse = true;
+    }
     const retryPolicy = meta.retry;
     const maxRetries = retryPolicy?.attempts ?? 0;
 
@@ -544,9 +595,48 @@ export class HTTP {
       const request = attemptBuilder.build();
       request.method = method;
 
+      const attemptOptions = {
+        ...baseOptions,
+      } as HTTPAdditionalOptions<unknown> & { signal?: AbortSignal };
+
+      let timeoutController: AbortController | undefined;
+      let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+      let combinedSignal: CombinedAbortSignal | undefined;
+
+      if (typeof meta.timeoutMs === "number" && meta.timeoutMs > 0) {
+        const setup = createTimeoutController(meta.timeoutMs);
+        timeoutController = setup.controller;
+        timeoutHandle = setup.timer;
+      }
+
+      const existingSignal = attemptOptions.signal;
+      const signals: AbortSignal[] = [];
+      if (existingSignal) {
+        signals.push(existingSignal);
+      }
+      if (timeoutController) {
+        signals.push(timeoutController.signal);
+      }
+
+      if (signals.length === 1) {
+        const [singleSignal] = signals;
+        attemptOptions.signal = singleSignal;
+      } else if (signals.length > 1) {
+        combinedSignal = combineAbortSignals(signals);
+        attemptOptions.signal = combinedSignal.signal;
+      } else if ("signal" in attemptOptions) {
+        delete attemptOptions.signal;
+      }
+
+      const activeSignal = attemptOptions.signal;
+      if (activeSignal?.aborted) {
+        const reason = (activeSignal.reason as unknown) ?? createAbortError();
+        throw new HTTPTransportError(request, reason);
+      }
+
       const requestContext: HTTPRequestContext = {
         request,
-        options: mergedOptions,
+        options: attemptOptions,
       };
 
       let response: HTTPResponse<unknown> | undefined;
@@ -555,13 +645,16 @@ export class HTTP {
         await this.runRequestPlugins(requestContext);
         await this.runOnSendHooks(meta, request);
         const raw = await this.transport
-          .send(request, mergedOptions)
+          .send(request, attemptOptions)
           .catch((cause) => {
             throw new HTTPTransportError(request, cause);
           });
 
         response = this.buildResponse(raw, request);
-        response.data = transformResponse(meta.allowPlainText, response.data);
+        const isStreaming = meta.streamResponse;
+        if (!isStreaming) {
+          response.data = transformResponse(meta.allowPlainText, response.data);
+        }
 
         if (meta.throwOnServerError && response.status >= 500) {
           throw new AutomationError(`Server responded with status ${response.status}`);
@@ -570,16 +663,20 @@ export class HTTP {
         await this.runOnReceiveHooks(meta, response);
 
         let validated: HTTPResponse<TResponse>;
-        try {
-          validated = this.validateResponse<TResponse>(response, meta);
-        } catch (cause) {
-          throw new HTTPSchemaValidationError(request, response, cause);
+        if (meta.streamResponse) {
+          validated = response as HTTPResponse<TResponse>;
+        } else {
+          try {
+            validated = this.validateResponse<TResponse>(response, meta);
+          } catch (cause) {
+            throw new HTTPSchemaValidationError(request, response, cause);
+          }
         }
 
         await this.runResponsePlugins({
           request,
           response: validated,
-          options: mergedOptions,
+          options: attemptOptions,
         });
 
         return validated;
@@ -600,7 +697,7 @@ export class HTTP {
         if (!canRetry) {
           await this.runErrorPlugins({
             request,
-            options: mergedOptions,
+            options: attemptOptions,
             error: normalized,
           });
           throw normalized;
@@ -608,6 +705,11 @@ export class HTTP {
 
         retriesUsed += 1;
         await this.delayRetry(retryAttempt, policy);
+      } finally {
+        if (timeoutHandle !== undefined) {
+          clearTimeout(timeoutHandle);
+        }
+        combinedSignal?.dispose();
       }
     }
   }
@@ -809,4 +911,68 @@ function toParamValue(value: unknown, rest: unknown[]): ParamValue {
     return [value, ...rest] as ParamValue;
   }
   return value as ParamValue;
+}
+
+interface CombinedAbortSignal {
+  signal: AbortSignal;
+  dispose: () => void;
+}
+
+interface TimeoutSetup {
+  controller: AbortController;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+function createTimeoutController(timeoutMs: number): TimeoutSetup {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(createAbortError(`Request timed out after ${timeoutMs} ms`));
+  }, timeoutMs);
+  maybeUnrefTimer(timer);
+  return { controller, timer };
+}
+
+function combineAbortSignals(signals: AbortSignal[]): CombinedAbortSignal {
+  const controller = new AbortController();
+
+  const aborted = signals.find((signal) => signal.aborted);
+  if (aborted) {
+    controller.abort((aborted.reason as unknown) ?? createAbortError());
+    return { signal: controller.signal, dispose: () => undefined };
+  }
+
+  const listeners: Array<{ signal: AbortSignal; listener: () => void }> = [];
+
+  for (const signal of signals) {
+    const listener = () => {
+      controller.abort((signal.reason as unknown) ?? createAbortError());
+    };
+    signal.addEventListener("abort", listener, { once: true });
+    listeners.push({ signal, listener });
+  }
+
+  const dispose = () => {
+    for (const { signal, listener } of listeners) {
+      signal.removeEventListener("abort", listener);
+    }
+  };
+
+  controller.signal.addEventListener("abort", dispose, { once: true });
+
+  return { signal: controller.signal, dispose };
+}
+
+function maybeUnrefTimer(timer: ReturnType<typeof setTimeout>) {
+  if (typeof timer === "object" && timer !== null) {
+    const maybeTimer = timer as { unref?: () => void };
+    if (typeof maybeTimer.unref === "function") {
+      maybeTimer.unref();
+    }
+  }
+}
+
+function createAbortError(message = "The operation was aborted.") {
+  const error = new Error(message);
+  error.name = "AbortError";
+  return error;
 }
