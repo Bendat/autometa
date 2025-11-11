@@ -3,7 +3,7 @@ import {
   ParameterTypeRegistry,
 } from "@cucumber/cucumber-expressions";
 import { attachTransform, applyCucumberExtensions } from "./extensions";
-import type { ParameterTransformFn } from "./extensions";
+import type { ParameterRuntime, ParameterTransformFn } from "./extensions";
 
 type Constructor<T = unknown> = {
   new (...args: unknown[]): T;
@@ -21,15 +21,24 @@ export type ParameterPrimitive =
   | BigIntConstructor
   | DateConstructor;
 
+export interface CreateParameterTypesOptions {
+  readonly namespace?: string;
+}
+
 export interface ParameterTransformContext<World> {
   readonly raw: readonly string[];
   readonly world: World;
+  readonly name: string | undefined;
+  readonly originalName: string | undefined;
+  readonly namespace?: string;
+  readonly parameterType: ParameterType<unknown>;
+  readonly definition: ParameterTypeDefinition<World>;
 }
 
 export type ParameterTransformer<TResult, World> = (
   value: unknown,
   context: ParameterTransformContext<World>
-) => TResult;
+) => TResult | Promise<TResult>;
 
 export interface ParameterTypeDefinition<World, TResult = unknown> {
   readonly name: string;
@@ -39,6 +48,7 @@ export interface ParameterTypeDefinition<World, TResult = unknown> {
   readonly transform?: ParameterTransformer<TResult, World>;
   readonly useForSnippets?: boolean;
   readonly preferForRegexpMatch?: boolean;
+  readonly builtin?: boolean;
 }
 
 export type ParameterTypeDefinitions<World> = ReadonlyArray<
@@ -107,6 +117,14 @@ function resolvePrimitiveTarget(
   return primitive as ConstructorOrFactory<unknown>;
 }
 
+function resolveScopedName(name: string, namespace: string | undefined) {
+  if (!name || !namespace) {
+    return name;
+  }
+
+  return `${namespace}:${name}`;
+}
+
 function buildDefaultValue(rawValues: readonly string[]): unknown {
   if (rawValues.length === 0) {
     return undefined;
@@ -120,9 +138,11 @@ function buildDefaultValue(rawValues: readonly string[]): unknown {
 }
 
 function buildTransform<World>(
-  definition: ParameterTypeDefinition<World>
+  definition: ParameterTypeDefinition<World>,
+  scopedName: string,
+  options: CreateParameterTypesOptions | undefined
 ): ParameterTransformFn<World> {
-  return (values: readonly string[] | null, world: World) => {
+  return (values: readonly string[] | null, runtime: ParameterRuntime<World>) => {
     const rawValues = values ?? [];
     let resolved = buildDefaultValue(rawValues);
 
@@ -140,11 +160,27 @@ function buildTransform<World>(
     }
 
     if (definition.transform) {
-      return definition.transform(resolved, { raw: rawValues, world });
+      const context: ParameterTransformContext<World> = {
+        raw: rawValues,
+        world: runtime.world,
+        name: scopedName,
+        originalName: definition.name,
+        parameterType: runtime.parameterType,
+        definition,
+        ...(options?.namespace !== undefined
+          ? { namespace: options.namespace }
+          : {}),
+      };
+
+      return definition.transform(resolved, context);
     }
 
     return resolved;
   };
+}
+
+function firstValue<T>(input: unknown): T | undefined {
+  return Array.isArray(input) ? (input[0] as T | undefined) : (input as T | undefined);
 }
 
 export interface DefineParameterTypeFn<World> {
@@ -160,7 +196,9 @@ export interface DefineParameterTypeFn<World> {
   ): ParameterTypeRegistry;
 }
 
-export function createParameterTypes<World>(): DefineParameterTypeFn<World> {
+export function createParameterTypes<World>(
+  options?: CreateParameterTypesOptions
+): DefineParameterTypeFn<World> {
   applyCucumberExtensions();
 
   const define = ((
@@ -168,18 +206,20 @@ export function createParameterTypes<World>(): DefineParameterTypeFn<World> {
     definition: ParameterTypeDefinition<World>
   ) => {
     const patterns = toPatternArray(definition.pattern);
-    const transform = buildTransform(definition);
+    const scopedName = resolveScopedName(definition.name, options?.namespace);
+    const transform = buildTransform(definition, scopedName, options);
     const parameterTarget =
       definition.type ?? resolvePrimitiveTarget(definition.primitive);
 
     const parameterType = new ParameterType<unknown>(
-      definition.name,
+      scopedName,
       patterns,
       parameterTarget,
       // The original transform is overridden by applyCucumberExtensions.
       (...matches: string[]) => (matches.length <= 1 ? matches[0] : matches),
       definition.useForSnippets,
-      definition.preferForRegexpMatch
+      definition.preferForRegexpMatch,
+      definition.builtin
     );
 
     attachTransform(parameterType, transform);
@@ -209,3 +249,182 @@ export function createParameterTypes<World>(): DefineParameterTypeFn<World> {
 }
 
 export const defineParameterType = createParameterTypes<unknown>();
+
+const INTEGER_REGEXPS = [/-?\d+/, /\d+/] as const;
+const FLOAT_REGEXP = /(?=.*\d.*)[-+]?\d*(?:\.(?=\d.*))?\d*(?:\d+[E][+-]?\d+)?/;
+const WORD_REGEXP = /[^\s]+/;
+const STRING_REGEXP = /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/;
+const ANONYMOUS_REGEXP = /.*/;
+
+export function createDefaultParameterTypes<World>(
+  options?: CreateParameterTypesOptions
+) {
+  const define = createParameterTypes<World>(options);
+
+  return (registry: ParameterTypeRegistry) => {
+    const defaults: ParameterTypeDefinition<World>[] = [
+      {
+        name: "int",
+        pattern: INTEGER_REGEXPS,
+        primitive: Number,
+        type: Number,
+        transform: (value: unknown) => {
+          const numeric = firstValue<number>(value);
+          return numeric === undefined ? null : numeric;
+        },
+        useForSnippets: true,
+        preferForRegexpMatch: true,
+        builtin: true,
+      },
+      {
+        name: "float",
+        pattern: FLOAT_REGEXP,
+        primitive: Number,
+        type: Number,
+        transform: (value: unknown) => {
+          const numeric = firstValue<number>(value);
+          return numeric === undefined ? null : numeric;
+        },
+        useForSnippets: true,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "word",
+        pattern: WORD_REGEXP,
+        primitive: String,
+        type: String,
+        transform: (value: unknown) => {
+          const text = firstValue<string>(value);
+          return text ?? "";
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "string",
+        pattern: STRING_REGEXP,
+        transform: (_value: unknown, context: ParameterTransformContext<World>) => {
+          const [doubleQuoted, singleQuoted] = context.raw;
+          const captured = doubleQuoted ?? singleQuoted ?? "";
+          return captured
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+        },
+        useForSnippets: true,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "",
+        pattern: ANONYMOUS_REGEXP,
+        primitive: String,
+        transform: (_value: unknown, context: ParameterTransformContext<World>) =>
+          context.raw[0] ?? "",
+        useForSnippets: false,
+        preferForRegexpMatch: true,
+        builtin: true,
+      },
+      {
+        name: "double",
+        pattern: FLOAT_REGEXP,
+        primitive: Number,
+        type: Number,
+        transform: (value: unknown) => {
+          const numeric = firstValue<number>(value);
+          return numeric === undefined ? null : numeric;
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "bigdecimal",
+        pattern: FLOAT_REGEXP,
+        type: String,
+        transform: (value: unknown) => {
+          const text = firstValue<unknown>(value);
+          return text === undefined ? null : String(text);
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "byte",
+        pattern: INTEGER_REGEXPS,
+        primitive: Number,
+        type: Number,
+        transform: (value: unknown) => {
+          const numeric = firstValue<number>(value);
+          return numeric === undefined ? null : numeric;
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "short",
+        pattern: INTEGER_REGEXPS,
+        primitive: Number,
+        type: Number,
+        transform: (value: unknown) => {
+          const numeric = firstValue<number>(value);
+          return numeric === undefined ? null : numeric;
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "long",
+        pattern: INTEGER_REGEXPS,
+        primitive: Number,
+        type: Number,
+        transform: (value: unknown) => {
+          const numeric = firstValue<number>(value);
+          return numeric === undefined ? null : numeric;
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "biginteger",
+        pattern: INTEGER_REGEXPS,
+        primitive: BigInt,
+        transform: (value: unknown) => {
+          const big = firstValue<bigint>(value);
+          return big === undefined ? null : big;
+        },
+        useForSnippets: false,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+    ];
+
+    const pending = defaults
+      .map((definition) =>
+        options?.namespace && definition.preferForRegexpMatch
+          ? { ...definition, preferForRegexpMatch: false }
+          : definition
+      )
+      .filter((definition) => {
+        const scopedName = resolveScopedName(
+          definition.name,
+          options?.namespace
+        );
+        return registry.lookupByTypeName(scopedName) === undefined;
+      });
+
+    if (pending.length > 0) {
+      define.many(registry, ...pending);
+    }
+
+    return registry;
+  };
+}
+
+export const defineDefaultParameterTypes =
+  createDefaultParameterTypes<unknown>();

@@ -2,9 +2,14 @@ import { Argument, ParameterType } from "@cucumber/cucumber-expressions";
 
 const transformSymbol: unique symbol = Symbol("autometa:cucumber:transform");
 
+export interface ParameterRuntime<World> {
+  readonly world: World;
+  readonly parameterType: ParameterType<unknown>;
+}
+
 export type ParameterTransformFn<World> = (
   values: readonly string[] | null,
-  world: World
+  runtime: ParameterRuntime<World>
 ) => unknown;
 
 type StoredParameterTransformFn = ParameterTransformFn<unknown>;
@@ -14,6 +19,8 @@ interface AppAwareParameterType extends ParameterType<unknown> {
 }
 
 let extensionsApplied = false;
+let originalTransform: typeof ParameterType.prototype.transform | undefined;
+let originalGetValue: typeof Argument.prototype.getValue | undefined;
 
 export function attachTransform<World>(
   parameterType: ParameterType<unknown>,
@@ -28,12 +35,7 @@ export function applyCucumberExtensions() {
     return;
   }
 
-  const originalTransform =
-    ParameterType.prototype.transform as (
-      this: ParameterType<unknown>,
-      thisObj: unknown,
-      groupValues: string[] | null
-    ) => unknown;
+  originalTransform = originalTransform ?? ParameterType.prototype.transform;
 
   ParameterType.prototype.transform = function transform(
     this: AppAwareParameterType,
@@ -42,16 +44,19 @@ export function applyCucumberExtensions() {
   ) {
     const transformFn = this[transformSymbol];
     if (transformFn) {
-      return transformFn(groupValues ?? null, thisObj);
+      return transformFn(groupValues ?? null, {
+        world: thisObj,
+        parameterType: this,
+      });
     }
     const normalized = groupValues ? [...groupValues] : [];
+    if (!originalTransform) {
+      throw new Error("Cucumber extensions have not been initialised correctly");
+    }
     return originalTransform.call(this, thisObj, normalized);
   } as unknown as typeof ParameterType.prototype.transform;
 
-  const originalGetValue = Argument.prototype.getValue as (
-    this: Argument,
-    thisObj: unknown
-  ) => unknown;
+  originalGetValue = originalGetValue ?? (Argument.prototype.getValue as typeof Argument.prototype.getValue);
 
   Argument.prototype.getValue = function getValue<T>(
     this: Argument,
@@ -76,12 +81,35 @@ export function applyCucumberExtensions() {
 
     const parameterType = this.parameterType as AppAwareParameterType | undefined;
     const transformFn = parameterType?.[transformSymbol];
-    if (transformFn) {
-      return transformFn(values, context) as T;
+    if (transformFn && parameterType) {
+      return transformFn(values, {
+        world: context as unknown,
+        parameterType,
+      }) as T;
+    }
+
+    if (!originalGetValue) {
+      throw new Error("Cucumber extensions have not been initialised correctly");
     }
 
     return originalGetValue.call(this, context) as T;
   };
 
   extensionsApplied = true;
+}
+
+export function resetCucumberExtensions() {
+  if (!extensionsApplied) {
+    return;
+  }
+
+  if (originalTransform) {
+    ParameterType.prototype.transform = originalTransform;
+  }
+
+  if (originalGetValue) {
+    Argument.prototype.getValue = originalGetValue;
+  }
+
+  extensionsApplied = false;
 }
