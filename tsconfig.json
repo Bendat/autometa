@@ -38,6 +38,9 @@
       "path": "packages/datetime"
     },
     {
+      "path": "packages/cucumber-expressions"
+    },
+    {
       "path": "packages/bind-decorator"
     },
     {

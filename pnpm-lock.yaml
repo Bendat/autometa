@@ -250,6 +250,82 @@ importers:
         specifier: 1.4.0
         version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
 
+  packages/cucumber-expressions:
+    dependencies:
+      '@autometa/app':
+        specifier: workspace:*
+        version: link:../app
+      '@autometa/asserters':
+        specifier: workspace:*
+        version: link:../asserters
+      '@autometa/datetime':
+        specifier: workspace:*
+        version: link:../datetime
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@autometa/overloaded':
+        specifier: workspace:*
+        version: link:../overloaded
+      '@autometa/types':
+        specifier: workspace:*
+        version: link:../types
+      '@cucumber/cucumber-expressions':
+        specifier: ^16.1.2
+        version: 16.1.2
+      colorette:
+        specifier: ^2.0.19
+        version: 2.0.19
+      diff:
+        specifier: ^5.1.0
+        version: 5.2.0
+      luxon:
+        specifier: ^3.3.0
+        version: 3.7.2
+    devDependencies:
+      '@types/diff':
+        specifier: ^5.0.3
+        version: 5.2.3
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.19.24
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.54.1
+        version: 5.54.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@4.9.5))(eslint@8.37.0)(typescript@4.9.5)
+      '@typescript-eslint/parser':
+        specifier: ^5.54.1
+        version: 5.62.0(eslint@8.37.0)(typescript@4.9.5)
+      eslint:
+        specifier: ^8.37.0
+        version: 8.37.0
+      eslint-config-custom:
+        specifier: workspace:*
+        version: link:../../configuration/eslint-config-custom
+      eslint-config-prettier:
+        specifier: ^8.3.0
+        version: 8.6.0(eslint@8.37.0)
+      rimraf:
+        specifier: ^4.1.2
+        version: 4.1.2
+      strip-ansi:
+        specifier: ^7.1.0
+        version: 7.1.2
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../configuration/tsconfig
+      tsup:
+        specifier: ^7.2.0
+        version: 7.2.0(postcss@8.4.36)(ts-node@10.9.2(@types/node@18.19.24)(typescript@4.9.5))(typescript@4.9.5)
+      tsup-config:
+        specifier: workspace:*
+        version: link:../../configuration/tsup-config
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
   packages/datetime:
     dependencies:
       '@autometa/asserters':
@@ -2480,6 +2556,9 @@ packages:
   '@types/connect@3.4.35':
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
 
+  '@types/diff@5.2.3':
+    resolution: {integrity: sha512-K0Oqlrq3kQMaO2RhfrNQX5trmt+XLyom88zS0u84nnIcLvFnRUMRRHmrGny5GSM+kNO9IZLARsdQHDzkhAgmrQ==}
+
   '@types/eslint-scope@3.7.4':
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
 
@@ -3710,6 +3789,10 @@ packages:
 
   diff@4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
+    engines: {node: '>=0.3.1'}
+
+  diff@5.2.0:
+    resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -5107,6 +5190,10 @@ packages:
 
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
+    engines: {node: '>=12'}
+
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
     engines: {node: '>=12'}
 
   magic-string@0.30.8:
@@ -6664,8 +6751,8 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
-  strip-ansi@7.0.1:
-    resolution: {integrity: sha512-cXNxvT8dFNRVfhVME3JAe98mkXDYN2O1l7jmcwMnOslDeESg1rF/OZMtK0nRAhiari1unG5cD4jG3rapUAkLbw==}
+  strip-ansi@7.1.2:
+    resolution: {integrity: sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA==}
     engines: {node: '>=12'}
 
   strip-bom-string@1.0.0:
@@ -10190,7 +10277,7 @@ snapshots:
     dependencies:
       string-width: 5.1.2
       string-width-cjs: string-width@4.2.3
-      strip-ansi: 7.0.1
+      strip-ansi: 7.1.2
       strip-ansi-cjs: strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
@@ -10512,6 +10599,8 @@ snapshots:
   '@types/connect@3.4.35':
     dependencies:
       '@types/node': 18.19.24
+
+  '@types/diff@5.2.3': {}
 
   '@types/eslint-scope@3.7.4':
     dependencies:
@@ -12094,6 +12183,8 @@ snapshots:
   diff@3.5.0: {}
 
   diff@4.0.2: {}
+
+  diff@5.2.0: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -13731,6 +13822,8 @@ snapshots:
       yallist: 4.0.0
 
   lru-cache@7.18.3: {}
+
+  luxon@3.7.2: {}
 
   magic-string@0.30.8:
     dependencies:
@@ -15549,7 +15642,7 @@ snapshots:
     dependencies:
       eastasianwidth: 0.2.0
       emoji-regex: 9.2.2
-      strip-ansi: 7.0.1
+      strip-ansi: 7.1.2
 
   string.prototype.matchall@4.0.8:
     dependencies:
@@ -15592,7 +15685,7 @@ snapshots:
     dependencies:
       ansi-regex: 5.0.1
 
-  strip-ansi@7.0.1:
+  strip-ansi@7.1.2:
     dependencies:
       ansi-regex: 6.0.1
 
@@ -16525,7 +16618,7 @@ snapshots:
     dependencies:
       ansi-styles: 6.2.1
       string-width: 5.1.2
-      strip-ansi: 7.0.1
+      strip-ansi: 7.1.2
 
   wrappy@1.0.2: {}
 
