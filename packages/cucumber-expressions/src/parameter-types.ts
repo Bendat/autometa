@@ -5,22 +5,6 @@ import {
 import { attachTransform, applyCucumberExtensions } from "./extensions";
 import type { ParameterRuntime, ParameterTransformFn } from "./extensions";
 
-type Constructor<T = unknown> = {
-  new (...args: unknown[]): T;
-  prototype: T;
-};
-
-type Factory<T = unknown> = (...args: unknown[]) => T;
-
-type ConstructorOrFactory<T = unknown> = Constructor<T> | Factory<T>;
-
-export type ParameterPrimitive =
-  | StringConstructor
-  | NumberConstructor
-  | BooleanConstructor
-  | BigIntConstructor
-  | DateConstructor;
-
 export interface CreateParameterTypesOptions {
   readonly namespace?: string;
 }
@@ -43,8 +27,6 @@ export type ParameterTransformer<TResult, World> = (
 export interface ParameterTypeDefinition<World, TResult = unknown> {
   readonly name: string;
   readonly pattern: RegExp | readonly RegExp[];
-  readonly primitive?: ParameterPrimitive;
-  readonly type?: ConstructorOrFactory<unknown>;
   readonly transform?: ParameterTransformer<TResult, World>;
   readonly useForSnippets?: boolean;
   readonly preferForRegexpMatch?: boolean;
@@ -59,72 +41,6 @@ function toPatternArray(pattern: RegExp | readonly RegExp[]) {
   return Array.isArray(pattern) ? [...pattern] : [pattern];
 }
 
-function convertPrimitive(
-  value: unknown,
-  primitive: ParameterPrimitive
-): unknown {
-  if (value === undefined || value === null) {
-    return value;
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => convertPrimitive(item, primitive));
-  }
-
-  const text = String(value);
-
-  if (primitive === String) {
-    return text;
-  }
-
-  if (primitive === Number) {
-    const result = Number(text);
-    return Number.isNaN(result) ? text : result;
-  }
-
-  if (primitive === Boolean) {
-    return text.toLowerCase() === "true";
-  }
-
-  if (primitive === BigInt) {
-    return BigInt(text);
-  }
-
-  if (primitive === Date) {
-    return new Date(text);
-  }
-
-  return primitive(text as never);
-}
-
-function isConstructor<T>(
-  value: ConstructorOrFactory<T>
-): value is Constructor<T> {
-  return typeof value === "function" && value.prototype !== undefined;
-}
-
-function resolvePrimitiveTarget(
-  primitive?: ParameterPrimitive
-): ConstructorOrFactory<unknown> | null {
-  if (!primitive) {
-    return null;
-  }
-
-  if (primitive === BigInt) {
-    return null;
-  }
-
-  return primitive as ConstructorOrFactory<unknown>;
-}
-
-function resolveScopedName(name: string, namespace: string | undefined) {
-  if (!name || !namespace) {
-    return name;
-  }
-
-  return `${namespace}:${name}`;
-}
-
 function buildDefaultValue(rawValues: readonly string[]): unknown {
   if (rawValues.length === 0) {
     return undefined;
@@ -137,6 +53,14 @@ function buildDefaultValue(rawValues: readonly string[]): unknown {
   return [...rawValues];
 }
 
+function resolveScopedName(name: string, namespace: string | undefined) {
+  if (!name || !namespace) {
+    return name;
+  }
+
+  return `${namespace}:${name}`;
+}
+
 function buildTransform<World>(
   definition: ParameterTypeDefinition<World>,
   scopedName: string,
@@ -144,20 +68,7 @@ function buildTransform<World>(
 ): ParameterTransformFn<World> {
   return (values: readonly string[] | null, runtime: ParameterRuntime<World>) => {
     const rawValues = values ?? [];
-    let resolved = buildDefaultValue(rawValues);
-
-    if (definition.primitive) {
-      resolved = convertPrimitive(resolved, definition.primitive);
-    }
-
-    if (
-      definition.type &&
-      !Array.isArray(resolved) &&
-      isConstructor(definition.type)
-    ) {
-      const TypeCtor = definition.type;
-      resolved = new TypeCtor(resolved as never);
-    }
+    const resolved = buildDefaultValue(rawValues);
 
     if (definition.transform) {
       const context: ParameterTransformContext<World> = {
@@ -181,6 +92,40 @@ function buildTransform<World>(
 
 function firstValue<T>(input: unknown): T | undefined {
   return Array.isArray(input) ? (input[0] as T | undefined) : (input as T | undefined);
+}
+
+function firstString(input: unknown): string | undefined {
+  const value = firstValue<unknown>(input);
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  return String(value);
+}
+
+function parseNumberValue(
+  input: unknown,
+  parser: (raw: string) => number
+): number | null {
+  const raw = firstString(input);
+  if (raw === undefined) {
+    return null;
+  }
+
+  const numeric = parser(raw);
+  return Number.isNaN(numeric) ? null : numeric;
+}
+
+function parseBigIntValue(input: unknown): bigint | null {
+  const raw = firstString(input);
+  if (raw === undefined) {
+    return null;
+  }
+
+  try {
+    return BigInt(raw);
+  } catch {
+    return null;
+  }
 }
 
 export interface DefineParameterTypeFn<World> {
@@ -208,13 +153,10 @@ export function createParameterTypes<World>(
     const patterns = toPatternArray(definition.pattern);
     const scopedName = resolveScopedName(definition.name, options?.namespace);
     const transform = buildTransform(definition, scopedName, options);
-    const parameterTarget =
-      definition.type ?? resolvePrimitiveTarget(definition.primitive);
-
     const parameterType = new ParameterType<unknown>(
       scopedName,
       patterns,
-      parameterTarget,
+      null,
       // The original transform is overridden by applyCucumberExtensions.
       (...matches: string[]) => (matches.length <= 1 ? matches[0] : matches),
       definition.useForSnippets,
@@ -266,12 +208,8 @@ export function createDefaultParameterTypes<World>(
       {
         name: "int",
         pattern: INTEGER_REGEXPS,
-        primitive: Number,
-        type: Number,
-        transform: (value: unknown) => {
-          const numeric = firstValue<number>(value);
-          return numeric === undefined ? null : numeric;
-        },
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseInt(raw, 10)),
         useForSnippets: true,
         preferForRegexpMatch: true,
         builtin: true,
@@ -279,12 +217,17 @@ export function createDefaultParameterTypes<World>(
       {
         name: "float",
         pattern: FLOAT_REGEXP,
-        primitive: Number,
-        type: Number,
-        transform: (value: unknown) => {
-          const numeric = firstValue<number>(value);
-          return numeric === undefined ? null : numeric;
-        },
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseFloat(raw)),
+        useForSnippets: true,
+        preferForRegexpMatch: false,
+        builtin: true,
+      },
+      {
+        name: "number",
+        pattern: FLOAT_REGEXP,
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseFloat(raw)),
         useForSnippets: true,
         preferForRegexpMatch: false,
         builtin: true,
@@ -292,12 +235,7 @@ export function createDefaultParameterTypes<World>(
       {
         name: "word",
         pattern: WORD_REGEXP,
-        primitive: String,
-        type: String,
-        transform: (value: unknown) => {
-          const text = firstValue<string>(value);
-          return text ?? "";
-        },
+        transform: (value: unknown) => firstString(value) ?? "",
         useForSnippets: false,
         preferForRegexpMatch: false,
         builtin: true,
@@ -319,7 +257,6 @@ export function createDefaultParameterTypes<World>(
       {
         name: "",
         pattern: ANONYMOUS_REGEXP,
-        primitive: String,
         transform: (_value: unknown, context: ParameterTransformContext<World>) =>
           context.raw[0] ?? "",
         useForSnippets: false,
@@ -329,12 +266,8 @@ export function createDefaultParameterTypes<World>(
       {
         name: "double",
         pattern: FLOAT_REGEXP,
-        primitive: Number,
-        type: Number,
-        transform: (value: unknown) => {
-          const numeric = firstValue<number>(value);
-          return numeric === undefined ? null : numeric;
-        },
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseFloat(raw)),
         useForSnippets: false,
         preferForRegexpMatch: false,
         builtin: true,
@@ -342,10 +275,9 @@ export function createDefaultParameterTypes<World>(
       {
         name: "bigdecimal",
         pattern: FLOAT_REGEXP,
-        type: String,
         transform: (value: unknown) => {
-          const text = firstValue<unknown>(value);
-          return text === undefined ? null : String(text);
+          const text = firstString(value);
+          return text ?? null;
         },
         useForSnippets: false,
         preferForRegexpMatch: false,
@@ -354,12 +286,8 @@ export function createDefaultParameterTypes<World>(
       {
         name: "byte",
         pattern: INTEGER_REGEXPS,
-        primitive: Number,
-        type: Number,
-        transform: (value: unknown) => {
-          const numeric = firstValue<number>(value);
-          return numeric === undefined ? null : numeric;
-        },
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseInt(raw, 10)),
         useForSnippets: false,
         preferForRegexpMatch: false,
         builtin: true,
@@ -367,12 +295,8 @@ export function createDefaultParameterTypes<World>(
       {
         name: "short",
         pattern: INTEGER_REGEXPS,
-        primitive: Number,
-        type: Number,
-        transform: (value: unknown) => {
-          const numeric = firstValue<number>(value);
-          return numeric === undefined ? null : numeric;
-        },
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseInt(raw, 10)),
         useForSnippets: false,
         preferForRegexpMatch: false,
         builtin: true,
@@ -380,12 +304,8 @@ export function createDefaultParameterTypes<World>(
       {
         name: "long",
         pattern: INTEGER_REGEXPS,
-        primitive: Number,
-        type: Number,
-        transform: (value: unknown) => {
-          const numeric = firstValue<number>(value);
-          return numeric === undefined ? null : numeric;
-        },
+        transform: (value: unknown) =>
+          parseNumberValue(value, (raw) => parseInt(raw, 10)),
         useForSnippets: false,
         preferForRegexpMatch: false,
         builtin: true,
@@ -393,33 +313,39 @@ export function createDefaultParameterTypes<World>(
       {
         name: "biginteger",
         pattern: INTEGER_REGEXPS,
-        primitive: BigInt,
-        transform: (value: unknown) => {
-          const big = firstValue<bigint>(value);
-          return big === undefined ? null : big;
-        },
+        transform: (value: unknown) => parseBigIntValue(value),
         useForSnippets: false,
         preferForRegexpMatch: false,
         builtin: true,
       },
     ];
 
-    const pending = defaults
-      .map((definition) =>
-        options?.namespace && definition.preferForRegexpMatch
-          ? { ...definition, preferForRegexpMatch: false }
-          : definition
-      )
-      .filter((definition) => {
-        const scopedName = resolveScopedName(
-          definition.name,
-          options?.namespace
-        );
-        return registry.lookupByTypeName(scopedName) === undefined;
-      });
+    const prepared = defaults.map((definition) =>
+      options?.namespace && definition.preferForRegexpMatch
+        ? { ...definition, preferForRegexpMatch: false }
+        : definition
+    );
 
-    if (pending.length > 0) {
-      define.many(registry, ...pending);
+    const toRegister: ParameterTypeDefinition<World>[] = [];
+
+    prepared.forEach((definition) => {
+      const scopedName = resolveScopedName(
+        definition.name,
+        options?.namespace
+      );
+      const existing = registry.lookupByTypeName(scopedName);
+
+      if (existing) {
+        const transform = buildTransform(definition, scopedName, options);
+        attachTransform(existing, transform);
+        return;
+      }
+
+      toRegister.push(definition);
+    });
+
+    if (toRegister.length > 0) {
+      define.many(registry, ...toRegister);
     }
 
     return registry;

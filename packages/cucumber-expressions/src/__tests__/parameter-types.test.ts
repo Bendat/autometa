@@ -70,15 +70,14 @@ describe("createParameterTypes", () => {
     expect(result).toBe("Hi, Ben");
   });
 
-  it("applies primitive coercions before user transforms", () => {
+  it("allows user transforms to coerce values", () => {
     const registry = new ParameterTypeRegistry();
     const define = createParameterTypes<{ base: number }>();
 
     define(registry, {
       name: "integer",
       pattern: /(-?\d+)/,
-      primitive: Number,
-      transform: (value) => value,
+      transform: (value) => Number(value),
     });
 
     const parameterType = registry.lookupByTypeName("integer");
@@ -176,11 +175,13 @@ describe("default parameter types", () => {
     registerDefaults(registry);
 
     const intType = registry.lookupByTypeName("int");
+    const numberType = registry.lookupByTypeName("number");
     const stringType = registry.lookupByTypeName("string");
     const anonymousType = registry.lookupByTypeName("");
 
-  expect(intType?.transform({}, ["5"])).toBe(5);
-  expect(stringType?.transform({}, ["hello"])).toBe("hello");
+    expect(intType?.transform({}, ["5"])).toBe(5);
+    expect(numberType?.transform({}, ["5.5"])).toBe(5.5);
+    expect(stringType?.transform({}, ["hello"])).toBe("hello");
     expect(anonymousType?.transform({}, ["value"])).toBe("value");
   });
 
@@ -193,10 +194,47 @@ describe("default parameter types", () => {
     registerDefaults(registry);
 
     expect(registry.lookupByTypeName("core:int")).toBeDefined();
+    expect(registry.lookupByTypeName("core:number")).toBeDefined();
     expect(registry.lookupByTypeName("core:string")).toBeDefined();
 
     defineDefaultParameterTypes(registry);
     expect(registry.lookupByTypeName("int")).toBeDefined();
+    expect(registry.lookupByTypeName("number")).toBeDefined();
+  });
+
+  it("coerces numeric defaults using explicit transforms", () => {
+    const registry = new ParameterTypeRegistry();
+    const registerDefaults = createDefaultParameterTypes<unknown>();
+
+    registerDefaults(registry);
+
+    const intType = registry.lookupByTypeName("int");
+    const floatType = registry.lookupByTypeName("float");
+    const numberType = registry.lookupByTypeName("number");
+    const bigIntegerType = registry.lookupByTypeName("biginteger");
+
+    expect(intType).toBeDefined();
+    expect(floatType).toBeDefined();
+    expect(numberType).toBeDefined();
+    expect(bigIntegerType).toBeDefined();
+
+    if (!intType || !floatType || !numberType || !bigIntegerType) {
+      throw new Error("Default parameter types should be registered");
+    }
+
+    expect(intType.transform({}, ["  -12 "])).toBe(-12);
+    expect(intType.transform({}, ["not-a-number"])).toBeNull();
+
+    expect(floatType.transform({}, ["1.25e2"])).toBe(125);
+    expect(floatType.transform({}, ["NaN"])).toBeNull();
+
+    expect(numberType.transform({}, ["3.14"])).toBe(3.14);
+    expect(numberType.transform({}, ["not-a-number"])).toBeNull();
+
+    expect(bigIntegerType.transform({}, ["18446744073709551616"])).toBe(
+      BigInt("18446744073709551616")
+    );
+    expect(bigIntegerType.transform({}, ["nope"])).toBeNull();
   });
 });
 
