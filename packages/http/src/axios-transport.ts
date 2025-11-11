@@ -9,6 +9,7 @@ export interface AxiosRequestConfigLike extends Record<string, unknown> {
   params?: Record<string, unknown>;
   data?: unknown;
   validateStatus?: (status: number) => boolean;
+  signal?: AbortSignal;
 }
 
 export interface AxiosResponseLike<T = unknown> {

@@ -6,6 +6,7 @@ export interface FetchRequestOptions extends Record<string, unknown> {
   headers?: Record<string, string | number | boolean | null | undefined>;
   body?: unknown;
   method?: string;
+  signal?: AbortSignal;
 }
 
 export interface FetchResponseLike {

@@ -173,6 +173,23 @@ export class HTTP {
   }
 
   /**
+   * Registers an {@link AbortSignal} that will be forwarded to every request issued by this instance.
+   */
+  sharedAbortSignal(signal: AbortSignal | null) {
+    this.meta.options({ signal: signal ?? undefined });
+    return this;
+  }
+
+  /**
+   * Returns a derived client configured with the provided {@link AbortSignal}.
+   */
+  abortSignal(signal: AbortSignal | null) {
+    return this.derive(({ meta }) => {
+      meta.options({ signal: signal ?? undefined });
+    });
+  }
+
+  /**
    * Configures whether schema validation is required before resolving a response.
    */
   requireSchema(required: boolean) {
