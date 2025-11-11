@@ -31,6 +31,9 @@ export {
 	type HTTPRequestContext,
 	type HTTPResponseContext,
 	type HTTPErrorContext,
+	type HTTPLogEvent,
+	type HTTPLogSink,
+	createLoggingPlugin,
 } from "./plugins";
 export { MetaConfig, MetaConfigBuilder } from "./request-meta.config";
 export {
