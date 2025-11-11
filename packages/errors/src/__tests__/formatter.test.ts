@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { AutomationError } from "../automation-error";
-import { formatErrorCauses } from "../formatter";
+import {
+  formatErrorCauses,
+  formatErrorTree,
+  printErrorTree,
+} from "../formatter";
 
 describe("formatErrorCauses", () => {
   it("includes the root error details", () => {
@@ -60,5 +64,81 @@ describe("formatErrorCauses", () => {
 
     const output = formatErrorCauses(second);
     expect(output).toContain("cycle detected");
+  });
+});
+
+describe("formatErrorTree", () => {
+  it("renders an indented bullet list for error causes", () => {
+    const deep = new AutomationError("Deep");
+    const inner = new AutomationError("Inner", { cause: deep });
+    const root = new AutomationError("Root", { cause: inner });
+
+    const output = formatErrorTree(root, { includeStack: false });
+    const lines = output.split("\n");
+
+    expect(lines).toEqual([
+      "• AutomationError: Root",
+      "  • AutomationError: Inner",
+      "    • AutomationError: Deep",
+    ]);
+  });
+
+  it("includes described non-error causes", () => {
+    const root = new AutomationError("Root", { cause: { type: "context" } });
+
+    const output = formatErrorTree(root, {
+      includeStack: false,
+      describeValue: (value) => `details:${(value as { type: string }).type}`,
+    });
+
+    expect(output.split("\n")[1]).toBe("  • details:context");
+  });
+
+  it("appends notices for max depth and cycles", () => {
+    const other = new AutomationError("Other");
+    const root = new AutomationError("Root", { cause: other });
+    Object.defineProperty(other, "cause", {
+      configurable: true,
+      enumerable: false,
+      value: root,
+    });
+
+    const output = formatErrorTree(root, {
+      includeStack: false,
+      maxDepth: 0,
+    });
+
+    expect(output.split("\n")[1]).toBe("  • [max depth reached]");
+
+    const cycleOutput = formatErrorTree(root, { includeStack: false });
+    expect(cycleOutput).toContain("cycle detected");
+  });
+
+  it("supports custom bullets and indent", () => {
+    const child = new AutomationError("Child");
+    const parent = new AutomationError("Parent", { cause: child });
+
+    const output = formatErrorTree(parent, {
+      includeStack: false,
+      bullet: "-",
+      indent: "    ",
+    });
+
+    expect(output.split("\n")).toEqual([
+      "- AutomationError: Parent",
+      "    - AutomationError: Child",
+    ]);
+  });
+
+  it("prints using the provided writer", () => {
+    const logs: string[] = [];
+    const error = new AutomationError("Root");
+
+    printErrorTree(error, {
+      includeStack: false,
+      writer: (line) => logs.push(line),
+    });
+
+    expect(logs).toEqual(["• AutomationError: Root"]);
   });
 });

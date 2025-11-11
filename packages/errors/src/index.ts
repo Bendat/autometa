@@ -4,7 +4,11 @@ export {
 } from "./automation-error";
 export {
 	formatErrorCauses,
+	formatErrorTree,
+	printErrorTree,
 	type FormatErrorCausesOptions,
+	type FormatErrorTreeOptions,
+	type PrintErrorTreeOptions,
 } from "./formatter";
 export {
 	raise,

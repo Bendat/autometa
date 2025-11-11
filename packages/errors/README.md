@@ -14,6 +14,8 @@ pnpm add @autometa/errors
 import {
 	AutomationError,
 	formatErrorCauses,
+	formatErrorTree,
+	printErrorTree,
 	raise,
 	safe,
 	safeAsync,
@@ -32,6 +34,7 @@ try {
 } catch (error) {
 	const automation = AutomationError.wrap(error);
 	console.error(formatErrorCauses(automation, { includeStack: false }));
+	printErrorTree(automation, { includeStack: false });
 }
 ```
 
@@ -41,3 +44,4 @@ try {
 - `raise` – construct and throw `AutomationError` or custom subclasses (legacy constructors supported) with optional nested causes.
 - `safe`/`safeAsync` – execute functions, capturing failures as `AutomationError` instances while returning a discriminated union result.
 - `formatErrorCauses` – produce readable multi-line descriptions of error chains with configurable stack inclusion and depth limits.
+- `formatErrorTree` / `printErrorTree` – pretty-print error causes as an indented tree, ideal for console or structured logs.
