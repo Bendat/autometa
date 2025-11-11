@@ -73,6 +73,18 @@
       "outputs": ["coverage/**"],
       "dependsOn": ["type-check"]
     },
+    "test:integration": {
+      "inputs": [
+        "integration/**/*.test.ts",
+        "integration/**/*.ts",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "package.json",
+        "tsconfig.json",
+        "vitest.integration.config.ts"
+      ],
+      "dependsOn": ["build"]
+    },
     "lint": {
       "inputs": [
         "src/**/*.ts",

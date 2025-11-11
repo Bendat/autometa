@@ -19,6 +19,7 @@
     "lint:fix": "turbo run lint:fix",
     "clean": "turbo run clean",
     "prettify": "prettier **/*.{ts,tsx,md} --write",
+  "integrate": "turbo run test:integration --filter='!@autometa/documentation'",
     "turbo:update": "npx @turbo/codemod migrate",
     "turbo:gen": "turbo gen library && pnpm i && pnpm sync-ts-references",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

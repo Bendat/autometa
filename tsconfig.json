@@ -17,6 +17,9 @@
       "path": "packages/injection"
     },
     {
+      "path": "packages/http"
+    },
+    {
       "path": "packages/gherkin"
     },
     {

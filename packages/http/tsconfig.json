@@ -1,0 +1,26 @@
+{
+  "extends": "../../configuration/tsconfig/package.config.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    ".reference",
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "references": [
+    {
+      "path": "../errors/tsconfig.types.json"
+    },
+    {
+      "path": "../status-codes/tsconfig.types.json"
+    }
+  ]
+}

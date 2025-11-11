@@ -342,3 +342,6 @@ export const StatusCodes = {
    */
   NETWORK_AUTHENTICATION_REQUIRED: { status: 511, statusText: "Network Authentication Required" },
 } as const;
+
+export type StatusCode =
+  (typeof StatusCodes)[keyof typeof StatusCodes]["status"];
