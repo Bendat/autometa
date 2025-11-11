@@ -15,6 +15,7 @@ import type { HTTPTransport } from "./transport";
 import type {
   HTTPAdditionalOptions,
   HTTPMethod,
+  HTTPRetryOptions,
   QueryParamSerializationOptions,
   RequestHook,
   ResponseHook,
@@ -186,6 +187,23 @@ export class HTTP {
   abortSignal(signal: AbortSignal | null) {
     return this.derive(({ meta }) => {
       meta.options({ signal: signal ?? undefined });
+    });
+  }
+
+  /**
+   * Configures automatic retries for this instance and all derived clients.
+   */
+  sharedRetry(options: HTTPRetryOptions | null) {
+    this.meta.retry(options);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with custom retry behaviour.
+   */
+  retry(options: HTTPRetryOptions | null) {
+    return this.derive(({ meta }) => {
+      meta.retry(options);
     });
   }
 
@@ -514,61 +532,83 @@ export class HTTP {
     method: HTTPMethod,
     options?: HTTPAdditionalOptions<unknown>
   ) {
-    const builder = this.builder.clone().method(method);
-    await builder.resolveDynamicHeaders();
-    const request = builder.build();
-    request.method = method;
-
+    const baseBuilder = this.builder.clone().method(method);
     const meta = this.meta.derive().build();
     const mergedOptions = mergeOptions(meta.options, options);
+    const retryPolicy = meta.retry;
+    const maxRetries = retryPolicy?.attempts ?? 0;
 
-    const requestContext: HTTPRequestContext = {
-      request,
-      options: mergedOptions,
-    };
+    for (let retriesUsed = 0; ; ) {
+      const attemptBuilder = baseBuilder.clone();
+      await attemptBuilder.resolveDynamicHeaders();
+      const request = attemptBuilder.build();
+      request.method = method;
 
-    let response: HTTPResponse<unknown> | undefined;
+      const requestContext: HTTPRequestContext = {
+        request,
+        options: mergedOptions,
+      };
 
-    try {
-      await this.runRequestPlugins(requestContext);
-      await this.runOnSendHooks(meta, request);
-      const raw = await this.transport
-        .send(request, mergedOptions)
-        .catch((cause) => {
-          throw new HTTPTransportError(request, cause);
+      let response: HTTPResponse<unknown> | undefined;
+
+      try {
+        await this.runRequestPlugins(requestContext);
+        await this.runOnSendHooks(meta, request);
+        const raw = await this.transport
+          .send(request, mergedOptions)
+          .catch((cause) => {
+            throw new HTTPTransportError(request, cause);
+          });
+
+        response = this.buildResponse(raw, request);
+        response.data = transformResponse(meta.allowPlainText, response.data);
+
+        if (meta.throwOnServerError && response.status >= 500) {
+          throw new AutomationError(`Server responded with status ${response.status}`);
+        }
+
+        await this.runOnReceiveHooks(meta, response);
+
+        let validated: HTTPResponse<TResponse>;
+        try {
+          validated = this.validateResponse<TResponse>(response, meta);
+        } catch (cause) {
+          throw new HTTPSchemaValidationError(request, response, cause);
+        }
+
+        await this.runResponsePlugins({
+          request,
+          response: validated,
+          options: mergedOptions,
         });
 
-      response = this.buildResponse(raw, request);
-      response.data = transformResponse(meta.allowPlainText, response.data);
+        return validated;
+      } catch (thrown) {
+        const normalized = thrown instanceof HTTPError ? thrown : (thrown as unknown);
+        const retryAttempt = retriesUsed + 1;
+        const policy = retryPolicy;
+        const canRetry =
+          policy !== undefined &&
+          retryAttempt <= maxRetries &&
+          (await this.shouldRetryRequest(
+            normalized,
+            policy,
+            retryAttempt,
+            request
+          ));
 
-      if (meta.throwOnServerError && response.status >= 500) {
-        throw new AutomationError(`Server responded with status ${response.status}`);
+        if (!canRetry) {
+          await this.runErrorPlugins({
+            request,
+            options: mergedOptions,
+            error: normalized,
+          });
+          throw normalized;
+        }
+
+        retriesUsed += 1;
+        await this.delayRetry(retryAttempt, policy);
       }
-
-      await this.runOnReceiveHooks(meta, response);
-
-      let validated: HTTPResponse<TResponse>;
-      try {
-        validated = this.validateResponse<TResponse>(response, meta);
-      } catch (cause) {
-        throw new HTTPSchemaValidationError(request, response, cause);
-      }
-
-      await this.runResponsePlugins({
-        request,
-        response: validated,
-        options: mergedOptions,
-      });
-
-      return validated;
-    } catch (thrown) {
-      const normalized = thrown instanceof HTTPError ? thrown : (thrown as unknown);
-      await this.runErrorPlugins({
-        request,
-        options: mergedOptions,
-        error: normalized,
-      });
-      throw normalized;
     }
   }
 
@@ -658,6 +698,57 @@ export class HTTP {
 
   private plugins() {
     return [...this.sharedPlugins, ...this.scopedPlugins];
+  }
+
+  private async shouldRetryRequest(
+    error: unknown,
+    policy: HTTPRetryOptions,
+    attempt: number,
+    request: HTTPRequest<unknown>
+  ) {
+    if (attempt > policy.attempts) {
+      return false;
+    }
+
+    const response = error instanceof HTTPError ? error.response : undefined;
+
+    if (policy.retryOn) {
+      return await policy.retryOn({
+        error,
+        attempt,
+        request,
+        response,
+      });
+    }
+
+    if (error instanceof HTTPTransportError) {
+      return true;
+    }
+
+    if (response && response.status >= 500) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private async delayRetry(attempt: number, policy: HTTPRetryOptions) {
+    const { delay } = policy;
+
+    let duration: number | undefined;
+    if (typeof delay === "function") {
+      duration = await delay(attempt);
+    } else if (typeof delay === "number") {
+      duration = delay * attempt;
+    } else {
+      duration = attempt * 100;
+    }
+
+    if (!duration || duration <= 0) {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, duration));
   }
 
   private derive(

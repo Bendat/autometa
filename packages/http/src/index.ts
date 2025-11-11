@@ -56,4 +56,7 @@ export type {
 	RequestHook,
 	ResponseHook,
 	StatusCode,
+	HTTPRetryOptions,
+	HTTPRetryPredicate,
+	HTTPRetryContext,
 } from "./types";

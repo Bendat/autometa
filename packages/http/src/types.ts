@@ -36,6 +36,23 @@ export type StatusCode = IntRange<100, 600>;
 export type RequestHook = <T = unknown>(state: HTTPRequest<T>) => unknown;
 export type ResponseHook<T> = (state: HTTPResponse<T>) => unknown;
 
+export interface HTTPRetryContext {
+  error: unknown;
+  attempt: number;
+  request: HTTPRequest<unknown>;
+  response?: HTTPResponse<unknown>;
+}
+
+export type HTTPRetryPredicate = (
+  context: HTTPRetryContext
+) => boolean | Promise<boolean>;
+
+export interface HTTPRetryOptions {
+  attempts: number;
+  delay?: number | ((attempt: number) => number | Promise<number>);
+  retryOn?: HTTPRetryPredicate;
+}
+
 export type QueryParamPrimitive = string | number | boolean | null | undefined;
 export type QueryParamValue =
   | QueryParamPrimitive

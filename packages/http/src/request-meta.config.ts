@@ -1,6 +1,7 @@
 import { SchemaMap } from "./schema.map";
 import type {
   HTTPAdditionalOptions,
+  HTTPRetryOptions,
   RequestHook,
   ResponseHook,
   SchemaParser,
@@ -26,6 +27,7 @@ export class MetaConfig implements SchemaConfig, HTTPHooks {
   onReceive: [string, ResponseHook<unknown>][] = [];
   throwOnServerError = false;
   options: HTTPAdditionalOptions<unknown> = {};
+  retry?: HTTPRetryOptions;
 
   constructor(init?: Partial<MetaConfig>) {
     Object.assign(this, init);
@@ -40,6 +42,7 @@ export class MetaConfigBuilder {
   private onAfterReceiveHooks: [string, ResponseHook<unknown>][] = [];
   private throwOnServerErrorValue = false;
   private optionsValue: HTTPAdditionalOptions<unknown> = {};
+  private retryOptionsValue: HTTPRetryOptions | undefined;
 
   merge(builder: MetaConfigBuilder) {
     this.schemaMapValue = builder.schemaMapValue.derive();
@@ -49,6 +52,9 @@ export class MetaConfigBuilder {
     this.onAfterReceiveHooks = [...builder.onAfterReceiveHooks];
     this.throwOnServerErrorValue = builder.throwOnServerErrorValue;
     this.optionsValue = { ...builder.optionsValue };
+    this.retryOptionsValue = builder.retryOptionsValue
+      ? { ...builder.retryOptionsValue }
+      : undefined;
     return this;
   }
 
@@ -110,7 +116,16 @@ export class MetaConfigBuilder {
     return this;
   }
 
+  retry(options: HTTPRetryOptions | null) {
+    this.retryOptionsValue = options ? { ...options } : undefined;
+    return this;
+  }
+
   build() {
+    const retry = this.retryOptionsValue
+      ? { ...this.retryOptionsValue }
+      : undefined;
+
     return new MetaConfig({
       schemas: this.schemaMapValue.derive(),
       requireSchema: this.requireSchemaValue,
@@ -119,6 +134,7 @@ export class MetaConfigBuilder {
       onReceive: [...this.onAfterReceiveHooks],
       options: { ...this.optionsValue },
       throwOnServerError: this.throwOnServerErrorValue,
+      ...(retry ? { retry } : {}),
     });
   }
 
@@ -129,6 +145,7 @@ export class MetaConfigBuilder {
       .allowPlainText(this.allowPlainTextValue)
       .throwOnServerError(this.throwOnServerErrorValue)
       .options(this.optionsValue)
+      .retry(this.retryOptionsValue ?? null)
       .setOnBeforeSend(this.onBeforeSendHooks)
       .setOnAfterReceive(this.onAfterReceiveHooks);
   }
