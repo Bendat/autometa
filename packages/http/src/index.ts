@@ -1,4 +1,10 @@
-export { HTTP, type HTTPCreateOptions } from "./http";
+export {
+	HTTP,
+	type HTTPCreateOptions,
+	HTTPError,
+	HTTPTransportError,
+	HTTPSchemaValidationError,
+} from "./http";
 export {
 	HTTPRequest,
 	HTTPRequestBuilder,

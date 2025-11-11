@@ -22,6 +22,46 @@ import type {
   StatusCode,
 } from "./types";
 
+export class HTTPError extends AutomationError {
+  readonly request: HTTPRequest<unknown>;
+  readonly response: HTTPResponse<unknown> | undefined;
+  readonly originalError: unknown;
+
+  constructor(
+    message: string,
+    request: HTTPRequest<unknown>,
+    response?: HTTPResponse<unknown>,
+    cause?: unknown
+  ) {
+    super(message, {
+      cause: cause instanceof Error ? cause : undefined,
+    });
+    this.request = request;
+    this.response = response;
+    this.originalError = cause;
+    this.name = this.constructor.name;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class HTTPTransportError extends HTTPError {
+  constructor(request: HTTPRequest<unknown>, cause: unknown) {
+    super("Failed to execute HTTP request", request, undefined, cause);
+    this.name = "HTTPTransportError";
+  }
+}
+
+export class HTTPSchemaValidationError extends HTTPError {
+  constructor(
+    request: HTTPRequest<unknown>,
+    response: HTTPResponse<unknown>,
+    cause: unknown
+  ) {
+    super("Response schema validation failed", request, response, cause);
+    this.name = "HTTPSchemaValidationError";
+  }
+}
+
 /**
  * Optional configuration applied during {@link HTTP.create}.
  */
@@ -470,11 +510,18 @@ export class HTTP {
       options: mergedOptions,
     };
 
+    let response: HTTPResponse<unknown> | undefined;
+
     try {
       await this.runRequestPlugins(requestContext);
       await this.runOnSendHooks(meta, request);
-      const raw = await this.transport.send(request, mergedOptions);
-      const response = this.buildResponse(raw, request);
+      const raw = await this.transport
+        .send(request, mergedOptions)
+        .catch((cause) => {
+          throw new HTTPTransportError(request, cause);
+        });
+
+      response = this.buildResponse(raw, request);
       response.data = transformResponse(meta.allowPlainText, response.data);
 
       if (meta.throwOnServerError && response.status >= 500) {
@@ -482,7 +529,13 @@ export class HTTP {
       }
 
       await this.runOnReceiveHooks(meta, response);
-      const validated = this.validateResponse<TResponse>(response, meta);
+
+      let validated: HTTPResponse<TResponse>;
+      try {
+        validated = this.validateResponse<TResponse>(response, meta);
+      } catch (cause) {
+        throw new HTTPSchemaValidationError(request, response, cause);
+      }
 
       await this.runResponsePlugins({
         request,
@@ -491,13 +544,14 @@ export class HTTP {
       });
 
       return validated;
-    } catch (error) {
+    } catch (thrown) {
+      const normalized = thrown instanceof HTTPError ? thrown : (thrown as unknown);
       await this.runErrorPlugins({
         request,
         options: mergedOptions,
-        error,
+        error: normalized,
       });
-      throw error;
+      throw normalized;
     }
   }
 
