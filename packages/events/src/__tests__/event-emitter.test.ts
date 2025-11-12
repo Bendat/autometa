@@ -25,7 +25,7 @@ import type {
   SimplePickleStep,
   SimpleScenario,
   SimpleScenarioOutline,
-} from "@autometa/gherkin";
+} from "../../../gherkin/src/types";
 
 describe("EventEmitter", () => {
   const location = { line: 1, column: 1 } as const;

@@ -20,7 +20,7 @@ describe("Scenario: multi-modal overload", () => {
       const typed = pair as [string, number];
       return [...typed, flag as boolean];
     }),
-    def("mixed array", array([string(), number()])).match((payload) => {
+  def("mixed array", tuple([string(), number()])).match((payload) => {
       handlerSpy(payload);
       const [label, value] = payload as [string, number];
       return { label, value };

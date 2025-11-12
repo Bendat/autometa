@@ -4,7 +4,8 @@
 
 // Constructor type for classes
 export interface Constructor<T = object> {
-  new (...args: unknown[]): T;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- constructors often declare specific dependency types; we need a permissive arg signature
+  new (...args: any[]): T;
   name?: string;
   prototype?: T;
 }

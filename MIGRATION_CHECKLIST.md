@@ -113,7 +113,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 **Status:** Migrated ✅  
 **Notes:** Downstream consumers will likely need updates for the new phrases API surface—plan dependency audits to confirm compatibility.
 
-### 🚧 @autometa/app
+### ✅ @autometa/app
 **Location:** `packages/app`  
 **Dependencies:**
 - ✅ @autometa/asserters
@@ -122,13 +122,13 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/injection
 - ✅ @autometa/phrases
 
-**Status:** In Progress (step factory + scope manager implemented; awaiting scope integration) 🚧
+**Status:** Migrated ✅ (baseline lifecycle landed; tracking follow-up discoveries separately)
 
 ---
 
 ## Level 3: Depends on Level 0-2
 
-### ✅ @autometa/datetime
+### ✅ `@autometa/datetime`
 **Location:** `packages/datetime`  
 **Dependencies:**
 - ✅ @autometa/asserters
@@ -137,49 +137,49 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 **Status:** Migrated ✅ (injectable clock, modern date/time factories, full coverage)
 
-### ⏸️ @autometa/config
+### ⏳ @autometa/config
 **Location:** `packages/config`  
 **Dependencies:**
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/asserters
 - ✅ @autometa/errors
 - ✅ @autometa/types
 
-**Status:** Blocked (awaits stabilized app lifecycle) ⏸️
+**Status:** Ready ⏳ (app lifecycle stabilized; queued behind scopes work)
 
-### ⏸️ @autometa/http
+### ⏳ @autometa/http
 **Location:** `packages/http`  
 **Dependencies:**
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/dto-builder
 - ✅ @autometa/errors
 - ✅ @autometa/injection
 - ✅ @autometa/status-codes
 
-**Status:** Blocked (awaits app completion plus decision on status-codes replacement) ⏸️
+**Status:** Ready ⏳ (app completed; pending follow-up on status-code strategy)
 
 ---
 
 ## Level 4+: Complex Dependencies
 
-### ⏸️ @autometa/cucumber-expressions
+### ✅ @autometa/cucumber-expressions
 **Location:** `packages/cucumber-expressions`  
 **Dependencies:**
 - 🚧 @autometa/app
 - ✅ @autometa/asserters
-- ✅ @autometa/datetime
+- ✅ `@autometa/datetime`
 - ✅ @autometa/errors
 - ✅ @autometa/overloaded
 - ✅ @autometa/types
 
-**Status:** Blocked (needs app integration) ⏸️
+**Status:** Migrated ✅ (transform system complete; follow-up integration with app pending)
 
-### ⏸️ @autometa/scopes
+### 🚧 @autometa/scopes
 **Location:** `packages/scopes`  
 **Dependencies:**
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/bind-decorator
-- ⏸️ @autometa/cucumber-expressions
+- ✅ @autometa/cucumber-expressions
 - ✅ @autometa/dto-builder
 - ✅ @autometa/errors
 - ✅ @autometa/events
@@ -188,12 +188,12 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/phrases
 - ✅ @autometa/types
 
-**Status:** Blocked (needs app and cucumber-expressions integration) ⏸️
+**Status:** In Progress 🚧 (DSL factory now builds scoped plans with execution modes, world factories, outline examples, and exposes an execution adapter; decorator integration next)
 
 ### ⏸️ @autometa/test-builder
 **Location:** `packages/test-builder`  
 **Dependencies:**
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/asserters
 - ✅ @autometa/bind-decorator
 - ✅ @autometa/dto-builder
@@ -209,7 +209,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 ### ⏸️ @autometa/jest-executor
 **Location:** `packages/jest-executor`  
 **Dependencies:**
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/asserters
 - ⏸️ @autometa/config
 - ✅ @autometa/errors
@@ -225,7 +225,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 ### ⏸️ @autometa/coordinator
 **Location:** `packages/coordinator`  
 **Dependencies:**
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/asserters
 - ⏸️ @autometa/config
 - ✅ @autometa/errors
@@ -248,13 +248,13 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 ### ⏸️ @autometa/runner
 **Location:** `packages/runner`  
 **Dependencies:** (Almost everything - 19 packages)
-- 🚧 @autometa/app
+- ✅ @autometa/app
 - ✅ @autometa/asserters
 - ✅ @autometa/bind-decorator
 - ⏸️ @autometa/config
 - ⏸️ @autometa/coordinator
 - ⏸️ @autometa/cucumber-expressions
-- ✅ @autometa/datetime
+- ✅ `@autometa/datetime`
 - ✅ @autometa/errors
 - ✅ @autometa/events
 - ➖ @autometa/file-proxies (legacy)
@@ -299,14 +299,14 @@ Based on the dependency graph, here's the optimal migration sequence:
 13. ✅ @autometa/dto-builder (depends on injection)
 
 ### Phase 5: Level 3 Dependencies
-14. @autometa/app (in progress; continue integrating with scopes)
-15. ⏳ @autometa/datetime (depends on asserters, errors, phrases)
+14. ✅ @autometa/app (baseline lifecycle complete)
+15. ⏳ `@autometa/datetime` (depends on asserters, errors, phrases)
 16. @autometa/config (depends on app, asserters, errors, types)
 17. @autometa/http (depends on app, dto-builder, errors, injection, status-codes)
 
 ### Phase 6: Complex Integration Packages
-18. @autometa/cucumber-expressions
-19. @autometa/scopes
+18. ✅ @autometa/cucumber-expressions
+19. 🚧 @autometa/scopes
 20. @autometa/test-builder
 21. @autometa/jest-executor
 22. @autometa/coordinator
@@ -329,10 +329,10 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 13 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, datetime, events, fixture-proxies, status-codes)  
-**Ready to migrate:** 0 packages  
-**In progress:** 1 package (app)  
-**Blocked:** 8 active packages (config, http, cucumber-expressions, scopes, test-builder, jest-executor, coordinator, runner, plus pending decisions on legacy modules)  
+**Migrated:** 15 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions)  
+**Ready to migrate:** 2 packages (config, http)  
+**In progress:** 1 package (scopes)  
+**Blocked:** 5 active packages (test-builder, jest-executor, coordinator, runner, jest-transformer)  
 **Total:** 22 tracked packages (including legacy slots)
 
-**Next Up:** Continue iterating on @autometa/app to unblock scopes, coordinator, and executor layers.
+**Next Up:** Push on scopes refactor (world factory, decorator integration) to unblock test-builder, coordinator, and executor layers.

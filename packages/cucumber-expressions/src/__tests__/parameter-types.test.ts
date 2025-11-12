@@ -96,7 +96,7 @@ describe("createParameterTypes", () => {
 
     const definitions: ParameterTypeDefinitions<unknown> = [
       { name: "customWord", pattern: /(\w+)/ },
-      { name: "customNumber", pattern: /(-?\d+)/, primitive: Number },
+      { name: "customNumber", pattern: /(-?\d+)/, transform: (value) => Number(value) },
     ];
 
     define.many(registry, ...definitions);

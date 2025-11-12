@@ -13,25 +13,40 @@ type ValidatorValues<T extends readonly ValidatorInstance[]> = {
 };
 
 type DefInput = string | DefMetadata | ValidatorInstance;
+type DefContinuation = <TInputs extends readonly DefInput[]>(
+  ...inputs: TInputs
+) => DefBuilder<ExtractValidators<TInputs>>;
+
+type ExtractValidators<T extends readonly unknown[]> = T extends readonly []
+  ? []
+  : T extends readonly [infer Head, ...infer Rest]
+    ? Head extends ValidatorInstance
+      ? readonly [Head, ...ExtractValidators<Rest extends readonly unknown[] ? Rest : []>]
+      : Head extends string | DefMetadata
+        ? ExtractValidators<Rest extends readonly unknown[] ? Rest : []>
+        : ExtractValidators<Rest extends readonly unknown[] ? Rest : []>
+    : [];
 
 export interface DefBuilder<TValidators extends readonly ValidatorInstance[]> {
   match<TReturn>(handler: (...args: ValidatorValues<TValidators>) => TReturn): SignatureDefinitionInput;
   throws(error: new (message?: string) => Error, message?: string): SignatureDefinitionInput;
 }
 
-export function def(strings: TemplateStringsArray, ...placeholders: unknown[]): (...inputs: ReadonlyArray<DefInput>) => DefBuilder<ValidatorInstance[]>;
-export function def(...inputs: ReadonlyArray<DefInput>): DefBuilder<ValidatorInstance[]>;
+export function def(strings: TemplateStringsArray, ...placeholders: unknown[]): DefContinuation;
+export function def<TInputs extends readonly DefInput[]>(...inputs: TInputs): DefBuilder<ExtractValidators<TInputs>>;
 export function def(
   ...inputs: ReadonlyArray<DefInput | TemplateStringsArray | unknown>
-): DefBuilder<ValidatorInstance[]> | ((...laterInputs: ReadonlyArray<DefInput>) => DefBuilder<ValidatorInstance[]>) {
+):
+  | DefBuilder<readonly ValidatorInstance[]>
+  | DefContinuation {
   const [first] = inputs;
 
   if (isTemplateLiteral(first)) {
     const name = first[0] ?? "";
-    return (...later) => buildDef({ name }, later);
+    return ((...later: readonly DefInput[]) => buildDef({ name }, later)) as DefContinuation;
   }
 
-  return buildDef({}, inputs as ReadonlyArray<DefInput>);
+  return buildDef({}, inputs as readonly DefInput[]);
 }
 
 export function fallback(handler: OverloadHandler): SignatureDefinitionInput;
@@ -73,14 +88,17 @@ export function overloads<TDefinitions extends ReadonlyArray<SignatureDefinition
   };
 }
 
-function buildDef(initialMetadata: DefMetadata, inputs: ReadonlyArray<DefInput>): DefBuilder<ValidatorInstance[]> {
-  const { metadata, validators } = splitMetadataAndValidators(initialMetadata, inputs);
+function buildDef<TInputs extends readonly DefInput[]>(
+  initialMetadata: DefMetadata,
+  inputs: TInputs
+): DefBuilder<ExtractValidators<TInputs>> {
+  const { metadata, validators } = splitMetadataAndValidators(inputs, initialMetadata);
 
   if (validators.length === 0) {
     throw new Error("def requires at least one validator");
   }
 
-  const builder = SignatureBuilder.create(validators, metadata.name, metadata.description);
+  const builder = SignatureBuilder.create([...validators], metadata.name, metadata.description);
 
   return {
     match(handler) {
@@ -93,7 +111,10 @@ function buildDef(initialMetadata: DefMetadata, inputs: ReadonlyArray<DefInput>)
   };
 }
 
-function splitMetadataAndValidators(initial: DefMetadata, inputs: ReadonlyArray<DefInput>) {
+function splitMetadataAndValidators<TInputs extends readonly DefInput[]>(
+  inputs: TInputs,
+  initial: DefMetadata
+) {
   const queue = [...inputs];
   let metadata: DefMetadata = { ...initial };
 
@@ -117,7 +138,7 @@ function splitMetadataAndValidators(initial: DefMetadata, inputs: ReadonlyArray<
     validators.push(candidate);
   }
 
-  return { metadata, validators };
+  return { metadata, validators: validators as ExtractValidators<TInputs> };
 }
 
 function isValidator(value: unknown): value is ValidatorInstance {

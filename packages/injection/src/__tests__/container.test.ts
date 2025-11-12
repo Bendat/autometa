@@ -234,6 +234,9 @@ describe('Container', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(UnregisteredDependencyError);
+        if (!(error instanceof UnregisteredDependencyError)) {
+          throw error;
+        }
         expect(error.message).toContain('UnregisteredService');
       }
     });

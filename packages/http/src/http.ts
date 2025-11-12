@@ -619,8 +619,12 @@ export class HTTP {
       }
 
       if (signals.length === 1) {
-        const [singleSignal] = signals;
-        attemptOptions.signal = singleSignal;
+        const singleSignal = signals[0];
+        if (singleSignal) {
+          attemptOptions.signal = singleSignal;
+        } else if ("signal" in attemptOptions) {
+          delete attemptOptions.signal;
+        }
       } else if (signals.length > 1) {
         combinedSignal = combineAbortSignals(signals);
         attemptOptions.signal = combinedSignal.signal;
@@ -815,12 +819,10 @@ export class HTTP {
     const response = error instanceof HTTPError ? error.response : undefined;
 
     if (policy.retryOn) {
-      return await policy.retryOn({
-        error,
-        attempt,
-        request,
-        response,
-      });
+      const retryContext = response
+        ? { error, attempt, request, response }
+        : { error, attempt, request };
+      return await policy.retryOn(retryContext);
     }
 
     if (error instanceof HTTPTransportError) {

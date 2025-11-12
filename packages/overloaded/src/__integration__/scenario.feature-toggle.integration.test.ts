@@ -29,9 +29,9 @@ describe("Scenario: feature toggle routing", () => {
   ]);
 
   const dispatcher = overloads(
-    def("literal toggle", literal(["enable", "disable"])).match((state) => ({
+    def("literal toggle", literal(["enable", "disable"] as const)).match((state) => ({
       route: "single",
-      state: state as "enable" | "disable",
+      state,
     })),
     def("bulk toggle", bulkToggleValidator).match((payload) => {
       const list = payload as unknown[];

@@ -3,16 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "outDir": "./dist",
-    "paths": {
-      "@autometa/errors": [
-        "../errors/src/index.ts"
-      ],
-      "@autometa/*": [
-        "../../packages/*/src",
-        "../../libraries/*/src"
-      ]
-    }
+    "outDir": "./dist"
   },
   "include": [
     "src/**/*"
@@ -24,9 +15,5 @@
     "**/*.spec.ts",
     "**/*.test.ts"
   ],
-  "references": [
-    {
-      "path": "../errors/tsconfig.types.json"
-    }
-  ]
+  "references": []
 }
