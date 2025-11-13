@@ -147,7 +147,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 **Status:** Ready ⏳ (app lifecycle stabilized; queued behind scopes work)
 
-### ⏳ @autometa/http
+### ✅ @autometa/http
 **Location:** `packages/http`  
 **Dependencies:**
 - ✅ @autometa/app
@@ -156,7 +156,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/injection
 - ✅ @autometa/status-codes
 
-**Status:** Ready ⏳ (app completed; pending follow-up on status-code strategy)
+**Status:** Migrated ✅ (HTTP client/server helpers aligned with v1 status-code strategy)
 
 ---
 
@@ -329,10 +329,10 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 17 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder)  
-**Ready to migrate:** 2 packages (config, http)  
+**Migrated:** 18 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder, http)  
+**Ready to migrate:** 1 package (config)  
 **In progress:** 0 packages  
 **Blocked:** 4 active packages (jest-executor, coordinator, runner, jest-transformer)  
 **Total:** 22 tracked packages (including legacy slots)
 
-**Next Up:** Tackle `@autometa/config` and `@autometa/http` to unlock executor/coordinator work.
+**Next Up:** Tackle `@autometa/config` to unlock executor/coordinator work.
