@@ -72,7 +72,7 @@ describe("ScopeComposer", () => {
 
   it("merges plan metadata including world factory and parameter registry", async () => {
     const worldFactory = vi.fn(async () => ({ value: 42 } satisfies World));
-  const parameterRegistry: ParameterRegistryLike = { defineParameterType: vi.fn() };
+    const parameterRegistry: ParameterRegistryLike = { defineParameterType: vi.fn() };
     const composer = createComposer({ worldFactory, parameterRegistry });
 
     const plan = composer.plan;
@@ -91,7 +91,7 @@ describe("ScopeComposer", () => {
     expect(() => composer.registerStep("Given", /no scope/, vi.fn())).not.toThrow();
 
     const scope = currentScope(composer);
-    composer.enterScope(scope, () => {});
+    composer.enterScope(scope, () => undefined);
 
     expect(() => composer.registerHook("afterFeature", vi.fn())).not.toThrow();
   });

@@ -81,7 +81,8 @@
         "src/**/*.tsx",
         "package.json",
         "tsconfig.json",
-        "vitest.integration.config.ts"
+        "vitest.integration.config.ts",
+        "jest.integration.config.cjs"
       ],
       "dependsOn": ["build"]
     },

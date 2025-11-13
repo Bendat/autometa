@@ -18,7 +18,7 @@ export default function (plop: PlopTypes.NodePlopAPI) {
         type: "list",
         name: "root",
         message: "What is the root of the library?",
-        choices: ["packages", "libraries", "__integration__"],
+        choices: ["packages", "examples"],
       },
     ],
     actions: [

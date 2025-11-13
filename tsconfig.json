@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "packages/vitest-executor"
+    },
+    {
       "path": "packages/types"
     },
     {
@@ -20,6 +23,9 @@
       "path": "packages/overloaded"
     },
     {
+      "path": "packages/jest-executor"
+    },
+    {
       "path": "packages/injection"
     },
     {
@@ -33,6 +39,9 @@
     },
     {
       "path": "packages/events"
+    },
+    {
+      "path": "packages/executor"
     },
     {
       "path": "packages/errors"
