@@ -137,7 +137,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 **Status:** Migrated ✅ (injectable clock, modern date/time factories, full coverage)
 
-### ⏳ @autometa/config
+### ✅ @autometa/config
 **Location:** `packages/config`  
 **Dependencies:**
 - ✅ @autometa/app
@@ -145,7 +145,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/errors
 - ✅ @autometa/types
 
-**Status:** Ready ⏳ (app lifecycle stabilized; queued behind scopes work)
+**Status:** Migrated ✅ (environment-aware config resolver + Zod schema baseline landed)
 
 ### ✅ @autometa/http
 **Location:** `packages/http`  
@@ -206,37 +206,37 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 **Status:** Migrated ✅ (builder core, internal helpers, and colocated specs ported under `src/__tests__`)
 
-### ⏸️ @autometa/jest-executor
+### ⏳ @autometa/jest-executor
 **Location:** `packages/jest-executor`  
 **Dependencies:**
 - ✅ @autometa/app
 - ✅ @autometa/asserters
-- ⏸️ @autometa/config
+- ✅ @autometa/config
 - ✅ @autometa/errors
 - ✅ @autometa/events
 - ✅ @autometa/gherkin
 - ✅ @autometa/injection
 - ✅ @autometa/scopes
-- ⏸️ @autometa/test-builder
+- ✅ @autometa/test-builder
 - ✅ @autometa/types
 
-**Status:** Blocked (waiting on config and test-builder) ⏸️
+**Status:** Ready ⏳ (all dependencies migrated; queued behind executor planning)
 
 ### ⏸️ @autometa/coordinator
 **Location:** `packages/coordinator`  
 **Dependencies:**
 - ✅ @autometa/app
 - ✅ @autometa/asserters
-- ⏸️ @autometa/config
+- ✅ @autometa/config
 - ✅ @autometa/errors
 - ✅ @autometa/events
 - ✅ @autometa/gherkin
 - ⏸️ @autometa/jest-executor
 - ✅ @autometa/scopes
-- ⏸️ @autometa/test-builder
+- ✅ @autometa/test-builder
 - ✅ @autometa/types
 
-**Status:** Blocked (needs config, jest-executor, test-builder) ⏸️
+**Status:** Blocked ⏸️ (awaiting @autometa/jest-executor)
 
 ### ⏸️ @autometa/jest-transformer
 **Location:** `packages/jest-transformer`  
@@ -251,21 +251,21 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/app
 - ✅ @autometa/asserters
 - ✅ @autometa/bind-decorator
-- ⏸️ @autometa/config
+- ✅ @autometa/config
 - ⏸️ @autometa/coordinator
-- ⏸️ @autometa/cucumber-expressions
+- ✅ @autometa/cucumber-expressions
 - ✅ `@autometa/datetime`
 - ✅ @autometa/errors
 - ✅ @autometa/events
 - ➖ @autometa/file-proxies (legacy)
 - ✅ @autometa/fixture-proxies
 - ✅ @autometa/gherkin
-- ⏸️ @autometa/http
+- ✅ @autometa/http
 - ✅ @autometa/injection
 - ⏸️ @autometa/jest-executor
 - ✅ @autometa/phrases
 - ✅ @autometa/scopes
-- ⏸️ @autometa/test-builder
+- ✅ @autometa/test-builder
 - ✅ @autometa/types
 - ✅ @autometa/status-codes
 
@@ -301,7 +301,7 @@ Based on the dependency graph, here's the optimal migration sequence:
 ### Phase 5: Level 3 Dependencies
 14. ✅ @autometa/app (baseline lifecycle complete)
 15. ⏳ `@autometa/datetime` (depends on asserters, errors, phrases)
-16. @autometa/config (depends on app, asserters, errors, types)
+16. ✅ @autometa/config (depends on app, asserters, errors, types)
 17. @autometa/http (depends on app, dto-builder, errors, injection, status-codes)
 
 ### Phase 6: Complex Integration Packages
@@ -329,10 +329,10 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 18 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder, http)  
-**Ready to migrate:** 1 package (config)  
+**Migrated:** 19 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder, http, config)  
+**Ready to migrate:** 1 package (`@autometa/jest-executor`)  
 **In progress:** 0 packages  
-**Blocked:** 4 active packages (jest-executor, coordinator, runner, jest-transformer)  
+**Blocked:** 3 active packages (coordinator, runner, jest-transformer)  
 **Total:** 22 tracked packages (including legacy slots)
 
-**Next Up:** Tackle `@autometa/config` to unlock executor/coordinator work.
+**Next Up:** Begin `@autometa/jest-executor` to unlock coordinator and runner.

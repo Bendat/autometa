@@ -47,6 +47,9 @@
       "path": "packages/cucumber-expressions"
     },
     {
+      "path": "packages/config"
+    },
+    {
       "path": "packages/bind-decorator"
     },
     {
