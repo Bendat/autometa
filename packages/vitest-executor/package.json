@@ -17,6 +17,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests",
     "test:ui": "vitest --ui --passWithNoTests",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "coverage": "vitest run --coverage --passWithNoTests",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -30,7 +31,14 @@
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "@autometa/executor": "workspace:*",
+    "@autometa/scopes": "workspace:*",
+    "@autometa/test-builder": "workspace:*"
+  },
   "devDependencies": {
+    "@autometa/gherkin": "workspace:*",
     "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",

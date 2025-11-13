@@ -15,5 +15,18 @@
     "**/*.spec.ts",
     "**/*.test.ts"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../config/tsconfig.types.json"
+    },
+    {
+      "path": "../executor/tsconfig.types.json"
+    },
+    {
+      "path": "../scopes/tsconfig.types.json"
+    },
+    {
+      "path": "../test-builder/tsconfig.types.json"
+    }
+  ]
 }
