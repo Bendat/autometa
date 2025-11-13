@@ -190,7 +190,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 **Status:** Migrated ✅ (Scopes DSL rebuilt with execution adapter, decorator registry, immutable metadata handling, and accompanying test coverage)
 
-### ⏳ @autometa/test-builder
+### ✅ @autometa/test-builder
 **Location:** `packages/test-builder`  
 **Dependencies:**
 - ✅ @autometa/app
@@ -204,7 +204,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/scopes
 - ✅ @autometa/types
 
-**Status:** Ready ⏳ (app and scopes migrated; pending port of legacy builders)
+**Status:** Migrated ✅ (builder core, internal helpers, and colocated specs ported under `src/__tests__`)
 
 ### ⏸️ @autometa/jest-executor
 **Location:** `packages/jest-executor`  
@@ -329,10 +329,10 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 16 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes)  
-**Ready to migrate:** 3 packages (config, http, test-builder)  
+**Migrated:** 17 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder)  
+**Ready to migrate:** 2 packages (config, http)  
 **In progress:** 0 packages  
 **Blocked:** 4 active packages (jest-executor, coordinator, runner, jest-transformer)  
 **Total:** 22 tracked packages (including legacy slots)
 
-**Next Up:** Tackle `@autometa/config`, `@autometa/http`, and the newly-unlocked `@autometa/test-builder` to stage executor/coordinator work.
+**Next Up:** Tackle `@autometa/config` and `@autometa/http` to unlock executor/coordinator work.
