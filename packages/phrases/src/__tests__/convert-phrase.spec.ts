@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { convertPhrase } from "./convert-phrase";
-import { camel, kebab, prefix, suffix, snake } from "./transformers";
-import type { PhraseTransformFactory } from "./types";
+import { convertPhrase } from "../convert-phrase";
+import { camel, kebab, prefix, suffix, snake } from "../transformers";
+import type { PhraseTransformFactory } from "../types";
 
 describe("convertPhrase", () => {
   it("applies provided transforms in order", () => {

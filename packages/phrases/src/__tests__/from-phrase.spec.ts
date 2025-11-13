@@ -6,8 +6,8 @@ import {
   assertPhrase,
   from,
   isPhrase,
-} from "./from-phrase";
-import { camel } from "./transformers";
+} from "../from-phrase";
+import { camel } from "../transformers";
 
 describe("from-phrase helpers", () => {
   class Example {

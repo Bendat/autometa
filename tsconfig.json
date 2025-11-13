@@ -5,6 +5,9 @@
       "path": "packages/types"
     },
     {
+      "path": "packages/test-builder"
+    },
+    {
       "path": "packages/status-codes"
     },
     {

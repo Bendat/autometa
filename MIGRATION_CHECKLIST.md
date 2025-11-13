@@ -174,7 +174,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 
 **Status:** Migrated ✅ (transform system complete; follow-up integration with app pending)
 
-### 🚧 @autometa/scopes
+### ✅ @autometa/scopes
 **Location:** `packages/scopes`  
 **Dependencies:**
 - ✅ @autometa/app
@@ -188,9 +188,9 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/phrases
 - ✅ @autometa/types
 
-**Status:** In Progress 🚧 (DSL factory now builds scoped plans with execution modes, world factories, outline examples, and exposes an execution adapter; decorator integration next)
+**Status:** Migrated ✅ (Scopes DSL rebuilt with execution adapter, decorator registry, immutable metadata handling, and accompanying test coverage)
 
-### ⏸️ @autometa/test-builder
+### ⏳ @autometa/test-builder
 **Location:** `packages/test-builder`  
 **Dependencies:**
 - ✅ @autometa/app
@@ -201,10 +201,10 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/events
 - ✅ @autometa/gherkin
 - ✅ @autometa/phrases
-- ⏸️ @autometa/scopes
+- ✅ @autometa/scopes
 - ✅ @autometa/types
 
-**Status:** Blocked (needs app and scopes) ⏸️
+**Status:** Ready ⏳ (app and scopes migrated; pending port of legacy builders)
 
 ### ⏸️ @autometa/jest-executor
 **Location:** `packages/jest-executor`  
@@ -216,11 +216,11 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/events
 - ✅ @autometa/gherkin
 - ✅ @autometa/injection
-- ⏸️ @autometa/scopes
+- ✅ @autometa/scopes
 - ⏸️ @autometa/test-builder
 - ✅ @autometa/types
 
-**Status:** Blocked (needs app, config, scopes, test-builder) ⏸️
+**Status:** Blocked (waiting on config and test-builder) ⏸️
 
 ### ⏸️ @autometa/coordinator
 **Location:** `packages/coordinator`  
@@ -232,11 +232,11 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/events
 - ✅ @autometa/gherkin
 - ⏸️ @autometa/jest-executor
-- ⏸️ @autometa/scopes
+- ✅ @autometa/scopes
 - ⏸️ @autometa/test-builder
 - ✅ @autometa/types
 
-**Status:** Blocked (needs app, config, events, jest-executor, scopes, test-builder) ⏸️
+**Status:** Blocked (needs config, jest-executor, test-builder) ⏸️
 
 ### ⏸️ @autometa/jest-transformer
 **Location:** `packages/jest-transformer`  
@@ -264,7 +264,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ @autometa/injection
 - ⏸️ @autometa/jest-executor
 - ✅ @autometa/phrases
-- ⏸️ @autometa/scopes
+- ✅ @autometa/scopes
 - ⏸️ @autometa/test-builder
 - ✅ @autometa/types
 - ✅ @autometa/status-codes
@@ -306,7 +306,7 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ### Phase 6: Complex Integration Packages
 18. ✅ @autometa/cucumber-expressions
-19. 🚧 @autometa/scopes
+19. ✅ @autometa/scopes
 20. @autometa/test-builder
 21. @autometa/jest-executor
 22. @autometa/coordinator
@@ -329,10 +329,10 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 15 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions)  
-**Ready to migrate:** 2 packages (config, http)  
-**In progress:** 1 package (scopes)  
-**Blocked:** 5 active packages (test-builder, jest-executor, coordinator, runner, jest-transformer)  
+**Migrated:** 16 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes)  
+**Ready to migrate:** 3 packages (config, http, test-builder)  
+**In progress:** 0 packages  
+**Blocked:** 4 active packages (jest-executor, coordinator, runner, jest-transformer)  
 **Total:** 22 tracked packages (including legacy slots)
 
-**Next Up:** Push on scopes refactor (world factory, decorator integration) to unblock test-builder, coordinator, and executor layers.
+**Next Up:** Tackle `@autometa/config`, `@autometa/http`, and the newly-unlocked `@autometa/test-builder` to stage executor/coordinator work.

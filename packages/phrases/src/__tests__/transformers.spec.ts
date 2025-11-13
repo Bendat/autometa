@@ -12,7 +12,7 @@ import {
   collapse,
   prefix,
   suffix,
-} from "./transformers";
+} from "../transformers";
 
 describe("transformers", () => {
   const sample = "test phrase";
