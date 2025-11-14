@@ -10,7 +10,7 @@ const sanitize = (value: string | undefined | null) => {
 
 export class EnvironmentSelector {
   private readonly detectors: EnvironmentFactory[] = [];
-  private fallback: string = "default";
+  private fallback = "default";
 
   byLiteral(name: string): this {
     this.detectors.push(() => sanitize(name));

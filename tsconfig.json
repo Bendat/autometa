@@ -2,70 +2,73 @@
   "files": [],
   "references": [
     {
-      "path": "packages/vitest-executor"
+      "path": "packages/vitest-executor/tsconfig.types.json"
     },
     {
-      "path": "packages/types"
+      "path": "packages/types/tsconfig.types.json"
     },
     {
-      "path": "packages/test-builder"
+      "path": "packages/test-builder/tsconfig.types.json"
     },
     {
-      "path": "packages/status-codes"
+      "path": "packages/status-codes/tsconfig.types.json"
     },
     {
-      "path": "packages/scopes"
+      "path": "packages/scopes/tsconfig.types.json"
     },
     {
-      "path": "packages/phrases"
+      "path": "packages/phrases/tsconfig.types.json"
     },
     {
-      "path": "packages/overloaded"
+      "path": "packages/overloaded/tsconfig.types.json"
     },
     {
-      "path": "packages/jest-executor"
+      "path": "packages/jest-executor/tsconfig.types.json"
     },
     {
-      "path": "packages/injection"
+      "path": "packages/injection/tsconfig.types.json"
     },
     {
-      "path": "packages/http"
+      "path": "packages/http/tsconfig.types.json"
     },
     {
-      "path": "packages/gherkin"
+      "path": "packages/gherkin/tsconfig.types.json"
     },
     {
-      "path": "packages/fixture-proxies"
+      "path": "packages/fixture-proxies/tsconfig.types.json"
     },
     {
-      "path": "packages/events"
+      "path": "packages/executor/tsconfig.types.json"
     },
     {
-      "path": "packages/executor"
+      "path": "packages/events/tsconfig.types.json"
     },
     {
-      "path": "packages/errors"
+      "path": "packages/errors/tsconfig.types.json"
     },
     {
-      "path": "packages/dto-builder"
+      "path": "packages/dto-builder/tsconfig.types.json"
     },
     {
-      "path": "packages/datetime"
+      "path": "packages/datetime/tsconfig.types.json"
     },
     {
-      "path": "packages/cucumber-expressions"
+      "path": "packages/cucumber-expressions/tsconfig.types.json"
     },
     {
-      "path": "packages/config"
+      "path": "packages/coordinator/tsconfig.types.json"
     },
     {
-      "path": "packages/bind-decorator"
+      "path": "packages/config/tsconfig.types.json"
     },
     {
-      "path": "packages/asserters"
+      "path": "packages/bind-decorator/tsconfig.types.json"
     },
     {
-      "path": "packages/app"
+      "path": "packages/asserters/tsconfig.types.json"
+    },
+    {
+      "path": "packages/app/tsconfig.types.json"
     }
   ],
   "compilerOptions": {
