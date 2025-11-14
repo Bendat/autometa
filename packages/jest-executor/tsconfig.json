@@ -1,35 +1,4 @@
 {
-  "extends": "../../configuration/tsconfig/package.config.json",
-  "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "outDir": "./dist"
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    ".reference",
-    "node_modules",
-    "dist",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ],
-  "references": [
-    {
-      "path": "../config/tsconfig.types.json"
-    },
-    {
-      "path": "../executor/tsconfig.types.json"
-    },
-    {
-      "path": "../scopes/tsconfig.types.json"
-    },
-    {
-      "path": "../test-builder/tsconfig.types.json"
-    },
-    {
-      "path": "../gherkin/tsconfig.types.json"
-    }
-  ]
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.dev.json"
 }

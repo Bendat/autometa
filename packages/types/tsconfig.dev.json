@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../configuration/tsconfig/package.config.json",
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    ".reference",
+    "dist",
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
+}

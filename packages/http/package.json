@@ -6,10 +6,12 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch",
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
     "build": "tsup && pnpm run build:types",
     "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
@@ -17,7 +19,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests",
     "test:ui": "vitest --ui --passWithNoTests",
-  "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
     "coverage": "vitest run --coverage --passWithNoTests",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -32,8 +34,8 @@
   },
   "license": "MIT",
   "dependencies": {
-  "@autometa/errors": "workspace:*",
-  "@autometa/status-codes": "workspace:*",
+    "@autometa/errors": "workspace:*",
+    "@autometa/status-codes": "workspace:*",
     "cli-highlight": "^2.1.11",
     "url-join-ts": "^1.0.5"
   },

@@ -1,7 +1,13 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@jest/globals": "vitest",
+    },
+  },
   test: {
+    globals: true,
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],

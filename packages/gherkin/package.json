@@ -3,14 +3,14 @@
   "version": "0.7.2",
   "description": "Gherkin implementation for @autometa",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch",
-  "build": "tsup && pnpm run build:types",
-  "build:types": "tsc --build --force tsconfig.types.json",
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",
@@ -23,9 +23,9 @@
     "clean": "rimraf dist"
   },
   "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/index.js",
-    "default": "./dist/esm/index.js",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
   "author": "Ben Aherne <null@null.com>",

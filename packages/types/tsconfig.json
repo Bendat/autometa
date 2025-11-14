@@ -1,21 +1,4 @@
 {
-  "extends": "../../configuration/tsconfig/package.config.json",
-  "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "outDir": "./dist",
-    "declarationDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    ".reference",
-    "dist",
-    "node_modules",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ],
-  "references": []
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.dev.json"
 }

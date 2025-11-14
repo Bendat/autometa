@@ -6,10 +6,12 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch",
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
     "build": "tsup && pnpm run build:types",
     "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
@@ -24,12 +26,15 @@
     "clean": "rimraf dist"
   },
   "exports": {
-    "import": "./dist/esm/index.js",
+    "import": "./dist/index.js",
     "require": "./dist/index.cjs",
-    "default": "./dist/esm/index.js",
+    "default": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
   "dependencies": {
+    "@autometa/config": "workspace:*",
+    "@autometa/scopes": "workspace:*",
+    "@autometa/test-builder": "workspace:*",
     "@cucumber/tag-expressions": "^5.0.1"
   },
   "license": "MIT",

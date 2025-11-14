@@ -10,8 +10,8 @@
     "dist"
   ],
   "scripts": {
-    "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch",
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
     "build": "tsup && pnpm run build:types",
     "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
@@ -26,9 +26,9 @@
     "clean": "rimraf dist"
   },
   "exports": {
-    "import": "./dist/esm/index.js",
+    "import": "./dist/index.js",
     "require": "./dist/index.cjs",
-    "default": "./dist/esm/index.js",
+    "default": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",
