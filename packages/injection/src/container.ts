@@ -27,8 +27,13 @@ export class Container implements IContainer {
     Map<Identifier, unknown>
   >();
   private readonly children = new Set<Container>();
+  declare public readonly parent?: IContainer;
 
-  constructor(public readonly parent?: IContainer) {}
+  constructor(parent?: IContainer) {
+    if (parent !== undefined) {
+      this.parent = parent;
+    }
+  }
 
   // Registration methods
   register<T>(
