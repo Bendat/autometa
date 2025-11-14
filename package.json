@@ -11,6 +11,7 @@
     "type-check:watch": "turbo run type-check --watch",
     "coverage": "turbo run coverage",
     "build": "turbo run build",
+    "build:types": "turbo run build:types",
     "build:docs": "turbo run build:docs",
     "dev": "turbo run dev",
     "test": "turbo run test --filter='!@autometa/documentation'",

@@ -9,8 +9,8 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true,
     "removeComments": false,
     "importHelpers": true,
@@ -22,17 +22,6 @@
     "baseUrl": ".",
     "paths": {
       "@autometa/*": ["../../packages/*/src", "../../libraries/*/src"]
-    },
-    "outDir": "./dist/types"
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**/*.test-d.ts"
-  ]
+    }
+  }
 }

@@ -28,6 +28,7 @@ export const createTsupConfig = (options = {}) => {
       "@types/node",
       "vitest",
       "typescript",
+      /^@autometa\//,
       ...(options.external || [])
     ],
     

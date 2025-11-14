@@ -9,11 +9,12 @@ import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 
+const toPosix = (value) => value.split(path.sep).join('/');
+
 async function updateProjectReferences() {
   console.log('🔄 Updating TypeScript project references...');
 
-  // Find all packages with tsconfig.json
-  const tsconfigPaths = await glob('*/*/tsconfig.json', {
+  const tsconfigTypesPaths = await glob('*/*/tsconfig.types.json', {
     cwd: process.cwd(),
     ignore: ['node_modules/**', 'dist/**']
   });
@@ -22,7 +23,7 @@ async function updateProjectReferences() {
   const packageMap = new Map();
   
   // Build package map
-  for (const tsconfigPath of tsconfigPaths) {
+  for (const tsconfigPath of tsconfigTypesPaths) {
     const packageDir = path.dirname(tsconfigPath);
     const packageJsonPath = path.join(packageDir, 'package.json');
     
@@ -32,11 +33,15 @@ async function updateProjectReferences() {
           fs.readFileSync(packageJsonPath, 'utf-8')
         );
 
-        const typesConfigPath = path.join(packageDir, 'tsconfig.types.json');
+        const allDeps = {
+          ...packageJson.dependencies,
+          ...packageJson.devDependencies,
+          ...packageJson.peerDependencies
+        };
 
         packageMap.set(packageJson.name, {
           dir: packageDir,
-          hasTypesConfig: fs.existsSync(typesConfigPath)
+          dependencies: Object.keys(allDeps || {})
         });
       } catch (error) {
         console.warn(`⚠️  Failed to read ${packageJsonPath}:`, error);
@@ -44,51 +49,43 @@ async function updateProjectReferences() {
     }
   }
 
-  // Update each package's tsconfig.json with proper references
-  for (const tsconfigPath of tsconfigPaths) {
+  // Update each package's tsconfig.types.json with proper references
+  for (const tsconfigPath of tsconfigTypesPaths) {
     const packageDir = path.dirname(tsconfigPath);
     const packageJsonPath = path.join(packageDir, 'package.json');
-    
+
     if (!fs.existsSync(packageJsonPath)) continue;
 
     try {
       const packageJson = JSON.parse(
         fs.readFileSync(packageJsonPath, 'utf-8')
       );
-      
+
       const tsconfig = JSON.parse(
         fs.readFileSync(tsconfigPath, 'utf-8')
       );
 
-      // Find internal dependencies
-      const allDeps = {
-        ...packageJson.dependencies,
-        ...packageJson.devDependencies
-      };
-
+      const packageInfo = packageMap.get(packageJson.name);
       const references = [];
-      
-      for (const [depName] of Object.entries(allDeps || {})) {
+
+      for (const depName of packageInfo?.dependencies || []) {
         if (packageMap.has(depName)) {
           const depInfo = packageMap.get(depName);
           const relativeDir = path.relative(packageDir, depInfo.dir);
-          const referencePath = depInfo.hasTypesConfig
-            ? path.join(relativeDir, 'tsconfig.types.json')
-            : path.join(relativeDir, 'tsconfig.json');
+          const referencePath = toPosix(path.join(relativeDir, 'tsconfig.types.json'));
 
           references.push({ path: referencePath });
         }
       }
 
-      // Update tsconfig
       tsconfig.references = references;
-      
+
       fs.writeFileSync(
         tsconfigPath,
         JSON.stringify(tsconfig, null, 2) + '\n'
       );
-      
-      console.log(`✅ Updated ${tsconfigPath} with ${references.length} references`);
+
+      console.log(`✅ Updated ${tsconfigPath} with ${references.length} type references`);
     } catch (error) {
       console.warn(`⚠️  Failed to update ${tsconfigPath}:`, error);
     }
@@ -103,7 +100,7 @@ async function updateProjectReferences() {
       );
 
       rootTsconfig.references = Array.from(packageMap.values()).map(({ dir }) => ({
-        path: dir
+        path: toPosix(path.join(dir, 'tsconfig.types.json'))
       }));
 
       fs.writeFileSync(

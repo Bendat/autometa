@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Package Build Configuration",
+  "extends": "./package.config.json",
+  "compilerOptions": {
+    "paths": {
+      "@autometa/*": [
+        "../../packages/*/dist/index.js",
+        "../../packages/*/dist/index.d.ts",
+        "../../libraries/*/dist/index.js",
+        "../../libraries/*/dist/index.d.ts"
+      ]
+    }
+  }
+}
