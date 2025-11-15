@@ -33,10 +33,11 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 **Dependencies:** None  
 **Status:** Migrated ✅
 
-### ➖ @autometa/file-proxies
-**Location:** (legacy package)  
+### ✅ @autometa/file-proxies
+**Location:** `packages/file-proxies`  
 **Dependencies:** None  
-**Status:** Not present in refactor workspace ➖
+**Status:** Migrated ✅  
+**Notes:** Modernized sync/async proxy APIs with JSON helpers and fresh Vitest coverage.
 
 ### ✅ @autometa/status-codes
 **Location:** `packages/status-codes`  
@@ -257,7 +258,7 @@ This document tracks the migration of all packages from `main` to the v1 refacto
 - ✅ `@autometa/datetime`
 - ✅ @autometa/errors
 - ✅ @autometa/events
-- ➖ @autometa/file-proxies (legacy)
+- ✅ @autometa/file-proxies
 - ✅ @autometa/fixture-proxies
 - ✅ @autometa/gherkin
 - ✅ @autometa/http
@@ -284,7 +285,7 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ### Phase 2: Independent Utilities (Level 0 remaining)
 4. ✅ @autometa/bind-decorator
-5. ➖ @autometa/file-proxies (legacy)
+5. ✅ @autometa/file-proxies
 6. ➖ @autometa/status-codes (legacy)
 
 ### Phase 3: Level 1 Dependencies
@@ -329,7 +330,7 @@ Based on the dependency graph, here's the optimal migration sequence:
 
 ## Current Progress
 
-**Migrated:** 19 packages (types, errors, overloaded, gherkin, bind-decorator, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder, http, config)  
+**Migrated:** 20 packages (types, errors, overloaded, gherkin, bind-decorator, file-proxies, injection, asserters, dto-builder, phrases, `@autometa/datetime`, events, fixture-proxies, status-codes, app, cucumber-expressions, scopes, test-builder, http, config)  
 **Ready to migrate:** 1 package (`@autometa/jest-executor`)  
 **In progress:** 0 packages  
 **Blocked:** 3 active packages (coordinator, runner, jest-transformer)  

@@ -51,11 +51,15 @@ export function coordinateFeature<World>(
 	const register = options.registerPlan ?? defaultRegistrationHandler;
 
 	const adapter = createAdapter(scopePlan);
-	const plan = buildPlan({
+	const planOptions: BuildTestPlanOptions<World> = {
 		feature,
 		adapter,
-		featureScope: options.featureScope,
-	});
+		...(options.featureScope !== undefined
+			? { featureScope: options.featureScope }
+			: {}),
+	};
+
+	const plan = buildPlan(planOptions);
 
 	return {
 		feature,

@@ -1,17 +1,15 @@
 {
-  "name": "@autometa/coordinator",
+  "name": "@autometa/file-proxies",
   "version": "0.0.0",
   "description": "",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
-    "type-check": "tsc --noEmit -p tsconfig.dev.json",
-    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
     "build": "tsup && pnpm run build:types",
     "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
@@ -41,10 +39,9 @@
     "eslint-config-prettier": "^8.3.0",
     "rimraf": "^4.1.2",
     "tsconfig": "workspace:*",
-    "tsup": "^7.2.0",
     "tsup-config": "workspace:*",
+    "tsup": "^7.2.0",
     "typescript": "^4.9.5",
-    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "1.4.0"
   }
 }

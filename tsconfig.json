@@ -17,6 +17,9 @@
       "path": "packages/scopes/tsconfig.types.json"
     },
     {
+      "path": "packages/runner/tsconfig.types.json"
+    },
+    {
       "path": "packages/phrases/tsconfig.types.json"
     },
     {
@@ -36,6 +39,9 @@
     },
     {
       "path": "packages/fixture-proxies/tsconfig.types.json"
+    },
+    {
+      "path": "packages/file-proxies/tsconfig.types.json"
     },
     {
       "path": "packages/executor/tsconfig.types.json"
