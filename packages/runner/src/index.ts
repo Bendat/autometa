@@ -4,6 +4,14 @@ export type {
 	RunnerDsl,
 } from "./dsl/create-runner";
 
+export { createRunnerBuilder } from "./builder/create-runner-builder";
+export type {
+	RunnerBuilder,
+	RunnerDecoratorsSurface,
+	RunnerStepsSurface,
+	WorldWithApp,
+} from "./builder/create-runner-builder";
+
 export { createDecoratorRunner } from "./dsl/create-decorator-runner";
 export type {
 	DecoratorRunnerEnvironment,
@@ -32,55 +40,13 @@ export type {
 } from "./runtime/coordinate-runner-feature";
 
 export {
-	globalRunner,
+	getGlobalRunner,
 	configureGlobalRunner,
+	resetGlobalRunner,
+	disposeGlobalRunner,
 	useGlobalRunnerEnvironment,
 	getGlobalRunnerEnvironment,
-	defineParameterType,
-	defineParameterTypes,
-	defineParameterTypesFromList,
-	registerDefaultParameterTypes,
-	lookupParameterType,
-	feature,
-	rule,
-	scenario,
-	scenarioOutline,
-	plan,
-	getPlan,
-	Feature,
-	Rule,
-	Scenario,
-	ScenarioOutline,
-	given,
-	when,
-	then,
-	and,
-	but,
-	Given,
-	When,
-	Then,
-	And,
-	But,
-	beforeFeature,
-	afterFeature,
-	beforeRule,
-	afterRule,
-	beforeScenario,
-	afterScenario,
-	beforeScenarioOutline,
-	afterScenarioOutline,
-	beforeStep,
-	afterStep,
-	BeforeFeature,
-	AfterFeature,
-	BeforeRule,
-	AfterRule,
-	BeforeScenario,
-	AfterScenario,
-	BeforeScenarioOutline,
-	AfterScenarioOutline,
-	BeforeStep,
-	AfterStep,
+	getConfiguredGlobalRunner,
 } from "./global";
 export type { GlobalWorld, GlobalRunnerOptions } from "./global";
 

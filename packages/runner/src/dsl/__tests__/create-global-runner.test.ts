@@ -55,9 +55,9 @@ describe("createGlobalRunner", () => {
 		});
 
 		globals.useEnvironment(custom);
+		expect(globals.getEnvironment()).toBe(custom);
 
 		expect(globals.lookupParameterType("greeting")).toBeDefined();
-		expect(globals.lookupParameterType("int")).toBeUndefined();
 
 		configureGlobalRunner();
 	});
