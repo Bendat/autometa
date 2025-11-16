@@ -6,6 +6,12 @@ interface TestWorld {
 	readonly counter: number;
 }
 
+function assertExists<T>(value: T | null | undefined, message: string): asserts value is T {
+	if (value === null || value === undefined) {
+		throw new Error(message);
+	}
+}
+
 describe("createRunner", () => {
 	it("registers steps within a feature plan", () => {
 		const runner = createRunner<TestWorld>();
@@ -21,8 +27,10 @@ describe("createRunner", () => {
 		const plan = runner.plan();
 		expect(plan.root.children).toHaveLength(1);
 		const [feature] = plan.root.children;
+		assertExists(feature, "Feature scope was not registered");
 		expect(feature.name).toBe("Example feature");
 		const scenario = feature.children[0];
+		assertExists(scenario, "Scenario scope was not registered");
 		expect(scenario.steps).toHaveLength(3);
 		expect(Array.from(plan.stepsById.values())).toHaveLength(3);
 	});

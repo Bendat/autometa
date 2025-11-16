@@ -52,7 +52,11 @@ describe("createRunnerDecorators", () => {
 			if (!descriptor) {
 				throw new Error(`Descriptor missing for ${String(key)}`);
 			}
-			decorator(DecoratedFeature.prototype, key, descriptor);
+			decorator(
+				DecoratedFeature.prototype,
+				key,
+				descriptor as TypedPropertyDescriptor<DecoratedFeature[typeof key]>
+			);
 		};
 
 		applyMethodDecorator(

@@ -1,13 +1,163 @@
-import { describe, expect, it } from "vitest";
-import type { ScopePlan } from "@autometa/scopes";
+import { describe, expect, it, vi } from "vitest";
+import type {
+	ScopeExecutionAdapter,
+	ScopeNode,
+	ScopePlan,
+} from "@autometa/scopes";
+import type { SimpleFeature } from "@autometa/gherkin";
+import type { ExecutorConfig } from "@autometa/config";
+import type { ExecutorRuntime } from "@autometa/executor";
+import type { CoordinateFeatureResult } from "@autometa/coordinator";
+import type { TestPlan } from "@autometa/test-builder";
 
 import {
 	createRunnerBuilder,
 	type RunnerStepsSurface,
+	type RunnerCoordinateFeatureOptions,
 } from "../create-runner-builder";
+import { coordinateRunnerFeature } from "../../runtime/coordinate-runner-feature";
+
+vi.mock("../../runtime/coordinate-runner-feature", () => ({
+	coordinateRunnerFeature: vi.fn(),
+}));
 
 interface BaseWorld {
 	value: number;
+}
+
+function createExecutorConfig(): ExecutorConfig {
+	return {
+		runner: "vitest",
+		roots: {
+			features: ["features"],
+			steps: ["steps"],
+		},
+	};
+}
+
+function createSimpleFeature(name: string): SimpleFeature {
+	return {
+		id: `feature-${name}`,
+		keyword: "Feature",
+		language: "en",
+		name,
+		tags: [],
+		elements: [],
+		comments: [],
+	};
+}
+
+function createRuntimeStub(): ExecutorRuntime {
+	const suite = ((
+		_title: string,
+		handler: () => void,
+		_timeout?: number
+	) => {
+		handler();
+	}) as ExecutorRuntime["suite"];
+	suite.skip = suite;
+	suite.only = suite;
+
+	const test = ((
+		_title: string,
+		handler: () => void | Promise<void>,
+		_timeout?: number
+	) => {
+		const result = handler();
+		if (result && typeof (result as Promise<unknown>).then === "function") {
+			void (result as Promise<unknown>);
+		}
+	}) as ExecutorRuntime["test"];
+	test.skip = test;
+	test.only = test;
+
+	const hook: ExecutorRuntime["beforeAll"] = (handler) => {
+		const maybePromise = handler();
+		if (maybePromise && typeof (maybePromise as Promise<unknown>).then === "function") {
+			void (maybePromise as Promise<unknown>);
+		}
+	};
+
+	return {
+		suite,
+		test,
+		beforeAll: hook,
+		afterAll: hook,
+		beforeEach: hook,
+		afterEach: hook,
+		currentTestName: () => undefined,
+		retry: () => undefined,
+		warn: () => undefined,
+		logError: () => undefined,
+	};
+}
+
+function createScopeNode<World>(overrides?: Partial<ScopeNode<World>>): ScopeNode<World> {
+	return {
+		id: "scope-id",
+		kind: "feature",
+		name: "Feature",
+		mode: "default",
+		tags: [],
+		steps: [],
+		hooks: [],
+		children: [],
+		...overrides,
+	};
+}
+
+function createPlanStub<World>(
+	featureScope: ScopeNode<World>,
+	feature: SimpleFeature
+): TestPlan<World> {
+	return {
+		feature: {
+			type: "feature",
+			name: feature.name,
+			keyword: feature.keyword,
+			feature,
+			scope: featureScope,
+			scenarios: [],
+			scenarioOutlines: [],
+			rules: [],
+			listExecutables: () => [],
+		},
+		listExecutables: () => [],
+		listFailed: () => [],
+		findById: () => undefined,
+		findByQualifiedName: () => undefined,
+	};
+}
+
+function createAdapterStub<World>(plan: ScopePlan<World>): ScopeExecutionAdapter<World> {
+	return {
+		plan,
+		features: plan.root.children,
+		async createWorld() {
+			return { value: 0 } as unknown as World;
+		},
+		getScope: () => undefined,
+		getSteps: () => [],
+		getHooks: () => [],
+		getAncestors: () => [],
+		listScenarios: () => [],
+		getParameterRegistry: () => undefined,
+	};
+}
+
+function createCoordinateResult<World>(
+	options: {
+		feature: SimpleFeature;
+		config: ExecutorConfig;
+	}
+): CoordinateFeatureResult<World> {
+	return {
+		feature: options.feature,
+		adapter: {} as ScopeExecutionAdapter<World>,
+		plan: {} as TestPlan<World>,
+		config: options.config,
+		register: vi.fn(),
+	};
 }
 
 describe("createRunnerBuilder", () => {
@@ -125,5 +275,71 @@ describe("createRunnerBuilder", () => {
 		expect(worldFactory).toBeDefined();
 		const world = worldFactory ? await worldFactory() : undefined;
 		expect(world).toEqual({ value: 5 });
+	});
+
+	it("coordinates features using the steps surface helper", () => {
+		const builder = createRunnerBuilder<BaseWorld>();
+		const steps = builder.steps();
+		const feature = createSimpleFeature("Feature");
+		const config = createExecutorConfig();
+		const result = createCoordinateResult<BaseWorld>({
+			feature,
+			config,
+		});
+		vi.mocked(coordinateRunnerFeature).mockReturnValue(
+			result as unknown as CoordinateFeatureResult<unknown>
+		);
+
+		const coordinated = steps.coordinateFeature({
+			feature,
+			config,
+		});
+
+		expect(coordinateRunnerFeature).toHaveBeenCalledWith({
+			environment: steps,
+			feature,
+			config,
+		});
+		expect(coordinated).toBe(result);
+	});
+
+	it("forwards custom plans and overrides to coordinate features", () => {
+		const builder = createRunnerBuilder<BaseWorld>();
+		const steps = builder.steps();
+		const feature = createSimpleFeature("Coordinated");
+		const config = createExecutorConfig();
+		const plan = steps.getPlan();
+		const runtime = createRuntimeStub();
+		const adapterFactory = vi.fn(
+			() => createAdapterStub(plan)
+		) as RunnerCoordinateFeatureOptions<BaseWorld>["adapterFactory"];
+		const featureScope = createScopeNode<BaseWorld>({ id: "feature-scope" });
+		const planBuilder = vi.fn(
+			() => createPlanStub<BaseWorld>(featureScope, feature)
+		) as RunnerCoordinateFeatureOptions<BaseWorld>["planBuilder"];
+		const registerPlan = vi.fn() as RunnerCoordinateFeatureOptions<BaseWorld>["registerPlan"];
+
+		steps.coordinateFeature({
+			feature,
+			config,
+			plan,
+			runtime,
+			adapterFactory,
+			planBuilder,
+			registerPlan,
+			featureScope,
+		});
+
+		expect(coordinateRunnerFeature).toHaveBeenCalledWith({
+			environment: steps,
+			feature,
+			config,
+			plan,
+			runtime,
+			adapterFactory,
+			planBuilder,
+			registerPlan,
+			featureScope,
+		});
 	});
 });

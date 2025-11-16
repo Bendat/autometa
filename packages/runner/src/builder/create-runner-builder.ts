@@ -1,3 +1,4 @@
+import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { WorldFactory } from "@autometa/scopes";
 import type { RunnerContextOptions } from "../core/runner-context";
 import {
@@ -16,6 +17,16 @@ import {
 	createRunnerDecorators,
 	type RunnerDecorators,
 } from "../decorators/create-runner-decorators";
+import {
+	coordinateRunnerFeature,
+	type CoordinateRunnerFeatureOptions,
+} from "../runtime/coordinate-runner-feature";
+
+type Mutable<T> = {
+	-readonly [K in keyof T]: T[K];
+};
+
+type MutableRunnerContextOptions<World> = Mutable<RunnerContextOptions<World>>;
 
 type AppFactory<App> = () => App | Promise<App>;
 
@@ -26,6 +37,9 @@ export type WorldWithApp<World, App> = World extends { app: infer _Existing }
 export interface RunnerStepsSurface<World>
 	extends RunnerEnvironment<World> {
 	readonly globals: GlobalRunner<World>;
+	coordinateFeature(
+		options: RunnerCoordinateFeatureOptions<World>
+	): CoordinateFeatureResult<World>;
 }
 
 export interface RunnerDecoratorsSurface<World>
@@ -49,8 +63,13 @@ export interface RunnerBuilder<World> {
 	decorators(): RunnerDecoratorsSurface<World>;
 }
 
+export type RunnerCoordinateFeatureOptions<World> = Omit<
+	CoordinateRunnerFeatureOptions<World>,
+	"environment"
+>;
+
 interface BuilderState {
-	options: RunnerContextOptions<unknown>;
+	options: MutableRunnerContextOptions<unknown>;
 	worldFactory?: WorldFactory<unknown>;
 	appFactory?: AppFactory<unknown>;
 	stepsCache?: StepsCache;
@@ -124,12 +143,12 @@ function initializeState<World>(
 	initial?: Partial<RunnerContextOptions<World>>
 ): BuilderState {
 	if (!initial) {
-		return { options: {} as RunnerContextOptions<unknown> };
+		return { options: {} as MutableRunnerContextOptions<unknown> };
 	}
 
 	const { worldFactory, ...rest } = initial;
 	const state: BuilderState = {
-		options: { ...rest } as RunnerContextOptions<unknown>,
+		options: { ...rest } as MutableRunnerContextOptions<unknown>,
 		...(worldFactory
 			? { worldFactory: worldFactory as WorldFactory<unknown> }
 			: {}),
@@ -149,8 +168,8 @@ function collectCurrentOptions<World>(
 	state: BuilderState
 ): RunnerContextOptions<World> {
 	const options = {
-		...(state.options as RunnerContextOptions<World>),
-	} as Partial<RunnerContextOptions<World>>;
+		...(state.options as MutableRunnerContextOptions<World>),
+	} as MutableRunnerContextOptions<World>;
 	if (state.worldFactory) {
 		options.worldFactory = state.worldFactory as WorldFactory<World>;
 	}
@@ -165,7 +184,7 @@ function applyOptions<World>(
 	state.options = {
 		...state.options,
 		...rest,
-	} as RunnerContextOptions<unknown>;
+	} as MutableRunnerContextOptions<unknown>;
 	if ("worldFactory" in options) {
 		if (worldFactory) {
 			state.worldFactory = worldFactory as WorldFactory<unknown>;
@@ -183,40 +202,47 @@ function normalizeAppFactory<App>(app: App | AppFactory<App>): AppFactory<App> {
 }
 
 function ensureSteps<World>(state: BuilderState): RunnerStepsSurface<World> {
-	if (!state.stepsCache) {
+	let cache = state.stepsCache;
+	if (!cache) {
 		const options = buildRunnerOptions<World>(state, { includeParameterTypes: true });
 		const environment = createRunner<World>(options);
 		const globals = createGlobalRunner<World>();
 		globals.useEnvironment(environment);
-		const surface = attachGlobals(environment, globals);
-		state.stepsCache = {
-			environment,
-			globals,
-			surface,
+		const surface = attachStepsHelpers(environment, globals);
+		cache = {
+			environment: environment as RunnerEnvironment<unknown>,
+			globals: globals as GlobalRunner<unknown>,
+			surface: surface as RunnerStepsSurface<unknown>,
 		};
+		state.stepsCache = cache;
 	}
-	return state.stepsCache.surface as RunnerStepsSurface<World>;
+	return cache.surface as RunnerStepsSurface<World>;
 }
 
 function ensureDecorators<World>(
 	state: BuilderState
 ): RunnerDecoratorsSurface<World> {
-	if (!state.decoratorsCache) {
+	let cache = state.decoratorsCache;
+	if (!cache) {
 		const steps = ensureSteps<World>(state);
 		const options = buildRunnerOptions<World>(state, {
 			includeParameterTypes: false,
 		});
-		options.parameterRegistry = steps.parameterRegistry;
-		options.registerDefaultParameterTypes = false;
-		const environment = createDecoratorRunner<World>(options);
+		const decoratorOptions = {
+			...options,
+			parameterRegistry: steps.parameterRegistry,
+			registerDefaultParameterTypes: false,
+		} as RunnerContextOptions<World>;
+		const environment = createDecoratorRunner<World>(decoratorOptions);
 		const decorators = createRunnerDecorators<World>(environment);
 		const surface = attachDecoratorEnvironment(decorators, environment);
-		state.decoratorsCache = {
-			environment,
-			surface,
+		cache = {
+			environment: environment as DecoratorRunnerEnvironment<unknown>,
+			surface: surface as RunnerDecoratorsSurface<unknown>,
 		};
+		state.decoratorsCache = cache;
 	}
-	return state.decoratorsCache.surface as RunnerDecoratorsSurface<World>;
+	return cache.surface as RunnerDecoratorsSurface<World>;
 }
 
 function buildRunnerOptions<World>(
@@ -225,8 +251,8 @@ function buildRunnerOptions<World>(
 ): RunnerContextOptions<World> {
 	const includeParameterTypes = options?.includeParameterTypes ?? true;
 	const base = {
-		...(state.options as RunnerContextOptions<World>),
-	} as Partial<RunnerContextOptions<World>>;
+		...(state.options as MutableRunnerContextOptions<World>),
+	} as MutableRunnerContextOptions<World>;
 
 	if (!includeParameterTypes && "parameterTypes" in base) {
 		delete base.parameterTypes;
@@ -278,13 +304,24 @@ function composeWorldFactory<World>(
 	};
 }
 
-function attachGlobals<World>(
+function attachStepsHelpers<World>(
 	environment: RunnerEnvironment<World>,
 	globals: GlobalRunner<World>
 ): RunnerStepsSurface<World> {
 	if (!("globals" in environment)) {
 		Object.defineProperty(environment, "globals", {
 			value: globals,
+			enumerable: true,
+			configurable: true,
+		});
+	}
+	if (!("coordinateFeature" in environment)) {
+		Object.defineProperty(environment, "coordinateFeature", {
+			value: (options: RunnerCoordinateFeatureOptions<World>) =>
+				coordinateRunnerFeature<World>({
+					environment,
+					...options,
+				}),
 			enumerable: true,
 			configurable: true,
 		});

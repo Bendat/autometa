@@ -17,14 +17,14 @@ function instantiateRunner(options?: GlobalRunnerOptions) {
 	return createGlobalRunner<GlobalWorld>(options);
 }
 
-function assertConfigured(action: string): asserts runnerInstance is GlobalRunner<GlobalWorld> {
+function requireConfigured(action: string): GlobalRunner<GlobalWorld> {
 	if (!runnerInstance) {
 		throw new Error(
 			`Global runner has not been configured. ${action}`
 		);
 	}
+	return runnerInstance;
 }
-
 export function getGlobalRunner(options?: GlobalRunnerOptions) {
 	if (!runnerInstance) {
 		runnerInstance = instantiateRunner(options);
@@ -49,16 +49,21 @@ export function disposeGlobalRunner() {
 export function useGlobalRunnerEnvironment(
 	environment: RunnerEnvironment<GlobalWorld>
 ) {
-	assertConfigured("Call configureGlobalRunner() before injecting environments.");
-	return runnerInstance!.useEnvironment(environment);
+	const runner = requireConfigured(
+		"Call configureGlobalRunner() before injecting environments."
+	);
+	return runner.useEnvironment(environment);
 }
 
 export function getGlobalRunnerEnvironment() {
-	assertConfigured("Call configureGlobalRunner() before reading environments.");
-	return runnerInstance!.getEnvironment();
+	const runner = requireConfigured(
+		"Call configureGlobalRunner() before reading environments."
+	);
+	return runner.getEnvironment();
 }
 
 export function getConfiguredGlobalRunner() {
-	assertConfigured("Call configureGlobalRunner() before accessing runner APIs.");
-	return runnerInstance!;
+	return requireConfigured(
+		"Call configureGlobalRunner() before accessing runner APIs."
+	);
 }

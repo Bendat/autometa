@@ -17,10 +17,18 @@ export interface CoordinateRunnerFeatureOptions<World> {
 	readonly feature: SimpleFeature;
 	readonly config: ExecutorConfig;
 	readonly runtime?: ExecutorRuntime;
-	readonly adapterFactory?: CoordinateFeatureOptions<World>["adapterFactory"];
-	readonly planBuilder?: CoordinateFeatureOptions<World>["planBuilder"];
-	readonly registerPlan?: CoordinateFeatureOptions<World>["registerPlan"];
-	readonly featureScope?: BuildTestPlanOptions<World>["featureScope"];
+	readonly adapterFactory?:
+		| CoordinateFeatureOptions<World>["adapterFactory"]
+		| undefined;
+	readonly planBuilder?:
+		| CoordinateFeatureOptions<World>["planBuilder"]
+		| undefined;
+	readonly registerPlan?:
+		| CoordinateFeatureOptions<World>["registerPlan"]
+		| undefined;
+	readonly featureScope?:
+		| BuildTestPlanOptions<World>["featureScope"]
+		| undefined;
 }
 
 export function coordinateRunnerFeature<World>(

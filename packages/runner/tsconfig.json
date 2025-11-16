@@ -1,4 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "./tsconfig.dev.json"
+  "extends": "./tsconfig.dev.json",
+  "exclude": [
+    ".reference",
+    "node_modules",
+    "dist"
+  ]
 }
