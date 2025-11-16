@@ -1,5 +1,11 @@
 import type { ScopeExecutionAdapter } from "@autometa/scopes";
 import type { ScenarioExecution } from "@autometa/test-builder";
+import {
+  clearStepDocstring,
+  clearStepTable,
+  setStepDocstring,
+  setStepTable,
+} from "./runtime/step-data";
 
 export interface ScenarioRunContext<World> {
   readonly adapter: ScopeExecutionAdapter<World>;
@@ -13,8 +19,21 @@ export async function runScenarioExecution<World>(
   const world = await context.adapter.createWorld();
 
   try {
-    for (const step of execution.steps) {
-      await step.handler(world);
+    const { steps, gherkinSteps } = execution;
+    for (let index = 0; index < steps.length; index++) {
+      const step = steps[index];
+      if (!step) {
+        continue;
+      }
+      const gherkinStep = gherkinSteps[index];
+      try {
+        setStepTable(world, gherkinStep?.dataTable);
+        setStepDocstring(world, gherkinStep?.docString?.content);
+        await step.handler(world);
+      } finally {
+        clearStepTable(world);
+        clearStepDocstring(world);
+      }
     }
     execution.markPassed();
   } catch (error) {

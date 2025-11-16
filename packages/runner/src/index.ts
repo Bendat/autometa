@@ -40,6 +40,20 @@ export type {
 } from "./runtime/coordinate-runner-feature";
 
 export {
+	configureStepTables,
+	resetStepTableConfig,
+	setStepTable,
+	clearStepTable,
+	getTable,
+	consumeTable,
+	getRawTable,
+	setStepDocstring,
+	clearStepDocstring,
+	getDocstring,
+	consumeDocstring,
+} from "@autometa/executor";
+
+export {
 	getGlobalRunner,
 	configureGlobalRunner,
 	resetGlobalRunner,
