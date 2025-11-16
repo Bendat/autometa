@@ -33,8 +33,10 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@autometa/cucumber-expressions": "workspace:*",
     "@autometa/gherkin": "workspace:*",
-    "@autometa/scopes": "workspace:*"
+    "@autometa/scopes": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",

@@ -31,6 +31,9 @@
       "path": "../cucumber-expressions/tsconfig.types.json"
     },
     {
+      "path": "../executor/tsconfig.types.json"
+    },
+    {
       "path": "../scopes/tsconfig.types.json"
     }
   ]

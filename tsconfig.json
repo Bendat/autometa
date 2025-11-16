@@ -53,13 +53,13 @@
       "path": "packages/errors/tsconfig.types.json"
     },
     {
-      "path": "packages/dto-builder/tsconfig.types.json"
-    },
-    {
       "path": "packages/datetime/tsconfig.types.json"
     },
     {
       "path": "packages/cucumber-expressions/tsconfig.types.json"
+    },
+    {
+      "path": "packages/dto-builder/tsconfig.types.json"
     },
     {
       "path": "packages/coordinator/tsconfig.types.json"

@@ -29,6 +29,9 @@
   ],
   "references": [
     {
+      "path": "../cucumber-expressions/tsconfig.types.json"
+    },
+    {
       "path": "../gherkin/tsconfig.types.json"
     },
     {

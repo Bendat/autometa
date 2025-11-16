@@ -1,13 +1,20 @@
+import { CucumberExpression, RegularExpression, ParameterTypeRegistry } from "@cucumber/cucumber-expressions";
+import { createDefaultParameterTypes } from "@autometa/cucumber-expressions";
 import type {
   ScopeExecutionAdapter,
   ScopeNode,
   ScenarioSummary,
+  StepDefinition,
+  StepExpression,
+  StepKeyword,
+  ParameterRegistryLike,
 } from "@autometa/scopes";
 import type {
   SimpleFeature,
   SimpleRule,
   SimpleScenario,
   SimpleScenarioOutline,
+  SimpleStep,
 } from "@autometa/gherkin";
 import type {
   FeatureNode,
@@ -66,6 +73,7 @@ export class TestPlanBuilder<World> {
   private readonly outlineExamplesMap = new Map<ScenarioOutlineNode<World>, ScenarioOutlineExample<World>[]>();
   private readonly summaryBuckets: ScenarioSummaryBuckets<World>;
   private readonly featureSegment: QualifiedPathSegment;
+  private readonly parameterRegistry: ParameterTypeRegistry;
   private featureNode!: FeatureNode<World>;
 
   constructor(
@@ -82,6 +90,8 @@ export class TestPlanBuilder<World> {
       name: feature.name,
       suffix: buildScopeSuffix(featureScope.id),
     };
+    this.parameterRegistry = resolveParameterRegistry(adapter.getParameterRegistry());
+    createDefaultParameterTypes<unknown>()(this.parameterRegistry);
   }
 
   build(): TestPlan<World> {
@@ -190,6 +200,11 @@ export class TestPlanBuilder<World> {
       gherkinScenario.steps
     );
 
+    const resolvedSteps = this.resolveStepDefinitions(summary, gherkinSteps, {
+      scenario: gherkinScenario.name,
+      ...(ruleNode ? { rule: ruleNode.name } : {}),
+    });
+
     const scenarioData = cloneData(summary.scenario.data);
     const scenarioNode = createScenarioNode<World>({
       id: summary.id,
@@ -209,7 +224,7 @@ export class TestPlanBuilder<World> {
       summary,
       gherkin: gherkinScenario,
       gherkinSteps,
-      steps: summary.steps,
+      steps: resolvedSteps,
       ancestors: summary.ancestors,
       ...(ruleNode ? { rule: ruleNode } : {}),
       ...(summary.scenario.timeout !== undefined ? { timeout: summary.scenario.timeout } : {}),
@@ -330,6 +345,12 @@ export class TestPlanBuilder<World> {
           compiled.steps
         );
 
+        const resolvedSteps = this.resolveStepDefinitions(summary, gherkinSteps, {
+          scenario: compiled.name,
+          outline: outline.name,
+          ...(ruleNode ? { rule: ruleNode.name } : {}),
+        });
+
         const exampleData = mergeData(
           cloneData(summary.scenario.data),
           createExampleData(group, compiled)
@@ -356,7 +377,7 @@ export class TestPlanBuilder<World> {
           summary,
           gherkin: compiled,
           gherkinSteps,
-          steps: summary.steps,
+          steps: resolvedSteps,
           ancestors: summary.ancestors,
           exampleGroup: group,
           exampleIndex: compiled.exampleIndex,
@@ -450,6 +471,158 @@ export class TestPlanBuilder<World> {
     }
     return list;
   }
+
+  private resolveStepDefinitions(
+    summary: ScenarioSummary<World>,
+    gherkinSteps: readonly SimpleStep[],
+    context: StepResolutionContext
+  ): StepDefinition<World>[] {
+    if (summary.steps.length === 0) {
+      if (gherkinSteps.length === 0) {
+        return [];
+      }
+      const missingStep = gherkinSteps[0];
+      if (missingStep) {
+        throw new Error(
+          this.buildMissingStepDefinitionMessage(context, missingStep)
+        );
+      }
+      return [];
+    }
+
+    const remaining = new Set(summary.steps);
+    const ordered: StepDefinition<World>[] = [];
+    const matchers = new Map<StepDefinition<World>, StepMatcher>();
+
+    for (const step of gherkinSteps) {
+      const matched = this.findMatchingStepDefinition(
+        step,
+        summary.steps,
+        remaining,
+        matchers
+      );
+
+      if (!matched) {
+        throw new Error(this.buildMissingStepDefinitionMessage(context, step));
+      }
+
+      ordered.push(matched);
+      remaining.delete(matched);
+    }
+
+    if (remaining.size > 0) {
+      const extras = [...remaining].map((definition) =>
+        this.describeStepDefinition(definition)
+      );
+      throw new Error(
+        this.buildUnusedStepDefinitionsMessage(context, extras)
+      );
+    }
+
+    return ordered;
+  }
+
+  private findMatchingStepDefinition(
+    step: SimpleStep,
+    definitions: readonly StepDefinition<World>[],
+    remaining: Set<StepDefinition<World>>,
+    matchers: Map<StepDefinition<World>, StepMatcher>
+  ): StepDefinition<World> | undefined {
+    const rawKeyword = normalizeKeyword(step.keyword ?? "");
+    const wildcard = isFlexibleKeyword(rawKeyword);
+    const keyword = wildcard ? undefined : normalizeGherkinStepKeyword(rawKeyword);
+
+    const candidates = definitions.filter((definition) => {
+      if (!remaining.has(definition)) {
+        return false;
+      }
+      if (wildcard) {
+        return true;
+      }
+      return keyword ? definition.keyword === keyword : false;
+    });
+
+    for (const definition of candidates) {
+      if (this.matchesStepExpression(definition, step.text, matchers)) {
+        return definition;
+      }
+    }
+
+    return undefined;
+  }
+
+  private matchesStepExpression(
+    definition: StepDefinition<World>,
+    text: string,
+    matchers: Map<StepDefinition<World>, StepMatcher>
+  ): boolean {
+    let matcher = matchers.get(definition);
+    if (!matcher) {
+      matcher = this.createMatcher(definition.expression);
+      matchers.set(definition, matcher);
+    }
+    return matcher(text);
+  }
+
+  private createMatcher(expression: StepExpression): StepMatcher {
+    if (expression instanceof RegExp) {
+      const regex = new RegExp(expression.source, expression.flags);
+      const evaluator = new RegularExpression(regex, this.parameterRegistry);
+      return (text: string) => evaluator.match(text) !== null;
+    }
+
+    try {
+      const cucumberExpression = new CucumberExpression(
+        expression,
+        this.parameterRegistry
+      );
+      return (text: string) => cucumberExpression.match(text) !== null;
+    } catch {
+      const literal = expression;
+      return (text: string) => text === literal;
+    }
+  }
+
+  private buildMissingStepDefinitionMessage(
+    context: StepResolutionContext,
+    step: SimpleStep
+  ): string {
+    const keyword = (step.keyword ?? "").trim();
+    const display = keyword.length > 0 ? `${keyword} ${step.text}` : step.text;
+    const parts = [
+      `No step definition matched '${display}'`,
+      `in scenario '${context.scenario}'`,
+    ];
+    if (context.outline) {
+      parts.push(`of outline '${context.outline}'`);
+    }
+    if (context.rule) {
+      parts.push(`within rule '${context.rule}'`);
+    }
+    parts.push(`for feature '${this.feature.name}'.`);
+    return parts.join(" ");
+  }
+
+  private buildUnusedStepDefinitionsMessage(
+    context: StepResolutionContext,
+    extras: readonly string[]
+  ): string {
+    const segments = [
+      `The following step definitions were not matched to Gherkin steps in scenario '${context.scenario}'`,
+    ];
+    if (context.outline) {
+      segments.push(`of outline '${context.outline}'`);
+    }
+    if (context.rule) {
+      segments.push(`within rule '${context.rule}'`);
+    }
+    segments.push(`for feature '${this.feature.name}': ${extras.join(", ")}`);
+    return segments.join(" ");
+  }
+
+  private describeStepDefinition(definition: StepDefinition<World>): string {
+    return `${definition.keyword} ${formatExpression(definition.expression)}`;
+  }
 }
 
 class TestPlanImpl<World> implements TestPlan<World> {
@@ -476,3 +649,55 @@ class TestPlanImpl<World> implements TestPlan<World> {
     return this.byQualifiedName.get(name);
   }
 }
+
+type StepMatcher = (text: string) => boolean;
+
+interface StepResolutionContext {
+  readonly scenario: string;
+  readonly outline?: string;
+  readonly rule?: string;
+}
+
+function resolveParameterRegistry(
+  parameterRegistry: ParameterRegistryLike | undefined
+): ParameterTypeRegistry {
+  if (!parameterRegistry) {
+    return new ParameterTypeRegistry();
+  }
+  if (parameterRegistry instanceof ParameterTypeRegistry) {
+    return parameterRegistry;
+  }
+  const candidate = (parameterRegistry as { registry?: ParameterTypeRegistry }).registry;
+  if (candidate instanceof ParameterTypeRegistry) {
+    return candidate;
+  }
+  return new ParameterTypeRegistry();
+}
+
+function normalizeGherkinStepKeyword(keyword: string): StepKeyword {
+  const trimmed = normalizeKeyword(keyword).replace(/:$/, "");
+  const mapped = STEP_KEYWORD_MAP[trimmed.toLowerCase()];
+  if (!mapped) {
+    throw new Error(`Unsupported Gherkin step keyword '${keyword}'`);
+  }
+  return mapped;
+}
+
+function isFlexibleKeyword(keyword: string): boolean {
+  const normalized = normalizeKeyword(keyword).replace(/:$/, "").toLowerCase();
+  return FLEXIBLE_KEYWORDS.has(normalized);
+}
+
+function formatExpression(expression: StepExpression): string {
+  return typeof expression === "string" ? expression : expression.toString();
+}
+
+const STEP_KEYWORD_MAP: Record<string, StepKeyword> = {
+  given: "Given",
+  when: "When",
+  then: "Then",
+  and: "And",
+  but: "But",
+};
+
+const FLEXIBLE_KEYWORDS = new Set<string>(["and", "but", "*"]);

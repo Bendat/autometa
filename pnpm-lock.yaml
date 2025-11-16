@@ -1097,6 +1097,9 @@ importers:
       '@autometa/cucumber-expressions':
         specifier: workspace:*
         version: link:../cucumber-expressions
+      '@autometa/executor':
+        specifier: workspace:*
+        version: link:../executor
       '@autometa/scopes':
         specifier: workspace:*
         version: link:../scopes
@@ -1227,12 +1230,18 @@ importers:
 
   packages/test-builder:
     dependencies:
+      '@autometa/cucumber-expressions':
+        specifier: workspace:*
+        version: link:../cucumber-expressions
       '@autometa/gherkin':
         specifier: workspace:*
         version: link:../gherkin
       '@autometa/scopes':
         specifier: workspace:*
         version: link:../scopes
+      '@cucumber/cucumber-expressions':
+        specifier: ^16.1.2
+        version: 16.1.2
     devDependencies:
       '@types/node':
         specifier: ^18.11.18

@@ -173,6 +173,8 @@ describe("buildTestPlan", () => {
               ],
             },
           ],
+        }, () => {
+          given(/^a (.+)$/i, noop);
         });
       });
     });
