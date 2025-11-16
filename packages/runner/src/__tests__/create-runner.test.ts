@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { createRunner } from "../index";
+import {
+	setStepTable,
+	setStepDocstring,
+	clearStepTable,
+	clearStepDocstring,
+	type StepRuntimeHelpers,
+} from "@autometa/executor";
 
 interface TestWorld {
 	readonly counter: number;
@@ -54,5 +61,72 @@ describe("createRunner", () => {
 		});
 
 		expect(runner.lookupParameterType("greeting")).toBeDefined();
+	});
+
+	it("provides runtime helpers to step handlers", async () => {
+		const runner = createRunner<TestWorld>();
+
+		let capturedRow: Record<string, unknown> | undefined;
+		let capturedDocstring: string | undefined;
+		let consumedDocstring: string | undefined;
+		let flags:
+			| {
+				beforeTable: boolean;
+				afterTable: boolean;
+				beforeDocstring: boolean;
+				afterDocstring: boolean;
+			}
+			| undefined;
+
+		runner.feature("Runtime feature", () => {
+			runner.scenario("Runtime scenario", () => {
+				runner.Given("a runtime-enabled step", (_world: TestWorld, runtime: StepRuntimeHelpers) => {
+					const beforeTable = runtime.hasTable;
+					const beforeDocstring = runtime.hasDocstring;
+					const table = runtime.getTable("horizontal");
+					capturedRow = table?.getRow(0);
+					capturedDocstring = runtime.getDocstring();
+					runtime.consumeTable("horizontal");
+					runtime.consumeDocstring();
+					flags = {
+						beforeTable,
+						afterTable: runtime.hasTable,
+						beforeDocstring,
+						afterDocstring: runtime.hasDocstring,
+					};
+					consumedDocstring = runtime.consumeDocstring();
+				});
+			});
+		});
+
+		const plan = runner.plan();
+		const [feature] = plan.root.children;
+		assertExists(feature, "Feature scope missing for runtime test");
+		const [scenario] = feature.children;
+		assertExists(scenario, "Scenario scope missing for runtime test");
+		const [step] = scenario.steps;
+		assertExists(step, "Step definition missing for runtime test");
+
+		const world: (TestWorld & Record<string, unknown>) = { counter: 0 };
+		setStepTable(world, [
+			["id", "flag"],
+			["1", "true"],
+		]);
+		setStepDocstring(world, "docstring value");
+
+		await step.handler(world);
+
+		clearStepTable(world);
+		clearStepDocstring(world);
+
+		expect(capturedRow).toEqual({ id: 1, flag: true });
+		expect(capturedDocstring).toBe("docstring value");
+		expect(consumedDocstring).toBeUndefined();
+		expect(flags).toMatchObject({
+			beforeTable: true,
+			afterTable: false,
+			beforeDocstring: true,
+			afterDocstring: false,
+		});
 	});
 });

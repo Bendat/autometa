@@ -12,7 +12,7 @@ import {
   type VerticalTableOptions,
 } from "@autometa/gherkin";
 
-type RawTable = readonly (readonly string[])[];
+export type RawTable = readonly (readonly string[])[];
 
 const DATA_TABLE_SYMBOL: unique symbol = Symbol("autometa:runner:step:data-table");
 const DOCSTRING_SYMBOL: unique symbol = Symbol("autometa:runner:step:docstring");
@@ -240,4 +240,208 @@ export function consumeDocstring(world: unknown): string | undefined {
   const value = getDocstring(world);
   clearStepDocstring(world);
   return value;
+}
+
+export interface StepRuntimeHelpers {
+  readonly hasTable: boolean;
+  readonly hasDocstring: boolean;
+  getTable(
+    shape: "headerless",
+    options?: HeaderlessTableOptions
+  ): HeaderlessTable | undefined;
+  getTable(
+    shape: "horizontal",
+    options?: HorizontalTableOptions
+  ): HorizontalTable | undefined;
+  getTable(
+    shape: "vertical",
+    options?: VerticalTableOptions
+  ): VerticalTable | undefined;
+  getTable(
+    shape: "matrix",
+    options?: MatrixTableOptions
+  ): MatrixTable | undefined;
+  getTable(
+    shape: TableShape,
+    options?:
+      | HeaderlessTableOptions
+      | HorizontalTableOptions
+      | VerticalTableOptions
+      | MatrixTableOptions
+  ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined;
+  consumeTable(
+    shape: "headerless",
+    options?: HeaderlessTableOptions
+  ): HeaderlessTable | undefined;
+  consumeTable(
+    shape: "horizontal",
+    options?: HorizontalTableOptions
+  ): HorizontalTable | undefined;
+  consumeTable(
+    shape: "vertical",
+    options?: VerticalTableOptions
+  ): VerticalTable | undefined;
+  consumeTable(
+    shape: "matrix",
+    options?: MatrixTableOptions
+  ): MatrixTable | undefined;
+  consumeTable(
+    shape: TableShape,
+    options?:
+      | HeaderlessTableOptions
+      | HorizontalTableOptions
+      | VerticalTableOptions
+      | MatrixTableOptions
+  ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined;
+  getRawTable(): RawTable | undefined;
+  getDocstring(): string | undefined;
+  consumeDocstring(): string | undefined;
+}
+
+function bindGetTable(world: unknown) {
+  function getTable(
+    shape: "headerless",
+    options?: HeaderlessTableOptions
+  ): HeaderlessTable | undefined;
+  function getTable(
+    shape: "horizontal",
+    options?: HorizontalTableOptions
+  ): HorizontalTable | undefined;
+  function getTable(
+    shape: "vertical",
+    options?: VerticalTableOptions
+  ): VerticalTable | undefined;
+  function getTable(
+    shape: "matrix",
+    options?: MatrixTableOptions
+  ): MatrixTable | undefined;
+  function getTable(
+    shape: TableShape,
+    options?:
+      | HeaderlessTableOptions
+      | HorizontalTableOptions
+      | VerticalTableOptions
+      | MatrixTableOptions
+  ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
+    switch (shape) {
+      case "headerless":
+        return getTableForShape(world, "headerless", options as HeaderlessTableOptions | undefined);
+      case "horizontal":
+        return getTableForShape(world, "horizontal", options as HorizontalTableOptions | undefined);
+      case "vertical":
+        return getTableForShape(world, "vertical", options as VerticalTableOptions | undefined);
+      case "matrix":
+        return getTableForShape(world, "matrix", options as MatrixTableOptions | undefined);
+      default:
+        return undefined;
+    }
+  }
+  return getTable;
+}
+
+function getTableForShape(
+  world: unknown,
+  shape: "headerless",
+  options?: HeaderlessTableOptions
+): HeaderlessTable | undefined;
+function getTableForShape(
+  world: unknown,
+  shape: "horizontal",
+  options?: HorizontalTableOptions
+): HorizontalTable | undefined;
+function getTableForShape(
+  world: unknown,
+  shape: "vertical",
+  options?: VerticalTableOptions
+): VerticalTable | undefined;
+function getTableForShape(
+  world: unknown,
+  shape: "matrix",
+  options?: MatrixTableOptions
+): MatrixTable | undefined;
+function getTableForShape(
+  world: unknown,
+  shape: TableShape,
+  options?:
+    | HeaderlessTableOptions
+    | HorizontalTableOptions
+    | VerticalTableOptions
+    | MatrixTableOptions
+): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
+  switch (shape) {
+    case "headerless":
+      return getTable(world, "headerless", options as HeaderlessTableOptions | undefined);
+    case "horizontal":
+      return getTable(world, "horizontal", options as HorizontalTableOptions | undefined);
+    case "vertical":
+      return getTable(world, "vertical", options as VerticalTableOptions | undefined);
+    case "matrix":
+      return getTable(world, "matrix", options as MatrixTableOptions | undefined);
+    default:
+      return undefined;
+  }
+}
+
+function bindConsumeTable(world: unknown) {
+  function consume(
+    shape: "headerless",
+    options?: HeaderlessTableOptions
+  ): HeaderlessTable | undefined;
+  function consume(
+    shape: "horizontal",
+    options?: HorizontalTableOptions
+  ): HorizontalTable | undefined;
+  function consume(
+    shape: "vertical",
+    options?: VerticalTableOptions
+  ): VerticalTable | undefined;
+  function consume(
+    shape: "matrix",
+    options?: MatrixTableOptions
+  ): MatrixTable | undefined;
+  function consume(
+    shape: TableShape,
+    options?:
+      | HeaderlessTableOptions
+      | HorizontalTableOptions
+      | VerticalTableOptions
+      | MatrixTableOptions
+  ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
+    switch (shape) {
+      case "headerless":
+        return consumeTable(world, "headerless", options as HeaderlessTableOptions | undefined);
+      case "horizontal":
+        return consumeTable(world, "horizontal", options as HorizontalTableOptions | undefined);
+      case "vertical":
+        return consumeTable(world, "vertical", options as VerticalTableOptions | undefined);
+      case "matrix":
+        return consumeTable(world, "matrix", options as MatrixTableOptions | undefined);
+      default:
+        return undefined;
+    }
+  }
+  return consume;
+}
+
+export function createStepRuntime(world: unknown): StepRuntimeHelpers {
+  const runtime: StepRuntimeHelpers = {
+    get hasTable() {
+      return getRawTable(world) !== undefined;
+    },
+    get hasDocstring() {
+      return getDocstring(world) !== undefined;
+    },
+    getTable: bindGetTable(world),
+    consumeTable: bindConsumeTable(world),
+    getRawTable() {
+      return getRawTable(world);
+    },
+    getDocstring() {
+      return getDocstring(world);
+    },
+    consumeDocstring() {
+      return consumeDocstring(world);
+    },
+  };
+  return runtime;
 }

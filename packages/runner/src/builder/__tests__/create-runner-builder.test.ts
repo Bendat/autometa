@@ -168,7 +168,7 @@ describe("createRunnerBuilder", () => {
 		expect(typeof steps.feature).toBe("function");
 		expect(typeof steps.globals.Given).toBe("function");
 		expect(steps.globals.getEnvironment()).toBe(steps);
-		steps.given("some step", (world) => {
+		steps.given("some step", (world: BaseWorld) => {
 			world.value += 1;
 		});
 

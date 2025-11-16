@@ -35,6 +35,7 @@ export interface StepRuntimeOptions<World> {
   readonly interpolatedText: string;
   readonly dataTable?: unknown;
   readonly attachments?: readonly unknown[];
+  readonly docstring?: string;
 }
 
 export type StepHandler<World, TArgs extends unknown[] = unknown[]> = (

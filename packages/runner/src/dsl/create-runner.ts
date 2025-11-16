@@ -2,7 +2,11 @@ import type {
 	HookDsl,
 	ScopePlan,
 	ScopesDsl,
+	StepDefinition,
 	StepDsl,
+	StepExpression,
+	StepHandler,
+	StepOptions,
 } from "@autometa/scopes";
 import type {
 	ParameterTypeDefinition,
@@ -14,16 +18,86 @@ import type {
 } from "@cucumber/cucumber-expressions";
 
 import {
+	createStepRuntime,
+	type StepRuntimeHelpers,
+} from "@autometa/executor";
+
+import {
 	RunnerContext,
 	type RunnerContextOptions,
 } from "../core/runner-context";
 
+export type RuntimeAwareStepHandler<World, TArgs extends unknown[] = unknown[]> = (
+	world: World,
+	...args: [...TArgs, StepRuntimeHelpers]
+) => unknown | Promise<unknown>;
+
+export type RunnerStepHandler<World, TArgs extends unknown[] = unknown[]> =
+	| StepHandler<World, TArgs>
+	| RuntimeAwareStepHandler<World, TArgs>;
+
+type RunnerStepFn<World> = <TArgs extends unknown[]>(
+	expression: StepExpression,
+	handler: RunnerStepHandler<World, TArgs>,
+	options?: StepOptions
+) => StepDefinition<World>;
+
+export interface RunnerStepDsl<World> extends RunnerStepFn<World> {
+	skip: RunnerStepFn<World>;
+	only: RunnerStepFn<World>;
+	failing: RunnerStepFn<World>;
+}
+
+function wrapStepHandler<World, TArgs extends unknown[]>(
+	handler: RunnerStepHandler<World, TArgs>
+): StepHandler<World> {
+	return ((world: World, ...args: unknown[]) => {
+		const runtime = createStepRuntime(world);
+		const callable = handler as (
+			world: World,
+			...inputs: [...TArgs, StepRuntimeHelpers]
+		) => unknown | Promise<unknown>;
+		return callable(world, ...(args as TArgs), runtime);
+	}) as StepHandler<World>;
+}
+
+function enhanceStepDsl<World>(dsl: StepDsl<World>): RunnerStepDsl<World> {
+	const invoke = (<TArgs extends unknown[]>(
+		expression: StepExpression,
+		handler: RunnerStepHandler<World, TArgs>,
+		options?: StepOptions
+	) => dsl(expression, wrapStepHandler<World, TArgs>(handler), options)) as RunnerStepDsl<World>;
+
+	const wrapped = invoke as RunnerStepDsl<World>;
+	wrapped.skip = (<TArgs extends unknown[]>(
+		expression: StepExpression,
+		handler: RunnerStepHandler<World, TArgs>,
+		options?: StepOptions
+	) => dsl.skip(expression, wrapStepHandler<World, TArgs>(handler), options)) as RunnerStepFn<World>;
+	wrapped.only = (<TArgs extends unknown[]>(
+		expression: StepExpression,
+		handler: RunnerStepHandler<World, TArgs>,
+		options?: StepOptions
+	) => dsl.only(expression, wrapStepHandler<World, TArgs>(handler), options)) as RunnerStepFn<World>;
+	wrapped.failing = (<TArgs extends unknown[]>(
+		expression: StepExpression,
+		handler: RunnerStepHandler<World, TArgs>,
+		options?: StepOptions
+	) => dsl.failing(expression, wrapStepHandler<World, TArgs>(handler), options)) as RunnerStepFn<World>;
+	return wrapped;
+}
+
 export interface RunnerDsl<World> extends ScopesDsl<World> {
-	readonly Given: StepDsl<World>;
-	readonly When: StepDsl<World>;
-	readonly Then: StepDsl<World>;
-	readonly And: StepDsl<World>;
-	readonly But: StepDsl<World>;
+	readonly given: RunnerStepDsl<World>;
+	readonly when: RunnerStepDsl<World>;
+	readonly then: RunnerStepDsl<World>;
+	readonly and: RunnerStepDsl<World>;
+	readonly but: RunnerStepDsl<World>;
+	readonly Given: RunnerStepDsl<World>;
+	readonly When: RunnerStepDsl<World>;
+	readonly Then: RunnerStepDsl<World>;
+	readonly And: RunnerStepDsl<World>;
+	readonly But: RunnerStepDsl<World>;
 	readonly BeforeFeature: HookDsl<World>;
 	readonly AfterFeature: HookDsl<World>;
 	readonly BeforeRule: HookDsl<World>;
@@ -61,6 +135,12 @@ export function createRunner<World>(
 	const context = new RunnerContext<World>(options);
 	const scopes = context.scopes;
 
+	const given = enhanceStepDsl(scopes.given);
+	const when = enhanceStepDsl(scopes.when);
+	const then = enhanceStepDsl(scopes.then);
+	const and = enhanceStepDsl(scopes.and);
+	const but = enhanceStepDsl(scopes.but);
+
 	const defineParameterTypesFromList = (
 		definitions: ParameterTypeDefinitions<World>
 	) => context.defineParameterTypes(...definitions);
@@ -80,11 +160,11 @@ export function createRunner<World>(
 		rule: scopes.rule,
 		scenario: scopes.scenario,
 		scenarioOutline: scopes.scenarioOutline,
-		given: scopes.given,
-		when: scopes.when,
-		then: scopes.then,
-		and: scopes.and,
-		but: scopes.but,
+		given,
+		when,
+		then,
+		and,
+		but,
 		beforeFeature: scopes.beforeFeature,
 		afterFeature: scopes.afterFeature,
 		beforeRule: scopes.beforeRule,
@@ -96,11 +176,11 @@ export function createRunner<World>(
 		beforeStep: scopes.beforeStep,
 		afterStep: scopes.afterStep,
 		plan: scopes.plan,
-		Given: scopes.given,
-		When: scopes.when,
-		Then: scopes.then,
-		And: scopes.and,
-		But: scopes.but,
+		Given: given,
+		When: when,
+		Then: then,
+		And: and,
+		But: but,
 		BeforeFeature: scopes.beforeFeature,
 		AfterFeature: scopes.afterFeature,
 		BeforeRule: scopes.beforeRule,

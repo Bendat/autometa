@@ -2,6 +2,8 @@ export { createRunner } from "./dsl/create-runner";
 export type {
 	RunnerEnvironment,
 	RunnerDsl,
+	RunnerStepDsl,
+	RunnerStepHandler,
 } from "./dsl/create-runner";
 
 export { createRunnerBuilder } from "./builder/create-runner-builder";

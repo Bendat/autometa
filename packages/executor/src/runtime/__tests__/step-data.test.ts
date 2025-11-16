@@ -3,6 +3,7 @@ import {
   configureStepTables,
   consumeDocstring,
   consumeTable,
+  createStepRuntime,
   getDocstring,
   getRawTable,
   getTable,
@@ -77,5 +78,28 @@ describe("step-data", () => {
     const table = consumeTable(world, "horizontal");
     expect(table).toBeDefined();
     expect(getRawTable(world)).toBeUndefined();
+  });
+
+  it("binds runtime helpers to the active world", () => {
+    setStepTable(world, [
+      ["id", "flag"],
+      ["1", "true"],
+    ]);
+    setStepDocstring(world, "example docstring");
+
+    const runtime = createStepRuntime(world);
+
+    expect(runtime.hasTable).toBe(true);
+    expect(runtime.hasDocstring).toBe(true);
+
+    const table = runtime.getTable("horizontal");
+    expect(table?.getRow(0)).toEqual({ id: 1, flag: true });
+    expect(runtime.getDocstring()).toBe("example docstring");
+
+    runtime.consumeTable("horizontal");
+    expect(runtime.hasTable).toBe(false);
+
+    runtime.consumeDocstring();
+    expect(runtime.hasDocstring).toBe(false);
   });
 });
