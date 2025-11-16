@@ -26,5 +26,12 @@
     "**/*.test.ts",
     ".reference"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../cucumber-expressions/tsconfig.types.json"
+    },
+    {
+      "path": "../scopes/tsconfig.types.json"
+    }
+  ]
 }
