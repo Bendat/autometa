@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { createScopes } from "../index";
 import { resetIdCounter } from "../id";
 import type { HookContext, ScopeNode } from "../types";
@@ -58,6 +58,39 @@ describe("createScopes DSL", () => {
     expect(plan.hooksById.size).toBe(0);
   });
 
+  it("applies tags configured via the step DSL", () => {
+    const scopes = createScopes<TestWorld>();
+
+    scopes.feature("Tagged Feature", () => {
+      scopes.scenario("Tagged Scenario", () => {
+        scopes.when.tags("@api")("the service is invoked", (_world) => undefined);
+
+        scopes.when
+          .tags(["@api", "@fast"])
+          .failing("the service fails", (_world) => undefined);
+
+        scopes.then.tags("@validation")(
+          "the result is returned",
+          (_world) => undefined,
+          {
+            tags: ["@response"],
+          }
+        );
+      });
+    });
+
+    const plan = scopes.plan();
+    const feature = plan.root.children[0];
+    const scenario = feature.children[0];
+    const [firstWhen, secondWhen, taggedThen] = scenario.steps;
+
+    expect(firstWhen.options.tags).toEqual(["@api"]);
+    expect(firstWhen.options.mode).toBe("default");
+    expect(secondWhen.options.mode).toBe("failing");
+    expect(secondWhen.options.tags).toEqual(["@api", "@fast"]);
+    expect(taggedThen.options.tags).toEqual(["@validation", "@response"]);
+  });
+
   it("applies execution mode variants across scopes and steps", () => {
     const scopes = createScopes<TestWorld>();
 
@@ -75,6 +108,31 @@ describe("createScopes DSL", () => {
     expect(feature.mode).toBe("only");
     expect(scenario.mode).toBe("skip");
     expect(step.options.mode).toBe("failing");
+  });
+
+  it("supports concurrent execution mode for scopes and steps", () => {
+    const scopes = createScopes<TestWorld>();
+
+    scopes.feature("Concurrent Feature", () => {
+      scopes.scenario.concurrent("Concurrent Scenario", () => {
+        scopes.when.concurrent("a concurrent action", (_world) => undefined);
+        scopes.then.tags("@fast").concurrent(
+          "a concurrent assertion",
+          (_world) => undefined,
+          { tags: ["@extra"] }
+        );
+      });
+    });
+
+    const plan = scopes.plan();
+    const feature = plan.root.children[0];
+    const scenario = feature.children[0];
+    const [whenStep, thenStep] = scenario.steps;
+
+    expect(scenario.mode).toBe("concurrent");
+    expect(whenStep.options.mode).toBe("concurrent");
+    expect(thenStep.options.mode).toBe("concurrent");
+    expect(thenStep.options.tags).toEqual(["@fast", "@extra"]);
   });
 
   it("lets execution variants override explicit mode options", () => {
@@ -252,5 +310,29 @@ describe("createScopes DSL", () => {
     const createdWorld = plan.worldFactory ? await plan.worldFactory() : undefined;
     expect(createdWorld).toEqual({ user: "plan" });
     expect(parameterRegistry.lookupByTypeName).not.toHaveBeenCalled();
+  });
+
+  it("infers cucumber expression argument types", () => {
+    type Color = { readonly name: string };
+    type ExpressionTypes = { readonly color: Color };
+
+    const scopes = createScopes<TestWorld, ExpressionTypes>();
+
+    scopes.given("a {int} and {string}", (_world, count, label) => {
+      expectTypeOf(count).toEqualTypeOf<number>();
+      expectTypeOf(label).toEqualTypeOf<string>();
+    });
+
+    scopes.when("a {color}", (_world, color) => {
+      expectTypeOf(color).toEqualTypeOf<Color>();
+    });
+
+    scopes.then("no parameters", (_world) => {
+      expectTypeOf(_world).toEqualTypeOf<TestWorld>();
+    });
+
+    scopes.and("value {}", (_world, value) => {
+      expectTypeOf(value).toEqualTypeOf<string>();
+    });
   });
 });

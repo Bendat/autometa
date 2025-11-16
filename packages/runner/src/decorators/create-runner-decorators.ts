@@ -2,6 +2,7 @@ import type {
 	DecoratorFeatureDescriptor,
 	DecoratorRuleDescriptor,
 	DecoratorScenarioDescriptor,
+	ExecutionMode,
 	HookHandler,
 	HookOptions,
 	HookType,
@@ -10,6 +11,7 @@ import type {
 	StepHandler,
 	StepKeyword,
 	StepOptions,
+	StepTagInput,
 } from "@autometa/scopes";
 
 import type { DecoratorRegistrationApi } from "../dsl/decorator-shared";
@@ -98,30 +100,29 @@ interface PendingRuleData {
 type FeatureConstructor = abstract new (...args: never[]) => unknown;
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
+type StepDecoratorFactory<World> = {
+	(
+		expression: StepExpression,
+		options: StepDecoratorOptions
+	): MethodDecorator;
+	skip: StepDecoratorFactory<World>;
+	only: StepDecoratorFactory<World>;
+	failing: StepDecoratorFactory<World>;
+	concurrent: StepDecoratorFactory<World>;
+	tags: (
+		...tags: readonly StepTagInput[]
+	) => StepDecoratorFactory<World>;
+};
+
 export interface RunnerDecorators<_World> {
 	Feature(options?: FeatureDecoratorOptions): ClassDecorator;
 	Rule(options: RuleDecoratorOptions): MethodDecorator;
 	Scenario(options: ScenarioDecoratorOptions): MethodDecorator;
-	Given(
-		expression: StepExpression,
-		options: StepDecoratorOptions
-	): MethodDecorator;
-	When(
-		expression: StepExpression,
-		options: StepDecoratorOptions
-	): MethodDecorator;
-	Then(
-		expression: StepExpression,
-		options: StepDecoratorOptions
-	): MethodDecorator;
-	And(
-		expression: StepExpression,
-		options: StepDecoratorOptions
-	): MethodDecorator;
-	But(
-		expression: StepExpression,
-		options: StepDecoratorOptions
-	): MethodDecorator;
+	Given: StepDecoratorFactory<_World>;
+	When: StepDecoratorFactory<_World>;
+	Then: StepDecoratorFactory<_World>;
+	And: StepDecoratorFactory<_World>;
+	But: StepDecoratorFactory<_World>;
 	BeforeFeature(options?: FeatureHookDecoratorOptions): MethodDecorator;
 	AfterFeature(options?: FeatureHookDecoratorOptions): MethodDecorator;
 	BeforeRule(options: RuleHookDecoratorOptions): MethodDecorator;
@@ -366,6 +367,92 @@ export function createRunnerDecorators<World>(
 			: undefined;
 	}
 
+	function normalizeTagInputs(inputs: readonly StepTagInput[]): readonly string[] {
+		if (inputs.length === 0) {
+			return [];
+		}
+
+		const tags: string[] = [];
+
+		for (const input of inputs) {
+			if (typeof input === "string") {
+				if (input.length > 0) {
+					tags.push(input);
+				}
+				continue;
+			}
+
+			if (Array.isArray(input)) {
+				for (const tag of input) {
+					if (typeof tag === "string" && tag.length > 0) {
+						tags.push(tag);
+					}
+				}
+			}
+		}
+
+		return tags.length > 0 ? Array.from(new Set(tags)) : [];
+	}
+
+	function mergeStepOptions(
+		base: StepOptions | undefined,
+		extras: StepOptions | undefined
+	): StepOptions | undefined {
+		if (!base && !extras) {
+			return undefined;
+		}
+
+		const mergedTags = [
+			...(base?.tags ?? []),
+			...(extras?.tags ?? []),
+		];
+
+		const timeout = extras?.timeout ?? base?.timeout;
+		const mode = extras?.mode ?? base?.mode;
+		const data = {
+			...(base?.data ?? {}),
+			...(extras?.data ?? {}),
+		} satisfies Record<string, unknown>;
+
+		const tagsResult =
+			mergedTags.length > 0
+				? (Array.from(new Set(mergedTags)) as readonly string[])
+				: undefined;
+
+		const hasData = Object.keys(data).length > 0;
+
+		if (!tagsResult && timeout === undefined && mode === undefined && !hasData) {
+			return undefined;
+		}
+
+		return {
+			...(tagsResult ? { tags: tagsResult } : {}),
+			...(timeout !== undefined ? { timeout } : {}),
+			...(mode !== undefined ? { mode } : {}),
+			...(hasData ? { data } : {}),
+		};
+	}
+
+	function applyExecutionModeToStepOptions(
+		mode: ExecutionMode,
+		options?: StepOptions
+	): StepOptions | undefined {
+		if (!options) {
+			return mode === "default" ? undefined : { mode };
+		}
+		return mode !== "default" ? { ...options, mode } : { ...options };
+	}
+
+	function clonePendingOption(
+		pending: Exclude<ScopeRegistrationOptions["pending"], undefined>
+	): ScopeRegistrationOptions["pending"] {
+		if (typeof pending === "boolean" || typeof pending === "string") {
+			return pending;
+		}
+		const reason = pending.reason;
+		return reason !== undefined ? { reason } : {};
+	}
+
 	function cloneScopeOptions(options: ScopeRegistrationOptions) {
 		const {
 			tags,
@@ -375,9 +462,10 @@ export function createRunnerDecorators<World>(
 			source,
 			data,
 			examples,
+			pending,
 		} = options;
 
-		return {
+		const cloned: ScopeRegistrationOptions = {
 			...(tags ? { tags: [...tags] } : {}),
 			...(description !== undefined ? { description } : {}),
 			...(timeout !== undefined
@@ -401,6 +489,12 @@ export function createRunnerDecorators<World>(
 				}
 				: {}),
 		};
+
+		if (pending !== undefined) {
+			(cloned as { pending: ScopeRegistrationOptions["pending"] }).pending = clonePendingOption(pending);
+		}
+
+		return cloned;
 	}
 
 	function Feature(options: FeatureDecoratorOptions = {}): ClassDecorator {
@@ -611,39 +705,108 @@ export function createRunnerDecorators<World>(
 		};
 	}
 
-	function createStepDecorator(keyword: StepKeyword) {
-		return (
-			expression: StepExpression,
-			options: StepDecoratorOptions
-		): MethodDecorator => {
-			if (!options || !options.scenario) {
-				throw new Error("Step decorator requires a scenario property key");
+	function createStepDecorator(keyword: StepKeyword): StepDecoratorFactory<World> {
+		const factoryCache = new Map<
+			StepOptions | undefined,
+			Map<ExecutionMode, StepDecoratorFactory<World>>
+		>();
+
+		const getCachedFactory = (
+			mode: ExecutionMode,
+			inheritedOptions?: StepOptions
+		): StepDecoratorFactory<World> | undefined => {
+			const cacheForOptions = factoryCache.get(inheritedOptions);
+			return cacheForOptions?.get(mode);
+		};
+
+		const storeFactory = (
+			mode: ExecutionMode,
+			inheritedOptions: StepOptions | undefined,
+			factory: StepDecoratorFactory<World>
+		) => {
+			let cacheForOptions = factoryCache.get(inheritedOptions);
+			if (!cacheForOptions) {
+				cacheForOptions = new Map();
+				factoryCache.set(inheritedOptions, cacheForOptions);
+			}
+			cacheForOptions.set(mode, factory);
+		};
+
+		const buildFactory = (
+			mode: ExecutionMode,
+			inheritedOptions?: StepOptions
+		): StepDecoratorFactory<World> => {
+			const cached = getCachedFactory(mode, inheritedOptions);
+			if (cached) {
+				return cached;
 			}
 
-			const scenarioRefs = toArray(options.scenario);
-			const stepOptions = buildStepOptions(options);
-
-			return (target, propertyKey, descriptor) => {
-				const handler = descriptor?.value as StepHandler<World> | undefined;
-				if (typeof handler !== "function") {
-					throw new Error(
-						`Step decorator can only be applied to methods. ${String(propertyKey)} is not a function.`
-					);
+			const decorator = ((
+				expression: StepExpression,
+				options: StepDecoratorOptions
+			): MethodDecorator => {
+				if (!options || !options.scenario) {
+					throw new Error("Step decorator requires a scenario property key");
 				}
 
-				recordStepMetadata(target, propertyKey, {
-					keyword,
-					expression,
-					handler,
-					...(stepOptions ? { options: stepOptions } : {}),
-				});
+				const scenarioRefs = toArray(options.scenario);
+				const explicitOptions = buildStepOptions(options);
+				const baseWithMode = mergeStepOptions(
+					inheritedOptions,
+					applyExecutionModeToStepOptions(mode)
+				);
+				const mergedOptions = mergeStepOptions(baseWithMode, explicitOptions);
+				const finalOptions = applyExecutionModeToStepOptions(mode, mergedOptions);
 
-				const constructor = resolveConstructor(target);
-				for (const scenarioKey of scenarioRefs) {
-					addStepAssociation(constructor, scenarioKey, propertyKey);
+				return (target, propertyKey, descriptor) => {
+					const handler = descriptor?.value as StepHandler<World> | undefined;
+					if (typeof handler !== "function") {
+						throw new Error(
+							`Step decorator can only be applied to methods. ${String(propertyKey)} is not a function.`
+						);
+					}
+
+					recordStepMetadata(target, propertyKey, {
+						keyword,
+						expression,
+						handler,
+						...(finalOptions ? { options: finalOptions } : {}),
+					});
+
+					const constructor = resolveConstructor(target);
+					for (const scenarioKey of scenarioRefs) {
+						addStepAssociation(constructor, scenarioKey, propertyKey);
+					}
+				};
+			}) as StepDecoratorFactory<World>;
+
+			storeFactory(mode, inheritedOptions, decorator);
+
+			decorator.tags = (
+				...inputs: readonly StepTagInput[]
+			) => {
+				const normalizedTags = normalizeTagInputs(inputs);
+				if (normalizedTags.length === 0) {
+					return decorator;
 				}
+				const tagOptions: StepOptions = {
+					tags: normalizedTags,
+				};
+				const merged = mergeStepOptions(inheritedOptions, tagOptions);
+				return buildFactory(mode, merged);
 			};
+
+			decorator.skip = mode === "skip" ? decorator : buildFactory("skip", inheritedOptions);
+			decorator.only = mode === "only" ? decorator : buildFactory("only", inheritedOptions);
+			decorator.failing = mode === "failing" ? decorator : buildFactory("failing", inheritedOptions);
+			decorator.concurrent =
+				mode === "concurrent"
+					? decorator
+					: buildFactory("concurrent", inheritedOptions);
+			return decorator;
 		};
+
+		return buildFactory("default");
 	}
 
 	function createScenarioHookDecorator(type: HookType) {

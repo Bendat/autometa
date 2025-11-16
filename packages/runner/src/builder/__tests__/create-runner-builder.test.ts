@@ -93,6 +93,7 @@ function createRuntimeStub(): ExecutorRuntime {
 }
 
 function createScopeNode<World>(overrides?: Partial<ScopeNode<World>>): ScopeNode<World> {
+	const { pending = false, ...rest } = overrides ?? {};
 	return {
 		id: "scope-id",
 		kind: "feature",
@@ -102,7 +103,8 @@ function createScopeNode<World>(overrides?: Partial<ScopeNode<World>>): ScopeNod
 		steps: [],
 		hooks: [],
 		children: [],
-		...overrides,
+		pending,
+		...rest,
 	};
 }
 

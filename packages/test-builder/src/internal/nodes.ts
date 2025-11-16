@@ -56,6 +56,8 @@ export interface ScenarioExecutionInit<World, Gherkin extends SimpleScenario | S
   readonly qualifiedName: string;
   readonly tags: readonly string[];
   readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly data?: Record<string, unknown>;
   readonly scope: ScopeNode<World>;
@@ -84,6 +86,8 @@ export interface ScenarioOutlineNodeInit<World> {
   readonly qualifiedName: string;
   readonly tags: readonly string[];
   readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly data?: Record<string, unknown>;
   readonly ancestors: readonly ScopeNode<World>[];
@@ -184,6 +188,8 @@ abstract class ScenarioExecutionBase<World, Gherkin extends SimpleScenario | Sim
   readonly qualifiedName: string;
   readonly tags: readonly string[];
   readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly data?: Record<string, unknown>;
   readonly feature: FeatureNode<World>;
@@ -209,6 +215,10 @@ abstract class ScenarioExecutionBase<World, Gherkin extends SimpleScenario | Sim
     this.qualifiedName = init.qualifiedName;
     this.tags = [...init.tags];
     this.mode = init.mode;
+    this.pending = init.pending;
+    if (init.pendingReason !== undefined) {
+      this.pendingReason = init.pendingReason;
+    }
     if (init.timeout !== undefined) {
       this.timeout = init.timeout;
     }
@@ -264,6 +274,16 @@ abstract class ScenarioExecutionBase<World, Gherkin extends SimpleScenario | Sim
     };
   }
 
+  markPending(reason?: string): void {
+    const timestamp = Date.now();
+    this.resultState = {
+      status: "pending",
+      startedAt: this.resultState.startedAt ?? timestamp,
+      completedAt: timestamp,
+      ...(reason !== undefined ? { reason } : {}),
+    };
+  }
+
   reset(): void {
     this.resultState = { status: "pending" };
   }
@@ -308,6 +328,8 @@ class ScenarioOutlineNodeImpl<World>
   readonly qualifiedName: string;
   readonly tags: readonly string[];
   readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly data?: Record<string, unknown>;
   readonly ancestors: readonly ScopeNode<World>[];
@@ -324,6 +346,10 @@ class ScenarioOutlineNodeImpl<World>
     this.qualifiedName = init.qualifiedName;
     this.tags = [...init.tags];
     this.mode = init.mode;
+    this.pending = init.pending;
+    if (init.pendingReason !== undefined) {
+      this.pendingReason = init.pendingReason;
+    }
     if (init.timeout !== undefined) {
       this.timeout = init.timeout;
     }

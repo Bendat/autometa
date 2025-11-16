@@ -4,12 +4,18 @@ export type SuiteFn = {
   (title: string, handler: () => void, timeout?: number): void;
   skip: SuiteFn;
   only: SuiteFn;
+  concurrent?: SuiteFn;
 };
 
 export type TestFn = {
   (title: string, handler: () => void | Promise<void>, timeout?: number): void;
   skip: TestFn;
   only: TestFn;
+  concurrent?: TestFn;
+  failing?: TestFn;
+  fails?: TestFn;
+  todo?: (title: string, reason?: string) => void;
+  pending?: (title: string, reason?: string) => void;
 };
 
 export interface ExecutorRuntime {

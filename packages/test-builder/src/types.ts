@@ -49,6 +49,8 @@ export interface ScenarioExecution<World> {
   readonly qualifiedName: string;
   readonly tags: readonly string[];
   readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly data?: Record<string, unknown>;
   readonly feature: FeatureNode<World>;
@@ -64,6 +66,7 @@ export interface ScenarioExecution<World> {
   markPassed(): void;
   markFailed(error: unknown): void;
   markSkipped(reason?: string): void;
+  markPending(reason?: string): void;
   reset(): void;
 }
 
@@ -88,6 +91,8 @@ export interface ScenarioOutlineNode<World> {
   readonly summary: ScenarioSummary<World>;
   readonly tags: readonly string[];
   readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly data?: Record<string, unknown>;
   readonly ancestors: readonly ScopeNode<World>[];

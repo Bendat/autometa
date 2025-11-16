@@ -48,6 +48,59 @@ describe("createRunner", () => {
 		expect(parameter).toBeDefined();
 	});
 
+	it("supports tagging step definitions via the fluent API", () => {
+		const runner = createRunner<TestWorld>();
+
+		runner.feature("Tagged feature", () => {
+			runner.scenario("Tagged scenario", () => {
+				runner.When.tags("@api")("a tagged step", () => undefined);
+				runner.Then.tags(["@validation"])("a tagged assertion", () => undefined, {
+					tags: ["@response"],
+				});
+			});
+		});
+
+		const plan = runner.plan();
+		const [feature] = plan.root.children;
+		assertExists(feature, "Tagged feature scope missing");
+		const [scenario] = feature.children;
+		assertExists(scenario, "Tagged scenario scope missing");
+		const [whenStep, thenStep] = scenario.steps;
+		assertExists(whenStep, "Tagged When step missing");
+		assertExists(thenStep, "Tagged Then step missing");
+
+		expect(whenStep.options.tags).toEqual(["@api"]);
+		expect(thenStep.options.tags).toEqual(["@validation", "@response"]);
+	});
+
+	it("exposes concurrent execution variant for steps", () => {
+		const runner = createRunner<TestWorld>();
+
+		runner.feature("Concurrent feature", () => {
+			runner.scenario("Concurrent scenario", () => {
+				runner.When.concurrent("a concurrent action", () => undefined);
+				runner.Then.tags("@fast").concurrent(
+					"a concurrent assertion",
+					() => undefined,
+					{ tags: ["@extra"] }
+				);
+			});
+		});
+
+		const plan = runner.plan();
+		const [feature] = plan.root.children;
+		assertExists(feature, "Concurrent feature scope missing");
+		const [scenario] = feature.children;
+		assertExists(scenario, "Concurrent scenario scope missing");
+		const [whenStep, thenStep] = scenario.steps;
+		assertExists(whenStep, "Concurrent When step missing");
+		assertExists(thenStep, "Concurrent Then step missing");
+
+		expect(whenStep.options.mode).toBe("concurrent");
+		expect(thenStep.options.mode).toBe("concurrent");
+		expect(thenStep.options.tags).toEqual(["@fast", "@extra"]);
+	});
+
 	it("allows registering custom parameter types", () => {
 		const runner = createRunner<TestWorld>({
 			registerDefaultParameterTypes: false,

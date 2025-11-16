@@ -15,6 +15,7 @@ describe("createRunnerDecorators", () => {
 			Rule,
 			Scenario,
 			Given,
+			When,
 			BeforeFeature,
 			BeforeRule,
 			BeforeScenario,
@@ -37,6 +38,12 @@ describe("createRunnerDecorators", () => {
 				return undefined;
 			}
 			givenStep() {
+				return undefined;
+			}
+			whenStep() {
+				return undefined;
+			}
+			whenConcurrentStep() {
 				return undefined;
 			}
 		}
@@ -72,6 +79,22 @@ describe("createRunnerDecorators", () => {
 			"givenStep"
 		);
 		applyMethodDecorator(
+			When.tags("@api")(
+				"a tagged decorator step",
+				{
+					scenario: "scenarioImplementation",
+					tags: ["@scenario"],
+				}
+			),
+			"whenStep"
+		);
+		applyMethodDecorator(
+			When.concurrent("a concurrent decorator step", {
+				scenario: "scenarioImplementation",
+			}),
+			"whenConcurrentStep"
+		);
+		applyMethodDecorator(
 			BeforeFeature(),
 			"beforeFeatureHook"
 		);
@@ -95,7 +118,7 @@ describe("createRunnerDecorators", () => {
 
 		const scenario = rule?.children[0];
 		expect(scenario?.name).toBe("Decorated Scenario");
-		expect(scenario?.steps).toHaveLength(1);
+		expect(scenario?.steps).toHaveLength(3);
 
 		if (!feature || !rule || !scenario) {
 			throw new Error("Decorated hierarchy not registered as expected");
@@ -107,5 +130,19 @@ describe("createRunnerDecorators", () => {
 		expect(countHooks(feature, "beforeFeature")).toBe(1);
 		expect(countHooks(rule, "beforeRule")).toBe(1);
 		expect(countHooks(scenario, "beforeScenario")).toBe(1);
+
+		const taggedStep = scenario.steps.find(
+			(step) => step.expression === "a tagged decorator step"
+		);
+		const givenStep = scenario.steps.find(
+			(step) => step.expression === "a decorated step"
+		);
+		const concurrentStep = scenario.steps.find(
+			(step) => step.expression === "a concurrent decorator step"
+		);
+
+		expect(taggedStep?.options.tags).toEqual(["@api", "@scenario"]);
+		expect(givenStep?.options.tags).toEqual([]);
+		expect(concurrentStep?.options.mode).toBe("concurrent");
 	});
 });

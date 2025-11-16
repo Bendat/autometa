@@ -6,6 +6,7 @@ import {
   setStepDocstring,
   setStepTable,
 } from "./runtime/step-data";
+import { isScenarioPendingError } from "./pending";
 
 export interface ScenarioRunContext<World> {
   readonly adapter: ScopeExecutionAdapter<World>;
@@ -37,6 +38,10 @@ export async function runScenarioExecution<World>(
     }
     execution.markPassed();
   } catch (error) {
+    if (isScenarioPendingError(error)) {
+      execution.markPending(error.reason);
+      return;
+    }
     execution.markFailed(error);
     throw error;
   }

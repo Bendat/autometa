@@ -220,6 +220,10 @@ export class TestPlanBuilder<World> {
         summary.scenario.tags
       ),
       mode: summary.scenario.mode,
+      pending: summary.scenario.pending,
+      ...(summary.scenario.pendingReason
+        ? { pendingReason: summary.scenario.pendingReason }
+        : {}),
       scope: summary.scenario,
       summary,
       gherkin: gherkinScenario,
@@ -293,6 +297,10 @@ export class TestPlanBuilder<World> {
         summary.scenario.tags
       ),
       mode: summary.scenario.mode,
+      pending: summary.scenario.pending,
+      ...(summary.scenario.pendingReason
+        ? { pendingReason: summary.scenario.pendingReason }
+        : {}),
       ancestors: summary.ancestors,
       feature: this.featureNode,
       ...(summary.scenario.timeout !== undefined ? { timeout: summary.scenario.timeout } : {}),
@@ -373,6 +381,10 @@ export class TestPlanBuilder<World> {
             summary.scenario.tags
           ),
           mode: summary.scenario.mode,
+          pending: summary.scenario.pending,
+          ...(summary.scenario.pendingReason
+            ? { pendingReason: summary.scenario.pendingReason }
+            : {}),
           scope: summary.scenario,
           summary,
           gherkin: compiled,

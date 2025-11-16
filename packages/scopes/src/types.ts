@@ -6,7 +6,7 @@ export type ScopeKind =
   | "scenario"
   | "scenarioOutline";
 
-export type ExecutionMode = "default" | "skip" | "only" | "failing";
+export type ExecutionMode = "default" | "skip" | "only" | "failing" | "concurrent";
 
 export type TimeoutUnit = "ms" | "s" | "m" | "h";
 
@@ -18,6 +18,13 @@ export interface SourceRef {
   readonly column?: number;
 }
 
+export type PendingState =
+  | boolean
+  | string
+  | {
+      readonly reason?: string;
+    };
+
 export interface ScopeMetadata {
   readonly tags?: readonly string[];
   readonly description?: string;
@@ -26,6 +33,7 @@ export interface ScopeMetadata {
   readonly source?: SourceRef;
   readonly data?: Record<string, unknown>;
   readonly examples?: readonly ScenarioOutlineExamples[];
+  readonly pending?: PendingState;
 }
 
 export type StepKeyword = "Given" | "When" | "Then" | "And" | "But";
@@ -44,6 +52,76 @@ export type StepHandler<World, TArgs extends unknown[] = unknown[]> = (
 ) => unknown | Promise<unknown>;
 
 export type StepExpression = string | RegExp;
+
+export type CucumberExpressionTypeMap = Record<string, unknown>;
+
+export type DefaultCucumberExpressionTypes = {
+  readonly int: number;
+  readonly float: number;
+  readonly number: number;
+  readonly double: number;
+  readonly bigdecimal: string;
+  readonly byte: number;
+  readonly short: number;
+  readonly long: number;
+  readonly biginteger: bigint;
+  readonly word: string;
+  readonly string: string;
+  readonly "": string;
+};
+
+export type WithDefaultCucumberExpressionTypes<
+  T extends CucumberExpressionTypeMap
+> = DefaultCucumberExpressionTypes & T;
+
+type Whitespace = " " | "\n" | "\t" | "\r";
+
+type TrimStart<S extends string> = S extends `${Whitespace}${infer Rest}`
+  ? TrimStart<Rest>
+  : S;
+
+type TrimEnd<S extends string> = S extends `${infer Rest}${Whitespace}`
+  ? TrimEnd<Rest>
+  : S;
+
+type Trim<S extends string> = TrimEnd<TrimStart<S>>;
+
+type StepExpressionParameterNames<Expression extends string> =
+  Expression extends `${infer _Prefix}{${infer Param}}${infer Rest}`
+    ? [Trim<Param>, ...StepExpressionParameterNames<Rest>]
+    : [];
+
+type ParameterTypeFor<
+  Name extends string,
+  Types extends CucumberExpressionTypeMap
+> = Name extends keyof Types ? Types[Name] : unknown;
+
+type MapParametersToTypes<
+  Params extends readonly string[],
+  Types extends CucumberExpressionTypeMap
+> = Params extends readonly [infer Head, ...infer Tail]
+  ? Head extends string
+    ? [
+        ParameterTypeFor<Head, Types>,
+        ...MapParametersToTypes<
+          Tail extends readonly string[] ? Tail : [],
+          Types
+        >
+      ]
+    : MapParametersToTypes<Tail extends readonly string[] ? Tail : [], Types>
+  : [];
+
+export type StepArgumentsForExpression<
+  Expression extends StepExpression,
+  Types extends CucumberExpressionTypeMap
+> = Expression extends string
+  ? MapParametersToTypes<
+      StepExpressionParameterNames<Expression>,
+      Types
+    >
+  : Expression extends RegExp
+    ? unknown[]
+    : unknown[];
 
 export interface StepDefinition<World> {
   readonly id: string;
@@ -90,6 +168,8 @@ export interface StepOptions {
   readonly data?: Record<string, unknown>;
 }
 
+export type StepTagInput = string | readonly string[];
+
 export interface HookOptions {
   readonly tags?: readonly string[];
   readonly timeout?: TimeoutSpec;
@@ -119,6 +199,8 @@ export interface ScopeNode<World> {
   readonly name: string;
   readonly mode: ExecutionMode;
   readonly tags: readonly string[];
+  readonly pending: boolean;
+  readonly pendingReason?: string;
   readonly timeout?: TimeoutSpec;
   readonly description?: string;
   readonly source?: SourceRef;
@@ -142,6 +224,7 @@ export type ExecutableScopeFn<Args extends unknown[], Return> = ((...args: Args)
   skip: (...args: Args) => Return;
   only: (...args: Args) => Return;
   failing: (...args: Args) => Return;
+  concurrent: (...args: Args) => Return;
 };
 
 export interface ScenarioSummary<World> {
@@ -232,25 +315,47 @@ export type ScopeDsl<World> = ExecutableScopeFn<
   ScopeNode<World>
 >;
 
-export type StepDsl<World> = ExecutableScopeFn<
-  [StepExpression, StepHandler<World>, StepOptions?],
-  StepDefinition<World>
->;
+export interface StepDsl<
+  World,
+  Types extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
+> {
+  <Expression extends StepExpression>(
+    expression: Expression,
+    handler: StepHandler<
+      World,
+      StepArgumentsForExpression<
+        Expression,
+        WithDefaultCucumberExpressionTypes<Types>
+      >
+    >,
+    options?: StepOptions
+  ): StepDefinition<World>;
+  skip: StepDsl<World, Types>;
+  only: StepDsl<World, Types>;
+  failing: StepDsl<World, Types>;
+  concurrent: StepDsl<World, Types>;
+  tags: (
+    ...tags: readonly StepTagInput[]
+  ) => StepDsl<World, Types>;
+}
 
 export type HookDsl<World> = ExecutableScopeFn<[unknown?, unknown?, unknown?], HookDefinition<World>> &
   ((handler: HookHandler<World>, options?: HookOptions) => HookDefinition<World>) &
   ((description: string, handler: HookHandler<World>, options?: HookOptions) => HookDefinition<World>);
 
-export interface ScopesDsl<World> {
+export interface ScopesDsl<
+  World,
+  Types extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
+> {
   readonly feature: FeatureDsl<World>;
   readonly rule: ScopeDsl<World>;
   readonly scenario: ScopeDsl<World>;
   readonly scenarioOutline: ScopeDsl<World>;
-  readonly given: StepDsl<World>;
-  readonly when: StepDsl<World>;
-  readonly then: StepDsl<World>;
-  readonly and: StepDsl<World>;
-  readonly but: StepDsl<World>;
+  readonly given: StepDsl<World, Types>;
+  readonly when: StepDsl<World, Types>;
+  readonly then: StepDsl<World, Types>;
+  readonly and: StepDsl<World, Types>;
+  readonly but: StepDsl<World, Types>;
   readonly beforeFeature: HookDsl<World>;
   readonly afterFeature: HookDsl<World>;
   readonly beforeRule: HookDsl<World>;

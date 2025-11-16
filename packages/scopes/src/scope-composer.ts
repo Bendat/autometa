@@ -8,6 +8,7 @@ import type {
   NormalizedHookOptions,
   NormalizedStepOptions,
   ParameterRegistryLike,
+  PendingState,
   ScopeKind,
   ScopeMetadata,
   ScopeNode,
@@ -53,6 +54,21 @@ function normalizeHookOptions(
     ...(options?.order !== undefined ? { order: options.order } : {}),
     ...(options?.data ? { data: { ...options.data } } : {}),
   };
+}
+
+function normalizePendingState(pending: PendingState | undefined): { active: boolean; reason?: string } {
+  if (pending === undefined || pending === false) {
+    return { active: false };
+  }
+  if (pending === true) {
+    return { active: true };
+  }
+  if (typeof pending === "string") {
+    const reason = pending.trim();
+    return reason.length > 0 ? { active: true, reason } : { active: true };
+  }
+  const reason = pending.reason?.toString().trim();
+  return reason && reason.length > 0 ? { active: true, reason } : { active: true };
 }
 
 export class ScopeComposer<World> {
@@ -177,6 +193,7 @@ export class ScopeComposer<World> {
   ): ScopeNode<World> {
     const id = this.nextId(kind);
     const mode = resolveMode(metadata.mode, this.defaultMode);
+    const pendingState = normalizePendingState(metadata.pending);
 
     const node: ScopeNode<World> = {
       id,
@@ -184,6 +201,8 @@ export class ScopeComposer<World> {
       name,
       mode,
       tags: cloneArray(metadata.tags),
+      pending: pendingState.active,
+      ...(pendingState.reason ? { pendingReason: pendingState.reason } : {}),
       steps: [],
       hooks: [],
       children: [],

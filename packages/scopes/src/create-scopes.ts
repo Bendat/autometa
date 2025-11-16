@@ -12,22 +12,30 @@ import type {
   HookDsl,
   ScopePlan,
   ScopesDsl,
-  StepDsl,
+  CucumberExpressionTypeMap,
+  DefaultCucumberExpressionTypes,
+  WithDefaultCucumberExpressionTypes,
 } from "./types";
 
-export function createScopes<World>(options: CreateScopesOptions<World> = {}): ScopesDsl<World> {
+export function createScopes<
+  World,
+  ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
+>(
+  options: CreateScopesOptions<World> = {}
+): ScopesDsl<World, WithDefaultCucumberExpressionTypes<ExpressionTypes>> {
   const composer = new ScopeComposer<World>(options);
+  type ExpressionMap = WithDefaultCucumberExpressionTypes<ExpressionTypes>;
 
   const feature = createFeatureBuilder(composer);
   const rule = createRuleBuilder(composer);
   const scenario = createScenarioBuilder(composer, "scenario");
   const scenarioOutline = createScenarioBuilder(composer, "scenarioOutline");
 
-  const given = createStepBuilder(composer, "Given");
-  const when = createStepBuilder(composer, "When");
-  const then = createStepBuilder(composer, "Then");
-  const and = createStepBuilder(composer, "And");
-  const but = createStepBuilder(composer, "But");
+  const given = createStepBuilder<World, ExpressionMap>(composer, "Given");
+  const when = createStepBuilder<World, ExpressionMap>(composer, "When");
+  const then = createStepBuilder<World, ExpressionMap>(composer, "Then");
+  const and = createStepBuilder<World, ExpressionMap>(composer, "And");
+  const but = createStepBuilder<World, ExpressionMap>(composer, "But");
 
   const beforeFeature = createHookBuilder(composer, "beforeFeature");
   const afterFeature = createHookBuilder(composer, "afterFeature");
@@ -42,16 +50,16 @@ export function createScopes<World>(options: CreateScopesOptions<World> = {}): S
 
   const plan = (): ScopePlan<World> => composer.plan;
 
-  const dsl: ScopesDsl<World> = {
+  const dsl: ScopesDsl<World, ExpressionMap> = {
     feature: feature as FeatureDsl<World>,
     rule,
     scenario,
     scenarioOutline,
-    given: given as StepDsl<World>,
-    when: when as StepDsl<World>,
-    then: then as StepDsl<World>,
-    and: and as StepDsl<World>,
-    but: but as StepDsl<World>,
+    given,
+    when,
+    then,
+    and,
+    but,
     beforeFeature: beforeFeature as HookDsl<World>,
     afterFeature: afterFeature as HookDsl<World>,
     beforeRule: beforeRule as HookDsl<World>,

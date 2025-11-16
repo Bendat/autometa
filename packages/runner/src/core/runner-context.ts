@@ -8,8 +8,11 @@ import {
 import { createScopes } from "@autometa/scopes";
 import type {
 	CreateScopesOptions,
+ CucumberExpressionTypeMap,
 	ScopePlan,
 	ScopesDsl,
+ WithDefaultCucumberExpressionTypes,
+ DefaultCucumberExpressionTypes,
 } from "@autometa/scopes";
 import type {
 	ParameterType,
@@ -34,8 +37,11 @@ export interface RunnerContextOptions<World>
 	readonly registerDefaultParameterTypes?: boolean;
 }
 
-export class RunnerContext<World> {
-	private readonly scopesInternal: ScopesDsl<World>;
+export class RunnerContext<World, ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes> {
+	private readonly scopesInternal: ScopesDsl<
+		World,
+		WithDefaultCucumberExpressionTypes<ExpressionTypes>
+	>;
 	private readonly registryAdapter: ParameterRegistryAdapter;
 	private readonly defineParameterTypeFn: ReturnType<
 		typeof createParameterTypes<World>
@@ -56,7 +62,7 @@ export class RunnerContext<World> {
 		);
 
 		const scopeOptions = RunnerContext.extractScopeOptions(options);
-		this.scopesInternal = createScopes<World>({
+		this.scopesInternal = createScopes<World, ExpressionTypes>({
 			...scopeOptions,
 			parameterRegistry: this.registryAdapter,
 		});
@@ -70,7 +76,7 @@ export class RunnerContext<World> {
 		}
 	}
 
-	get scopes(): ScopesDsl<World> {
+	get scopes(): ScopesDsl<World, WithDefaultCucumberExpressionTypes<ExpressionTypes>> {
 		return this.scopesInternal;
 	}
 

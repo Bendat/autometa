@@ -9,7 +9,7 @@ import type {
 } from "@autometa/test-builder";
 
 import { createTagFilter } from "./tag-filter";
-import { selectSuiteByMode, selectTestByMode } from "./modes";
+import { resolveModeFromTags, selectSuiteByMode, selectTestByMode } from "./modes";
 import { resolveTimeout } from "./timeouts";
 import { runScenarioExecution } from "./scenario-runner";
 import type { ExecutorRuntime } from "./types";
@@ -26,8 +26,13 @@ export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>
   const feature = plan.feature;
   const tagFilter = createTagFilter(config.test?.tagFilter);
 
+  const featureTags = [
+    ...(feature.feature.tags ?? []),
+    ...(feature.scope.tags ?? []),
+  ];
+  const featureMode = resolveModeFromTags(feature.scope.mode, featureTags);
   const featureTimeout = resolveTimeout(feature.scope.timeout, config);
-  const featureSuite = selectSuiteByMode(runtime.suite, feature.scope.mode);
+  const featureSuite = selectSuiteByMode(runtime.suite, featureMode);
 
   featureSuite(feature.name, () => {
     registerScenarios(feature.scenarios, runtime, adapter, config, tagFilter);
@@ -44,7 +49,12 @@ function registerRules<World>(
   tagFilter: ReturnType<typeof createTagFilter>
 ): void {
   for (const rule of rules) {
-    const suite = selectSuiteByMode(runtime.suite, rule.scope.mode);
+    const ruleTags = [
+      ...(rule.rule.tags ?? []),
+      ...(rule.scope.tags ?? []),
+    ];
+    const ruleMode = resolveModeFromTags(rule.scope.mode, ruleTags);
+    const suite = selectSuiteByMode(runtime.suite, ruleMode);
     const timeout = resolveTimeout(rule.scope.timeout, config);
     suite(rule.name, () => {
       registerScenarios(rule.scenarios, runtime, adapter, config, tagFilter);
@@ -61,7 +71,8 @@ function registerScenarioOutlines<World>(
   tagFilter: ReturnType<typeof createTagFilter>
 ): void {
   for (const outline of outlines) {
-    const suite = selectSuiteByMode(runtime.suite, outline.mode);
+    const outlineMode = resolveModeFromTags(outline.mode, outline.tags);
+    const suite = selectSuiteByMode(runtime.suite, outlineMode);
     const timeout = resolveTimeout(outline.timeout, config);
     suite(outline.name, () => {
       registerScenarioExecutions(outline.examples, runtime, adapter, config, tagFilter);
@@ -103,10 +114,42 @@ function scheduleScenario<World>(
     return;
   }
 
-  const testFn = selectTestByMode(runtime.test, execution.mode);
+  if (execution.pending) {
+    execution.markPending(execution.pendingReason);
+    registerPendingScenarioTest(execution, runtime);
+    return;
+  }
+
+  const effectiveMode = resolveModeFromTags(execution.mode, execution.tags);
+  const testFn = selectTestByMode(runtime.test, effectiveMode);
   const scenarioTimeout = resolveTimeout(execution.timeout, config);
 
   testFn(execution.name, async () => {
     await runScenarioExecution(execution, { adapter });
   }, scenarioTimeout.milliseconds);
+}
+
+function registerPendingScenarioTest<World>(
+  execution: ScenarioExecution<World>,
+  runtime: ExecutorRuntime
+): void {
+  const reason = execution.pendingReason;
+  const { test } = runtime;
+
+  if (typeof test.todo === "function") {
+    test.todo(execution.name, reason);
+    return;
+  }
+
+  if (typeof test.pending === "function") {
+    test.pending(execution.name, reason);
+    return;
+  }
+
+  if (typeof test.skip === "function") {
+    test.skip(execution.name, () => undefined);
+    return;
+  }
+
+  test(execution.name, () => undefined);
 }

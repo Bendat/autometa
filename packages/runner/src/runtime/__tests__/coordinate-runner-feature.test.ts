@@ -47,6 +47,7 @@ function createSimpleFeature(name: string): SimpleFeature {
 function createScopeNode<World>(
   overrides?: Partial<ScopeNode<World>>
 ): ScopeNode<World> {
+  const { pending = false, ...rest } = overrides ?? {};
   return {
     id: "scope-id",
     kind: "feature",
@@ -56,7 +57,8 @@ function createScopeNode<World>(
     steps: [],
     hooks: [],
     children: [],
-    ...overrides,
+    pending,
+    ...rest,
   };
 }
 

@@ -1,4 +1,5 @@
 import type {
+  CucumberExpressionTypeMap,
   ExecutableScopeFn,
   ExecutionMode,
   FeatureInput,
@@ -6,16 +7,20 @@ import type {
   HookHandler,
   HookOptions,
   HookType,
+  PendingState,
   ScopeKind,
   ScopeMetadata,
   ScopeNode,
   ScopeRegistrationOptions,
   ScenarioOutlineExamples,
-  StepDefinition,
+  StepArgumentsForExpression,
+  StepDsl,
   StepExpression,
   StepHandler,
   StepKeyword,
   StepOptions,
+  StepTagInput,
+  WithDefaultCucumberExpressionTypes,
 } from "./types";
 import { ScopeComposer } from "./scope-composer";
 
@@ -35,11 +40,22 @@ interface NormalizedScopeCall {
   readonly action?: () => void;
 }
 
+function clonePendingState(pending: PendingState): PendingState {
+  if (typeof pending === "boolean" || typeof pending === "string") {
+    return pending;
+  }
+  const reason = pending.reason;
+  if (reason === undefined) {
+    return {};
+  }
+  return { reason };
+}
+
 function createMetadata(partial?: ScopeMetadata): ScopeMetadata {
   if (!partial) {
     return {};
   }
-  const { tags, description, timeout, mode, source, data, examples } = partial;
+  const { tags, description, timeout, mode, source, data, examples, pending } = partial;
   return {
     ...(tags && tags.length > 0 ? { tags: [...tags] } : {}),
     ...(description !== undefined ? { description } : {}),
@@ -52,6 +68,7 @@ function createMetadata(partial?: ScopeMetadata): ScopeMetadata {
     ...(source ? { source: { ...source } } : {}),
     ...(data ? { data: { ...data } } : {}),
     ...(examples ? { examples: cloneExamples(examples) } : {}),
+    ...(pending !== undefined ? { pending: clonePendingState(pending) } : {}),
   };
 }
 
@@ -82,6 +99,7 @@ function mergeScopeMetadata(
   };
 
   const examples = extras?.examples ?? base?.examples;
+  const pending = extras?.pending ?? base?.pending;
 
   return createMetadata({
     ...(combinedTags.length > 0 ? { tags: combinedTags } : {}),
@@ -91,6 +109,7 @@ function mergeScopeMetadata(
     ...(source ? { source } : {}),
     ...(Object.keys(data).length > 0 ? { data } : {}),
     ...(examples ? { examples } : {}),
+    ...(pending !== undefined ? { pending } : {}),
   });
 }
 
@@ -102,6 +121,89 @@ function applyExecutionModeToStepOptions(
     return mode === "default" ? undefined : { mode };
   }
   return mode !== "default" ? { ...options, mode } : { ...options };
+}
+
+type StepFamily<
+  World,
+  Types extends CucumberExpressionTypeMap
+> = {
+  readonly default: StepDsl<World, Types>;
+  readonly skip: StepDsl<World, Types>;
+  readonly only: StepDsl<World, Types>;
+  readonly failing: StepDsl<World, Types>;
+  readonly concurrent: StepDsl<World, Types>;
+};
+
+function normalizeTagInputs(inputs: readonly StepTagInput[]): readonly string[] {
+  if (inputs.length === 0) {
+    return [];
+  }
+
+  const tags: string[] = [];
+
+  for (const input of inputs) {
+    if (typeof input === "string") {
+      if (input.length > 0) {
+        tags.push(input);
+      }
+      continue;
+    }
+
+    if (Array.isArray(input)) {
+      for (const tag of input) {
+        if (typeof tag === "string" && tag.length > 0) {
+          tags.push(tag);
+        }
+      }
+    }
+  }
+
+  if (tags.length === 0) {
+    return [];
+  }
+
+  return Array.from(new Set(tags));
+}
+
+function mergeStepOptions(
+  base: StepOptions | undefined,
+  extras: StepOptions | undefined
+): StepOptions | undefined {
+  if (!base && !extras) {
+    return undefined;
+  }
+
+  const mergedTags = [
+    ...(base?.tags ?? []),
+    ...(extras?.tags ?? []),
+  ];
+
+  const timeout = extras?.timeout ?? base?.timeout;
+  const mode = extras?.mode ?? base?.mode;
+  const data = {
+    ...(base?.data ?? {}),
+    ...(extras?.data ?? {}),
+  } satisfies Record<string, unknown>;
+
+  const tagsResult =
+    mergedTags.length > 0
+      ? (Array.from(new Set(mergedTags)) as readonly string[])
+      : undefined;
+
+  const hasData = Object.keys(data).length > 0;
+
+  if (!tagsResult && timeout === undefined && mode === undefined && !hasData) {
+    return undefined;
+  }
+
+  const result: StepOptions = {
+    ...(tagsResult ? { tags: tagsResult } : {}),
+    ...(timeout !== undefined ? { timeout } : {}),
+    ...(mode !== undefined ? { mode } : {}),
+    ...(hasData ? { data } : {}),
+  };
+
+  return result;
 }
 
 function applyExecutionModeToHookOptions(
@@ -221,6 +323,9 @@ function extractScopeMetadata(
     ...(kind === "scenarioOutline" && options.examples
       ? { examples: cloneExamples(options.examples) }
       : {}),
+    ...("pending" in options && options.pending !== undefined
+      ? { pending: options.pending }
+      : {}),
   });
 }
 
@@ -246,6 +351,7 @@ function withExecutionVariants<Args extends unknown[], Return>(
   fn.skip = (...args: Args) => handler("skip", args);
   fn.only = (...args: Args) => handler("only", args);
   fn.failing = (...args: Args) => handler("failing", args);
+  fn.concurrent = (...args: Args) => handler("concurrent", args);
   return fn;
 }
 
@@ -276,13 +382,13 @@ export function createScenarioBuilder<World>(
 > {
   return withExecutionVariants((mode, args) => {
     const normalized = normalizeScopeArgs(kind, args, mode);
-  const allowedParents = SCENARIO_ALLOWED_PARENTS;
+    const allowedParents = SCENARIO_ALLOWED_PARENTS;
     return composer.createScope(
       kind,
       normalized.name,
       normalized.metadata,
       normalized.action,
-  allowedParents
+      allowedParents
     );
   });
 }
@@ -305,22 +411,108 @@ export function createRuleBuilder<World>(
   });
 }
 
-export function createStepBuilder<World>(
+export function createStepBuilder<
+  World,
+  Types extends CucumberExpressionTypeMap
+>(
   composer: ScopeComposer<World>,
   keyword: StepKeyword
-): ExecutableScopeFn<
-  [StepExpression, StepHandler<World>, StepOptions?],
-  StepDefinition<World>
-> {
-  return withExecutionVariants((mode, args) => {
-    const [expression, handler, options] = args;
-    return composer.registerStep(
-      keyword,
-      expression,
-      handler,
-      applyExecutionModeToStepOptions(mode, options)
-    );
-  });
+): StepDsl<World, Types> {
+  const buildFamily = (
+    inheritedOptions?: StepOptions
+  ): StepFamily<World, Types> => {
+    const makeInvoker = (mode: ExecutionMode) =>
+      <Expression extends StepExpression>(
+        expression: Expression,
+        handler: StepHandler<
+          World,
+          StepArgumentsForExpression<
+            Expression,
+            WithDefaultCucumberExpressionTypes<Types>
+          >
+        >,
+        options?: StepOptions
+      ) => {
+        const mergedOptions = mergeStepOptions(inheritedOptions, options);
+        return composer.registerStep(
+          keyword,
+          expression,
+          handler as StepHandler<World>,
+          applyExecutionModeToStepOptions(mode, mergedOptions)
+        );
+      };
+
+    const defaultFn = makeInvoker("default") as StepDsl<World, Types>;
+    const skipFn = makeInvoker("skip") as StepDsl<World, Types>;
+    const onlyFn = makeInvoker("only") as StepDsl<World, Types>;
+    const failingFn = makeInvoker("failing") as StepDsl<World, Types>;
+    const concurrentFn = makeInvoker("concurrent") as StepDsl<World, Types>;
+
+    const attachVariants = (
+      fn: StepDsl<World, Types>,
+      mode: ExecutionMode
+    ) => {
+      fn.skip = skipFn;
+      fn.only = onlyFn;
+      fn.failing = failingFn;
+      fn.concurrent = concurrentFn;
+      fn.tags = (
+        ...inputs: readonly StepTagInput[]
+      ) => {
+        const normalizedTags = normalizeTagInputs(inputs);
+        if (normalizedTags.length === 0) {
+          switch (mode) {
+            case "skip":
+              return skipFn;
+            case "only":
+              return onlyFn;
+            case "failing":
+              return failingFn;
+            case "concurrent":
+              return concurrentFn;
+            default:
+              return defaultFn;
+          }
+        }
+
+        const tagOptions: StepOptions = {
+          tags: normalizedTags,
+        };
+        const family = buildFamily(
+          mergeStepOptions(inheritedOptions, tagOptions)
+        );
+        switch (mode) {
+          case "skip":
+            return family.skip;
+          case "only":
+            return family.only;
+          case "failing":
+            return family.failing;
+          case "concurrent":
+            return family.concurrent;
+          default:
+            return family.default;
+        }
+      };
+    };
+
+    attachVariants(defaultFn, "default");
+    attachVariants(skipFn, "skip");
+    attachVariants(onlyFn, "only");
+    attachVariants(failingFn, "failing");
+    attachVariants(concurrentFn, "concurrent");
+
+    return {
+      default: defaultFn,
+      skip: skipFn,
+      only: onlyFn,
+      failing: failingFn,
+      concurrent: concurrentFn,
+    };
+  };
+
+  const family = buildFamily();
+  return family.default;
 }
 
 interface NormalizedHookArgs<World> {

@@ -53,6 +53,11 @@ export {
 	clearStepDocstring,
 	getDocstring,
 	consumeDocstring,
+ 	ScenarioPendingError,
+ 	isScenarioPendingError,
+ 	Pending,
+ 	ToDo,
+ 	markScenarioPending,
 } from "@autometa/executor";
 
 export {
