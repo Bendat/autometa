@@ -8,10 +8,13 @@ import type {
   Recipe,
 } from "../../.api/src/types/domain.js";
 import type { SseSession } from "./utils/sse.js";
+import type { MenuRegion } from "./utils/regions";
+import { BrewBuddyApp } from "./utils/http";
 
 export interface BrewBuddyWorld {
   readonly baseUrl: string;
   readonly http: HTTP;
+  readonly app: BrewBuddyApp;
   lastResponse?: HTTPResponse<unknown>;
   lastResponseBody?: unknown;
   lastResponseHeaders?: Record<string, string>;
@@ -39,7 +42,7 @@ interface ScenarioState {
   stream?: SseSession;
   streamWarnings: string[];
   streamErrors: string[];
-  region?: string;
+  region?: MenuRegion;
   priceUpdates?: Array<{ readonly name: string; readonly price: number }>;
 }
 
@@ -68,10 +71,9 @@ export function setFeatures(features: SimpleFeature[]): void {
 
 export function createWorld(): BrewBuddyWorld {
   const baseUrl = getBaseUrl();
-  const http = HTTP.create()
-    .url(baseUrl)
-    .sharedHeader("accept", "application/json")
-    .sharedAllowPlainText(true);
+  const baseClient = HTTP.create();
+  const app = new BrewBuddyApp(baseClient, baseUrl);
+  const http = app.http;
 
   const scenario: ScenarioState = {
     createdItems: [],
@@ -82,6 +84,7 @@ export function createWorld(): BrewBuddyWorld {
   return {
     baseUrl,
     http,
+    app,
     aliases: {
       tickets: new Map(),
       orders: new Map(),

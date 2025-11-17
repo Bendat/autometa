@@ -5,10 +5,10 @@
   "compilerOptions": {
     "paths": {
       "@autometa/*": [
-        "../../packages/*/dist/index.js",
         "../../packages/*/dist/index.d.ts",
-        "../../libraries/*/dist/index.js",
-        "../../libraries/*/dist/index.d.ts"
+        "../../packages/*/dist/index.js",
+        "../../libraries/*/dist/index.d.ts",
+        "../../libraries/*/dist/index.js"
       ]
     }
   }

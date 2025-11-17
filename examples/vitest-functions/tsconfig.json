@@ -6,6 +6,6 @@
     "moduleResolution": "node",
     "module": "ESNext"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "autometa.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

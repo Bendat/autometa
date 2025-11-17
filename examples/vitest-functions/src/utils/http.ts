@@ -1,7 +1,9 @@
-import type { HTTP } from "@autometa/http";
-import { HTTPError } from "@autometa/http";
+import { HTTP, HTTPError } from "@autometa/http";
 
 import type { BrewBuddyWorld } from "../world";
+
+export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
+export type HttpMethodInput = HttpMethod | Lowercase<HttpMethod>;
 
 export interface RequestOptions {
   readonly body?: unknown;
@@ -9,28 +11,36 @@ export interface RequestOptions {
   readonly query?: Record<string, unknown>;
 }
 
-export async function performRequest(world: BrewBuddyWorld, method: string, path: string, options: RequestOptions = {}): Promise<void> {
-  const segments = normalisePath(path);
-  let client = world.http;
+export class BrewBuddyApp {
+  readonly http: HTTP;
 
-  if (segments.length > 0) {
-    client = client.route(...segments);
+  constructor(http: HTTP, baseUrl: string) {
+    this.http = http
+      .url(baseUrl)
+      .sharedHeader("accept", "application/json")
+      .sharedAllowPlainText(true);
   }
 
-  if (options.headers) {
-    client = client.headers(options.headers);
-  }
+  request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
+    const segments = normalisePath(path);
+    const client = this.http
+      .route(...segments)
+      .headers(options.headers ?? {})
+      .params(options.query ?? {})
+      .data(options.body);
 
-  if (options.query) {
-    client = client.params(options.query);
+    return dispatch(client, method);
   }
+}
 
-  if (options.body !== undefined) {
-    client = client.data(options.body);
-  }
-
+export async function performRequest(
+  world: BrewBuddyWorld,
+  method: HttpMethodInput,
+  path: string,
+  options: RequestOptions = {}
+): Promise<void> {
   try {
-    const response = await dispatch(client, method);
+    const response = await world.app.request(method, path, options);
     world.lastResponse = response;
     world.lastResponseBody = response.data;
     world.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
@@ -44,7 +54,7 @@ export async function performRequest(world: BrewBuddyWorld, method: string, path
   }
 }
 
-async function dispatch(client: HTTP, method: string) {
+async function dispatch(client: HTTP, method: HttpMethodInput) {
   switch (method.toLowerCase()) {
     case "get":
       return client.get();

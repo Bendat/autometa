@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "type-check": "tsc --project tsconfig.json --noEmit"
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "features": "pnpm exec autometa run"
   },
   "dependencies": {
     "@autometa/app": "workspace:*",

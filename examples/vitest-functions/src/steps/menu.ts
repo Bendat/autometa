@@ -1,146 +1,134 @@
 import { expect } from "vitest";
 
-import type { RunnerStepsSurface } from "@autometa/runner";
 import type { StepRuntimeHelpers } from "@autometa/executor";
 
+import { Given, Then, When } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
 import { rememberLastMenuItem, rememberMenuSnapshot, type BrewBuddyWorld } from "../world";
 import { performRequest } from "../utils/http";
 import { assertStatus } from "../utils/assertions";
 import { consumeHorizontalTable } from "../utils/tables";
+import {
+  type MenuExpectation,
+  type MenuRegion,
+} from "../utils/regions";
 
-const REGION_EXPECTATIONS: Record<string, { readonly expected: string; readonly seasonal: boolean }> = {
-  East: { expected: "Golden Latte", seasonal: true },
-  West: { expected: "Midnight Mocha", seasonal: true },
-  North: { expected: "Flat White", seasonal: false },
-  EU: { expected: "Citrus Cold Foam", seasonal: true },
-  APAC: { expected: "Espresso", seasonal: false },
-};
+When("I request the menu listing", async (world: BrewBuddyWorld) => {
+  await performRequest(world, "get", "/menu");
+  const items = extractMenuItems(world);
+  rememberMenuSnapshot(world, items);
+});
 
-export function registerMenuSteps(environment: RunnerStepsSurface<BrewBuddyWorld>): void {
-  environment.When("I request the menu listing", async (world: BrewBuddyWorld) => {
-    await performRequest(world, "get", "/menu");
-    const items = extractMenuItems(world);
-    rememberMenuSnapshot(world, items);
-  });
+Then("the menu should include the default drinks", (world: BrewBuddyWorld, runtime: StepRuntimeHelpers) => {
+  const rows = consumeHorizontalTable(runtime);
+  const items = ensureMenuItems(world);
+  for (const row of rows) {
+    const name = requireColumn(row, "name");
+    const price = Number(requireColumn(row, "price"));
+    const size = requireColumn(row, "size");
+    const item = findMenuItem(items, name);
+    expect(item.price).toBeCloseTo(price);
+    expect(item.size).toBe(size);
+  }
+});
 
-  environment.Then("the menu should include the default drinks", (world: BrewBuddyWorld, runtime: unknown) => {
-    const rows = consumeHorizontalTable(runtime as StepRuntimeHelpers);
+Given("I create a seasonal drink named {string}", async (world: BrewBuddyWorld, name: string, runtime: StepRuntimeHelpers) => {
+  const fields = consumeHorizontalTable(runtime);
+  const payload = buildMenuPayload(name, fields);
+  await performRequest(world, "post", "/menu", { body: payload });
+  assertStatus(world, 201);
+  const created = parseMenuItem(world);
+  rememberLastMenuItem(world, created);
+  world.scenario.createdItems.push(created.name);
+});
+
+Then(
+  "the menu should include an item named {string} with price {float} and size {string}",
+  (world: BrewBuddyWorld, name: string, price: number, size: string) => {
     const items = ensureMenuItems(world);
-    for (const row of rows) {
-      const name = requireColumn(row, "name");
-      const price = Number(requireColumn(row, "price"));
-      const size = requireColumn(row, "size");
-      const item = findMenuItem(items, name);
-      expect(item.price).toBeCloseTo(price);
-      expect(item.size).toBe(size);
-    }
-  });
-
-  environment.Given(/I create a seasonal drink named "([^"]+)"/, async (world: BrewBuddyWorld, name: unknown, runtime: unknown) => {
-    const fields = consumeHorizontalTable(runtime as StepRuntimeHelpers);
-    const payload = buildMenuPayload(String(name), fields);
-    await performRequest(world, "post", "/menu", { body: payload });
-    assertStatus(world, 201);
-    const created = parseMenuItem(world);
-    rememberLastMenuItem(world, created);
-    world.scenario.createdItems.push(created.name);
-  });
-
-  environment.Then(
-    /^the menu should include an item named "([^"]+)" with price ([\d.]+) and size "([^"]+)"$/,
-    (world: BrewBuddyWorld, name: unknown, price: unknown, size: unknown) => {
-      const items = ensureMenuItems(world);
-      const item = findMenuItem(items, String(name));
-      expect(item.price).toBeCloseTo(Number(price));
-      expect(item.size).toBe(String(size));
-      rememberLastMenuItem(world, item);
-    }
-  );
-
-  environment.Then("the seasonal flag should be set to true", (world: BrewBuddyWorld) => {
-    expect(world.scenario.lastMenuItem, "No menu item stored for assertion").toBeDefined();
-    expect(world.scenario.lastMenuItem?.seasonal).toBe(true);
-  });
-
-  environment.Given(/a menu item named "([^"]+)" exists for season "([^"]+)"/, async (world: BrewBuddyWorld, name: unknown, season: unknown) => {
-    const payload = {
-      name: String(name),
-      price: 6,
-      size: "12oz",
-      season: String(season),
-      description: `${String(name)} seasonal special`,
-    } satisfies Partial<MenuItem> & { name: string; price: number; size: string; season: string };
-    await performRequest(world, "post", "/menu", { body: payload });
-    assertStatus(world, 201);
-  });
-
-  environment.When(/I retire the drink named "([^"]+)"/, async (world: BrewBuddyWorld, name: unknown) => {
-    await performRequest(world, "delete", `/menu/${encodeURIComponent(String(name))}`);
-    assertStatus(world, 204);
-  });
-
-  environment.Then(/the menu should not include "([^"]+)"/, async (world: BrewBuddyWorld, name: unknown) => {
-    await performRequest(world, "get", "/menu");
-    const items = extractMenuItems(world);
-    expect(items.some((item) => item.name.toLowerCase() === String(name).toLowerCase())).toBe(false);
-  });
-
-  environment.Given("the following menu price changes are pending", (world: BrewBuddyWorld, runtime: unknown) => {
-    const rows = consumeHorizontalTable(runtime as StepRuntimeHelpers);
-    world.scenario.priceUpdates = rows.map((row) => {
-      const name = requireColumn(row, "name");
-      const price = Number(requireColumn(row, "price"));
-      return { name, price } as const;
-    });
-  });
-
-  environment.When("I apply the bulk price update", async (world: BrewBuddyWorld) => {
-    const updates = world.scenario.priceUpdates ?? [];
-    await performRequest(world, "patch", "/menu/prices", { body: { updates } });
-    assertStatus(world, 200);
-    const updated = extractMenuItems(world);
-    rememberMenuSnapshot(world, updated);
-  });
-
-  environment.Then("each price change should be reflected in the latest menu", (world: BrewBuddyWorld) => {
-    const updates = world.scenario.priceUpdates ?? [];
-    const items = ensureMenuItems(world);
-    for (const update of updates) {
-      const item = findMenuItem(items, update.name);
-      expect(item.price).toBeCloseTo(update.price);
-    }
-  });
-
-  environment.Given(/the seasonal schedule for "([^"]+)" is configured/, (world: BrewBuddyWorld, region: unknown) => {
-    world.scenario.region = String(region);
-  });
-
-  environment.When(/I request the menu listing for "([^"]+)"/, async (world: BrewBuddyWorld, region: unknown) => {
-    world.scenario.region = String(region);
-    await performRequest(world, "get", "/menu");
-    const items = extractMenuItems(world);
-    rememberMenuSnapshot(world, items);
-  });
-
-  environment.Then(/the regional menu should include "([^"]+)"/, (world: BrewBuddyWorld, expected: unknown) => {
-    const region = world.scenario.region ?? "";
-    const expectation = REGION_EXPECTATIONS[region];
-    if (!expectation) {
-      throw new Error(`No regional expectations registered for ${region}`);
-    }
-    expect(String(expected)).toBe(expectation.expected);
-    const items = ensureMenuItems(world);
-    const item = findMenuItem(items, expectation.expected);
+    const item = findMenuItem(items, name);
+    expect(item.price).toBeCloseTo(price);
+    expect(item.size).toBe(size);
     rememberLastMenuItem(world, item);
-  });
+  }
+);
 
-  environment.Then(/the seasonal flag should reflect "([^"]+)"/, (world: BrewBuddyWorld, expected: unknown) => {
-    const item = world.scenario.lastMenuItem;
-    expect(item, "No menu item stored for seasonal assertion").toBeDefined();
-    expect(item?.seasonal).toBe(String(expected).toLowerCase() === "true");
+Then("the seasonal flag should be set to true", (world: BrewBuddyWorld) => {
+  expect(world.scenario.lastMenuItem, "No menu item stored for assertion").toBeDefined();
+  expect(world.scenario.lastMenuItem?.seasonal).toBe(true);
+});
+
+Given("a menu item named {string} exists for season {string}", async (world: BrewBuddyWorld, name: string, season: string) => {
+  const payload = {
+    name,
+    price: 6,
+    size: "12oz",
+    season,
+    description: `${name} seasonal special`,
+  } satisfies Partial<MenuItem> & { name: string; price: number; size: string; season: string };
+  await performRequest(world, "post", "/menu", { body: payload });
+  assertStatus(world, 201);
+});
+
+When("I retire the drink named {string}", async (world: BrewBuddyWorld, name: string) => {
+  await performRequest(world, "delete", `/menu/${encodeURIComponent(name)}`);
+  assertStatus(world, 204);
+});
+
+Then("the menu should not include {string}", async (world: BrewBuddyWorld, name: string) => {
+  await performRequest(world, "get", "/menu");
+  const items = extractMenuItems(world);
+  expect(items.some((item) => item.name.toLowerCase() === name.toLowerCase())).toBe(false);
+});
+
+Given("the following menu price changes are pending", (world: BrewBuddyWorld, runtime: StepRuntimeHelpers) => {
+  const rows = consumeHorizontalTable(runtime);
+  world.scenario.priceUpdates = rows.map((row) => {
+    const name = requireColumn(row, "name");
+    const price = Number(requireColumn(row, "price"));
+    return { name, price } as const;
   });
-}
+});
+
+When("I apply the bulk price update", async (world: BrewBuddyWorld) => {
+  const updates = world.scenario.priceUpdates ?? [];
+  await performRequest(world, "patch", "/menu/prices", { body: { updates } });
+  assertStatus(world, 200);
+  const updated = extractMenuItems(world);
+  rememberMenuSnapshot(world, updated);
+});
+
+Then("each price change should be reflected in the latest menu", (world: BrewBuddyWorld) => {
+  const updates = world.scenario.priceUpdates ?? [];
+  const items = ensureMenuItems(world);
+  for (const update of updates) {
+    const item = findMenuItem(items, update.name);
+    expect(item.price).toBeCloseTo(update.price);
+  }
+});
+
+Given("the seasonal schedule for \"{menuRegion}\" is configured", (world: BrewBuddyWorld, region: MenuRegion) => {
+  world.scenario.region = region;
+});
+
+When("I request the menu listing for \"{menuRegion}\"", async (world: BrewBuddyWorld, region: MenuRegion) => {
+  world.scenario.region = region;
+  await performRequest(world, "get", "/menu");
+  const items = extractMenuItems(world);
+  rememberMenuSnapshot(world, items);
+});
+
+Then("the regional menu should include \"{menuSelection}\"", (world: BrewBuddyWorld, expectation: MenuExpectation) => {
+  const snapshot = ensureMenuItems(world);
+  const item = findMenuItem(snapshot, expectation.beverage);
+  rememberLastMenuItem(world, item);
+});
+
+Then("the seasonal flag should reflect \"{menuSeasonal}\"", (world: BrewBuddyWorld, expected: boolean) => {
+  const item = world.scenario.lastMenuItem;
+  expect(item, "No menu item stored for seasonal assertion").toBeDefined();
+  expect(item?.seasonal).toBe(expected);
+});
 
 function extractMenuItems(world: BrewBuddyWorld): MenuItem[] {
   const body = world.lastResponseBody as { items?: MenuItem[] } | undefined;
