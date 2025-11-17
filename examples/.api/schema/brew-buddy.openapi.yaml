@@ -1,0 +1,549 @@
+openapi: 3.1.0
+info:
+  title: Brew Buddy API
+  version: 0.1.0
+  description: |
+    Reference service powering Autometa living documentation. The API manages menu items,
+    recipes, orders, inventory, loyalty accounts, and tasting notes for the Brew Buddy coffee bar.
+servers:
+  - url: http://localhost:4000
+    description: Local development server
+  - url: https://brew-buddy.example.com
+    description: Reference deployment used in documentation
+
+components:
+  schemas:
+    MenuItem:
+      type: object
+      required: [name, price, size, seasonal]
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+          format: float
+        size:
+          type: string
+          description: Default serving size label (e.g. 12oz)
+        seasonal:
+          type: boolean
+        description:
+          type: string
+          nullable: true
+        season:
+          type: string
+          nullable: true
+    Recipe:
+      type: object
+      required: [name, base, additions, season, slug]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+          description: URL-safe identifier derived from the recipe name
+        base:
+          type: string
+        additions:
+          type: array
+          items:
+            type: string
+        season:
+          type: string
+          nullable: true
+        isSeasonal:
+          type: boolean
+        tastingNotes:
+          type: string
+          nullable: true
+    RecipeInput:
+      type: object
+      required: [name, base]
+      properties:
+        name:
+          type: string
+        base:
+          type: string
+        additions:
+          type: array
+          items:
+            type: string
+          default: []
+        season:
+          type: string
+          nullable: true
+        tastingNotes:
+          type: string
+          nullable: true
+    Order:
+      type: object
+      required: [id, ticket, status, items, total]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticket:
+          type: string
+        status:
+          type: string
+          enum: [queued, brewing, ready, paid, cancelled]
+        items:
+          type: array
+          items:
+            type: object
+            required: [name, size]
+            properties:
+              name: { type: string }
+              size: { type: string }
+              shots: { type: integer, minimum: 0 }
+              milk: { type: string, nullable: true }
+              sweetener: { type: string, nullable: true }
+        total:
+          type: number
+          format: float
+        loyaltyEmail:
+          type: string
+          format: email
+          nullable: true
+        pickupCode:
+          type: string
+          nullable: true
+    OrderInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              size: { type: string, nullable: true }
+              shots: { type: integer, nullable: true }
+              milk: { type: string, nullable: true }
+              sweetener: { type: string, nullable: true }
+        payment:
+          type: object
+          properties:
+            method: { type: string, enum: [tap, chip, cash, mobile] }
+            amount: { type: number, format: float }
+            currency: { type: string, default: USD }
+        loyaltyEmail:
+          type: string
+          format: email
+          nullable: true
+    InventoryItem:
+      type: object
+      required: [item, quantity]
+      properties:
+        item:
+          type: string
+        quantity:
+          type: integer
+          minimum: 0
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        reason:
+          type: string
+          nullable: true
+        details:
+          type: object
+          additionalProperties: true
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            details:
+              type: object
+              additionalProperties:
+                type: string
+    LoyaltyAccount:
+      type: object
+      required: [email, points]
+      properties:
+        email:
+          type: string
+          format: email
+        points:
+          type: integer
+          minimum: 0
+
+  parameters:
+    RecipeSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    InventoryItemKey:
+      name: item
+      in: path
+      required: true
+      schema:
+        type: string
+    OrderId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+paths:
+  /menu:
+    get:
+      summary: List menu items
+      tags: [Menu]
+      responses:
+        '200':
+          description: Menu listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MenuItem'
+    post:
+      summary: Create a menu item
+      tags: [Menu]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, price, size]
+              properties:
+                name: { type: string }
+                price: { type: number, format: float }
+                size: { type: string }
+                season: { type: string, nullable: true }
+                seasonal: { type: boolean, default: false }
+                description: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Item created
+          headers:
+            location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /menu/{drink}:
+    delete:
+      summary: Retire a menu item
+      tags: [Menu]
+      parameters:
+        - name: drink
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /menu/prices:
+    patch:
+      summary: Bulk update menu pricing
+      tags: [Menu]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [updates]
+              properties:
+                updates:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, price]
+                    properties:
+                      name: { type: string }
+                      price: { type: number }
+      responses:
+        '200':
+          description: Prices updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MenuItem'
+  /recipes:
+    get:
+      summary: List recipes
+      tags: [Recipes]
+      responses:
+        '200':
+          description: Recipes listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recipes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Recipe'
+    post:
+      summary: Create a recipe
+      tags: [Recipes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '201':
+          description: Recipe created
+          headers:
+            location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /recipes/{slug}:
+    parameters:
+      - $ref: '#/components/parameters/RecipeSlug'
+    get:
+      summary: Retrieve a recipe
+      tags: [Recipes]
+      responses:
+        '200':
+          description: Recipe found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update fields on a recipe
+      tags: [Recipes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Recipe updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':
+          description: Unsupported property
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a recipe
+      tags: [Recipes]
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /orders:
+    post:
+      summary: Create an order
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+      responses:
+        '201':
+          description: Order created
+          headers:
+            location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '409':
+          description: Inventory shortage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /orders/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    get:
+      summary: Retrieve an order
+      tags: [Orders]
+      responses:
+        '200':
+          description: Order found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /orders/stream:
+    get:
+      summary: Stream order status events
+      tags: [Orders]
+      responses:
+        '200':
+          description: Server-sent events stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '500':
+          description: Stream failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /inventory/{item}:
+    parameters:
+      - $ref: '#/components/parameters/InventoryItemKey'
+    patch:
+      summary: Update inventory quantity
+      tags: [Inventory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Inventory updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Clear inventory item
+      tags: [Inventory]
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /loyalty/{email}:
+    get:
+      summary: Retrieve loyalty account
+      tags: [Loyalty]
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update loyalty points
+      tags: [Loyalty]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [points]
+              properties:
+                points: { type: integer }
+      responses:
+        '200':
+          description: Account updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
