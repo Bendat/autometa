@@ -31,6 +31,14 @@
     "default": "./dist/esm/index.js",
     "types": "./dist/index.d.ts"
   },
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "@autometa/errors": "workspace:*",
+    "@autometa/executor": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/scopes": "workspace:*",
+    "@autometa/test-builder": "workspace:*"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^18.11.18",

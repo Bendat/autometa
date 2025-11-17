@@ -1,0 +1,91 @@
+import type { HTTP } from "@autometa/http";
+import { HTTPError } from "@autometa/http";
+
+import type { BrewBuddyWorld } from "../world";
+
+export interface RequestOptions {
+  readonly body?: unknown;
+  readonly headers?: Record<string, string>;
+  readonly query?: Record<string, unknown>;
+}
+
+export async function performRequest(world: BrewBuddyWorld, method: string, path: string, options: RequestOptions = {}): Promise<void> {
+  const segments = normalisePath(path);
+  let client = world.http;
+
+  if (segments.length > 0) {
+    client = client.route(...segments);
+  }
+
+  if (options.headers) {
+    client = client.headers(options.headers);
+  }
+
+  if (options.query) {
+    client = client.params(options.query);
+  }
+
+  if (options.body !== undefined) {
+    client = client.data(options.body);
+  }
+
+  try {
+    const response = await dispatch(client, method);
+    world.lastResponse = response;
+    world.lastResponseBody = response.data;
+    world.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
+    delete world.lastError;
+  } catch (error) {
+    delete world.lastResponse;
+    delete world.lastResponseBody;
+    delete world.lastResponseHeaders;
+    world.lastError = error;
+    throw error;
+  }
+}
+
+async function dispatch(client: HTTP, method: string) {
+  switch (method.toLowerCase()) {
+    case "get":
+      return client.get();
+    case "post":
+      return client.post();
+    case "put":
+      return client.put();
+    case "patch":
+      return client.patch();
+    case "delete":
+      return client.delete();
+    default:
+      throw new Error(`Unsupported HTTP method: ${method}`);
+  }
+}
+
+export function extractErrorStatus(world: BrewBuddyWorld): number | undefined {
+  const error = world.lastError;
+  if (error instanceof HTTPError && error.response) {
+    const status = error.response.status;
+    world.lastResponse = error.response;
+    world.lastResponseBody = error.response.data;
+    world.lastResponseHeaders = normalizeHeaders(error.response.headers ?? {});
+    return status;
+  }
+  return undefined;
+}
+
+function normalisePath(path: string): string[] {
+  const trimmed = path.trim();
+  if (!trimmed) {
+    return [];
+  }
+  const url = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
+  return url.split("/").filter(Boolean);
+}
+
+function normalizeHeaders(headers: Record<string, string>): Record<string, string> {
+  const normalised: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    normalised[key.toLowerCase()] = String(value);
+  }
+  return normalised;
+}
