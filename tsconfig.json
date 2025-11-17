@@ -32,9 +32,6 @@
       "path": "packages/injection/tsconfig.types.json"
     },
     {
-      "path": "packages/http/tsconfig.types.json"
-    },
-    {
       "path": "packages/gherkin/tsconfig.types.json"
     },
     {
@@ -42,6 +39,9 @@
     },
     {
       "path": "packages/file-proxies/tsconfig.types.json"
+    },
+    {
+      "path": "packages/http/tsconfig.types.json"
     },
     {
       "path": "packages/executor/tsconfig.types.json"
@@ -56,10 +56,10 @@
       "path": "packages/datetime/tsconfig.types.json"
     },
     {
-      "path": "packages/cucumber-expressions/tsconfig.types.json"
+      "path": "packages/dto-builder/tsconfig.types.json"
     },
     {
-      "path": "packages/dto-builder/tsconfig.types.json"
+      "path": "packages/cucumber-expressions/tsconfig.types.json"
     },
     {
       "path": "packages/coordinator/tsconfig.types.json"
@@ -68,10 +68,13 @@
       "path": "packages/config/tsconfig.types.json"
     },
     {
-      "path": "packages/bind-decorator/tsconfig.types.json"
+      "path": "packages/cli/tsconfig.types.json"
     },
     {
       "path": "packages/asserters/tsconfig.types.json"
+    },
+    {
+      "path": "packages/bind-decorator/tsconfig.types.json"
     },
     {
       "path": "packages/app/tsconfig.types.json"
