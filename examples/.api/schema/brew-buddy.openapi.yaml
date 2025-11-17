@@ -108,6 +108,18 @@ components:
         pickupCode:
           type: string
           nullable: true
+        history:
+          type: array
+          items:
+            type: object
+            required: [status, at]
+            properties:
+              status:
+                type: string
+                enum: [queued, brewing, ready, paid, cancelled]
+              at:
+                type: string
+                format: date-time
     OrderInput:
       type: object
       required: [items]
@@ -195,6 +207,12 @@ components:
       schema:
         type: string
         format: uuid
+    OrderTicket:
+      name: ticket
+      in: path
+      required: true
+      schema:
+        type: string
 
 paths:
   /menu:
@@ -395,6 +413,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /orders:
+    get:
+      summary: List orders
+      tags: [Orders]
+      responses:
+        '200':
+          description: Orders listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
     post:
       summary: Create an order
       tags: [Orders]
@@ -457,6 +490,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /inventory:
+    get:
+      summary: List inventory items
+      tags: [Inventory]
+      responses:
+        '200':
+          description: Inventory listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inventory:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventoryItem'
   /inventory/{item}:
     parameters:
       - $ref: '#/components/parameters/InventoryItemKey'
@@ -517,6 +566,118 @@ paths:
                 $ref: '#/components/schemas/LoyaltyAccount'
         '404':
           description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/reset:
+    post:
+      summary: Reset in-memory data stores
+      tags: [Admin]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                    enum: [menu, recipes, inventory, loyalty, orders]
+      responses:
+        '204':
+          description: State reset complete
+  /admin/orders/{ticket}/status-sequence:
+    parameters:
+      - $ref: '#/components/parameters/OrderTicket'
+    post:
+      summary: Apply a sequence of statuses to an order
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [statuses]
+              properties:
+                statuses:
+                  type: array
+                  items:
+                    type: string
+                    enum: [queued, brewing, ready, paid, cancelled]
+      responses:
+        '200':
+          description: Statuses applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/orders/{ticket}/complete:
+    parameters:
+      - $ref: '#/components/parameters/OrderTicket'
+    post:
+      summary: Mark an order as completed and broadcast an event
+      tags: [Admin]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickupCode:
+                  type: string
+      responses:
+        '200':
+          description: Order marked complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/orders/{ticket}/events:
+    parameters:
+      - $ref: '#/components/parameters/OrderTicket'
+    post:
+      summary: Emit a custom order event to stream subscribers
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event]
+              properties:
+                event:
+                  type: string
+                data:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '204':
+          description: Event dispatched
+        '404':
+          description: Order not found
           content:
             application/json:
               schema:
