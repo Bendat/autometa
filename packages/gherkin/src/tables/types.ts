@@ -7,6 +7,28 @@ export interface ResolveOptions {
   readonly coerce?: boolean;
 }
 
+export type TableRecord = Record<string, TableValue>;
+
+export interface TableRowContext {
+  readonly shape: TableShape;
+  readonly rowIndex: number;
+}
+
+export type TableRowMapper<T> = (record: TableRecord, context: TableRowContext) => T;
+
+export type TableInstanceFactory<T> =
+  | (new () => T)
+  | (() => T)
+  | ((record: TableRecord, context: TableRowContext) => T);
+
+export interface TableInstanceOptions<T> {
+  readonly headerMap?: Readonly<Record<string, Extract<keyof T, string>>>;
+  readonly normalizeHeader?: (header: string) => Extract<keyof T, string> | undefined;
+  readonly strict?: boolean;
+  readonly assign?: boolean;
+  readonly apply?: (instance: T, record: TableRecord, context: TableRowContext) => void;
+}
+
 export interface CellContext {
   readonly shape: TableShape;
   readonly rowIndex: number;

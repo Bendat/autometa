@@ -15,7 +15,7 @@ export function coercePrimitive(value: string): TablePrimitive {
   if (trimmed === "false") {
     return false;
   }
-  return value;
+  return trimmed;
 }
 
 export function applyTransformers(

@@ -11,6 +11,7 @@ Feature: Share recipe knowledge through data tables
       | Citrus Coldie | cold brew| orange, tonic     |
     Then each recipe should exist in the recipe catalog
     And the recipe "Honey Latte" should list "honey" as an addition
+    And I log the current step metadata
 
   Scenario: Use a doc string to capture tasting notes
     When I attach tasting notes for "Flat White"

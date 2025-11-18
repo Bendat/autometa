@@ -1,5 +1,3 @@
-import { createStepRuntime } from "@autometa/executor";
-
 import { Then, When } from "../step-definitions";
 import { performRequest } from "../utils/http";
 import {
@@ -10,13 +8,11 @@ import {
   assertStatus,
   toPathExpectations,
 } from "../utils/assertions";
-import { consumeHorizontalTable } from "../utils/tables";
 
 When(
   "I send a {httpMethod} request to {string}",
   async (method, route, world) => {
-    const runtime = createStepRuntime(world);
-    const payload = parseOptionalDocstring(runtime.consumeDocstring());
+    const payload = parseOptionalDocstring(world.runtime.consumeDocstring());
     await performRequest(
       world,
       method,
@@ -51,9 +47,8 @@ Then(
 Then(
   "the response json should contain",
   (world) => {
-    const runtime = createStepRuntime(world);
-    const rows = consumeHorizontalTable(runtime);
-    assertJsonContains(world, toPathExpectations(rows));
+    const table = world.runtime.requireTable("horizontal");
+    assertJsonContains(world, toPathExpectations(table.records()));
   }
 );
 

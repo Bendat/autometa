@@ -1,11 +1,11 @@
 import { HTTP, type HTTPResponse } from "@autometa/http";
+import type { StepRuntimeHelpers } from "@autometa/executor";
 import type { SimpleFeature } from "@autometa/gherkin";
 import type {
   InventoryItem,
   LoyaltyAccount,
   MenuItem,
   Order,
-  Recipe,
 } from "../../.api/src/types/domain.js";
 import type { SseSession } from "./utils/sse.js";
 import type { MenuRegion } from "./utils/regions";
@@ -27,6 +27,7 @@ export interface BrewBuddyWorldBase {
   };
   readonly scenario: ScenarioState;
   readonly features: SimpleFeature[];
+  readonly runtime: StepRuntimeHelpers;
 }
 
 export type BrewBuddyWorld = BrewBuddyWorldBase & { readonly app: BrewBuddyApp };
@@ -54,90 +55,29 @@ export interface TagRegistryEntry {
   readonly description: string;
 }
 
-export function createWorld(): BrewBuddyWorldBase {
-  const baseUrl = process.env.BREW_BUDDY_BASE_URL ?? DEFAULT_API_BASE_URL;
-  const http = HTTP.create();
+const DEFAULT_SCENARIO_STATE: ScenarioState = {
+  createdItems: [],
+  streamWarnings: [],
+  streamErrors: [],
+};
 
-  const scenario: ScenarioState = {
-    createdItems: [],
-    streamWarnings: [],
-    streamErrors: [],
-  };
-
-  return {
-    baseUrl,
-    http,
-    aliases: {
-      tickets: new Map(),
-      orders: new Map(),
-      recipes: new Map(),
-    },
-    scenario,
-    features: [],
-  };
-}
+export const brewBuddyWorldDefaults: Omit<BrewBuddyWorldBase, "runtime"> = {
+  baseUrl: process.env.BREW_BUDDY_BASE_URL ?? DEFAULT_API_BASE_URL,
+  http: HTTP.create(),
+  aliases: {
+    tickets: new Map(),
+    orders: new Map(),
+    recipes: new Map(),
+  },
+  scenario: DEFAULT_SCENARIO_STATE,
+  features: [],
+};
 
 export function disposeStream(world: BrewBuddyWorld): void {
   if (world.scenario.stream) {
     world.scenario.stream.close();
     delete world.scenario.stream;
   }
-}
-
-export function rememberMenuSnapshot(world: BrewBuddyWorld, items: MenuItem[]): void {
-  world.scenario.menuSnapshot = items;
-}
-
-export function rememberLastMenuItem(world: BrewBuddyWorld, item: MenuItem): void {
-  world.scenario.lastMenuItem = item;
-}
-
-export function rememberOrder(world: BrewBuddyWorld, order: Order): void {
-  world.scenario.order = order;
-  world.aliases.orders.set(order.ticket, order);
-}
-
-export function setTicketAlias(world: BrewBuddyWorld, alias: string, ticket: string): void {
-  world.aliases.tickets.set(alias, ticket);
-}
-
-export function resolveTicket(world: BrewBuddyWorld, reference: string): string {
-  return world.aliases.tickets.get(reference) ?? reference;
-}
-
-export function rememberLoyalty(world: BrewBuddyWorld, account: LoyaltyAccount): void {
-  world.scenario.loyaltyAccount = account;
-}
-
-export function rememberInventory(world: BrewBuddyWorld, inventory: InventoryItem): void {
-  world.scenario.lastInventory = inventory;
-}
-
-export function rememberRecipeSlug(world: BrewBuddyWorld, name: string, slug: string): void {
-  world.aliases.recipes.set(name.toLowerCase(), slug);
-}
-
-export function resolveRecipeSlug(world: BrewBuddyWorld, name: string): string {
-  return world.aliases.recipes.get(name.toLowerCase()) ?? name;
-}
-
-export function rememberRecipes(world: BrewBuddyWorld, recipes: Recipe[]): void {
-  for (const recipe of recipes) {
-    rememberRecipeSlug(world, recipe.name, recipe.slug);
-  }
-}
-
-export function rememberBrewRatio(world: BrewBuddyWorld, ratio: string): void {
-  world.scenario.brewRatio = ratio;
-}
-
-export function rememberTagRegistry(world: BrewBuddyWorld, entries: TagRegistryEntry[]): void {
-  world.scenario.tagRegistry = entries;
-}
-
-export function rememberTagExpression(world: BrewBuddyWorld, expression: string, selected: string[]): void {
-  world.scenario.tagExpression = expression;
-  world.scenario.selectedScenarioNames = selected;
 }
 
 export function attachStream(world: BrewBuddyWorld, session: SseSession): void {

@@ -11,15 +11,21 @@ import {
   type VerticalTable,
   type VerticalTableOptions,
 } from "@autometa/gherkin";
+import type { SourceRef, StepExpression, StepKeyword } from "@autometa/scopes";
 
 export type RawTable = readonly (readonly string[])[];
 
 const DATA_TABLE_SYMBOL: unique symbol = Symbol("autometa:runner:step:data-table");
 const DOCSTRING_SYMBOL: unique symbol = Symbol("autometa:runner:step:docstring");
+const STEP_RUNTIME_SYMBOL: unique symbol = Symbol("autometa:runner:step:runtime");
+const STEP_METADATA_SYMBOL: unique symbol = Symbol("autometa:runner:step:metadata");
 
 type TableCarrier = Record<never, never> & {
   [DATA_TABLE_SYMBOL]?: RawTable;
   [DOCSTRING_SYMBOL]?: string | undefined;
+  [STEP_RUNTIME_SYMBOL]?: StepRuntimeHelpers;
+  [STEP_METADATA_SYMBOL]?: StepRuntimeMetadata;
+  runtime?: StepRuntimeHelpers;
 };
 
 type TableConfig = Record<TableShape, boolean>;
@@ -121,6 +127,87 @@ export function clearStepDocstring(world: unknown): void {
   Reflect.deleteProperty(carrier, DOCSTRING_SYMBOL);
 }
 
+export interface StepRuntimeStepMetadata {
+  readonly keyword?: string;
+  readonly text?: string;
+  readonly source?: SourceRef;
+}
+
+export interface StepRuntimeFeatureMetadata {
+  readonly name: string;
+  readonly keyword: string;
+  readonly uri?: string;
+  readonly source?: SourceRef;
+}
+
+export interface StepRuntimeScenarioMetadata {
+  readonly name: string;
+  readonly keyword: string;
+  readonly source?: SourceRef;
+}
+
+export interface StepRuntimeOutlineMetadata {
+  readonly name: string;
+  readonly keyword: string;
+  readonly source?: SourceRef;
+}
+
+export interface StepRuntimeExampleMetadata {
+  readonly name?: string;
+  readonly index: number;
+  readonly values: Readonly<Record<string, string>>;
+  readonly source?: SourceRef;
+}
+
+export interface StepRuntimeDefinitionMetadata {
+  readonly keyword: StepKeyword;
+  readonly expression: StepExpression;
+  readonly source?: SourceRef;
+}
+
+export interface StepRuntimeMetadata {
+  readonly feature?: StepRuntimeFeatureMetadata;
+  readonly scenario?: StepRuntimeScenarioMetadata;
+  readonly outline?: StepRuntimeOutlineMetadata;
+  readonly example?: StepRuntimeExampleMetadata;
+  readonly step?: StepRuntimeStepMetadata;
+  readonly definition?: StepRuntimeDefinitionMetadata;
+}
+
+export function setStepMetadata(world: unknown, metadata?: StepRuntimeMetadata): void {
+  const carrier = withCarrier(world);
+  if (!carrier) {
+    return;
+  }
+  if (!metadata) {
+    Reflect.deleteProperty(carrier, STEP_METADATA_SYMBOL);
+    return;
+  }
+  if (Object.prototype.hasOwnProperty.call(carrier, STEP_METADATA_SYMBOL)) {
+    carrier[STEP_METADATA_SYMBOL] = metadata;
+  } else {
+    Object.defineProperty(carrier, STEP_METADATA_SYMBOL, {
+      value: metadata,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  }
+}
+
+export function clearStepMetadata(world: unknown): void {
+  const carrier = withCarrier(world);
+  if (!carrier) {
+    return;
+  }
+  Reflect.deleteProperty(carrier, STEP_METADATA_SYMBOL);
+}
+
+export function getStepMetadata(world: unknown): StepRuntimeMetadata | undefined {
+  const carrier = withCarrier(world);
+  return carrier?.[STEP_METADATA_SYMBOL];
+}
+
 export function getDocstring(world: unknown): string | undefined {
   const carrier = withCarrier(world);
   return carrier?.[DOCSTRING_SYMBOL];
@@ -129,6 +216,11 @@ export function getDocstring(world: unknown): string | undefined {
 export function getRawTable(world: unknown): RawTable | undefined {
   const carrier = withCarrier(world);
   return carrier?.[DATA_TABLE_SYMBOL];
+}
+
+export function getStepRuntimeFromWorld(world: unknown): StepRuntimeHelpers | undefined {
+  const carrier = withCarrier(world);
+  return carrier?.[STEP_RUNTIME_SYMBOL];
 }
 
 function resolveCoerceOverride(
@@ -245,6 +337,7 @@ export function consumeDocstring(world: unknown): string | undefined {
 export interface StepRuntimeHelpers {
   readonly hasTable: boolean;
   readonly hasDocstring: boolean;
+  readonly currentStep: StepRuntimeMetadata | undefined;
   getTable(
     shape: "headerless",
     options?: HeaderlessTableOptions
@@ -293,9 +386,34 @@ export interface StepRuntimeHelpers {
       | VerticalTableOptions
       | MatrixTableOptions
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined;
+  requireTable(
+    shape: "headerless",
+    options?: HeaderlessTableOptions
+  ): HeaderlessTable;
+  requireTable(
+    shape: "horizontal",
+    options?: HorizontalTableOptions
+  ): HorizontalTable;
+  requireTable(
+    shape: "vertical",
+    options?: VerticalTableOptions
+  ): VerticalTable;
+  requireTable(
+    shape: "matrix",
+    options?: MatrixTableOptions
+  ): MatrixTable;
+  requireTable(
+    shape: TableShape,
+    options?:
+      | HeaderlessTableOptions
+      | HorizontalTableOptions
+      | VerticalTableOptions
+      | MatrixTableOptions
+  ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable;
   getRawTable(): RawTable | undefined;
   getDocstring(): string | undefined;
   consumeDocstring(): string | undefined;
+  getStepMetadata(): StepRuntimeMetadata | undefined;
 }
 
 function bindGetTable(world: unknown) {
@@ -423,13 +541,49 @@ function bindConsumeTable(world: unknown) {
   return consume;
 }
 
+function cacheRuntime(world: unknown, runtime: StepRuntimeHelpers): void {
+  const carrier = withCarrier(world);
+  if (!carrier) {
+    return;
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(carrier, STEP_RUNTIME_SYMBOL)) {
+    Object.defineProperty(carrier, STEP_RUNTIME_SYMBOL, {
+      value: runtime,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  } else {
+    carrier[STEP_RUNTIME_SYMBOL] = runtime;
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(carrier, "runtime")) {
+    Object.defineProperty(carrier, "runtime", {
+      get() {
+        return carrier[STEP_RUNTIME_SYMBOL];
+      },
+      enumerable: false,
+      configurable: true,
+    });
+  }
+}
+
 export function createStepRuntime(world: unknown): StepRuntimeHelpers {
+  const existing = getStepRuntimeFromWorld(world);
+  if (existing) {
+    return existing;
+  }
+
   const runtime: StepRuntimeHelpers = {
     get hasTable() {
       return getRawTable(world) !== undefined;
     },
     get hasDocstring() {
       return getDocstring(world) !== undefined;
+    },
+    get currentStep() {
+      return getStepMetadata(world);
     },
     getTable: bindGetTable(world),
     consumeTable: bindConsumeTable(world),
@@ -442,6 +596,24 @@ export function createStepRuntime(world: unknown): StepRuntimeHelpers {
     consumeDocstring() {
       return consumeDocstring(world);
     },
+    getStepMetadata() {
+      return getStepMetadata(world);
+    },
+    requireTable(
+      shape: TableShape,
+      options?:
+        | HeaderlessTableOptions
+        | HorizontalTableOptions
+        | VerticalTableOptions
+        | MatrixTableOptions
+    ) {
+      const table = consumeTable(world, shape, options as never);
+      if (!table) {
+        throw new RangeError(`No ${shape} data table is attached to the current step.`);
+      }
+      return table;
+    },
   };
+  cacheRuntime(world, runtime);
   return runtime;
 }

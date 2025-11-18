@@ -1,4 +1,5 @@
 import { applyTransformers } from "./coercion";
+import { mapRecordsToInstances, mapRecordsWithMapper } from "./record-mapper";
 import type {
   CellContext,
   HorizontalTableOptions,
@@ -6,6 +7,10 @@ import type {
   TableShape,
   TableTransformer,
   TableValue,
+  TableInstanceFactory,
+  TableInstanceOptions,
+  TableRecord,
+  TableRowMapper,
 } from "./types";
 
 const SHAPE: TableShape = "horizontal";
@@ -68,6 +73,31 @@ export class HorizontalTable {
     return this.rows.map((_, rowIndex) => this.getRow(rowIndex, options));
   }
 
+  records<T extends TableRecord = TableRecord>(options?: ResolveOptions): T[] {
+    return this.getRows(options) as T[];
+  }
+
+  mapRecords<T>(mapper: TableRowMapper<T>, options?: ResolveOptions): T[] {
+    const rows = this.getRows(options);
+    return mapRecordsWithMapper(rows, SHAPE, mapper);
+  }
+
+  asInstances<T>(
+    factory: TableInstanceFactory<T>,
+    options?: TableInstanceOptions<T> & { readonly resolve?: ResolveOptions }
+  ): T[] {
+    const { resolve, ...rest } = options ?? {};
+    const rows = this.getRows(resolve);
+    return mapRecordsToInstances(rows, SHAPE, factory, rest as TableInstanceOptions<T>);
+  }
+
+  toInstances<T>(
+    factory: TableInstanceFactory<T>,
+    options?: TableInstanceOptions<T> & { readonly resolve?: ResolveOptions }
+  ): T[] {
+    return this.asInstances(factory, options);
+  }
+
   getColumn(header: string, options?: ResolveOptions): TableValue[] {
     const columnIndex = this.headerMap.get(header);
     if (columnIndex === undefined) {
@@ -114,6 +144,12 @@ export class HorizontalTable {
 
   raw(): readonly (readonly string[])[] {
     return [this.headers, ...this.rows];
+  }
+
+  *[Symbol.iterator](): IterableIterator<TableRecord> {
+    for (const record of this.records()) {
+      yield record;
+    }
   }
 
   private resolve(

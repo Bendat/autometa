@@ -1,6 +1,7 @@
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { SimpleFeature } from "@autometa/gherkin";
 import { createContainer, type IContainer } from "@autometa/injection";
+import { createStepRuntime } from "@autometa/executor";
 import type {
 	CucumberExpressionTypeMap,
 	DefaultCucumberExpressionTypes,
@@ -81,11 +82,8 @@ export interface RunnerBuilder<
 		NextExpressionTypes
 	>;
 	withWorld<NextWorld>(
-		factory: WorldFactory<NextWorld>
+		defaults?: Partial<NextWorld>
 	): RunnerBuilder<NextWorld, ExpressionTypes>;
-	withWorld<Defaults extends Record<string, unknown>>(
-		defaults: Defaults
-	): RunnerBuilder<World & Defaults, ExpressionTypes>;
 	app<App>(
 		app: AppFactoryInput<World, App>
 	): RunnerBuilder<WorldWithApp<World, App>, ExpressionTypes>;
@@ -160,16 +158,16 @@ class RunnerBuilderImpl<
 	}
 
 	withWorld<NextWorld>(
-		value: WorldFactory<NextWorld> | NextWorld
+		defaults?: Partial<NextWorld>
 	): RunnerBuilder<NextWorld, ExpressionTypes> {
-		if (typeof value === "function") {
-			this.state.worldFactory = value as WorldFactory<unknown>;
+		if (defaults) {
+			const validated = ensureWorldDefaults(defaults);
+			this.state.worldFactory = createDefaultsWorldFactory(validated) as WorldFactory<unknown>;
 		} else {
-			const defaults = ensureWorldDefaults(value);
-			this.state.worldFactory = createDefaultsWorldFactory(defaults) as WorldFactory<unknown>;
+			this.state.worldFactory = async () => ({} as unknown);
 		}
 		invalidateCaches(this.state);
-		return new RunnerBuilderImpl<NextWorld, ExpressionTypes>(this.state);
+		return new RunnerBuilderImpl<NextWorld, ExpressionTypes>(this.state) as RunnerBuilder<NextWorld, ExpressionTypes>;
 	}
 
 	app<App>(
@@ -389,6 +387,7 @@ function composeWorldFactory<World>(
 		const asObject = ensureWorldObject(world);
 		attachFeatureRegistry(asObject, featureRegistry);
 		attachContainer(asObject, container);
+		attachRuntime(asObject);
 
 		if (appFactory) {
 			const resolvedAppFactory = appFactory as AppFactory<World, unknown>;
@@ -473,6 +472,19 @@ function attachContainer(world: Record<string, unknown>, container: IContainer):
 	if (!Reflect.has(world, "container")) {
 		Object.defineProperty(world, "container", descriptor);
 	}
+}
+
+function attachRuntime(world: Record<string, unknown>): void {
+	if (Reflect.has(world, "runtime")) {
+		return;
+	}
+	Object.defineProperty(world, "runtime", {
+		get() {
+			return createStepRuntime(this);
+		},
+		enumerable: false,
+		configurable: true,
+	});
 }
 
 function attachFeatureRegistry(

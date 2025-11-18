@@ -14,5 +14,11 @@ export type {
   MatrixCellTransformers,
   TableTransformer,
   TablePrimitive,
+  TableRecord,
+  TableRowContext,
+  TableRowMapper,
+  TableInstanceFactory,
+  TableInstanceOptions,
 } from "./types";
 export { DEFAULT_COERCE_BY_SHAPE } from "./types";
+export { defaultHeaderNormalizer } from "./record-mapper";

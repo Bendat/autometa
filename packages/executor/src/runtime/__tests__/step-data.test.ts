@@ -4,6 +4,7 @@ import {
   consumeDocstring,
   consumeTable,
   createStepRuntime,
+  type StepRuntimeHelpers,
   getDocstring,
   getRawTable,
   getTable,
@@ -14,6 +15,7 @@ import {
 
 interface WorldState {
   note?: string;
+  runtime?: StepRuntimeHelpers;
 }
 
 describe("step-data", () => {
@@ -89,14 +91,16 @@ describe("step-data", () => {
 
     const runtime = createStepRuntime(world);
 
+    expect(world.runtime).toBe(runtime);
     expect(runtime.hasTable).toBe(true);
     expect(runtime.hasDocstring).toBe(true);
 
     const table = runtime.getTable("horizontal");
     expect(table?.getRow(0)).toEqual({ id: 1, flag: true });
+    const consumed = runtime.requireTable("horizontal");
+    expect(consumed.getRow(0)).toEqual({ id: 1, flag: true });
     expect(runtime.getDocstring()).toBe("example docstring");
 
-    runtime.consumeTable("horizontal");
     expect(runtime.hasTable).toBe(false);
 
     runtime.consumeDocstring();

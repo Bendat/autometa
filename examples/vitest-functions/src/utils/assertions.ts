@@ -1,6 +1,7 @@
 import { expect } from "vitest";
 
 import type { HTTPResponse } from "@autometa/http";
+import type { TableRecord } from "@autometa/gherkin";
 
 import { resolveJsonPath, normalizeValue } from "./json";
 import type { BrewBuddyWorld, TagRegistryEntry } from "../world";
@@ -57,11 +58,15 @@ export function assertJsonArray(world: BrewBuddyWorld, path: string): unknown[] 
   return value as unknown[];
 }
 
-export function toPathExpectations(records: Array<Record<string, string>>): PathExpectation[] {
+export function toPathExpectations(records: TableRecord[]): PathExpectation[] {
   return records.map((record) => {
-    const path = record.path;
-    if (!path) {
+    const rawPath = record.path;
+    if (rawPath === undefined || rawPath === null) {
       throw new Error('Expectation table row is missing a "path" column');
+    }
+    const path = String(rawPath);
+    if (!path.trim()) {
+      throw new Error('Expectation table row contains an empty "path" value');
     }
     return {
       path,

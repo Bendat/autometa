@@ -1,4 +1,5 @@
 import { applyTransformers } from "./coercion";
+import { mapRecordsToInstances, mapRecordsWithMapper } from "./record-mapper";
 import type {
   CellContext,
   ResolveOptions,
@@ -6,6 +7,10 @@ import type {
   TableTransformer,
   TableValue,
   VerticalTableOptions,
+  TableInstanceFactory,
+  TableInstanceOptions,
+  TableRecord,
+  TableRowMapper,
 } from "./types";
 
 const SHAPE: TableShape = "vertical";
@@ -79,6 +84,31 @@ export class VerticalTable {
     return records;
   }
 
+  records<T extends TableRecord = TableRecord>(options?: ResolveOptions): T[] {
+    return this.getRecords(options) as T[];
+  }
+
+  mapRecords<T>(mapper: TableRowMapper<T>, options?: ResolveOptions): T[] {
+    const records = this.getRecords(options);
+    return mapRecordsWithMapper(records, SHAPE, mapper);
+  }
+
+  asInstances<T>(
+    factory: TableInstanceFactory<T>,
+    options?: TableInstanceOptions<T> & { readonly resolve?: ResolveOptions }
+  ): T[] {
+    const { resolve, ...rest } = options ?? {};
+    const records = this.getRecords(resolve);
+    return mapRecordsToInstances(records, SHAPE, factory, rest as TableInstanceOptions<T>);
+  }
+
+  toInstances<T>(
+    factory: TableInstanceFactory<T>,
+    options?: TableInstanceOptions<T> & { readonly resolve?: ResolveOptions }
+  ): T[] {
+    return this.asInstances(factory, options);
+  }
+
   getCell(
     header: string,
     index: number,
@@ -115,6 +145,12 @@ export class VerticalTable {
       header,
       ...(this.columns[index] ?? []),
     ]);
+  }
+
+  *[Symbol.iterator](): IterableIterator<TableRecord> {
+    for (const record of this.records()) {
+      yield record;
+    }
   }
 
   private resolve(

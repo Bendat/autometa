@@ -23,9 +23,13 @@ export {
 	clearStepDocstring,
 	getDocstring,
 	consumeDocstring,
+	setStepMetadata,
+	clearStepMetadata,
+	getStepMetadata,
 	createStepRuntime,
 	type RawTable,
 	type StepRuntimeHelpers,
+	type StepRuntimeMetadata,
 } from "./runtime/step-data";
 
 export * from "./types";
