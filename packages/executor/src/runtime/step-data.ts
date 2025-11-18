@@ -541,6 +541,83 @@ function bindConsumeTable(world: unknown) {
   return consume;
 }
 
+function bindRequireTable(world: unknown) {
+  function require(
+    shape: "headerless",
+    options?: HeaderlessTableOptions
+  ): HeaderlessTable;
+  function require(
+    shape: "horizontal",
+    options?: HorizontalTableOptions
+  ): HorizontalTable;
+  function require(
+    shape: "vertical",
+    options?: VerticalTableOptions
+  ): VerticalTable;
+  function require(
+    shape: "matrix",
+    options?: MatrixTableOptions
+  ): MatrixTable;
+  function require(
+    shape: TableShape,
+    options?:
+      | HeaderlessTableOptions
+      | HorizontalTableOptions
+      | VerticalTableOptions
+      | MatrixTableOptions
+  ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable {
+    switch (shape) {
+      case "headerless": {
+        const table = consumeTable(
+          world,
+          "headerless",
+          options as HeaderlessTableOptions | undefined
+        );
+        if (!table) {
+          throw new RangeError("No headerless data table is attached to the current step.");
+        }
+        return table;
+      }
+      case "horizontal": {
+        const table = consumeTable(
+          world,
+          "horizontal",
+          options as HorizontalTableOptions | undefined
+        );
+        if (!table) {
+          throw new RangeError("No horizontal data table is attached to the current step.");
+        }
+        return table;
+      }
+      case "vertical": {
+        const table = consumeTable(
+          world,
+          "vertical",
+          options as VerticalTableOptions | undefined
+        );
+        if (!table) {
+          throw new RangeError("No vertical data table is attached to the current step.");
+        }
+        return table;
+      }
+      case "matrix": {
+        const table = consumeTable(
+          world,
+          "matrix",
+          options as MatrixTableOptions | undefined
+        );
+        if (!table) {
+          throw new RangeError("No matrix data table is attached to the current step.");
+        }
+        return table;
+      }
+      default:
+        throw new RangeError(`Unsupported table shape: ${String(shape)}`);
+    }
+  }
+  return require;
+}
+
 function cacheRuntime(world: unknown, runtime: StepRuntimeHelpers): void {
   const carrier = withCarrier(world);
   if (!carrier) {
@@ -599,20 +676,7 @@ export function createStepRuntime(world: unknown): StepRuntimeHelpers {
     getStepMetadata() {
       return getStepMetadata(world);
     },
-    requireTable(
-      shape: TableShape,
-      options?:
-        | HeaderlessTableOptions
-        | HorizontalTableOptions
-        | VerticalTableOptions
-        | MatrixTableOptions
-    ) {
-      const table = consumeTable(world, shape, options as never);
-      if (!table) {
-        throw new RangeError(`No ${shape} data table is attached to the current step.`);
-      }
-      return table;
-    },
+    requireTable: bindRequireTable(world),
   };
   cacheRuntime(world, runtime);
   return runtime;
