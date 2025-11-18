@@ -133,7 +133,7 @@ describe("createRunner", () => {
 
 		runner.feature("Runtime feature", () => {
 			runner.scenario("Runtime scenario", () => {
-				runner.Given("a runtime-enabled step", (_world: TestWorld, runtime: StepRuntimeHelpers) => {
+				runner.Given("a runtime-enabled step", (runtime: StepRuntimeHelpers, _world: TestWorld) => {
 					const beforeTable = runtime.hasTable;
 					const beforeDocstring = runtime.hasDocstring;
 					const table = runtime.getTable("horizontal");

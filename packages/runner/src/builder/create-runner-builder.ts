@@ -82,8 +82,8 @@ export interface RunnerBuilder<
 		World,
 		NextExpressionTypes
 	>;
-	withWorld<NextWorld>(
-		defaults?: Partial<NextWorld>
+	withWorld<NextWorld = World>(
+		value?: Partial<NextWorld> | WorldFactory<NextWorld>
 	): RunnerBuilder<NextWorld, ExpressionTypes>;
 	app<App>(
 		app: AppFactoryInput<World, App>
@@ -158,14 +158,16 @@ class RunnerBuilderImpl<
 		return new RunnerBuilderImpl<World, NextExpressionTypes>(this.state);
 	}
 
-	withWorld<NextWorld>(
-		defaults?: Partial<NextWorld>
+	withWorld<NextWorld = World>(
+		value?: Partial<NextWorld> | WorldFactory<NextWorld>
 	): RunnerBuilder<NextWorld, ExpressionTypes> {
-		if (defaults) {
-			const validated = ensureWorldDefaults(defaults);
+		if (typeof value === "function") {
+			this.state.worldFactory = value as WorldFactory<unknown>;
+		} else if (value) {
+			const validated = ensureWorldDefaults(value);
 			this.state.worldFactory = createDefaultsWorldFactory(validated) as WorldFactory<unknown>;
 		} else {
-			this.state.worldFactory = async () => ({} as unknown);
+			this.state.worldFactory = async () => ({} as NextWorld);
 		}
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<NextWorld, ExpressionTypes>(this.state) as RunnerBuilder<NextWorld, ExpressionTypes>;

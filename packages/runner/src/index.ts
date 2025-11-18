@@ -41,6 +41,12 @@ export type {
 } from "./runtime/coordinate-runner-feature";
 
 export {
+	getCurrentRunnerSteps,
+	setCurrentRunnerSteps,
+	clearCurrentRunnerSteps,
+} from "./current";
+
+export {
 	configureStepTables,
 	resetStepTableConfig,
 	setStepTable,
