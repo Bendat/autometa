@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import type {
 	ScopeExecutionAdapter,
 	ScopeNode,
@@ -14,8 +14,10 @@ import {
 	createRunnerBuilder,
 	type RunnerStepsSurface,
 	type RunnerCoordinateFeatureOptions,
+	type RunnerBuilder,
 } from "../create-runner-builder";
 import { coordinateRunnerFeature } from "../../runtime/coordinate-runner-feature";
+import type { DefaultCucumberExpressionTypes } from "@autometa/scopes";
 
 vi.mock("../../runtime/coordinate-runner-feature", () => ({
 	coordinateRunnerFeature: vi.fn(),
@@ -195,6 +197,55 @@ describe("createRunnerBuilder", () => {
 		expect(worldFactory).toBeDefined();
 		const world = worldFactory ? await worldFactory() : undefined;
 		expect(world).toMatchObject({ value: 2, app: { name: "test-app" } });
+	});
+
+	it("exposes typed step DSL when expression map is provided", () => {
+		interface Expressions extends Record<string, unknown> {
+			readonly flag: boolean;
+		}
+
+		const builder = createRunnerBuilder<BaseWorld>().expressionMap<Expressions>();
+		const steps = builder.steps();
+
+		expectTypeOf(steps).toMatchTypeOf<
+			RunnerStepsSurface<BaseWorld, Expressions>
+		>();
+	});
+
+	it("accepts default world objects", async () => {
+		const defaults = {
+			value: 5,
+			scenarioState: {} as Record<string, unknown>,
+		};
+
+		const builder = createRunnerBuilder<BaseWorld>().withWorld(defaults);
+		const steps = builder.steps();
+		const plan = steps.getPlan();
+		const worldFactory = plan.worldFactory;
+		expect(worldFactory).toBeDefined();
+		const createdA = worldFactory ? await worldFactory() : undefined;
+		const createdB = worldFactory ? await worldFactory() : undefined;
+		expect(createdA).toMatchObject({
+			value: 5,
+			scenarioState: {},
+			features: [],
+		});
+		expect(createdB).toMatchObject({
+			value: 5,
+			scenarioState: {},
+			features: [],
+		});
+		expect(createdA).not.toBe(createdB);
+		expect(createdA?.scenarioState).not.toBe(createdB?.scenarioState);
+		expectTypeOf(builder).toMatchTypeOf<
+			RunnerBuilder<
+				{
+					value: number;
+					scenarioState: Record<string, unknown>;
+				},
+				DefaultCucumberExpressionTypes
+			>
+		>();
 	});
 
 	it("shares parameter registry between steps and decorators", async () => {

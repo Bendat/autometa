@@ -11,9 +11,7 @@ import { runFeatures } from "./run";
 const loadExecutorConfigMock = vi.fn();
 const expandFilePatternsMock = vi.fn();
 const loadModuleMock = vi.fn();
-const createRunnerBuilderMock = vi.fn();
-const configureGlobalRunnerMock = vi.fn();
-const useGlobalRunnerEnvironmentMock = vi.fn();
+const cucumberRunnerBuilderMock = vi.fn();
 const parseGherkinMock = vi.fn();
 const createCliRuntimeMock = vi.fn();
 
@@ -29,23 +27,15 @@ vi.mock("../loaders/module-loader", () => ({
   loadModule: (...args: unknown[]) => loadModuleMock(...args),
 }));
 
-vi.mock(
-  "@autometa/runner",
-  () => ({
-    createRunnerBuilder: (...args: unknown[]) => createRunnerBuilderMock(...args),
-    configureGlobalRunner: (...args: unknown[]) => configureGlobalRunnerMock(...args),
-    useGlobalRunnerEnvironment: (...args: unknown[]) => useGlobalRunnerEnvironmentMock(...args),
-  }),
-  { virtual: true }
-);
+vi.mock("@autometa/runner", () => ({
+  CucumberRunner: {
+    builder: (...args: unknown[]) => cucumberRunnerBuilderMock(...args),
+  },
+}));
 
-vi.mock(
-  "@autometa/gherkin",
-  () => ({
-    parseGherkin: (...args: unknown[]) => parseGherkinMock(...args),
-  }),
-  { virtual: true }
-);
+vi.mock("@autometa/gherkin", () => ({
+  parseGherkin: (...args: unknown[]) => parseGherkinMock(...args),
+}));
 
 vi.mock("../runtime/cli-runtime", () => ({
   createCliRuntime: (...args: unknown[]) => createCliRuntimeMock(...args),
@@ -112,6 +102,7 @@ describe("runFeatures", () => {
       roots: {
         features: ["features"],
         steps: ["steps"],
+        parameterTypes: ["parameter-types"],
         support: ["support"],
       },
     };
@@ -127,6 +118,7 @@ describe("runFeatures", () => {
 
     const featurePath = join(cwd, "features", "example.feature");
     const stepFile = join(cwd, "steps", "step.ts");
+  const parameterTypesFile = join(cwd, "parameter-types", "bootstrap.ts");
     const supportFile = join(cwd, "support", "bootstrap.ts");
 
     loadExecutorConfigMock.mockResolvedValue(loadedConfig);
@@ -137,6 +129,9 @@ describe("runFeatures", () => {
       }
       if (patterns.some((pattern) => pattern.includes("steps"))) {
         return [stepFile, stepFile];
+      }
+      if (patterns.some((pattern) => pattern.includes("parameter-types"))) {
+        return [parameterTypesFile];
       }
       if (patterns.some((pattern) => pattern.includes("support"))) {
         return [supportFile];
@@ -174,7 +169,7 @@ describe("runFeatures", () => {
       coordinateFeature: coordinateFeatureMock,
     };
 
-    createRunnerBuilderMock.mockReturnValue({
+    cucumberRunnerBuilderMock.mockReturnValue({
       steps: () => stepsEnvironment,
     });
 
@@ -200,13 +195,15 @@ describe("runFeatures", () => {
     const result = await runFeatures({ cwd });
 
     expect(result).toEqual(summary);
-    expect(createRunnerBuilderMock).toHaveBeenCalledTimes(1);
-    expect(configureGlobalRunnerMock).toHaveBeenCalledTimes(1);
-    expect(useGlobalRunnerEnvironmentMock).toHaveBeenCalledWith(stepsEnvironment);
+    expect(cucumberRunnerBuilderMock).toHaveBeenCalledTimes(1);
 
-    expect(expandFilePatternsMock).toHaveBeenCalledTimes(3);
-    expect(loadModuleMock).toHaveBeenCalledTimes(2);
+    expect(expandFilePatternsMock).toHaveBeenCalledTimes(4);
+    expect(loadModuleMock).toHaveBeenCalledTimes(3);
     expect(loadModuleMock).toHaveBeenCalledWith(stepFile, {
+      cwd,
+      cacheDir,
+    });
+    expect(loadModuleMock).toHaveBeenCalledWith(parameterTypesFile, {
       cwd,
       cacheDir,
     });

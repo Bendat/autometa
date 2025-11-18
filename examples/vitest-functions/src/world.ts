@@ -11,10 +11,11 @@ import type { SseSession } from "./utils/sse.js";
 import type { MenuRegion } from "./utils/regions";
 import { BrewBuddyApp } from "./utils/http";
 
-export interface BrewBuddyWorld {
+const DEFAULT_API_BASE_URL = "http://localhost:4000";
+
+export interface BrewBuddyWorldBase {
   readonly baseUrl: string;
   readonly http: HTTP;
-  readonly app: BrewBuddyApp;
   lastResponse?: HTTPResponse<unknown>;
   lastResponseBody?: unknown;
   lastResponseHeaders?: Record<string, string>;
@@ -27,6 +28,8 @@ export interface BrewBuddyWorld {
   readonly scenario: ScenarioState;
   readonly features: SimpleFeature[];
 }
+
+export type BrewBuddyWorld = BrewBuddyWorldBase & { readonly app: BrewBuddyApp };
 
 interface ScenarioState {
   menuSnapshot?: MenuItem[];
@@ -51,29 +54,9 @@ export interface TagRegistryEntry {
   readonly description: string;
 }
 
-let globalBaseUrl: string | undefined;
-let loadedFeatures: SimpleFeature[] = [];
-
-export function setBaseUrl(url: string): void {
-  globalBaseUrl = url;
-}
-
-export function getBaseUrl(): string {
-  if (!globalBaseUrl) {
-    throw new Error("Brew Buddy API base URL has not been configured yet");
-  }
-  return globalBaseUrl;
-}
-
-export function setFeatures(features: SimpleFeature[]): void {
-  loadedFeatures = [...features];
-}
-
-export function createWorld(): BrewBuddyWorld {
-  const baseUrl = getBaseUrl();
-  const baseClient = HTTP.create();
-  const app = new BrewBuddyApp(baseClient, baseUrl);
-  const http = app.http;
+export function createWorld(): BrewBuddyWorldBase {
+  const baseUrl = process.env.BREW_BUDDY_BASE_URL ?? DEFAULT_API_BASE_URL;
+  const http = HTTP.create();
 
   const scenario: ScenarioState = {
     createdItems: [],
@@ -84,37 +67,14 @@ export function createWorld(): BrewBuddyWorld {
   return {
     baseUrl,
     http,
-    app,
     aliases: {
       tickets: new Map(),
       orders: new Map(),
       recipes: new Map(),
     },
     scenario,
-    features: loadedFeatures,
+    features: [],
   };
-}
-
-export function resetScenarioState(world: BrewBuddyWorld): void {
-  delete world.lastResponse;
-  delete world.lastResponseBody;
-  delete world.lastResponseHeaders;
-  delete world.lastError;
-  delete world.scenario.menuSnapshot;
-  delete world.scenario.lastMenuItem;
-  world.scenario.createdItems = [];
-  delete world.scenario.order;
-  delete world.scenario.loyaltyAccount;
-  delete world.scenario.lastInventory;
-  delete world.scenario.brewRatio;
-  delete world.scenario.tagRegistry;
-  delete world.scenario.tagExpression;
-  delete world.scenario.selectedScenarioNames;
-  delete world.scenario.region;
-  delete world.scenario.priceUpdates;
-  disposeStream(world);
-  world.scenario.streamWarnings = [];
-  world.scenario.streamErrors = [];
 }
 
 export function disposeStream(world: BrewBuddyWorld): void {

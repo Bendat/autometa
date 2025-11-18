@@ -48,6 +48,7 @@
   "dependencies": {
     "@autometa/cucumber-expressions": "workspace:*",
     "@autometa/executor": "workspace:*",
+    "@autometa/injection": "workspace:*",
     "@autometa/scopes": "workspace:*",
     "@cucumber/cucumber-expressions": "^16.1.2",
     "tslib": "^2.6.2"

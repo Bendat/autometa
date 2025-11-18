@@ -3,7 +3,7 @@ import { extname, join, relative } from "node:path";
 
 import { Command } from "commander";
 import type { ExecutorConfig } from "@autometa/config";
-import { createRunnerBuilder, configureGlobalRunner, useGlobalRunnerEnvironment } from "@autometa/runner";
+import { CucumberRunner } from "@autometa/runner";
 import type { GlobalWorld } from "@autometa/runner";
 import { parseGherkin, type SimpleFeature } from "@autometa/gherkin";
 
@@ -79,11 +79,8 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
     );
   }
 
-  const builder = createRunnerBuilder<GlobalWorld>();
+  const builder = CucumberRunner.builder<GlobalWorld>();
   const stepsEnvironment = builder.steps();
-
-  configureGlobalRunner();
-  useGlobalRunnerEnvironment(stepsEnvironment);
 
   await loadSupplementaryRoots(executorConfig, {
     cwd,

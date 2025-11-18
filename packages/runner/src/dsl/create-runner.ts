@@ -1,5 +1,6 @@
 import type {
 	HookDsl,
+	HookHandler,
 	ScopePlan,
 	ScopesDsl,
 	StepArgumentsForExpression,
@@ -9,6 +10,8 @@ import type {
 	StepHandler,
 	StepOptions,
 	StepTagInput,
+	HookDefinition,
+	HookOptions,
 	CucumberExpressionTypeMap,
 	DefaultCucumberExpressionTypes,
 	WithDefaultCucumberExpressionTypes,
@@ -32,14 +35,35 @@ import {
 	type RunnerContextOptions,
 } from "../core/runner-context";
 
-export type RuntimeAwareStepHandler<World, TArgs extends unknown[] = unknown[]> = (
-	world: World,
-	...args: [...TArgs, StepRuntimeHelpers]
-) => unknown | Promise<unknown>;
+type StepHandlerWithOptionalThis<
+	World,
+	TArgs extends unknown[]
+> =
+	| ((this: World, ...args: TArgs) => unknown | Promise<unknown>)
+	| ((...args: TArgs) => unknown | Promise<unknown>);
 
-export type RunnerStepHandler<World, TArgs extends unknown[] = unknown[]> =
-	| StepHandler<World, TArgs>
+export type RuntimeAwareStepHandler<
+	World,
+	TArgs extends unknown[] = unknown[]
+> = StepHandlerWithOptionalThis<
+	World,
+	[...TArgs, StepRuntimeHelpers, World]
+>;
+
+export type RunnerStepHandler<
+	World,
+	TArgs extends unknown[] = unknown[]
+> =
+	| StepHandlerWithOptionalThis<World, [...TArgs, World]>
 	| RuntimeAwareStepHandler<World, TArgs>;
+
+type StepExpressionArguments<
+	Expression extends StepExpression,
+	ExpressionTypes extends CucumberExpressionTypeMap
+> = StepArgumentsForExpression<
+	Expression,
+	WithDefaultCucumberExpressionTypes<ExpressionTypes>
+>;
 
 export interface RunnerStepDsl<
 	World,
@@ -47,12 +71,24 @@ export interface RunnerStepDsl<
 > {
 	<Expression extends StepExpression>(
 		expression: Expression,
-		handler: RunnerStepHandler<
+		handler: StepHandlerWithOptionalThis<
 			World,
-			StepArgumentsForExpression<
-				Expression,
-				WithDefaultCucumberExpressionTypes<ExpressionTypes>
-			>
+			[
+				...StepExpressionArguments<Expression, ExpressionTypes>,
+				World
+			]
+		>,
+		options?: StepOptions
+	): StepDefinition<World>;
+	<Expression extends StepExpression>(
+		expression: Expression,
+		handler: StepHandlerWithOptionalThis<
+			World,
+			[
+				...StepExpressionArguments<Expression, ExpressionTypes>,
+				StepRuntimeHelpers,
+				World
+			]
 		>,
 		options?: StepOptions
 	): StepDefinition<World>;
@@ -65,16 +101,75 @@ export interface RunnerStepDsl<
 	) => RunnerStepDsl<World, ExpressionTypes>;
 }
 
+export interface RunnerHookDsl<World> {
+	(handler: HookHandler<World>, options?: HookOptions): HookDefinition<World>;
+	(
+		description: string,
+		handler: HookHandler<World>,
+		options?: HookOptions
+	): HookDefinition<World>;
+	skip: RunnerHookDsl<World>;
+	only: RunnerHookDsl<World>;
+	failing: RunnerHookDsl<World>;
+	concurrent: RunnerHookDsl<World>;
+}
+
+const hookWrapperCache = new WeakMap<HookDsl<unknown>, RunnerHookDsl<unknown>>();
+
+function wrapHook<World>(hook: HookDsl<World>): RunnerHookDsl<World> {
+	const cached = hookWrapperCache.get(hook as HookDsl<unknown>);
+	if (cached) {
+		return cached as RunnerHookDsl<World>;
+	}
+
+	const callable = ((
+		first: string | HookHandler<World>,
+		second?: HookHandler<World> | HookOptions,
+		third?: HookOptions
+	) => {
+		if (typeof first === "string") {
+			return (hook as unknown as (
+				description: string,
+				handler: HookHandler<World>,
+				options?: HookOptions
+			) => HookDefinition<World>)(first, second as HookHandler<World>, third);
+		}
+		return (hook as unknown as (
+			handler: HookHandler<World>,
+			options?: HookOptions
+		) => HookDefinition<World>)(first as HookHandler<World>, second as HookOptions | undefined);
+	}) as RunnerHookDsl<World>;
+
+	hookWrapperCache.set(hook as HookDsl<unknown>, callable as RunnerHookDsl<unknown>);
+
+	callable.skip = wrapHook(hook.skip as HookDsl<World>);
+	callable.only = wrapHook(hook.only as HookDsl<World>);
+	callable.failing = wrapHook(hook.failing as HookDsl<World>);
+	callable.concurrent = wrapHook(hook.concurrent as HookDsl<World>);
+
+	return callable;
+}
+
 function wrapStepHandler<World, TArgs extends unknown[]>(
 	handler: RunnerStepHandler<World, TArgs>
 ): StepHandler<World, TArgs> {
 	return ((world: World, ...args: TArgs) => {
 		const runtime = createStepRuntime(world);
-		const callable = handler as (
-			world: World,
-			...inputs: [...TArgs, StepRuntimeHelpers]
-		) => unknown | Promise<unknown>;
-		return callable(world, ...args, runtime);
+		const withRuntime = handler as StepHandlerWithOptionalThis<
+			World,
+			[...TArgs, StepRuntimeHelpers, World]
+		>;
+		const withoutRuntime = handler as StepHandlerWithOptionalThis<
+			World,
+			[...TArgs, World]
+		>;
+		const paramLength = typeof handler === "function" ? handler.length : 0;
+		const expectsRuntime = paramLength > args.length + 1;
+		const invocationArgs = expectsRuntime
+			? [...args, runtime, world]
+			: [...args, world];
+		const callable = expectsRuntime ? withRuntime : withoutRuntime;
+		return Reflect.apply(callable, world, invocationArgs);
 	}) as StepHandler<World, TArgs>;
 }
 
@@ -135,10 +230,37 @@ function enhanceStepDsl<
 	return convert(dsl);
 }
 
+type BaseScopesDsl<
+	World,
+	ExpressionTypes extends CucumberExpressionTypeMap
+> = Omit<
+	ScopesDsl<World, ExpressionTypes>,
+	| "given"
+	| "when"
+	| "then"
+	| "and"
+	| "but"
+	| "Given"
+	| "When"
+	| "Then"
+	| "And"
+	| "But"
+	| "beforeFeature"
+	| "afterFeature"
+	| "beforeRule"
+	| "afterRule"
+	| "beforeScenario"
+	| "afterScenario"
+	| "beforeScenarioOutline"
+	| "afterScenarioOutline"
+	| "beforeStep"
+	| "afterStep"
+>;
+
 export interface RunnerDsl<
 	World,
 	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
-> extends ScopesDsl<World, WithDefaultCucumberExpressionTypes<ExpressionTypes>> {
+> extends BaseScopesDsl<World, WithDefaultCucumberExpressionTypes<ExpressionTypes>> {
 	readonly given: RunnerStepDsl<World, ExpressionTypes>;
 	readonly when: RunnerStepDsl<World, ExpressionTypes>;
 	readonly then: RunnerStepDsl<World, ExpressionTypes>;
@@ -149,16 +271,26 @@ export interface RunnerDsl<
 	readonly Then: RunnerStepDsl<World, ExpressionTypes>;
 	readonly And: RunnerStepDsl<World, ExpressionTypes>;
 	readonly But: RunnerStepDsl<World, ExpressionTypes>;
-	readonly BeforeFeature: HookDsl<World>;
-	readonly AfterFeature: HookDsl<World>;
-	readonly BeforeRule: HookDsl<World>;
-	readonly AfterRule: HookDsl<World>;
-	readonly BeforeScenario: HookDsl<World>;
-	readonly AfterScenario: HookDsl<World>;
-	readonly BeforeScenarioOutline: HookDsl<World>;
-	readonly AfterScenarioOutline: HookDsl<World>;
-	readonly BeforeStep: HookDsl<World>;
-	readonly AfterStep: HookDsl<World>;
+	readonly beforeFeature: RunnerHookDsl<World>;
+	readonly afterFeature: RunnerHookDsl<World>;
+	readonly beforeRule: RunnerHookDsl<World>;
+	readonly afterRule: RunnerHookDsl<World>;
+	readonly beforeScenario: RunnerHookDsl<World>;
+	readonly afterScenario: RunnerHookDsl<World>;
+	readonly beforeScenarioOutline: RunnerHookDsl<World>;
+	readonly afterScenarioOutline: RunnerHookDsl<World>;
+	readonly beforeStep: RunnerHookDsl<World>;
+	readonly afterStep: RunnerHookDsl<World>;
+	readonly BeforeFeature: RunnerHookDsl<World>;
+	readonly AfterFeature: RunnerHookDsl<World>;
+	readonly BeforeRule: RunnerHookDsl<World>;
+	readonly AfterRule: RunnerHookDsl<World>;
+	readonly BeforeScenario: RunnerHookDsl<World>;
+	readonly AfterScenario: RunnerHookDsl<World>;
+	readonly BeforeScenarioOutline: RunnerHookDsl<World>;
+	readonly AfterScenarioOutline: RunnerHookDsl<World>;
+	readonly BeforeStep: RunnerHookDsl<World>;
+	readonly AfterStep: RunnerHookDsl<World>;
 }
 
 export interface RunnerEnvironment<
@@ -202,6 +334,17 @@ export function createRunner<
 		definitions: ParameterTypeDefinitions<World>
 	) => context.defineParameterTypes(...definitions);
 
+	const beforeFeatureHook = wrapHook(scopes.beforeFeature);
+	const afterFeatureHook = wrapHook(scopes.afterFeature);
+	const beforeRuleHook = wrapHook(scopes.beforeRule);
+	const afterRuleHook = wrapHook(scopes.afterRule);
+	const beforeScenarioHook = wrapHook(scopes.beforeScenario);
+	const afterScenarioHook = wrapHook(scopes.afterScenario);
+	const beforeScenarioOutlineHook = wrapHook(scopes.beforeScenarioOutline);
+	const afterScenarioOutlineHook = wrapHook(scopes.afterScenarioOutline);
+	const beforeStepHook = wrapHook(scopes.beforeStep);
+	const afterStepHook = wrapHook(scopes.afterStep);
+
 	const environment: RunnerEnvironment<World, ExpressionTypes> = {
 		context,
 		parameterRegistry: context.parameterRegistry,
@@ -222,32 +365,32 @@ export function createRunner<
 		then,
 		and,
 		but,
-		beforeFeature: scopes.beforeFeature,
-		afterFeature: scopes.afterFeature,
-		beforeRule: scopes.beforeRule,
-		afterRule: scopes.afterRule,
-		beforeScenario: scopes.beforeScenario,
-		afterScenario: scopes.afterScenario,
-		beforeScenarioOutline: scopes.beforeScenarioOutline,
-		afterScenarioOutline: scopes.afterScenarioOutline,
-		beforeStep: scopes.beforeStep,
-		afterStep: scopes.afterStep,
-		plan: scopes.plan,
+		beforeFeature: beforeFeatureHook,
+		afterFeature: afterFeatureHook,
+		beforeRule: beforeRuleHook,
+		afterRule: afterRuleHook,
+		beforeScenario: beforeScenarioHook,
+		afterScenario: afterScenarioHook,
+		beforeScenarioOutline: beforeScenarioOutlineHook,
+		afterScenarioOutline: afterScenarioOutlineHook,
+		beforeStep: beforeStepHook,
+		afterStep: afterStepHook,
 		Given: given,
 		When: when,
 		Then: then,
 		And: and,
 		But: but,
-		BeforeFeature: scopes.beforeFeature,
-		AfterFeature: scopes.afterFeature,
-		BeforeRule: scopes.beforeRule,
-		AfterRule: scopes.afterRule,
-		BeforeScenario: scopes.beforeScenario,
-		AfterScenario: scopes.afterScenario,
-		BeforeScenarioOutline: scopes.beforeScenarioOutline,
-		AfterScenarioOutline: scopes.afterScenarioOutline,
-		BeforeStep: scopes.beforeStep,
-		AfterStep: scopes.afterStep,
+		plan: scopes.plan,
+		BeforeFeature: beforeFeatureHook,
+		AfterFeature: afterFeatureHook,
+		BeforeRule: beforeRuleHook,
+		AfterRule: afterRuleHook,
+		BeforeScenario: beforeScenarioHook,
+		AfterScenario: afterScenarioHook,
+		BeforeScenarioOutline: beforeScenarioOutlineHook,
+		AfterScenarioOutline: afterScenarioOutlineHook,
+		BeforeStep: beforeStepHook,
+		AfterStep: afterStepHook,
 	};
 
 	return environment;

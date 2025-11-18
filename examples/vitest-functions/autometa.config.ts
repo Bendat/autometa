@@ -6,7 +6,7 @@ export default defineConfig({
     roots: {
       features: ["../.features"],
       steps: ["./src/steps"],
-      support: ["./src/support/bootstrap.ts"],
+      parameterTypes: ["./src/support/parameter-types.ts"],
     },
     test: {
       timeout: [30, "s"],

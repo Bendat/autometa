@@ -1,50 +1,58 @@
 import { expect } from "vitest";
 
-import type { StepRuntimeHelpers } from "@autometa/executor";
+import { createStepRuntime } from "@autometa/executor";
 
 import { Given, Then, When } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
-import { rememberLastMenuItem, rememberMenuSnapshot, type BrewBuddyWorld } from "../world";
+import {
+  rememberLastMenuItem,
+  rememberMenuSnapshot,
+  type BrewBuddyWorld,
+} from "../world";
 import { performRequest } from "../utils/http";
 import { assertStatus } from "../utils/assertions";
 import { consumeHorizontalTable } from "../utils/tables";
-import {
-  type MenuExpectation,
-  type MenuRegion,
-} from "../utils/regions";
 
-When("I request the menu listing", async (world: BrewBuddyWorld) => {
+When("I request the menu listing", async (world) => {
   await performRequest(world, "get", "/menu");
   const items = extractMenuItems(world);
   rememberMenuSnapshot(world, items);
 });
 
-Then("the menu should include the default drinks", (world: BrewBuddyWorld, runtime: StepRuntimeHelpers) => {
-  const rows = consumeHorizontalTable(runtime);
-  const items = ensureMenuItems(world);
-  for (const row of rows) {
-    const name = requireColumn(row, "name");
-    const price = Number(requireColumn(row, "price"));
-    const size = requireColumn(row, "size");
-    const item = findMenuItem(items, name);
-    expect(item.price).toBeCloseTo(price);
-    expect(item.size).toBe(size);
+Then(
+  "the menu should include the default drinks",
+  function () {
+    const runtime = createStepRuntime(this);
+    const rows = consumeHorizontalTable(runtime);
+    const items = ensureMenuItems(this);
+    for (const row of rows) {
+      const name = requireColumn(row, "name");
+      const price = Number(requireColumn(row, "price"));
+      const size = requireColumn(row, "size");
+      const item = findMenuItem(items, name);
+      expect(item.price).toBeCloseTo(price);
+      expect(item.size).toBe(size);
+    }
   }
-});
+);
 
-Given("I create a seasonal drink named {string}", async (world: BrewBuddyWorld, name: string, runtime: StepRuntimeHelpers) => {
-  const fields = consumeHorizontalTable(runtime);
-  const payload = buildMenuPayload(name, fields);
-  await performRequest(world, "post", "/menu", { body: payload });
-  assertStatus(world, 201);
-  const created = parseMenuItem(world);
-  rememberLastMenuItem(world, created);
-  world.scenario.createdItems.push(created.name);
-});
+Given(
+  "I create a seasonal drink named {string}",
+  async function (name) {
+    const runtime = createStepRuntime(this);
+    const fields = consumeHorizontalTable(runtime);
+    const payload = buildMenuPayload(name, fields);
+    await performRequest(this, "post", "/menu", { body: payload });
+    assertStatus(this, 201);
+    const created = parseMenuItem(this);
+    rememberLastMenuItem(this, created);
+    this.scenario.createdItems.push(created.name);
+  }
+);
 
 Then(
   "the menu should include an item named {string} with price {float} and size {string}",
-  (world: BrewBuddyWorld, name: string, price: number, size: string) => {
+  (name, price, size, world) => {
     const items = ensureMenuItems(world);
     const item = findMenuItem(items, name);
     expect(item.price).toBeCloseTo(price);
@@ -53,44 +61,64 @@ Then(
   }
 );
 
-Then("the seasonal flag should be set to true", (world: BrewBuddyWorld) => {
-  expect(world.scenario.lastMenuItem, "No menu item stored for assertion").toBeDefined();
+Then("the seasonal flag should be set to true", (world) => {
+  expect(
+    world.scenario.lastMenuItem,
+    "No menu item stored for assertion"
+  ).toBeDefined();
   expect(world.scenario.lastMenuItem?.seasonal).toBe(true);
 });
 
-Given("a menu item named {string} exists for season {string}", async (world: BrewBuddyWorld, name: string, season: string) => {
-  const payload = {
-    name,
-    price: 6,
-    size: "12oz",
-    season,
-    description: `${name} seasonal special`,
-  } satisfies Partial<MenuItem> & { name: string; price: number; size: string; season: string };
-  await performRequest(world, "post", "/menu", { body: payload });
-  assertStatus(world, 201);
-});
+Given(
+  "a menu item named {string} exists for season {string}",
+  async (name, season, world) => {
+    const payload = {
+      name,
+      price: 6,
+      size: "12oz",
+      season,
+      description: `${name} seasonal special`,
+    } satisfies Partial<MenuItem> & {
+      name: string;
+      price: number;
+      size: string;
+      season: string;
+    };
+    await performRequest(world, "post", "/menu", { body: payload });
+    assertStatus(world, 201);
+  }
+);
 
-When("I retire the drink named {string}", async (world: BrewBuddyWorld, name: string) => {
+When("I retire the drink named {string}", async (name, world) => {
   await performRequest(world, "delete", `/menu/${encodeURIComponent(name)}`);
   assertStatus(world, 204);
 });
 
-Then("the menu should not include {string}", async (world: BrewBuddyWorld, name: string) => {
-  await performRequest(world, "get", "/menu");
-  const items = extractMenuItems(world);
-  expect(items.some((item) => item.name.toLowerCase() === name.toLowerCase())).toBe(false);
-});
+Then(
+  "the menu should not include {string}",
+  async (name, world) => {
+    await performRequest(world, "get", "/menu");
+    const items = extractMenuItems(world);
+    expect(
+      items.some((item) => item.name.toLowerCase() === name.toLowerCase())
+    ).toBe(false);
+  }
+);
 
-Given("the following menu price changes are pending", (world: BrewBuddyWorld, runtime: StepRuntimeHelpers) => {
-  const rows = consumeHorizontalTable(runtime);
-  world.scenario.priceUpdates = rows.map((row) => {
-    const name = requireColumn(row, "name");
-    const price = Number(requireColumn(row, "price"));
-    return { name, price } as const;
-  });
-});
+Given(
+  "the following menu price changes are pending",
+  function () {
+    const runtime = createStepRuntime(this);
+    const rows = consumeHorizontalTable(runtime);
+    this.scenario.priceUpdates = rows.map((row) => {
+      const name = requireColumn(row, "name");
+      const price = Number(requireColumn(row, "price"));
+      return { name, price } as const;
+    });
+  }
+);
 
-When("I apply the bulk price update", async (world: BrewBuddyWorld) => {
+When("I apply the bulk price update", async (world) => {
   const updates = world.scenario.priceUpdates ?? [];
   await performRequest(world, "patch", "/menu/prices", { body: { updates } });
   assertStatus(world, 200);
@@ -98,37 +126,69 @@ When("I apply the bulk price update", async (world: BrewBuddyWorld) => {
   rememberMenuSnapshot(world, updated);
 });
 
-Then("each price change should be reflected in the latest menu", (world: BrewBuddyWorld) => {
-  const updates = world.scenario.priceUpdates ?? [];
-  const items = ensureMenuItems(world);
-  for (const update of updates) {
-    const item = findMenuItem(items, update.name);
-    expect(item.price).toBeCloseTo(update.price);
+Then(
+  "each price change should be reflected in the latest menu",
+  (world) => {
+    const updates = world.scenario.priceUpdates ?? [];
+    const items = ensureMenuItems(world);
+    for (const update of updates) {
+      const item = findMenuItem(items, update.name);
+      expect(item.price).toBeCloseTo(update.price);
+    }
   }
-});
+);
 
-Given("the seasonal schedule for \"{menuRegion}\" is configured", (world: BrewBuddyWorld, region: MenuRegion) => {
-  world.scenario.region = region;
-});
+Given(
+  'the seasonal schedule for "{menuRegion}" is configured',
+  (region, world) => {
+    world.scenario.region = region;
+  }
+);
 
-When("I request the menu listing for \"{menuRegion}\"", async (world: BrewBuddyWorld, region: MenuRegion) => {
-  world.scenario.region = region;
-  await performRequest(world, "get", "/menu");
-  const items = extractMenuItems(world);
-  rememberMenuSnapshot(world, items);
-});
+When(
+  'I request the menu listing for "{menuRegion}"',
+  async (region, world) => {
+    world.scenario.region = region;
+    await performRequest(world, "get", "/menu");
+    const items = extractMenuItems(world);
+    rememberMenuSnapshot(world, items);
+  }
+);
 
-Then("the regional menu should include \"{menuSelection}\"", (world: BrewBuddyWorld, expectation: MenuExpectation) => {
-  const snapshot = ensureMenuItems(world);
-  const item = findMenuItem(snapshot, expectation.beverage);
-  rememberLastMenuItem(world, item);
-});
+Then(
+  'the regional menu should include "{menuSelection}"',
+  (expectation, world) => {
+    const snapshot = ensureMenuItems(world);
+    const item = findMenuItem(snapshot, expectation.beverage);
+    rememberLastMenuItem(world, item);
+  }
+);
 
-Then("the seasonal flag should reflect \"{menuSeasonal}\"", (world: BrewBuddyWorld, expected: boolean) => {
-  const item = world.scenario.lastMenuItem;
-  expect(item, "No menu item stored for seasonal assertion").toBeDefined();
-  expect(item?.seasonal).toBe(expected);
-});
+Then(
+  'the seasonal flag should reflect "{menuSeasonal}"',
+  (expected, world) => {
+    const item = world.scenario.lastMenuItem;
+    expect(item, "No menu item stored for seasonal assertion").toBeDefined();
+    expect(item?.seasonal).toBe(expected);
+  }
+);
+
+Then(
+  "the menu snapshot should be available on the world context",
+  function (world) {
+    expect(this).toBe(world);
+    const snapshot = this.scenario.menuSnapshot ?? [];
+    expect(Array.isArray(snapshot)).toBe(true);
+  }
+);
+
+Then(
+  "the last tracked menu item should be {string} when accessed via this",
+  function (name, world) {
+    expect(this.scenario.lastMenuItem?.name).toBe(name);
+    expect(world.scenario.lastMenuItem?.name).toBe(name);
+  }
+);
 
 function extractMenuItems(world: BrewBuddyWorld): MenuItem[] {
   const body = world.lastResponseBody as { items?: MenuItem[] } | undefined;
@@ -147,14 +207,19 @@ function ensureMenuItems(world: BrewBuddyWorld): MenuItem[] {
 }
 
 function findMenuItem(items: MenuItem[], name: string): MenuItem {
-  const match = items.find((item) => item.name.toLowerCase() === name.toLowerCase());
+  const match = items.find(
+    (item) => item.name.toLowerCase() === name.toLowerCase()
+  );
   if (!match) {
     throw new Error(`Menu item ${name} not found`);
   }
   return match;
 }
 
-function buildMenuPayload(name: string, fields: Array<Record<string, string>>): Partial<MenuItem> {
+function buildMenuPayload(
+  name: string,
+  fields: Array<Record<string, string>>
+): Partial<MenuItem> {
   const payload: Partial<MenuItem> = { name };
   for (const row of fields) {
     const field = requireColumn(row, "field").toLowerCase();

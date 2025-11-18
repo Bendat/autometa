@@ -6,7 +6,6 @@ export type {
 	RunnerStepHandler,
 } from "./dsl/create-runner";
 
-export { createRunnerBuilder } from "./builder/create-runner-builder";
 export type {
 	RunnerBuilder,
 	RunnerDecoratorsSurface,
@@ -70,5 +69,7 @@ export {
 	getConfiguredGlobalRunner,
 } from "./global";
 export type { GlobalWorld, GlobalRunnerOptions } from "./global";
+
+export { CucumberRunner } from "./cucumber-runner";
 
 export { createRunner as default } from "./dsl/create-runner";

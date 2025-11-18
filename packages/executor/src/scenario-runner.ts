@@ -18,6 +18,7 @@ export async function runScenarioExecution<World>(
 ): Promise<void> {
   execution.reset();
   const world = await context.adapter.createWorld();
+  const disposeWorld = createWorldDisposer(world);
 
   try {
     const { steps, gherkinSteps } = execution;
@@ -44,5 +45,73 @@ export async function runScenarioExecution<World>(
     }
     execution.markFailed(error);
     throw error;
+  } finally {
+    await disposeWorld();
   }
+}
+
+interface DisposableLike {
+  dispose(): void | Promise<void>;
+}
+
+function createWorldDisposer(world: unknown): () => Promise<void> {
+  const disposers: Array<() => Promise<void>> = [];
+
+  if (world && typeof world === "object") {
+    const record = world as Record<string, unknown>;
+
+    const app = record.app;
+    if (isDisposable(app)) {
+      disposers.push(async () => {
+        await app.dispose();
+      });
+    }
+
+    const container = (record.di ?? record.container) as unknown;
+    if (isDisposable(container)) {
+      disposers.push(async () => {
+        await container.dispose();
+      });
+    }
+  }
+
+  return async () => {
+    if (disposers.length === 0) {
+      return;
+    }
+
+    const errors: unknown[] = [];
+    for (const dispose of disposers) {
+      try {
+        await dispose();
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+
+    if (errors.length === 1) {
+      throw errors[0];
+    }
+
+    if (errors.length > 1) {
+      const summary = new Error(
+        "Multiple errors occurred while disposing world resources"
+      );
+      Object.defineProperty(summary, "cause", {
+        configurable: true,
+        enumerable: false,
+        value: errors,
+      });
+      throw summary;
+    }
+  };
+}
+
+function isDisposable(value: unknown): value is DisposableLike {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const candidate = value as Record<string, unknown>;
+  const dispose = candidate.dispose;
+  return typeof dispose === "function";
 }

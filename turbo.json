@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["env"],
-  "globalEnv": ["TEST_ENV"],
+  "globalEnv": ["TEST_ENV", "BREW_BUDDY_BASE_URL"],
   "tasks": {
     "type-check": {
       "inputs": [

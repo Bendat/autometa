@@ -1,42 +1,70 @@
-import type { StepRuntimeHelpers } from "@autometa/executor";
+import { createStepRuntime } from "@autometa/executor";
 
 import { Then, When } from "../step-definitions";
-import type { BrewBuddyWorld } from "../world";
-import { performRequest, type HttpMethod } from "../utils/http";
-import { assertHeaderEquals, assertHeaderStartsWith, assertJsonContains, assertJsonArray, assertStatus, toPathExpectations } from "../utils/assertions";
+import { performRequest } from "../utils/http";
+import {
+  assertHeaderEquals,
+  assertHeaderStartsWith,
+  assertJsonArray,
+  assertJsonContains,
+  assertStatus,
+  toPathExpectations,
+} from "../utils/assertions";
 import { consumeHorizontalTable } from "../utils/tables";
 
 When(
   "I send a {httpMethod} request to {string}",
-  async (world: BrewBuddyWorld, method: HttpMethod, route: string, runtime: StepRuntimeHelpers) => {
-    const payload = parseOptionalDocstring(runtime);
-    await performRequest(world, method, route, payload === undefined ? {} : { body: payload });
+  async (method, route, world) => {
+    const runtime = createStepRuntime(world);
+    const payload = parseOptionalDocstring(runtime.consumeDocstring());
+    await performRequest(
+      world,
+      method,
+      route,
+      payload === undefined ? {} : { body: payload }
+    );
   }
 );
 
-Then("the response status should be {int}", (world: BrewBuddyWorld, status: number) => {
-  assertStatus(world, status);
-});
+Then(
+  "the response status should be {int}",
+  (status, world) => {
+    assertStatus(world, status);
+  }
+);
 
-Then("the response header {string} should start with {string}", (world: BrewBuddyWorld, header: string, prefix: string) => {
-  assertHeaderStartsWith(world, header, prefix);
-});
+Then(
+  "the response header {string} should start with {string}",
+  (header, prefix, world) => {
+    assertHeaderStartsWith(world, header, prefix);
+  }
+);
 
-Then(/^the response header "([^"]+)" should equal "([^"]+)"$/, (world: BrewBuddyWorld, header: unknown, expected: unknown) => {
-  assertHeaderEquals(world, String(header), String(expected));
-});
+Then(
+  /^the response header "([^"]+)" should equal "([^"]+)"$/,
+  function (...args) {
+    const [header, expected] = args;
+    assertHeaderEquals(this, String(header), String(expected));
+  }
+);
 
-Then("the response json should contain", (world: BrewBuddyWorld, runtime: StepRuntimeHelpers) => {
-  const rows = consumeHorizontalTable(runtime);
-  assertJsonContains(world, toPathExpectations(rows));
-});
+Then(
+  "the response json should contain",
+  (world) => {
+    const runtime = createStepRuntime(world);
+    const rows = consumeHorizontalTable(runtime);
+    assertJsonContains(world, toPathExpectations(rows));
+  }
+);
 
-Then("the response json should contain an array at path {string}", (world: BrewBuddyWorld, path: string) => {
-  assertJsonArray(world, path);
-});
+Then(
+  "the response json should contain an array at path {string}",
+  (path, world) => {
+    assertJsonArray(world, path);
+  }
+);
 
-function parseOptionalDocstring(runtime: StepRuntimeHelpers): unknown {
-  const docstring = runtime.consumeDocstring();
+function parseOptionalDocstring(docstring: string | undefined): unknown {
   if (docstring === undefined) {
     return undefined;
   }
@@ -44,7 +72,10 @@ function parseOptionalDocstring(runtime: StepRuntimeHelpers): unknown {
   if (!trimmed) {
     return "";
   }
-  if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+  if (
+    (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+    (trimmed.startsWith("[") && trimmed.endsWith("]"))
+  ) {
     try {
       return JSON.parse(trimmed);
     } catch {
