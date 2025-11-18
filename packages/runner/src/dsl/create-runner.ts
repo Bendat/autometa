@@ -117,6 +117,9 @@ export interface RunnerHookDsl<World> {
 const hookWrapperCache = new WeakMap<HookDsl<unknown>, RunnerHookDsl<unknown>>();
 
 function wrapHook<World>(hook: HookDsl<World>): RunnerHookDsl<World> {
+	if (typeof hook !== "function") {
+		throw new TypeError("Hook DSL must be a function");
+	}
 	const cached = hookWrapperCache.get(hook as HookDsl<unknown>);
 	if (cached) {
 		return cached as RunnerHookDsl<World>;
@@ -142,10 +145,21 @@ function wrapHook<World>(hook: HookDsl<World>): RunnerHookDsl<World> {
 
 	hookWrapperCache.set(hook as HookDsl<unknown>, callable as RunnerHookDsl<unknown>);
 
-	callable.skip = wrapHook(hook.skip as HookDsl<World>);
-	callable.only = wrapHook(hook.only as HookDsl<World>);
-	callable.failing = wrapHook(hook.failing as HookDsl<World>);
-	callable.concurrent = wrapHook(hook.concurrent as HookDsl<World>);
+	const assignVariant = (
+		variant: keyof RunnerHookDsl<World>,
+		source: unknown
+	) => {
+		if (typeof source === "function") {
+			(callable as RunnerHookDsl<World>)[variant] = wrapHook(
+				source as HookDsl<World>
+			);
+		}
+	};
+
+	assignVariant("skip", hook.skip);
+	assignVariant("only", hook.only);
+	assignVariant("failing", hook.failing);
+	assignVariant("concurrent", hook.concurrent);
 
 	return callable;
 }

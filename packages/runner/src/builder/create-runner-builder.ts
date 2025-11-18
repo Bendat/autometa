@@ -279,9 +279,38 @@ function cloneDefaults<Defaults extends WorldDefaults>(defaults: Defaults): Defa
 		structuredClone?: <T>(value: T) => T;
 	}).structuredClone;
 	if (structuredCloneFn) {
-		return structuredCloneFn(defaults);
+		try {
+			return structuredCloneFn(defaults);
+		} catch {
+			// Fall through to manual clone strategy when structured cloning fails.
+		}
 	}
-	return { ...defaults } as Defaults;
+	return cloneWithFallback(defaults);
+}
+
+function cloneWithFallback<T>(value: T): T {
+	if (Array.isArray(value)) {
+		return value.map((item) => cloneWithFallback(item)) as unknown as T;
+	}
+	if (value instanceof Map) {
+		return new Map(
+			Array.from(value.entries(), ([key, entry]) => [key, cloneWithFallback(entry)])
+		) as unknown as T;
+	}
+	if (value instanceof Set) {
+		return new Set(Array.from(value.values(), (entry) => cloneWithFallback(entry))) as unknown as T;
+	}
+	if (value && typeof value === "object") {
+		const prototype = Object.getPrototypeOf(value as object);
+		if (prototype === Object.prototype || prototype === null) {
+			const result: Record<string, unknown> = {};
+			for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+				result[key] = cloneWithFallback(entry);
+			}
+			return result as T;
+		}
+	}
+	return value;
 }
 
 function invalidateCaches(state: BuilderState): void {

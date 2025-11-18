@@ -10,6 +10,7 @@ const BUILTIN_EXTERNALS = new Set<string>([
   ...builtinModules,
   ...builtinModules.map((moduleId: string) => `node:${moduleId}`),
 ]);
+const DEFAULT_EXTERNALS = new Set<string>(["p-limit"]);
 
 export interface ModuleLoadOptions {
   readonly cwd: string;
@@ -73,24 +74,28 @@ async function loadTranspiledModule(
 
   const stats = await fs.stat(filePath);
   const cacheKey = createCacheKey(filePath, stats.mtimeMs);
-  const outputFile = join(cacheDirectory, `${cacheKey}.mjs`);
+  const outputFile = join(cacheDirectory, `${cacheKey}.cjs`);
 
   if (!(await pathExists(outputFile))) {
-    const external = new Set<string>([...BUILTIN_EXTERNALS, ...(options.external ?? [])]);
+    const external = new Set<string>([
+      ...BUILTIN_EXTERNALS,
+      ...DEFAULT_EXTERNALS,
+      ...(options.external ?? []),
+    ]);
 
     const result = await build({
       entryPoints: [filePath],
       absWorkingDir: options.cwd,
       bundle: true,
       platform: "node",
-      format: "esm",
+      format: "cjs",
       target: "node20",
       sourcemap: "inline",
       write: false,
       external: Array.from(external),
     });
 
-    const output = result.outputFiles?.find((file: OutputFile) => file.path.endsWith(".js"));
+    const output = result.outputFiles?.find((file: OutputFile) => !file.path.endsWith(".map"));
     if (!output) {
       throw new Error(`Failed to compile module at ${filePath}`);
     }

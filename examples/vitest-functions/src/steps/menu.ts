@@ -1,12 +1,17 @@
-import { expect } from "vitest";
-
 import type { TableRecord, TableValue } from "@autometa/gherkin";
 
 import { Given, Then, When } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
 import { type BrewBuddyWorld } from "../world";
 import { performRequest } from "../utils/http";
-import { assertStatus } from "../utils/assertions";
+import {
+  assertCloseTo,
+  assertDefined,
+  assertFalse,
+  assertStatus,
+  assertStrictEqual,
+  assertTrue,
+} from "../utils/assertions";
 
 class MenuExpectation {
   name = "";
@@ -36,8 +41,8 @@ Then("the menu should include the default drinks", function () {
   const items = ensureMenuItems(this);
   for (const expectation of expectations) {
     const item = findMenuItem(items, expectation.name);
-    expect(item.price).toBeCloseTo(expectation.price);
-    expect(item.size).toBe(expectation.size);
+    assertCloseTo(item.price, expectation.price, 2, `Price mismatch for ${expectation.name}.`);
+    assertStrictEqual(item.size, expectation.size, `Size mismatch for ${expectation.name}.`);
   }
 });
 
@@ -58,18 +63,15 @@ Then(
   (name, price, size, world) => {
     const items = ensureMenuItems(world);
     const item = findMenuItem(items, name);
-    expect(item.price).toBeCloseTo(price);
-    expect(item.size).toBe(size);
+    assertCloseTo(item.price, price, 2, `Price mismatch for ${name}.`);
+    assertStrictEqual(item.size, size, `Size mismatch for ${name}.`);
     world.app.memory.rememberLastMenuItem(item);
   }
 );
 
 Then("the seasonal flag should be set to true", (world) => {
-  expect(
-    world.scenario.lastMenuItem,
-    "No menu item stored for assertion"
-  ).toBeDefined();
-  expect(world.scenario.lastMenuItem?.seasonal).toBe(true);
+  const item = assertDefined(world.scenario.lastMenuItem, "No menu item stored for assertion");
+  assertStrictEqual(item.seasonal, true, "Seasonal flag should be true.");
 });
 
 Given(
@@ -100,9 +102,10 @@ When("I retire the drink named {string}", async (name, world) => {
 Then("the menu should not include {string}", async (name, world) => {
   await performRequest(world, "get", "/menu");
   const items = extractMenuItems(world);
-  expect(
-    items.some((item) => item.name.toLowerCase() === name.toLowerCase())
-  ).toBe(false);
+  assertFalse(
+    items.some((item) => item.name.toLowerCase() === name.toLowerCase()),
+    `Menu should not include ${name}.`
+  );
 });
 
 Given("the following menu price changes are pending", function () {
@@ -128,7 +131,7 @@ Then("each price change should be reflected in the latest menu", (world) => {
   const items = ensureMenuItems(world);
   for (const update of updates) {
     const item = findMenuItem(items, update.name);
-    expect(item.price).toBeCloseTo(update.price);
+    assertCloseTo(item.price, update.price, 2, `Price mismatch for ${update.name}.`);
   }
 });
 
@@ -157,24 +160,24 @@ Then(
 
 Then('the seasonal flag should reflect "{menuSeasonal}"', (expected, world) => {
   const item = world.scenario.lastMenuItem;
-  expect(item, "No menu item stored for seasonal assertion").toBeDefined();
-  expect(item?.seasonal).toBe(expected);
+  const resolved = assertDefined(item, "No menu item stored for seasonal assertion");
+  assertStrictEqual(resolved.seasonal, expected, "Seasonal flag mismatch.");
 });
 
 Then(
   "the menu snapshot should be available on the world context",
   function (world) {
-    expect(this).toBe(world);
+    assertStrictEqual(this, world, "Step context should match world instance.");
     const snapshot = this.scenario.menuSnapshot ?? [];
-    expect(Array.isArray(snapshot)).toBe(true);
+    assertTrue(Array.isArray(snapshot), "Menu snapshot should be stored as an array.");
   }
 );
 
 Then(
   "the last tracked menu item should be {string} when accessed via this",
   function (name, world) {
-    expect(this.scenario.lastMenuItem?.name).toBe(name);
-    expect(world.scenario.lastMenuItem?.name).toBe(name);
+    assertStrictEqual(this.scenario.lastMenuItem?.name, name, "Scenario item mismatch on step context.");
+    assertStrictEqual(world.scenario.lastMenuItem?.name, name, "Scenario item mismatch on world context.");
   }
 );
 
@@ -237,8 +240,7 @@ function buildMenuPayload(
 }
 
 function parseMenuItem(world: BrewBuddyWorld): MenuItem {
-  const body = world.lastResponseBody as MenuItem | undefined;
-  expect(body, "Menu creation response is missing").toBeDefined();
+  const body = assertDefined(world.lastResponseBody as MenuItem | undefined, "Menu creation response is missing");
   return {
     name: body?.name ?? "",
     price: body?.price ?? 0,

@@ -7,7 +7,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "type-check": "tsc --project tsconfig.json --noEmit",
-    "features": "pnpm exec autometa run"
+    "features": "pnpm --filter @autometa/runner run build:types && pnpm --filter @autometa/cli run build && pnpm --filter @autometa/examples-vitest-functions exec autometa run"
   },
   "dependencies": {
     "@autometa/app": "workspace:*",
@@ -16,10 +16,10 @@
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",
     "@autometa/runner": "workspace:*",
-    "@autometa/vitest-executor": "workspace:*",
-    "@cucumber/tag-expressions": "^5.0.7"
+    "@autometa/vitest-executor": "workspace:*"
   },
   "devDependencies": {
+    "@autometa/cli": "workspace:*",
     "@types/node": "18.19.24",
     "typescript": "5.4.5",
     "vitest": "1.4.0"

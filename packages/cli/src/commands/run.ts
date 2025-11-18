@@ -43,9 +43,10 @@ export function registerRunCommand(program: Command): Command {
           process.exitCode = 1;
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const output =
+          error instanceof Error ? error.stack ?? error.message : String(error);
         // eslint-disable-next-line no-console -- CLI error reporting
-        console.error(message);
+        console.error(output);
         process.exitCode = 1;
       }
     });

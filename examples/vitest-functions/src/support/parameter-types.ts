@@ -11,29 +11,22 @@ import {
   type MenuRegion,
 } from "../utils/regions";
 
-const REGION_PATTERN = new RegExp(
-  (Object.keys(REGION_EXPECTATIONS) as readonly string[])
-    .map((region) => escapeRegExp(region))
-    .join("|"),
-  "i"
+const HTTP_METHOD_VARIANTS = caseInsensitivePatterns(["GET", "POST", "PATCH", "DELETE", "PUT"]);
+const REGION_VARIANTS = caseInsensitivePatterns(Object.keys(REGION_EXPECTATIONS));
+const SELECTION_VARIANTS = caseInsensitivePatterns(
+  Object.values(REGION_EXPECTATIONS).map((detail) => detail.expected)
 );
-
-const SELECTION_PATTERN = new RegExp(
-  Object.values(REGION_EXPECTATIONS)
-    .map((detail) => escapeRegExp(detail.expected))
-    .join("|"),
-  "i"
-);
+const BOOLEAN_VARIANTS = caseInsensitivePatterns(["true", "false"]);
 
 defineParameterType({
   name: "httpMethod",
-  pattern: /GET|POST|PATCH|DELETE|PUT/i,
+  pattern: HTTP_METHOD_VARIANTS,
   transform: (method: unknown): HttpMethod => String(method).toUpperCase() as HttpMethod,
 });
 
 defineParameterType({
   name: "menuRegion",
-  pattern: REGION_PATTERN,
+  pattern: REGION_VARIANTS,
   transform: (value: unknown): MenuRegion => {
     const region = normalizeRegion(String(value));
     if (!region) {
@@ -45,7 +38,7 @@ defineParameterType({
 
 defineParameterType({
   name: "menuSelection",
-  pattern: SELECTION_PATTERN,
+  pattern: SELECTION_VARIANTS,
   transform: (
     value: unknown,
     context: ParameterTransformContext<BrewBuddyWorld>
@@ -72,9 +65,27 @@ defineParameterType({
 
 defineParameterType({
   name: "menuSeasonal",
-  pattern: /true|false/i,
+  pattern: BOOLEAN_VARIANTS,
   transform: (value: unknown): boolean => /^true$/i.test(String(value)),
 });
+
+function caseInsensitivePatterns(values: Iterable<string>): readonly RegExp[] {
+  const result: RegExp[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const normalized = value.trim();
+    if (!normalized) {
+      continue;
+    }
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(new RegExp(`^${escapeRegExp(normalized)}$`, "i"));
+  }
+  return result;
+}
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

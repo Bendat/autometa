@@ -136,5 +136,10 @@ function asConfig(value: unknown): Config | undefined {
     return maybeConfig as Config;
   }
 
+  const maybeDefault = (value as { readonly default?: unknown }).default;
+  if (maybeDefault && maybeDefault !== value) {
+    return asConfig(maybeDefault);
+  }
+
   return undefined;
 }

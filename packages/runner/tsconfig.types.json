@@ -34,6 +34,12 @@
       "path": "../executor/tsconfig.types.json"
     },
     {
+      "path": "../injection/tsconfig.types.json"
+    },
+    {
+      "path": "../coordinator/tsconfig.types.json"
+    },
+    {
       "path": "../scopes/tsconfig.types.json"
     }
   ]
