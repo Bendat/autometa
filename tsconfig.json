@@ -71,10 +71,13 @@
       "path": "packages/cli/tsconfig.types.json"
     },
     {
-      "path": "packages/asserters/tsconfig.types.json"
+      "path": "packages/bind-decorator/tsconfig.types.json"
     },
     {
-      "path": "packages/bind-decorator/tsconfig.types.json"
+      "path": "packages/assertions/tsconfig.types.json"
+    },
+    {
+      "path": "packages/asserters/tsconfig.types.json"
     },
     {
       "path": "packages/app/tsconfig.types.json"
