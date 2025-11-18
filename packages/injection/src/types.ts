@@ -22,6 +22,7 @@ export enum Scope {
   TRANSIENT = "transient",
   REQUEST = "request",
   SESSION = "session",
+  SCENARIO = "scenario",
 }
 
 // Registration options
@@ -179,4 +180,5 @@ export function createToken<T>(description?: string): Token<T> {
 export interface PropertyDep {
   property: string | symbol;
   token: Identifier;
+  lazy?: boolean;
 }

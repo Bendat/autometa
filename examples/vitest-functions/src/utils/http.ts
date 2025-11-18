@@ -1,6 +1,6 @@
 import { HTTP, HTTPError } from "@autometa/http";
 
-import type { BrewBuddyWorld, BrewBuddyWorldBase } from "../world";
+import type { BrewBuddyWorld } from "../world";
 import { BrewBuddyMemoryService } from "./memory";
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
@@ -16,12 +16,12 @@ export class BrewBuddyApp {
   readonly http: HTTP;
   readonly memory: BrewBuddyMemoryService;
 
-  constructor(http: HTTP, baseUrl: string, worldAccessor: () => BrewBuddyWorldBase) {
+  constructor(http: HTTP, baseUrl: string, memory: BrewBuddyMemoryService) {
     this.http = http
       .url(baseUrl)
       .sharedHeader("accept", "application/json")
       .sharedAllowPlainText(true);
-    this.memory = new BrewBuddyMemoryService(worldAccessor);
+    this.memory = memory;
   }
 
   request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {

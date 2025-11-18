@@ -14,6 +14,7 @@ export * from './types';
 
 // Container implementation
 export * from './container';
+export * from './decorators';
 
 // Re-export commonly used items for convenience
 export {

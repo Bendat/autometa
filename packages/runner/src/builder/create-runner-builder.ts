@@ -1,6 +1,6 @@
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { SimpleFeature } from "@autometa/gherkin";
-import { createContainer, type IContainer } from "@autometa/injection";
+import { createContainer, type IContainer, Scope } from "@autometa/injection";
 import { createStepRuntime } from "@autometa/executor";
 import type {
 	CucumberExpressionTypeMap,
@@ -28,6 +28,7 @@ import {
 	coordinateRunnerFeature,
 	type CoordinateRunnerFeatureOptions,
 } from "../runtime/coordinate-runner-feature";
+import { WORLD_TOKEN } from "../tokens";
 
 type Mutable<T> = {
 	-readonly [K in keyof T]: T[K];
@@ -388,6 +389,9 @@ function composeWorldFactory<World>(
 		attachFeatureRegistry(asObject, featureRegistry);
 		attachContainer(asObject, container);
 		attachRuntime(asObject);
+		container.registerValue(WORLD_TOKEN, asObject, {
+			scope: Scope.SCENARIO,
+		});
 
 		if (appFactory) {
 			const resolvedAppFactory = appFactory as AppFactory<World, unknown>;

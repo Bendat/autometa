@@ -357,7 +357,26 @@ export class Container implements IContainer {
 
     // Resolve and set property dependencies from the 'props' array
     if (binding.props) {
+      const container = this;
       for (const prop of binding.props) {
+        if (prop.lazy) {
+          Object.defineProperty(instance, prop.property, {
+            configurable: true,
+            enumerable: true,
+            get() {
+              const resolved = container.resolve(prop.token);
+              Object.defineProperty(instance, prop.property, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: resolved,
+              });
+              return resolved;
+            },
+          });
+          continue;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (instance as any)[prop.property] = this.resolveWithContext(
           prop.token,

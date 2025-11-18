@@ -14,6 +14,7 @@ describe("Property Injection with Token-based Dependency", () => {
   let container: Container;
   let Injectable: ReturnType<typeof createDecorators>["Injectable"];
   let Inject: ReturnType<typeof createDecorators>["Inject"];
+  let LazyInject: ReturnType<typeof createDecorators>["LazyInject"];
   let ServiceWithLogger: new () => { logger: ILogger; doSomething(): void };
   let ConsoleLogger: new () => ILogger;
 
@@ -22,6 +23,7 @@ describe("Property Injection with Token-based Dependency", () => {
     const decorators = createDecorators(container);
     Injectable = decorators.Injectable;
     Inject = decorators.Inject;
+    LazyInject = decorators.LazyInject;
 
     @Injectable()
     class ConsoleLoggerImpl implements ILogger {
@@ -52,5 +54,33 @@ describe("Property Injection with Token-based Dependency", () => {
 
     expect(service).toBeInstanceOf(ServiceWithLogger);
     expect(service.logger).toBeInstanceOf(ConsoleLogger);
+  });
+
+  it("should resolve property dependencies lazily and cache the value", () => {
+    let resolveCount = 0;
+    container.registerFactory(LOGGER_TOKEN, () => {
+      resolveCount += 1;
+      return new ConsoleLogger();
+    });
+
+    @Injectable()
+    class LazyService {
+      @LazyInject(LOGGER_TOKEN)
+      public logger!: ILogger;
+    }
+
+    container.registerClass(LazyService);
+
+    const service = container.resolve(LazyService);
+
+    expect(resolveCount).toBe(0);
+
+    const firstLogger = service.logger;
+    expect(resolveCount).toBe(1);
+    expect(firstLogger).toBeInstanceOf(ConsoleLogger);
+
+    const secondLogger = service.logger;
+    expect(resolveCount).toBe(1);
+    expect(secondLogger).toBe(firstLogger);
   });
 });

@@ -1,7 +1,6 @@
 import "reflect-metadata";
-import type { Container } from "./container";
 import { Scope } from "./types";
-import type { Identifier, PropertyDep } from "./types";
+import type { Identifier, PropertyDep, IContainer } from "./types";
 
 // Define unique keys for storing metadata via reflect-metadata
 const INJECT_PARAM_KEY = "autometa:inject_param";
@@ -28,7 +27,20 @@ function ensureInjectableTarget(value: unknown, decorator: string): asserts valu
  * container and can be used with multiple, separate containers.
  * @param container The container instance to which the decorators will register classes.
  */
-export function createDecorators(container: Container) {
+export function createDecorators(container: IContainer) {
+  function registerPropertyDependency(
+    target: object,
+    propertyKey: string | symbol,
+    token: Identifier,
+    lazy: boolean
+  ): void {
+    const existing =
+      (Reflect.getMetadata(INJECT_PROP_KEY, target) as PropertyDep[] | undefined) || [];
+    const filtered = existing.filter((dep) => dep.property !== propertyKey);
+    filtered.push({ property: propertyKey, token, lazy });
+    Reflect.defineMetadata(INJECT_PROP_KEY, filtered, target);
+  }
+
   /**
    * A class decorator that marks a class as available for injection.
    * It gathers all dependency metadata from `@Inject` decorators and
@@ -81,12 +93,15 @@ export function createDecorators(container: Container) {
         return;
       }
 
-      const props =
-        (Reflect.getMetadata(INJECT_PROP_KEY, target) as PropertyDep[] | undefined) || [];
-      props.push({ property: propertyKey, token });
-      Reflect.defineMetadata(INJECT_PROP_KEY, props, target);
+      registerPropertyDependency(target, propertyKey, token, false);
     }) as PropertyDecorator & ParameterDecorator;
   }
 
-  return { Injectable, Inject };
+  function LazyInject(token: Identifier): PropertyDecorator {
+    return (target, propertyKey) => {
+      registerPropertyDependency(target, propertyKey, token, true);
+    };
+  }
+
+  return { Injectable, Inject, LazyInject };
 }

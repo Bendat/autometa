@@ -72,4 +72,6 @@ export type { GlobalWorld, GlobalRunnerOptions } from "./global";
 
 export { CucumberRunner } from "./cucumber-runner";
 
+export { WORLD_TOKEN } from "./tokens";
+
 export { createRunner as default } from "./dsl/create-runner";

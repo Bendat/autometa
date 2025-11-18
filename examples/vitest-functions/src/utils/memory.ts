@@ -8,47 +8,53 @@ import type {
 import type { BrewBuddyWorldBase, TagRegistryEntry } from "../world";
 
 export class BrewBuddyMemoryService {
-  constructor(private readonly worldAccessor: () => BrewBuddyWorldBase) {}
+  // World reference is injected lazily via the test container.
+  // Using definite assignment assertion because the decorator ensures the property is populated on first access.
+  private world!: BrewBuddyWorldBase;
 
-  private get world(): BrewBuddyWorldBase {
-    return this.worldAccessor();
+  private get state(): BrewBuddyWorldBase {
+    const world = this.world;
+    if (!world) {
+      throw new Error("BrewBuddyMemoryService is missing world scope binding");
+    }
+    return world;
   }
 
   rememberMenuSnapshot(items: MenuItem[]): void {
-    this.world.scenario.menuSnapshot = items;
+    this.state.scenario.menuSnapshot = items;
   }
 
   rememberLastMenuItem(item: MenuItem): void {
-    this.world.scenario.lastMenuItem = item;
+    this.state.scenario.lastMenuItem = item;
   }
 
   rememberOrder(order: Order): void {
-    this.world.scenario.order = order;
-    this.world.aliases.orders.set(order.ticket, order);
+    this.state.scenario.order = order;
+    this.state.aliases.orders.set(order.ticket, order);
   }
 
   setTicketAlias(alias: string, ticket: string): void {
-    this.world.aliases.tickets.set(alias, ticket);
+    this.state.aliases.tickets.set(alias, ticket);
   }
 
   resolveTicket(reference: string): string {
-    return this.world.aliases.tickets.get(reference) ?? reference;
+    return this.state.aliases.tickets.get(reference) ?? reference;
   }
 
   rememberLoyalty(account: LoyaltyAccount): void {
-    this.world.scenario.loyaltyAccount = account;
+    this.state.scenario.loyaltyAccount = account;
   }
 
   rememberInventory(inventory: InventoryItem): void {
-    this.world.scenario.lastInventory = inventory;
+    this.state.scenario.lastInventory = inventory;
   }
 
   rememberRecipeSlug(name: string, slug: string): void {
-    this.world.aliases.recipes.set(name.toLowerCase(), slug);
+    this.state.aliases.recipes.set(name.toLowerCase(), slug);
   }
 
   resolveRecipeSlug(name: string): string {
-    return this.world.aliases.recipes.get(name.toLowerCase()) ?? name;
+    return this.state.aliases.recipes.get(name.toLowerCase()) ?? name;
   }
 
   rememberRecipes(recipes: Recipe[]): void {
@@ -58,15 +64,15 @@ export class BrewBuddyMemoryService {
   }
 
   rememberBrewRatio(ratio: string): void {
-    this.world.scenario.brewRatio = ratio;
+    this.state.scenario.brewRatio = ratio;
   }
 
   rememberTagRegistry(entries: TagRegistryEntry[]): void {
-    this.world.scenario.tagRegistry = entries;
+    this.state.scenario.tagRegistry = entries;
   }
 
   rememberTagExpression(expression: string, selected: string[]): void {
-    this.world.scenario.tagExpression = expression;
-    this.world.scenario.selectedScenarioNames = selected;
+    this.state.scenario.tagExpression = expression;
+    this.state.scenario.selectedScenarioNames = selected;
   }
 }
