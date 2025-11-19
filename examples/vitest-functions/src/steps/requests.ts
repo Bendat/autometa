@@ -1,13 +1,6 @@
-import { Then, When } from "../step-definitions";
+import { ensure, Then, When } from "../step-definitions";
 import { performRequest } from "../utils/http";
-import {
-  assertHeaderEquals,
-  assertHeaderStartsWith,
-  assertJsonArray,
-  assertJsonContains,
-  assertStatus,
-  toPathExpectations,
-} from "../utils/assertions";
+import { toPathExpectations } from "../utils/assertions";
 
 When(
   "I send a {httpMethod} request to {string}",
@@ -25,14 +18,14 @@ When(
 Then(
   "the response status should be {int}",
   (status, world) => {
-    assertStatus(world, status);
+    ensure(world).response.hasStatus(status);
   }
 );
 
 Then(
   "the response header {string} should start with {string}",
   (header, prefix, world) => {
-    assertHeaderStartsWith(world, header, prefix);
+    ensure(world).response.hasHeader(header, (value) => value.startsWith(prefix));
   }
 );
 
@@ -40,7 +33,7 @@ Then(
   /^the response header "([^"]+)" should equal "([^"]+)"$/,
   function (...args) {
     const [header, expected] = args;
-    assertHeaderEquals(this, String(header), String(expected));
+    ensure(this).response.hasHeader(String(header), String(expected));
   }
 );
 
@@ -48,14 +41,15 @@ Then(
   "the response json should contain",
   (world) => {
     const table = world.runtime.requireTable("horizontal");
-    assertJsonContains(world, toPathExpectations(table.records()));
+    const expectations = toPathExpectations(table.records());
+    ensure(world).json.contains(expectations);
   }
 );
 
 Then(
   "the response json should contain an array at path {string}",
   (path, world) => {
-    assertJsonArray(world, path);
+    ensure(world).json.array(path);
   }
 );
 

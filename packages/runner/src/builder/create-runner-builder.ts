@@ -1,3 +1,9 @@
+import {
+	createDefaultEnsureFactory,
+	ensure as baseEnsure,
+	type EnsureFacade,
+	type EnsureInvoke,
+} from "@autometa/assertions";
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { SimpleFeature } from "@autometa/gherkin";
 import { createContainer, type IContainer, Scope } from "@autometa/injection";
@@ -36,6 +42,18 @@ type Mutable<T> = {
 
 type MutableRunnerContextOptions<World> = Mutable<RunnerContextOptions<World>>;
 
+export type DefaultEnsureFacets = Record<string, never>;
+
+export type RunnerEnsureFactory<
+	World,
+	Facets extends Record<string, unknown>
+> = (world: World) => EnsureFacade<World, Facets>;
+
+export type AssertionSetup<
+	World,
+	Facets extends Record<string, unknown>
+> = (ensure: EnsureInvoke) => RunnerEnsureFactory<World, Facets>;
+
 export interface AppFactoryContext<World> {
 	readonly container: IContainer;
 	readonly world: World;
@@ -54,12 +72,14 @@ export type WorldWithApp<World, App> = World extends { app: infer _Existing }
 
 export interface RunnerStepsSurface<
 	World,
-	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
+	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes,
+	Facets extends Record<string, unknown> = DefaultEnsureFacets
 > extends RunnerEnvironment<World, ExpressionTypes> {
 	readonly globals: GlobalRunner<World, ExpressionTypes>;
 	coordinateFeature(
 		options: RunnerCoordinateFeatureOptions<World>
 	): CoordinateFeatureResult<World>;
+	readonly ensure: RunnerEnsureFactory<World, Facets>;
 }
 
 export interface RunnerDecoratorsSurface<World>
@@ -69,7 +89,8 @@ export interface RunnerDecoratorsSurface<World>
 
 export interface RunnerBuilder<
 	World,
-	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
+	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes,
+	Facets extends Record<string, unknown> = DefaultEnsureFacets
 > {
 	configure(
 		update:
@@ -77,18 +98,28 @@ export interface RunnerBuilder<
 			| ((
 				current: RunnerContextOptions<World>
 			) => RunnerContextOptions<World>)
-	): RunnerBuilder<World, ExpressionTypes>;
+	): RunnerBuilder<World, ExpressionTypes, Facets>;
 	expressionMap<NextExpressionTypes extends CucumberExpressionTypeMap>(): RunnerBuilder<
 		World,
-		NextExpressionTypes
+		NextExpressionTypes,
+		Facets
 	>;
 	withWorld<NextWorld = World>(
 		value?: Partial<NextWorld> | WorldFactory<NextWorld>
-	): RunnerBuilder<NextWorld, ExpressionTypes>;
+	): RunnerBuilder<NextWorld, ExpressionTypes, DefaultEnsureFacets>;
 	app<App>(
 		app: AppFactoryInput<World, App>
-	): RunnerBuilder<WorldWithApp<World, App>, ExpressionTypes>;
-	steps(): RunnerStepsSurface<World, ExpressionTypes>;
+	): RunnerBuilder<
+		WorldWithApp<World, App>,
+		ExpressionTypes,
+		DefaultEnsureFacets
+	>;
+	assertions<
+		NextFacets extends Record<string, unknown>
+	>(
+		setup: AssertionSetup<World, NextFacets>
+	): RunnerBuilder<World, ExpressionTypes, NextFacets>;
+	steps(): RunnerStepsSurface<World, ExpressionTypes, Facets>;
 	decorators(): RunnerDecoratorsSurface<World>;
 }
 
@@ -101,6 +132,7 @@ interface BuilderState {
 	options: MutableRunnerContextOptions<unknown>;
 	worldFactory?: WorldFactory<unknown>;
 	appFactory?: AppFactory<unknown, unknown>;
+	ensureFactory?: RunnerEnsureFactory<unknown, Record<string, unknown>>;
 	stepsCache?: StepsCache;
 	decoratorsCache?: DecoratorsCache;
 	featureRegistry?: FeatureRegistry;
@@ -109,7 +141,12 @@ interface BuilderState {
 interface StepsCache {
 	environment: RunnerEnvironment<unknown, CucumberExpressionTypeMap>;
 	globals: GlobalRunner<unknown, CucumberExpressionTypeMap>;
-	surface: RunnerStepsSurface<unknown, CucumberExpressionTypeMap>;
+	surface: RunnerStepsSurface<
+		unknown,
+		CucumberExpressionTypeMap,
+		Record<string, unknown>
+	>;
+	ensureFactory: RunnerEnsureFactory<unknown, Record<string, unknown>>;
 }
 
 interface DecoratorsCache {
@@ -123,15 +160,20 @@ export function createRunnerBuilder<
 	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes
 >(
 	initial?: Partial<RunnerContextOptions<World>>
-): RunnerBuilder<World, ExpressionTypes> {
+): RunnerBuilder<World, ExpressionTypes, DefaultEnsureFacets> {
 	const state = initializeState(initial);
-	return new RunnerBuilderImpl<World, ExpressionTypes>(state);
+	return new RunnerBuilderImpl<
+		World,
+		ExpressionTypes,
+		DefaultEnsureFacets
+	>(state);
 }
 
 class RunnerBuilderImpl<
 	World,
-	ExpressionTypes extends CucumberExpressionTypeMap
-> implements RunnerBuilder<World, ExpressionTypes> {
+	ExpressionTypes extends CucumberExpressionTypeMap,
+	Facets extends Record<string, unknown>
+> implements RunnerBuilder<World, ExpressionTypes, Facets> {
 	constructor(private readonly state: BuilderState) {}
 
 	configure(
@@ -140,27 +182,33 @@ class RunnerBuilderImpl<
 			| ((
 				current: RunnerContextOptions<World>
 			) => RunnerContextOptions<World>)
-	): RunnerBuilder<World, ExpressionTypes> {
+	): RunnerBuilder<World, ExpressionTypes, Facets> {
 		if (typeof update === "function") {
 			const current = collectCurrentOptions<World>(this.state);
 			const merged = update(current);
 			applyOptions(this.state, merged);
-			return new RunnerBuilderImpl<World, ExpressionTypes>(this.state);
+			return new RunnerBuilderImpl<World, ExpressionTypes, Facets>(
+				this.state
+			);
 		}
 
 		applyOptions(this.state, update);
-		return new RunnerBuilderImpl<World, ExpressionTypes>(this.state);
+		return new RunnerBuilderImpl<World, ExpressionTypes, Facets>(
+			this.state
+		);
 	}
 
 	expressionMap<
 		NextExpressionTypes extends CucumberExpressionTypeMap
-	>(): RunnerBuilder<World, NextExpressionTypes> {
-		return new RunnerBuilderImpl<World, NextExpressionTypes>(this.state);
+	>(): RunnerBuilder<World, NextExpressionTypes, Facets> {
+		return new RunnerBuilderImpl<World, NextExpressionTypes, Facets>(
+			this.state
+		);
 	}
 
 	withWorld<NextWorld = World>(
 		value?: Partial<NextWorld> | WorldFactory<NextWorld>
-	): RunnerBuilder<NextWorld, ExpressionTypes> {
+	): RunnerBuilder<NextWorld, ExpressionTypes, DefaultEnsureFacets> {
 		if (typeof value === "function") {
 			this.state.worldFactory = value as WorldFactory<unknown>;
 		} else if (value) {
@@ -169,23 +217,58 @@ class RunnerBuilderImpl<
 		} else {
 			this.state.worldFactory = async () => ({} as NextWorld);
 		}
+		delete this.state.ensureFactory;
 		invalidateCaches(this.state);
-		return new RunnerBuilderImpl<NextWorld, ExpressionTypes>(this.state) as RunnerBuilder<NextWorld, ExpressionTypes>;
+		return new RunnerBuilderImpl<
+			NextWorld,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>(this.state) as RunnerBuilder<
+			NextWorld,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>;
 	}
 
 	app<App>(
 		app: AppFactoryInput<World, App>
-	): RunnerBuilder<WorldWithApp<World, App>, ExpressionTypes> {
+	): RunnerBuilder<
+		WorldWithApp<World, App>,
+		ExpressionTypes,
+		DefaultEnsureFacets
+	> {
 		this.state.appFactory =
 			normalizeAppFactory<World, App>(app) as AppFactory<unknown, unknown>;
+		delete this.state.ensureFactory;
 		invalidateCaches(this.state);
-		return new RunnerBuilderImpl<WorldWithApp<World, App>, ExpressionTypes>(
+		return new RunnerBuilderImpl<
+			WorldWithApp<World, App>,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>(this.state) as RunnerBuilder<
+			WorldWithApp<World, App>,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>;
+	}
+
+	assertions<
+		NextFacets extends Record<string, unknown>
+	>(
+		setup: AssertionSetup<World, NextFacets>
+	): RunnerBuilder<World, ExpressionTypes, NextFacets> {
+		this.state.ensureFactory = setup(baseEnsure) as RunnerEnsureFactory<
+			unknown,
+			Record<string, unknown>
+		>;
+		invalidateCaches(this.state);
+		return new RunnerBuilderImpl<World, ExpressionTypes, NextFacets>(
 			this.state
 		);
 	}
 
-	steps(): RunnerStepsSurface<World, ExpressionTypes> {
-		return ensureSteps<World, ExpressionTypes>(this.state);
+	steps(): RunnerStepsSurface<World, ExpressionTypes, Facets> {
+		return ensureSteps<World, ExpressionTypes, Facets>(this.state);
 	}
 
 	decorators(): RunnerDecoratorsSurface<World> {
@@ -237,6 +320,7 @@ function applyOptions<World>(
 		} else {
 			delete state.worldFactory;
 		}
+		delete state.ensureFactory;
 	}
 	invalidateCaches(state);
 }
@@ -320,15 +404,22 @@ function invalidateCaches(state: BuilderState): void {
 
 function ensureSteps<
 	World,
-	ExpressionTypes extends CucumberExpressionTypeMap
->(state: BuilderState): RunnerStepsSurface<World, ExpressionTypes> {
+	ExpressionTypes extends CucumberExpressionTypeMap,
+	Facets extends Record<string, unknown>
+>(state: BuilderState): RunnerStepsSurface<World, ExpressionTypes, Facets> {
 	let cache = state.stepsCache;
 	if (!cache) {
 		const options = buildRunnerOptions<World>(state, { includeParameterTypes: true });
 		const environment = createRunner<World, ExpressionTypes>(options);
 		const globals = createGlobalRunner<World, ExpressionTypes>();
 		globals.useEnvironment(environment);
-		const surface = attachStepsHelpers(state, environment, globals);
+		const ensureFactory = resolveEnsureFactory<World, Facets>(state);
+		const surface = attachStepsHelpers(
+			state,
+			environment,
+			globals,
+			ensureFactory
+		);
 		cache = {
 			environment: environment as RunnerEnvironment<
 				unknown,
@@ -337,12 +428,17 @@ function ensureSteps<
 			globals: globals as GlobalRunner<unknown, CucumberExpressionTypeMap>,
 			surface: surface as RunnerStepsSurface<
 				unknown,
-				CucumberExpressionTypeMap
+				CucumberExpressionTypeMap,
+				Record<string, unknown>
+			>,
+			ensureFactory: ensureFactory as RunnerEnsureFactory<
+				unknown,
+				Record<string, unknown>
 			>,
 		};
 		state.stepsCache = cache;
 	}
-	return cache.surface as RunnerStepsSurface<World, ExpressionTypes>;
+	return cache.surface as RunnerStepsSurface<World, ExpressionTypes, Facets>;
 }
 
 function ensureDecorators<
@@ -353,7 +449,11 @@ function ensureDecorators<
 ): RunnerDecoratorsSurface<World> {
 	let cache = state.decoratorsCache;
 	if (!cache) {
-		const steps = ensureSteps<World, ExpressionTypes>(state);
+		const steps = ensureSteps<
+			World,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>(state);
 		const options = buildRunnerOptions<World>(state, {
 			includeParameterTypes: false,
 		});
@@ -439,12 +539,14 @@ function composeWorldFactory<World>(
 
 function attachStepsHelpers<
 	World,
-	ExpressionTypes extends CucumberExpressionTypeMap
+	ExpressionTypes extends CucumberExpressionTypeMap,
+	Facets extends Record<string, unknown>
 >(
 	state: BuilderState,
 	environment: RunnerEnvironment<World, ExpressionTypes>,
-	globals: GlobalRunner<World, ExpressionTypes>
-): RunnerStepsSurface<World, ExpressionTypes> {
+	globals: GlobalRunner<World, ExpressionTypes>,
+	ensureFactory: RunnerEnsureFactory<World, Facets>
+): RunnerStepsSurface<World, ExpressionTypes, Facets> {
 	if (!("globals" in environment)) {
 		Object.defineProperty(environment, "globals", {
 			value: globals,
@@ -468,7 +570,29 @@ function attachStepsHelpers<
 			configurable: true,
 		});
 	}
-	return environment as RunnerStepsSurface<World, ExpressionTypes>;
+	if (!("ensure" in environment)) {
+		Object.defineProperty(environment, "ensure", {
+			value: ensureFactory,
+			enumerable: true,
+			configurable: true,
+		});
+	}
+	return environment as RunnerStepsSurface<World, ExpressionTypes, Facets>;
+}
+
+function resolveEnsureFactory<
+	World,
+	Facets extends Record<string, unknown>
+>(state: BuilderState): RunnerEnsureFactory<World, Facets> {
+	if (state.ensureFactory) {
+		return state.ensureFactory as RunnerEnsureFactory<World, Facets>;
+	}
+	const factory = createDefaultEnsureFactory<World>();
+	state.ensureFactory = factory as RunnerEnsureFactory<
+		unknown,
+		Record<string, unknown>
+	>;
+	return factory as RunnerEnsureFactory<World, Facets>;
 }
 
 function attachDecoratorEnvironment<World>(

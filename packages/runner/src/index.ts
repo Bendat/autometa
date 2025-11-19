@@ -11,6 +11,9 @@ export type {
 	RunnerDecoratorsSurface,
 	RunnerStepsSurface,
 	WorldWithApp,
+	DefaultEnsureFacets,
+	RunnerEnsureFactory,
+	AssertionSetup,
 } from "./builder/create-runner-builder";
 
 export { createDecoratorRunner } from "./dsl/create-decorator-runner";

@@ -1,9 +1,23 @@
 import type { HTTPResponse } from "@autometa/http";
 import type { TableRecord } from "@autometa/gherkin";
 
+import {
+  createEnsureFactory,
+  fromHttpResponse,
+  type AssertionPlugin,
+  type EnsureChain,
+  type EnsureFacade,
+  type EnsureFactory,
+  type EnsureInvoke,
+  type EnsurePluginFacets,
+  type HttpResponseLike,
+  type HeaderExpectation,
+  type CacheControlExpectation,
+  type StatusExpectation,
+} from "@autometa/assertions";
 import { inspect, isDeepStrictEqual } from "node:util";
 
-import { resolveJsonPath, normalizeValue } from "./json";
+import { normalizeValue, resolveJsonPath } from "./json";
 import type { BrewBuddyWorld, TagRegistryEntry } from "../world";
 
 interface Placeholder {
@@ -24,37 +38,96 @@ export function requireResponse(world: BrewBuddyWorld): HTTPResponse<unknown> {
   return world.lastResponse;
 }
 
-export function assertStatus(world: BrewBuddyWorld, expected: number): void {
-  const response = requireResponse(world);
-  assertStrictEqual(response.status, expected, `Expected HTTP status ${expected} but received ${response.status}.`);
+interface ResponseAssertions {
+  readonly ensure: () => EnsureChain<HttpResponseLike>;
+  hasStatus(expectation: StatusExpectation): void;
+  hasHeader(name: string, expectation?: HeaderExpectation): void;
+  isCacheable(expectation?: CacheControlExpectation): void;
+  hasCorrelationId(headerName?: string): void;
 }
 
-export function assertHeaderEquals(world: BrewBuddyWorld, header: string, expected: string): void {
-  const response = requireResponse(world);
-  const actual = response.headers?.[header.toLowerCase()] ?? response.headers?.[header];
-  const resolved = assertDefined(actual, `Missing header ${header}`);
-  assertStrictEqual(String(resolved), expected, `Expected header ${header} to equal ${expected} but received ${String(resolved)}.`);
+interface JsonAssertions {
+  contains(expectations: Iterable<PathExpectation>): void;
+  array(path: string): unknown[];
 }
 
-export function assertHeaderStartsWith(world: BrewBuddyWorld, header: string, prefix: string): void {
-  const response = requireResponse(world);
-  const actual = response.headers?.[header.toLowerCase()] ?? response.headers?.[header];
-  const resolved = assertDefined(actual, `Missing header ${header}`);
-  assertTrue(String(resolved).startsWith(prefix), `Expected header ${header} to start with ${prefix} but received ${String(resolved)}.`);
-}
+const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ ensure }) =>
+  (world) => {
+    const label = "http response";
+    const chain = (): EnsureChain<HttpResponseLike> =>
+      ensure(fromHttpResponse(requireResponse(world)), { label });
 
-export function assertJsonContains(world: BrewBuddyWorld, expectations: Iterable<PathExpectation>): void {
-  const body = world.lastResponseBody;
-  for (const { path, value } of expectations) {
-    const actual = resolveJsonPath(body, path);
-    assertValueMatches(actual, value, path);
-  }
-}
+    return {
+      ensure: chain,
+      hasStatus(expectation: StatusExpectation) {
+        chain().toHaveStatus(expectation);
+      },
+      hasHeader(name: string, expectation?: HeaderExpectation) {
+        chain().toHaveHeader(name, expectation);
+      },
+      isCacheable(expectation?: CacheControlExpectation) {
+        chain().toBeCacheable(expectation);
+      },
+      hasCorrelationId(headerName?: string) {
+        chain().toHaveCorrelationId(headerName);
+      },
+    };
+  };
 
-export function assertJsonArray(world: BrewBuddyWorld, path: string): unknown[] {
-  const body = world.lastResponseBody;
-  const value = resolveJsonPath(body, path);
-  return assertArray(value, `Expected JSON array at path ${path}.`);
+const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure }) =>
+  (world) => {
+    const bodyLabel = "response json";
+    const ensureBody = () =>
+      ensure(world.lastResponseBody, { label: bodyLabel }).toBeDefined().value;
+
+    return {
+      contains(expectations: Iterable<PathExpectation>) {
+        const body = ensureBody();
+        for (const { path, value } of expectations) {
+          const label = `json path ${path}`;
+          const resolved = resolveJsonPath(body, path);
+          const actual = ensure(resolved, { label }).value;
+
+          if (isTimestampPlaceholder(value)) {
+            assertStrictEqual(typeof actual, "string", `Expected ${path} to be a timestamp string.`);
+            assertGreaterThan(String(actual).length, 0, `Expected ${path} to contain a non-empty timestamp.`);
+            continue;
+          }
+
+          assertDeepEqual(actual, value, `Value at path ${path} mismatch.`);
+        }
+      },
+      array(path: string) {
+        const body = ensureBody();
+        const label = `json path ${path}`;
+        const resolved = resolveJsonPath(body, path);
+        return ensure(resolved, { label }).toBeInstanceOf(Array).value as unknown[];
+      },
+    };
+  };
+
+const brewBuddyPlugins = {
+  response: responsePlugin,
+  json: jsonPlugin,
+} as const;
+
+export type BrewBuddyEnsureFacets = EnsurePluginFacets<
+  BrewBuddyWorld,
+  typeof brewBuddyPlugins
+>;
+
+export type BrewBuddyEnsure = EnsureFacade<BrewBuddyWorld, BrewBuddyEnsureFacets>;
+
+export type BrewBuddyEnsureFactory = EnsureFactory<
+  BrewBuddyWorld,
+  BrewBuddyEnsureFacets
+>;
+
+export function createBrewBuddyEnsureFactory(ensureInvoke: EnsureInvoke): BrewBuddyEnsureFactory {
+  return createEnsureFactory<BrewBuddyWorld, typeof brewBuddyPlugins>(
+    ensureInvoke,
+    brewBuddyPlugins
+  );
 }
 
 export function toPathExpectations(records: TableRecord[]): PathExpectation[] {
@@ -89,20 +162,6 @@ export function assertTagRegistry(entries: TagRegistryEntry[] | undefined, expec
   });
 }
 
-function assertValueMatches(actual: unknown, expected: ExpectedValue, path: string): void {
-  if (isTimestampPlaceholder(expected)) {
-    assertStrictEqual(typeof actual, "string", `Expected ${path} to be a timestamp string.`);
-    assertGreaterThan(String(actual).length, 0, `Expected ${path} to contain a non-empty timestamp.`);
-    return;
-  }
-
-  assertDeepEqual(actual, expected, `Value at path ${path} mismatch.`);
-}
-
-function isTimestampPlaceholder(value: unknown): value is Placeholder {
-  return Boolean(value && typeof value === "object" && (value as Placeholder).__placeholder === "timestamp");
-}
-
 export function assertDefined<T>(value: T | null | undefined, message = "Expected value to be defined."): T {
   if (value === undefined || value === null) {
     throw new Error(message);
@@ -134,13 +193,6 @@ export function assertLength(value: { length: number }, expected: number, messag
   }
 }
 
-export function assertArray(value: unknown, message = "Expected value to be an array."): unknown[] {
-  if (!Array.isArray(value)) {
-    throw new Error(message);
-  }
-  return value;
-}
-
 export function assertGreaterThan(value: number, threshold: number, message?: string): void {
   if (!(value > threshold)) {
     throw new Error(message ?? `Expected ${value} to be greater than ${threshold}.`);
@@ -163,6 +215,14 @@ export function assertDeepEqual(actual: unknown, expected: unknown, message?: st
   if (!isDeepStrictEqual(actual, expected)) {
     throw new Error(message ?? formatComparison("deep equality", actual, expected));
   }
+}
+
+function isTimestampPlaceholder(value: unknown): value is Placeholder {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      (value as Partial<Placeholder>).__placeholder === "timestamp"
+  );
 }
 
 function formatComparison(kind: string, actual: unknown, expected: unknown): string {

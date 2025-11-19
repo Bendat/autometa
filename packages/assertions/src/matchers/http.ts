@@ -9,7 +9,7 @@ type HeadersLike = {
   [Symbol.iterator]?: () => IterableIterator<[string, string]>;
 };
 
-type HeaderSource = HeadersLike | Record<string, unknown>;
+type HeaderSource = HeadersLike | Record<string, unknown> | Headers;
 
 export type HttpResponseLike = {
   status: number;
@@ -458,7 +458,7 @@ export function fromHttpResponse<T extends { headers: Record<string, string> }>(
 ): HttpResponseLike {
   return {
     status: response.status,
-    statusText: response.statusText,
+    statusText: response.statusText ?? "",
     headers: response.headers,
     data: response.data,
     raw: response,

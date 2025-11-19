@@ -1,8 +1,6 @@
-import { AfterScenario, Given } from "../step-definitions";
-
+import { AfterScenario, ensure, Given } from "../step-definitions";
 import { disposeStream } from "../world";
 import { performRequest } from "../utils/http";
-import { assertStatus } from "../utils/assertions";
 
 AfterScenario(({ world }) => {
   disposeStream(world);
@@ -12,7 +10,7 @@ Given(
   "the Brew Buddy API base URL is configured",
   async (world) => {
     await performRequest(world, "get", "/health");
-    assertStatus(world, 200);
+    ensure(world).response.hasStatus(200);
   }
 );
 
@@ -22,7 +20,7 @@ Given(
     await performRequest(world, "post", "/admin/reset", {
       body: { scopes: ["menu", "recipes", "inventory", "loyalty", "orders"] },
     });
-    assertStatus(world, 204);
+    ensure(world).response.hasStatus(204);
   }
 );
 
@@ -30,7 +28,7 @@ Given("the order queue is cleared", async (world) => {
   await performRequest(world, "post", "/admin/reset", {
     body: { scopes: ["orders"] },
   });
-  assertStatus(world, 204);
+  ensure(world).response.hasStatus(204);
 });
 
 

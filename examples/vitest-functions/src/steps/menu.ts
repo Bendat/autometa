@@ -1,6 +1,6 @@
 import type { TableRecord, TableValue } from "@autometa/gherkin";
 
-import { Given, Then, When } from "../step-definitions";
+import { Given, Then, When, ensure } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
 import { type BrewBuddyWorld } from "../world";
 import { performRequest } from "../utils/http";
@@ -8,7 +8,6 @@ import {
   assertCloseTo,
   assertDefined,
   assertFalse,
-  assertStatus,
   assertStrictEqual,
   assertTrue,
 } from "../utils/assertions";
@@ -46,13 +45,17 @@ Then("the menu should include the default drinks", function () {
   }
 });
 
-Given("I create a seasonal drink named {string}", async function (name) {
+Given("I create a seasonal drink named {string}", async function (
+  this: BrewBuddyWorld,
+  name: string,
+  world: BrewBuddyWorld
+) {
   const fields = this.runtime
     .requireTable("horizontal")
     .records<MenuFieldRow>();
   const payload = buildMenuPayload(name, fields);
-  await performRequest(this, "post", "/menu", { body: payload });
-  assertStatus(this, 201);
+  await performRequest(world, "post", "/menu", { body: payload });
+  ensure(world).response.hasStatus(201);
   const created = parseMenuItem(this);
   this.app.memory.rememberLastMenuItem(created);
   this.scenario.createdItems.push(created.name);
@@ -90,13 +93,13 @@ Given(
       season: string;
     };
     await performRequest(world, "post", "/menu", { body: payload });
-    assertStatus(world, 201);
+    ensure(world).response.hasStatus(201);
   }
 );
 
 When("I retire the drink named {string}", async (name, world) => {
   await performRequest(world, "delete", `/menu/${encodeURIComponent(name)}`);
-  assertStatus(world, 204);
+  ensure(world).response.hasStatus(204);
 });
 
 Then("the menu should not include {string}", async (name, world) => {
@@ -121,7 +124,7 @@ Given("the following menu price changes are pending", function () {
 When("I apply the bulk price update", async (world) => {
   const updates = world.scenario.priceUpdates ?? [];
   await performRequest(world, "patch", "/menu/prices", { body: { updates } });
-  assertStatus(world, 200);
+  ensure(world).response.hasStatus(200);
   const updated = extractMenuItems(world);
   world.app.memory.rememberMenuSnapshot(updated);
 });
