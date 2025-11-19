@@ -33,6 +33,17 @@ describe("ensure", () => {
     expectTypeOf(chain.value).toEqualTypeOf<string>();
   });
 
+  it("narrows array type after toBeArrayContaining", () => {
+    const maybeValues: readonly number[] | Set<number> = [1, 2, 3];
+    const chain = ensure(maybeValues).toBeArrayContaining([1]);
+    const result = chain.value;
+    const acceptsReadonly: readonly number[] = result;
+    expect(acceptsReadonly).toBe(result);
+    // @ts-expect-error Set is not assignable after narrowing
+    const invalid: typeof result = new Set<number>();
+    void invalid;
+  });
+
   it("throws EnsureError when toBeDefined fails", () => {
     expect(() => ensure<string | null>(null).toBeDefined()).toThrowError(EnsureError);
   });
@@ -110,5 +121,51 @@ describe("ensure", () => {
 
   it("throws when length does not match", () => {
     expect(() => ensure("abc").toHaveLength(2)).toThrowError(EnsureError);
+  });
+
+  describe("negated chains", () => {
+    it("inverts matcher expectations with toBe", () => {
+      const chain = ensure(10).not.toBe(11);
+      expect(chain.value).toBe(10);
+      expect(() => ensure(5).not.toBe(5)).toThrowError(EnsureError);
+    });
+
+    it("supports chained toggling via repeated not", () => {
+      const chain = ensure(5).not.toBe(4).not.toBe(5);
+      expect(chain.value).toBe(5);
+    });
+
+    it("does not narrow type for negated toBeDefined", () => {
+      const maybe: string | undefined = undefined;
+      const chain = ensure(maybe).not.toBeDefined();
+      expect(chain.value).toBeUndefined();
+      const result = chain.value;
+      const union: string | undefined = result;
+      expect(union).toBeUndefined();
+      const roundtrip: typeof result = maybe;
+      void roundtrip;
+    });
+
+    it("preserves original type when array matcher is negated", () => {
+      const maybeValues: readonly number[] | Set<number> = [1, 2, 3];
+      const chain = ensure(maybeValues).not.toBeArrayContaining([4]);
+      expect(chain.value).toBe(maybeValues);
+      const result = chain.value;
+      const union: readonly number[] | Set<number> = result;
+      expect(union).toBe(maybeValues);
+      const roundtrip: typeof result = maybeValues;
+      void roundtrip;
+    });
+
+    it("keeps length-based types unchanged when negated", () => {
+      const value: string | number[] = "abc";
+      const chain = ensure(value).not.toHaveLength(5);
+      expect(chain.value).toBe(value);
+      const result = chain.value;
+      const union: string | number[] = result;
+      expect(union).toBe(value);
+      const roundtrip: typeof result = value;
+      void roundtrip;
+    });
   });
 });
