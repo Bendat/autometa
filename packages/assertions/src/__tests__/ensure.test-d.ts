@@ -87,3 +87,55 @@ type NegatedLengthRetains = EnsureNegatedChain<string | number> extends {
   ? true
   : false;
 export type _negatedLengthRetains = Assert<NegatedLengthRetains>;
+
+// HTTP matchers narrow response-like shapes
+interface ApiResponse {
+  status: number;
+  headers: Record<string, string>;
+  statusText?: string;
+  data?: { readonly message: string };
+}
+
+type HttpUnion = ApiResponse | { readonly ok: boolean };
+
+type StatusNarrows = EnsureChain<HttpUnion> extends {
+  toHaveStatus(expectation: number): { value: ApiResponse };
+}
+  ? true
+  : false;
+export type _httpStatusNarrows = Assert<StatusNarrows>;
+
+type HeaderNarrows = EnsureChain<HttpUnion> extends {
+  toHaveHeader(name: string, expectation?: string): { value: ApiResponse };
+}
+  ? true
+  : false;
+export type _httpHeaderNarrows = Assert<HeaderNarrows>;
+
+type CacheNarrows = EnsureChain<HttpUnion> extends {
+  toBeCacheable(): { value: ApiResponse };
+}
+  ? true
+  : false;
+export type _httpCacheNarrows = Assert<CacheNarrows>;
+
+type CorrelationNarrows = EnsureChain<HttpUnion> extends {
+  toHaveCorrelationId(headerName?: string): { value: ApiResponse };
+}
+  ? true
+  : false;
+export type _httpCorrelationNarrows = Assert<CorrelationNarrows>;
+
+type NegatedHttpRetains = EnsureNegatedChain<HttpUnion> extends {
+  toHaveStatus(expectation: number): { value: HttpUnion };
+}
+  ? true
+  : false;
+export type _negatedHttpRetains = Assert<NegatedHttpRetains>;
+
+type UnknownHttpNarrows = ReturnType<EnsureChain<unknown>["toHaveStatus"]>["value"];
+export type _httpUnknownValue = Assert<
+  [UnknownHttpNarrows] extends [{ status: number; headers: unknown }]
+    ? true
+    : false
+>;

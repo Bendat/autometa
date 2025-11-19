@@ -19,6 +19,16 @@ import {
   assertToBeUndefined,
 } from "./matchers/nullish";
 import { assertToBeFalsy, assertToBeTruthy } from "./matchers/truthiness";
+import {
+  assertToBeCacheable,
+  assertToHaveCorrelationId,
+  assertToHaveHeader,
+  assertToHaveStatus,
+  type CacheControlExpectation,
+  type HeaderExpectation,
+  type HttpResponseLike,
+  type StatusExpectation,
+} from "./matchers/http";
 
 export interface EnsureOptions {
   readonly label?: string;
@@ -59,10 +69,28 @@ interface EnsureChainInternal<T, Negated extends boolean> {
     Negated extends true ? T : Extract<T, { length: number }> ,
     Negated
   >;
+  toHaveStatus(
+    expectation: StatusExpectation
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
+  toHaveHeader(
+    name: string,
+    expectation?: HeaderExpectation
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
+  toBeCacheable(
+    expectation?: CacheControlExpectation
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
+  toHaveCorrelationId(
+    headerName?: string
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
 }
 
 export type EnsureChain<T> = EnsureChainInternal<T, false>;
 export type EnsureNegatedChain<T> = EnsureChainInternal<T, true>;
+
+type ExtractHttp<T> = Extract<T, HttpResponseLike> extends never
+  ? HttpResponseLike
+  : Extract<T, HttpResponseLike>;
+type HttpExtract<T> = ExtractHttp<T>;
 
 export function ensure<T>(value: T, options: EnsureOptions = {}): EnsureChain<T> {
   const state = {
@@ -205,6 +233,47 @@ class EnsureChainImpl<T, Negated extends boolean>
       Negated extends true ? T : Extract<T, { length: number }> ,
       Negated
     >;
+  }
+
+  public toHaveStatus(
+    expectation: StatusExpectation
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated> {
+    assertToHaveStatus(this.createContext(), expectation);
+    const next = this.state.negated
+      ? this
+      : this.rewrap(this.state.value as HttpExtract<T>);
+    return next as EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
+  }
+
+  public toHaveHeader(
+    name: string,
+    expectation?: HeaderExpectation
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated> {
+    assertToHaveHeader(this.createContext(), name, expectation);
+    const next = this.state.negated
+      ? this
+      : this.rewrap(this.state.value as HttpExtract<T>);
+    return next as EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
+  }
+
+  public toBeCacheable(
+    expectation: CacheControlExpectation = {}
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated> {
+    assertToBeCacheable(this.createContext(), expectation);
+    const next = this.state.negated
+      ? this
+      : this.rewrap(this.state.value as HttpExtract<T>);
+    return next as EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
+  }
+
+  public toHaveCorrelationId(
+    headerName?: string
+  ): EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated> {
+    assertToHaveCorrelationId(this.createContext(), headerName);
+    const next = this.state.negated
+      ? this
+      : this.rewrap(this.state.value as HttpExtract<T>);
+    return next as EnsureChainInternal<Negated extends true ? T : HttpExtract<T>, Negated>;
   }
 
   private createContext(): MatcherContext<T> {
