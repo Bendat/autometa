@@ -44,16 +44,21 @@
     "@autometa/test-builder": "workspace:*",
     "commander": "^11.1.0",
     "esbuild": "^0.18.20",
-    "fast-glob": "^3.3.2"
+    "fast-glob": "^3.3.2",
+    "picocolors": "^1.1.1",
+    "source-map-support": "^0.5.21"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
+    "@types/source-map-support": "^0.5.10",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
+    "picocolors": "^1.1.1",
     "rimraf": "^4.1.2",
+    "source-map-support": "^0.5.21",
     "tsconfig": "workspace:*",
     "tsup": "^7.2.0",
     "tsup-config": "workspace:*",

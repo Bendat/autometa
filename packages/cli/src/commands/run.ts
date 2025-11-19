@@ -1,16 +1,19 @@
 import { promises as fs } from "node:fs";
 import { extname, join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { Command } from "commander";
 import type { ExecutorConfig } from "@autometa/config";
 import { CucumberRunner } from "@autometa/runner";
-import type { GlobalWorld } from "@autometa/runner";
-import { parseGherkin, type SimpleFeature } from "@autometa/gherkin";
+import type { GlobalWorld, RunnerStepsSurface } from "@autometa/runner";
+import { parseGherkin, type SimpleFeature, type SimpleRule } from "@autometa/gherkin";
+import type { ScopePlan, ScopeNode } from "@autometa/scopes";
 
+import { compileModules } from "../compiler/module-compiler";
 import { createCliRuntime, type RuntimeSummary } from "../runtime/cli-runtime";
 import { expandFilePatterns } from "../utils/glob";
-import { loadModule } from "../loaders/module-loader";
 import { loadExecutorConfig } from "../loaders/config";
+import { formatSummary } from "../utils/formatter";
 
 export interface RunCommandOptions {
   readonly cwd?: string;
@@ -18,6 +21,7 @@ export interface RunCommandOptions {
   readonly dryRun?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RunCommandResult extends RuntimeSummary {}
 
 const STEP_FILE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"]);
@@ -52,6 +56,126 @@ export function registerRunCommand(program: Command): Command {
     });
 }
 
+function isScenario(element: SimpleFeature["elements"][number]): boolean {
+  return "steps" in element && !("exampleGroups" in element) && !("elements" in element);
+}
+
+function isScenarioOutline(element: SimpleFeature["elements"][number]): boolean {
+  return "steps" in element && "exampleGroups" in element;
+}
+
+function isRule(element: SimpleFeature["elements"][number]): element is SimpleRule {
+  return "elements" in element && Array.isArray(element.elements);
+}
+
+function createFeatureScopePlan<World>(
+  feature: SimpleFeature,
+  basePlan: ScopePlan<World>
+): ScopePlan<World> {
+  // Get all steps from base plan as an array for convenience
+  const allSteps = Array.from(basePlan.stepsById.values());
+
+  // Create scenario and rule scope nodes
+  const featureChildren: ScopeNode<World>[] = [];
+  const scopesById = new Map<string, ScopeNode<World>>(basePlan.scopesById);
+
+  for (const element of feature.elements ?? []) {
+    if (isScenario(element) || isScenarioOutline(element)) {
+      // Direct scenario under feature
+      const scenarioScope: ScopeNode<World> = {
+        id: element.id ?? element.name,
+        kind: isScenarioOutline(element) ? "scenarioOutline" : "scenario",
+        name: element.name,
+        mode: "default",
+        tags: element.tags ?? [],
+        steps: allSteps,
+        hooks: [],
+        children: [],
+        pending: false,
+      };
+      featureChildren.push(scenarioScope);
+      scopesById.set(scenarioScope.id, scenarioScope);
+    } else if (isRule(element)) {
+      // Rule with child scenarios
+      const ruleChildren: ScopeNode<World>[] = [];
+      
+      for (const ruleElement of element.elements ?? []) {
+        if (isScenario(ruleElement) || isScenarioOutline(ruleElement)) {
+          const scenarioScope: ScopeNode<World> = {
+            id: ruleElement.id ?? ruleElement.name,
+            kind: isScenarioOutline(ruleElement) ? "scenarioOutline" : "scenario",
+            name: ruleElement.name,
+            mode: "default",
+            tags: ruleElement.tags ?? [],
+            steps: allSteps,
+            hooks: [],
+            children: [],
+            pending: false,
+          };
+          ruleChildren.push(scenarioScope);
+          scopesById.set(scenarioScope.id, scenarioScope);
+        }
+      }
+      
+      const ruleScope: ScopeNode<World> = {
+        id: element.id ?? element.name,
+        kind: "rule",
+        name: element.name,
+        mode: "default",
+        tags: element.tags ?? [],
+        steps: allSteps,
+        hooks: [],
+        children: ruleChildren,
+        pending: false,
+      };
+      featureChildren.push(ruleScope);
+      scopesById.set(ruleScope.id, ruleScope);
+    }
+  }
+
+  // Create a feature scope node with scenario and rule children
+  const featureScope: ScopeNode<World> = {
+    id: feature.uri ?? feature.name,
+    kind: "feature",
+    name: feature.name,
+    mode: "default",
+    tags: feature.tags ?? [],
+    steps: allSteps,
+    hooks: [],
+    children: featureChildren,
+    pending: false,
+  };
+
+  // Add feature scope as a child of the existing root scope
+  const existingRoot = basePlan.root;
+  const updatedRoot: ScopeNode<World> = {
+    ...existingRoot,
+    children: [...existingRoot.children, featureScope],
+  };
+
+  // Add feature to the scopes map
+  scopesById.set(featureScope.id, featureScope);
+  scopesById.set(updatedRoot.id, updatedRoot);
+
+  // Return a new scope plan with the updated hierarchy
+  const scopePlan: ScopePlan<World> = {
+    root: updatedRoot,
+    stepsById: basePlan.stepsById,
+    hooksById: basePlan.hooksById,
+    scopesById,
+  };
+
+  if (basePlan.worldFactory) {
+    (scopePlan as { worldFactory?: typeof basePlan.worldFactory }).worldFactory = basePlan.worldFactory;
+  }
+
+  if (basePlan.parameterRegistry) {
+    (scopePlan as { parameterRegistry?: typeof basePlan.parameterRegistry }).parameterRegistry = basePlan.parameterRegistry;
+  }
+
+  return scopePlan;
+}
+
 export async function runFeatures(options: RunCommandOptions = {}): Promise<RunCommandResult> {
   const cwd = options.cwd ?? process.cwd();
   const runtimeOptions =
@@ -59,8 +183,6 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   const cacheDir = join(cwd, ".autometa-cli", "cache");
 
   const { runtime, execute } = createCliRuntime(runtimeOptions);
-  const loadedModules = new Set<string>();
-
   const { resolved } = await loadExecutorConfig(cwd, { cacheDir });
   const executorConfig = resolved.config;
 
@@ -81,24 +203,32 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   }
 
   const builder = CucumberRunner.builder<GlobalWorld>();
-  const stepsEnvironment = builder.steps();
+  let stepsEnvironment = builder.steps();
 
-  await loadSupplementaryRoots(executorConfig, {
-    cwd,
-    cacheDir,
-    loaded: loadedModules,
-  });
+  const modulePlan = await createModulePlan(executorConfig, cwd);
+  const compileOptions: Parameters<typeof compileModules>[1] = executorConfig.builder
+    ? { cwd, cacheDir, builder: executorConfig.builder }
+    : { cwd, cacheDir };
+  const compileResult = await compileModules(modulePlan.orderedFiles, compileOptions);
 
-  await loadStepFiles(executorConfig.roots.steps, {
-    cwd,
-    cacheDir,
-    loaded: loadedModules,
-  });
+  if (modulePlan.orderedFiles.length > 0) {
+    const imported = await import(pathToFileURL(compileResult.bundlePath).href);
+    const resolved = resolveStepsEnvironment(imported);
+    if (resolved) {
+      stepsEnvironment = resolved;
+    }
+  }
+
+  CucumberRunner.setSteps(stepsEnvironment);
+
+  const basePlan = stepsEnvironment.getPlan();
 
   for (const featurePath of featureFiles) {
     const feature = await readFeatureFile(featurePath, cwd);
+    const scopePlan = createFeatureScopePlan(feature, basePlan);
     const coordinated = stepsEnvironment.coordinateFeature({
       feature,
+      plan: scopePlan,
       config: executorConfig,
       runtime,
     });
@@ -111,12 +241,143 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   return summary;
 }
 
-interface ModuleLoadContext {
-  readonly cwd: string;
-  readonly cacheDir: string;
-  readonly loaded: Set<string>;
+type ModuleLike = Record<string, unknown>;
+
+function resolveStepsEnvironment(imported: unknown): RunnerStepsSurface<GlobalWorld> | undefined {
+  const candidates = collectCandidateModules(imported);
+  for (const candidate of candidates) {
+    const environment = extractStepsEnvironment(candidate);
+    if (environment) {
+      return environment;
+    }
+  }
+  return undefined;
 }
 
+function collectCandidateModules(imported: unknown): readonly ModuleLike[] {
+  if (!imported || typeof imported !== "object") {
+    return [];
+  }
+
+  const record = imported as ModuleLike;
+  const modules = new Set<ModuleLike>();
+  modules.add(record);
+
+  const exportedModules = record.modules;
+  if (Array.isArray(exportedModules)) {
+    for (const entry of exportedModules) {
+      if (entry && typeof entry === "object") {
+        modules.add(entry as ModuleLike);
+      }
+    }
+  }
+
+  const defaultExport = record.default;
+  if (Array.isArray(defaultExport)) {
+    for (const entry of defaultExport) {
+      if (entry && typeof entry === "object") {
+        modules.add(entry as ModuleLike);
+      }
+    }
+  } else if (defaultExport && typeof defaultExport === "object") {
+    modules.add(defaultExport as ModuleLike);
+  }
+
+  return Array.from(modules);
+}
+
+function extractStepsEnvironment(candidate: ModuleLike): RunnerStepsSurface<GlobalWorld> | undefined {
+  if (isStepsEnvironment(candidate)) {
+    return candidate;
+  }
+
+  const steps = candidate.stepsEnvironment;
+  if (isStepsEnvironment(steps)) {
+    return steps;
+  }
+
+  const defaultExport = candidate.default;
+  if (isStepsEnvironment(defaultExport)) {
+    return defaultExport;
+  }
+
+  return undefined;
+}
+
+function isStepsEnvironment(value: unknown): value is RunnerStepsSurface<GlobalWorld> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as ModuleLike;
+  return typeof candidate.coordinateFeature === "function"
+    && typeof candidate.Given === "function"
+    && typeof candidate.When === "function"
+    && typeof candidate.Then === "function";
+}
+
+interface ModulePlan {
+  readonly orderedFiles: readonly string[];
+}
+
+async function createModulePlan(config: ExecutorConfig, cwd: string): Promise<ModulePlan> {
+  const orderedFiles: string[] = [];
+  const seenFiles = new Set<string>();
+  const processed = new Set<string>(["features", "steps"]);
+  const rootsRecord = config.roots as Record<string, readonly string[] | undefined>;
+
+  const pushFiles = (files: readonly string[]): void => {
+    for (const file of files) {
+      if (seenFiles.has(file)) {
+        continue;
+      }
+      seenFiles.add(file);
+      orderedFiles.push(file);
+    }
+  };
+
+  for (const key of ROOT_LOAD_ORDER) {
+    const entries = rootsRecord[key];
+    if (!entries || entries.length === 0) {
+      processed.add(key);
+      continue;
+    }
+    const files = await resolveRootFiles(entries, cwd);
+    if (files.length > 0) {
+      pushFiles(files);
+    }
+    processed.add(key);
+  }
+
+  for (const [key, entries] of Object.entries(rootsRecord)) {
+    if (processed.has(key)) {
+      continue;
+    }
+    if (!entries || entries.length === 0) {
+      continue;
+    }
+    const files = await resolveRootFiles(entries, cwd);
+    if (files.length > 0) {
+      pushFiles(files);
+    }
+  }
+
+  const stepFiles = await resolveRootFiles(config.roots.steps, cwd);
+  pushFiles(stepFiles);
+
+  return {
+    orderedFiles,
+  };
+}
+
+async function resolveRootFiles(entries: readonly string[], cwd: string): Promise<string[]> {
+  const patterns = buildPatterns(entries, STEP_FALLBACK_GLOB);
+  if (patterns.length === 0) {
+    return [];
+  }
+  const matches = await expandFilePatterns(patterns, cwd);
+  return filterCodeFiles(matches);
+}
 function buildPatterns(entries: readonly string[], fallbackGlob: string): string[] {
   const patterns = new Set<string>();
   for (const entry of entries) {
@@ -164,64 +425,6 @@ function appendGlob(entry: string, glob: string): string {
   return `${trimmed}/${glob}`;
 }
 
-async function loadSupplementaryRoots(
-  config: ExecutorConfig,
-  context: ModuleLoadContext
-): Promise<void> {
-  const processed = new Set<string>(["features", "steps"]);
-
-  const rootsRecord = config.roots as Record<string, readonly string[] | undefined>;
-
-  for (const key of ROOT_LOAD_ORDER) {
-    const entries = rootsRecord[key];
-    if (entries && entries.length > 0) {
-      await loadModules(entries, context, STEP_FALLBACK_GLOB);
-      processed.add(key);
-    }
-  }
-
-  for (const [key, value] of Object.entries(rootsRecord)) {
-    if (processed.has(key)) {
-      continue;
-    }
-    if (value && value.length > 0) {
-      await loadModules(value, context, STEP_FALLBACK_GLOB);
-    }
-  }
-}
-
-async function loadStepFiles(entries: readonly string[], context: ModuleLoadContext): Promise<void> {
-  if (entries.length === 0) {
-    return;
-  }
-  await loadModules(entries, context, STEP_FALLBACK_GLOB);
-}
-
-async function loadModules(
-  entries: readonly string[],
-  context: ModuleLoadContext,
-  fallbackGlob: string
-): Promise<void> {
-  const patterns = buildPatterns(entries, fallbackGlob);
-  if (patterns.length === 0) {
-    return;
-  }
-
-  const matches = await expandFilePatterns(patterns, context.cwd);
-  const files = filterCodeFiles(matches);
-
-  for (const file of files) {
-    if (context.loaded.has(file)) {
-      continue;
-    }
-    await loadModule(file, {
-      cwd: context.cwd,
-      cacheDir: context.cacheDir,
-    });
-    context.loaded.add(file);
-  }
-}
-
 function filterCodeFiles(files: readonly string[]): string[] {
   return files.filter((file) => {
     const lower = file.toLowerCase();
@@ -248,12 +451,16 @@ async function readFeatureFile(path: string, cwd: string): Promise<SimpleFeature
 }
 
 function logSummary(summary: RuntimeSummary, environment: string): void {
-  const duration = summary.durationMs < 1000
-    ? `${summary.durationMs.toFixed(0)} ms`
-    : `${(summary.durationMs / 1000).toFixed(2)} s`;
-
   // eslint-disable-next-line no-console -- CLI summary output
   console.log(
-    `Environment: ${environment} | Total: ${summary.total} | Passed: ${summary.passed} | Failed: ${summary.failed} | Skipped: ${summary.skipped} | Pending: ${summary.pending} | Duration: ${duration}`
+    formatSummary(
+      summary.total,
+      summary.passed,
+      summary.failed,
+      summary.skipped,
+      summary.pending,
+      summary.durationMs,
+      environment
+    )
   );
 }

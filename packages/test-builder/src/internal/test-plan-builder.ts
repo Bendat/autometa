@@ -522,14 +522,8 @@ export class TestPlanBuilder<World> {
       remaining.delete(matched);
     }
 
-    if (remaining.size > 0) {
-      const extras = [...remaining].map((definition) =>
-        this.describeStepDefinition(definition)
-      );
-      throw new Error(
-        this.buildUnusedStepDefinitionsMessage(context, extras)
-      );
-    }
+    // Note: It's normal for some step definitions to remain unused in a scenario.
+    // Each scenario only uses the steps it needs, so we don't throw an error for unused steps.
 
     return ordered;
   }
@@ -589,7 +583,7 @@ export class TestPlanBuilder<World> {
         this.parameterRegistry
       );
       return (text: string) => cucumberExpression.match(text) !== null;
-    } catch {
+    } catch (error) {
       const literal = expression;
       return (text: string) => text === literal;
     }

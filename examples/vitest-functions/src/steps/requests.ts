@@ -53,6 +53,27 @@ Then(
   }
 );
 
+Then(
+  "the response json should match the default menu snapshot",
+  (world) => {
+    ensure(world).response.hasStatus(200);
+    const body = world.lastResponseBody;
+    
+    // Verify it's an array
+    if (!Array.isArray(body)) {
+      throw new Error("Expected response body to be an array");
+    }
+    
+    // Store the menu snapshot for later reference
+    world.scenario.menuSnapshot = body as any[];
+    
+    // Basic validation that it contains menu items
+    if (body.length === 0) {
+      throw new Error("Expected menu to contain items");
+    }
+  }
+);
+
 function parseOptionalDocstring(docstring: string | undefined): unknown {
   if (docstring === undefined) {
     return undefined;

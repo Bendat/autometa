@@ -9,6 +9,10 @@ AfterScenario(({ world }) => {
 Given(
   "the Brew Buddy API base URL is configured",
   async (world) => {
+    // Store base URL for SSE connections
+    world.scenario.apiBaseUrl = world.baseUrl;
+    
+    // Verify API is healthy
     await performRequest(world, "get", "/health");
     ensure(world).response.hasStatus(200);
   }

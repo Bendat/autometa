@@ -23,7 +23,7 @@ Feature: Manage Brew Buddy menu catalog
       | description | <blurb>   |
       | season      | <season>  |
     When I request the menu listing
-    Then the menu should include an item named "<name>" with price <price> and size <size>
+    Then the menu should include an item named "<name>" with price <price> and size "<size>"
     And the seasonal flag should be set to true
 
     Examples:
@@ -51,10 +51,10 @@ Feature: Manage Brew Buddy menu catalog
 
   @regression
   Scenario Outline: Seasonal availability matrix for <region>
-    Given the seasonal schedule for "<region>" is configured
-    When I request the menu listing for "<region>"
-    Then the regional menu should include "<expected>"
-    And the seasonal flag should reflect "<seasonal>"
+    Given the seasonal schedule for <region> is configured
+    When I request the menu listing for <region>
+    Then the regional menu should include <expected>
+    And the seasonal flag should reflect <seasonal>
 
     Examples: Domestic availability
       | region | expected        | seasonal |

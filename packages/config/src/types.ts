@@ -6,6 +6,14 @@ import {
   PartialExecutorConfigSchema,
   PartialRootSchema,
 } from "./schema";
+import type {
+  BuilderConfig,
+  BuilderHooks,
+  BuildHook,
+  BuildHookContext,
+  ModuleFormat,
+  SourceMapSetting,
+} from "./builder-types";
 
 export type ExecutorConfig = z.infer<typeof ExecutorConfigSchema>;
 export type PartialExecutorConfig = z.infer<typeof PartialExecutorConfigSchema>;
@@ -39,3 +47,12 @@ export interface ResolvedConfig {
   environment: string;
   config: ExecutorConfig;
 }
+
+export type {
+  BuilderConfig,
+  BuilderHooks,
+  BuildHook,
+  BuildHookContext,
+  ModuleFormat,
+  SourceMapSetting,
+};

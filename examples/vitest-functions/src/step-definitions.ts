@@ -4,6 +4,9 @@ import { createDecorators, Scope } from "@autometa/injection";
 import { brewBuddyWorldDefaults } from "./world";
 import type { BrewBuddyWorldBase } from "./world";
 
+// Import parameter types to register custom cucumber expression types
+import "./support/parameter-types";
+
 import { BrewBuddyApp } from "./utils/http";
 import { BrewBuddyMemoryService } from "./utils/memory";
 import type { HttpMethod } from "./utils/http";

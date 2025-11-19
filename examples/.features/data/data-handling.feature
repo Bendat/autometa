@@ -26,7 +26,7 @@ Feature: Share recipe knowledge through data tables
     When I calculate brew ratio for "<bean>"
       | coffee grams | <coffee> |
       | water grams  | <water>  |
-    Then the brew ratio should equal <ratio>
+    Then the brew ratio should equal "<ratio>"
 
     Examples:
       | bean        | coffee | water | ratio |

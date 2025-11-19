@@ -37,6 +37,7 @@ interface ScenarioState {
   lastMenuItem?: MenuItem;
   createdItems: string[];
   order?: Order;
+  orders?: Map<string, { ticketId: string; status: string; events: unknown[] }>;
   loyaltyAccount?: LoyaltyAccount;
   lastInventory?: InventoryItem;
   brewRatio?: string;
@@ -48,6 +49,13 @@ interface ScenarioState {
   streamErrors: string[];
   region?: MenuRegion;
   priceUpdates?: Array<{ readonly name: string; readonly price: number }>;
+  recipes?: Array<{ name: string; base: string; additions: string }>;
+  tastingNotes?: Map<string, string>;
+  brewRatios?: Map<string, string>;
+  apiBaseUrl?: string;
+  expectedStatusSequence?: string[];
+  simulatedEvents?: Array<{ event: string; data: unknown }>;
+  lastPickupCode?: string;
 }
 
 export interface TagRegistryEntry {

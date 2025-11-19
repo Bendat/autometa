@@ -1,4 +1,7 @@
 import { HTTP, HTTPError } from "@autometa/http";
+// To enable HTTP request/response logging, import and use createLoggingPlugin:
+import { createLoggingPlugin } from "@autometa/http";
+// const http = HTTP.create({ plugins: [createLoggingPlugin(console.log)] });
 
 import type { BrewBuddyWorld } from "../world";
 import { BrewBuddyMemoryService } from "./memory";
@@ -18,6 +21,7 @@ export class BrewBuddyApp {
 
   constructor(http: HTTP, baseUrl: string, memory: BrewBuddyMemoryService) {
     this.http = http
+      .plugin(createLoggingPlugin(console.log))
       .url(baseUrl)
       .sharedHeader("accept", "application/json")
       .sharedAllowPlainText(true);
@@ -95,7 +99,9 @@ function normalisePath(path: string): string[] {
   return url.split("/").filter(Boolean);
 }
 
-function normalizeHeaders(headers: Record<string, string>): Record<string, string> {
+function normalizeHeaders(
+  headers: Record<string, string>
+): Record<string, string> {
   const normalised: Record<string, string> = {};
   for (const [key, value] of Object.entries(headers)) {
     normalised[key.toLowerCase()] = String(value);

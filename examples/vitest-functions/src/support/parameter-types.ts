@@ -11,12 +11,12 @@ import {
   type MenuRegion,
 } from "../utils/regions";
 
-const HTTP_METHOD_VARIANTS = caseInsensitivePatterns(["GET", "POST", "PATCH", "DELETE", "PUT"]);
-const REGION_VARIANTS = caseInsensitivePatterns(Object.keys(REGION_EXPECTATIONS));
-const SELECTION_VARIANTS = caseInsensitivePatterns(
+const HTTP_METHOD_VARIANTS = caseInsensitivePattern(["GET", "POST", "PATCH", "DELETE", "PUT"]);
+const REGION_VARIANTS = caseInsensitivePattern(Object.keys(REGION_EXPECTATIONS));
+const SELECTION_VARIANTS = caseInsensitivePattern(
   Object.values(REGION_EXPECTATIONS).map((detail) => detail.expected)
 );
-const BOOLEAN_VARIANTS = caseInsensitivePatterns(["true", "false"]);
+const BOOLEAN_VARIANTS = caseInsensitivePattern(["true", "false"]);
 
 defineParameterType({
   name: "httpMethod",
@@ -69,6 +69,25 @@ defineParameterType({
   transform: (value: unknown): boolean => /^true$/i.test(String(value)),
 });
 
+function caseInsensitivePattern(values: Iterable<string>): RegExp {
+  const bodies: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const normalized = value.trim();
+    if (!normalized) {
+      continue;
+    }
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    bodies.push(createCaseInsensitiveBody(normalized));
+  }
+  // Create single RegExp with alternation - no anchors or capturing groups
+  return new RegExp(bodies.join("|"));
+}
+
 function caseInsensitivePatterns(values: Iterable<string>): readonly RegExp[] {
   const result: RegExp[] = [];
   const seen = new Set<string>();
@@ -82,11 +101,28 @@ function caseInsensitivePatterns(values: Iterable<string>): readonly RegExp[] {
       continue;
     }
     seen.add(key);
-    result.push(new RegExp(`^${escapeRegExp(normalized)}$`, "i"));
+    result.push(new RegExp(`^${createCaseInsensitiveBody(normalized)}$`));
   }
   return result;
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function createCaseInsensitiveBody(value: string): string {
+  let pattern = "";
+  for (const char of value) {
+    pattern += createCaseInsensitiveFragment(char);
+  }
+  return pattern;
+}
+
+function createCaseInsensitiveFragment(char: string): string {
+  const lower = char.toLowerCase();
+  const upper = char.toUpperCase();
+  if (lower === upper) {
+    return escapeRegExpChar(char);
+  }
+  return `[${escapeRegExpChar(lower)}${escapeRegExpChar(upper)}]`;
+}
+
+function escapeRegExpChar(char: string): string {
+  return char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

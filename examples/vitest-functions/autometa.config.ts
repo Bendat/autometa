@@ -5,7 +5,7 @@ export default defineConfig({
     runner: "vitest",
     roots: {
       features: ["../.features"],
-      steps: ["./src/steps"],
+      steps: ["./src/steps", "./src/step-definitions.ts"],
       parameterTypes: ["./src/support/parameter-types.ts"],
     },
     test: {

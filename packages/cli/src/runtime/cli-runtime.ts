@@ -1,9 +1,20 @@
+import "source-map-support/register";
+
 import type {
   ExecutorRuntime,
   HookHandler,
   SuiteFn,
   TestFn,
 } from "@autometa/executor";
+
+import {
+  formatScenarioReport,
+  formatError,
+  formatReason,
+  formatSummary,
+  type ScenarioStatus,
+} from "../utils/formatter";
+import { HierarchicalReporter } from "../utils/reporter";
 
 type Clock = {
   now(): number;
@@ -13,8 +24,6 @@ const clock: Clock =
   typeof globalThis.performance?.now === "function"
     ? globalThis.performance
     : { now: () => Date.now() };
-
-export type ScenarioStatus = "passed" | "failed" | "skipped" | "pending";
 
 export interface ScenarioReport {
   readonly name: string;
@@ -307,12 +316,16 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
   async function execute(): Promise<RuntimeSummary> {
     const startedAt = clock.now();
     const reports: ScenarioReport[] = [];
+    const reporter = new HierarchicalReporter();
 
     await runSuite(root, {
       skip: false,
       focus: false,
       path: [],
     });
+
+    // Print the hierarchical report
+    reporter.print();
 
     const finishedAt = clock.now();
     return {
@@ -331,12 +344,22 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       const focus = context.focus || node.mode === "only";
       const path = node.parent ? [...context.path, node.title] : context.path;
 
+      // Enter suite if it has a meaningful title
+      const shouldTrack = node.title && node.title !== "(root)";
+      if (shouldTrack) {
+        reporter.enterSuite(node.title);
+      }
+
       for (const child of node.children) {
         if (child.kind === "suite") {
           await runSuite(child.node, { skip, focus, path });
           continue;
         }
         await runTest(child.node, path, skip, focus);
+      }
+
+      if (shouldTrack) {
+        reporter.exitSuite();
       }
     }
 
@@ -430,12 +453,14 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           break;
       }
 
-      console.log(formatReport(report));
-      if (report.error) {
-        console.error(indentMessage(report.error.stack ?? report.error.message));
-      } else if (report.reason) {
-        console.log(indentMessage(`Reason: ${report.reason}`));
-      }
+      // Record in hierarchical reporter
+      reporter.recordTest(
+        report.name,
+        report.status,
+        report.durationMs,
+        report.error,
+        report.reason
+      );
 
       reports.push(report);
     }
@@ -447,46 +472,4 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       return execute();
     },
   };
-}
-
-function formatReport(report: ScenarioReport): string {
-  const label = statusLabel(report.status);
-  const duration = report.durationMs !== undefined ? formatDuration(report.durationMs) : "";
-  return duration ? `${label} ${report.fullName} (${duration})` : `${label} ${report.fullName}`;
-}
-
-function statusLabel(status: ScenarioStatus): string {
-  switch (status) {
-    case "passed":
-      return "PASS";
-    case "failed":
-      return "FAIL";
-    case "skipped":
-      return "SKIP";
-    case "pending":
-      return "PEND";
-    default:
-      return assertUnreachable(status);
-  }
-}
-
-function formatDuration(value: number): string {
-  if (value < 1) {
-    return `${value.toFixed(2)} ms`;
-  }
-  if (value < 1000) {
-    return `${value.toFixed(0)} ms`;
-  }
-  return `${(value / 1000).toFixed(2)} s`;
-}
-
-function indentMessage(message: string): string {
-  return message
-    .split("\n")
-    .map((line) => `    ${line}`)
-    .join("\n");
-}
-
-function assertUnreachable(value: never): never {
-  throw new Error(`Unhandled scenario status: ${String(value)}`);
 }

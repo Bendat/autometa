@@ -1,9 +1,9 @@
-import { build, type OutputFile } from "esbuild";
 import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import { builtinModules } from "module";
 import { dirname, extname, isAbsolute, join, resolve } from "path";
 import { pathToFileURL } from "url";
+import { build, type OutputFile } from "esbuild";
 
 const TS_EXTENSIONS = new Set([".ts", ".tsx", ".cts", ".mts"]);
 const BUILTIN_EXTERNALS = new Set<string>([

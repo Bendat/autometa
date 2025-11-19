@@ -139,13 +139,13 @@ Then("each price change should be reflected in the latest menu", (world) => {
 });
 
 Given(
-  'the seasonal schedule for "{menuRegion}" is configured',
+  'the seasonal schedule for {menuRegion} is configured',
   (region, world) => {
     world.scenario.region = region;
   }
 );
 
-When('I request the menu listing for "{menuRegion}"', async (region, world) => {
+When('I request the menu listing for {menuRegion}', async (region, world) => {
   world.scenario.region = region;
   await performRequest(world, "get", "/menu");
   const items = extractMenuItems(world);
@@ -153,7 +153,7 @@ When('I request the menu listing for "{menuRegion}"', async (region, world) => {
 });
 
 Then(
-  'the regional menu should include "{menuSelection}"',
+  'the regional menu should include {menuSelection}',
   (expectation, world) => {
     const snapshot = ensureMenuItems(world);
     const item = findMenuItem(snapshot, expectation.beverage);
@@ -161,7 +161,7 @@ Then(
   }
 );
 
-Then('the seasonal flag should reflect "{menuSeasonal}"', (expected, world) => {
+Then('the seasonal flag should reflect {menuSeasonal}', (expected, world) => {
   const item = world.scenario.lastMenuItem;
   const resolved = assertDefined(item, "No menu item stored for seasonal assertion");
   assertStrictEqual(resolved.seasonal, expected, "Seasonal flag mismatch.");

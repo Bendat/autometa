@@ -8,6 +8,7 @@ import {
 import {
   ConfigDefinition,
   ConfigDefinitionInput,
+  BuilderConfig,
   ExecutorConfig,
   PartialExecutorConfig,
   PartialRootsConfig,
@@ -132,6 +133,10 @@ const mergeExecutorConfig = (
     result.events = cloneArray(override.events);
   }
 
+  if (override.builder !== undefined) {
+    result.builder = mergeBuilder(result.builder, override.builder);
+  }
+
   return result;
 };
 
@@ -207,12 +212,61 @@ const mergeRoots = (
   return result;
 };
 
+const mergeBuilder = (
+  base: BuilderConfig | undefined,
+  override: BuilderConfig | undefined
+): BuilderConfig | undefined => {
+  if (override === undefined) {
+    return base ? cloneBuilder(base) : undefined;
+  }
+
+  const result = base ? cloneBuilder(base) : {};
+
+  if (override.format !== undefined) {
+    result.format = override.format;
+  }
+
+  if (override.target !== undefined) {
+    result.target = Array.isArray(override.target)
+      ? [...override.target]
+      : override.target;
+  }
+
+  if (override.sourcemap !== undefined) {
+    result.sourcemap = override.sourcemap;
+  }
+
+  if (override.tsconfig !== undefined) {
+    result.tsconfig = override.tsconfig;
+  }
+
+  if (override.external !== undefined) {
+    result.external = cloneArray(override.external);
+  }
+
+  if (override.outDir !== undefined) {
+    result.outDir = override.outDir;
+  }
+
+  if (override.hooks !== undefined) {
+    const clonedHooks = cloneBuilderHooks(override.hooks);
+    if (clonedHooks) {
+      result.hooks = clonedHooks;
+    } else {
+      delete result.hooks;
+    }
+  }
+
+  return Object.keys(result).length === 0 ? undefined : result;
+};
+
 const cloneConfig = (config: ExecutorConfig): ExecutorConfig => ({
   runner: config.runner,
   roots: cloneRoots(config.roots),
   test: config.test ? cloneTest(config.test) : undefined,
   shim: config.shim ? cloneShim(config.shim) : undefined,
   events: cloneOptionalArray(config.events),
+  builder: config.builder ? cloneBuilder(config.builder) : undefined,
 });
 
 const cloneRoots = (roots: RootsConfig): RootsConfig => {
@@ -245,6 +299,61 @@ const cloneShim = (shim: ShimConfig): ShimConfig => {
     clone.errorCause = shim.errorCause;
   }
   return clone;
+};
+
+const cloneBuilder = (config: BuilderConfig): BuilderConfig => {
+  const clone: BuilderConfig = {};
+
+  if (config.format !== undefined) {
+    clone.format = config.format;
+  }
+
+  if (config.target !== undefined) {
+    clone.target = Array.isArray(config.target)
+      ? [...config.target]
+      : config.target;
+  }
+
+  if (config.sourcemap !== undefined) {
+    clone.sourcemap = config.sourcemap;
+  }
+
+  if (config.tsconfig !== undefined) {
+    clone.tsconfig = config.tsconfig;
+  }
+
+  if (config.external !== undefined) {
+    clone.external = cloneArray(config.external);
+  }
+
+  if (config.outDir !== undefined) {
+    clone.outDir = config.outDir;
+  }
+
+  if (config.hooks) {
+    const clonedHooks = cloneBuilderHooks(config.hooks);
+    if (clonedHooks) {
+      clone.hooks = clonedHooks;
+    }
+  }
+
+  return clone;
+};
+
+const cloneBuilderHooks = (
+  hooks: NonNullable<BuilderConfig["hooks"]>
+): NonNullable<BuilderConfig["hooks"]> | undefined => {
+  const clone: NonNullable<BuilderConfig["hooks"]> = {};
+
+  if (hooks.before && hooks.before.length > 0) {
+    clone.before = [...hooks.before];
+  }
+
+  if (hooks.after && hooks.after.length > 0) {
+    clone.after = [...hooks.after];
+  }
+
+  return Object.keys(clone).length === 0 ? undefined : clone;
 };
 
 const cloneTimeout = (

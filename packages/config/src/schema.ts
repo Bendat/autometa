@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { BuildHook, BuilderConfig, BuilderHooks, ModuleFormat, SourceMapSetting } from "./builder-types";
+
 export const TimeUnitSchema = z.enum(["ms", "s", "m", "h"]);
 
 export const TimeoutSchema = z
@@ -47,12 +49,44 @@ export const RootSchema = z
 
 export const EventsSchema = z.array(z.string());
 
+export const ModuleFormatSchema: z.ZodType<ModuleFormat> = z.enum(["cjs", "esm"]);
+
+const SourceMapSchema: z.ZodType<SourceMapSetting> = z.union([
+  z.literal(true),
+  z.literal(false),
+  z.literal("inline"),
+  z.literal("external"),
+]);
+
+const BuildHookSchema: z.ZodType<BuildHook> = z.custom<BuildHook>((value) => {
+  return typeof value === "function";
+}, {
+  message: "build hooks must be functions",
+});
+
+const BuilderHooksSchema: z.ZodType<BuilderHooks> = z.object({
+  before: z.array(BuildHookSchema).optional(),
+  after: z.array(BuildHookSchema).optional(),
+});
+
+export const BuilderConfigSchema: z.ZodType<BuilderConfig> = z
+  .object({
+    format: ModuleFormatSchema.optional(),
+    target: z.union([z.string(), z.array(z.string()).nonempty()]).optional(),
+    sourcemap: SourceMapSchema.optional(),
+    tsconfig: z.string().optional(),
+    external: z.array(z.string()).optional(),
+    outDir: z.string().optional(),
+    hooks: BuilderHooksSchema.optional(),
+  });
+
 export const ExecutorConfigSchema = z.object({
   runner: RunnerSchema,
   test: TestSchema.optional(),
   roots: RootSchema,
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
+  builder: BuilderConfigSchema.optional(),
 });
 
 export const PartialRootSchema = RootSchema.partial();
@@ -63,4 +97,5 @@ export const PartialExecutorConfigSchema = z.object({
   roots: PartialRootSchema.optional(),
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
+  builder: BuilderConfigSchema.optional(),
 });
