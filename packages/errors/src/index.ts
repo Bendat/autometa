@@ -3,6 +3,17 @@ export {
 	type AutomationErrorOptions,
 } from "./automation-error";
 export {
+	GherkinStepError,
+	getGherkinErrorContext,
+	isGherkinStepError,
+	type CodeContextSegment,
+	type GherkinContextSegment,
+	type GherkinErrorContext,
+	type GherkinStepErrorOptions,
+	type SourceLocation,
+	type SourcePosition,
+} from "./gherkin-error";
+export {
 	formatErrorCauses,
 	formatErrorTree,
 	printErrorTree,
