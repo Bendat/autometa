@@ -68,8 +68,10 @@ export class HierarchicalReporter implements RuntimeReporter {
   constructor(log: (line: string) => void = console.log, options: HierarchicalReporterOptions = {}) {
     this.logLine = log;
     this.options = options;
+    const includeGherkinContext = options.showGherkinStack ?? false;
     const printerOptions: GherkinContextPrinterOptions = {
-      includePath: options.showGherkinStack ?? false,
+      includePath: includeGherkinContext,
+      includeCodeFrame: includeGherkinContext,
     };
     this.gherkinContextPrinter = new GherkinContextPrinter(log, printerOptions);
     this.baselineErrorRenderer = new BaselineErrorRenderer(this.gherkinContextPrinter, log);

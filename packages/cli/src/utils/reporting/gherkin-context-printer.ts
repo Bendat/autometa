@@ -14,6 +14,7 @@ import { formatSourceLocation } from "./location";
 type LogFn = (line: string) => void;
 export interface GherkinContextPrinterOptions {
   readonly includePath?: boolean;
+  readonly includeCodeFrame?: boolean;
 }
 
 export class GherkinContextPrinter {
@@ -23,7 +24,7 @@ export class GherkinContextPrinter {
   ) {}
 
   printContext(context: GherkinErrorContext, depth: number): void {
-    if (context.gherkin) {
+    if (this.options.includeCodeFrame && context.gherkin) {
       const details = this.describeGherkinSegment(context.gherkin);
       const pathSegments = context.path;
       this.printCodeFrameSection(
