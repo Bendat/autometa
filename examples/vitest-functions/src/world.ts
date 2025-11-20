@@ -32,11 +32,18 @@ export interface BrewBuddyWorldBase {
 
 export type BrewBuddyWorld = BrewBuddyWorldBase & { readonly app: BrewBuddyApp };
 
+export interface OrderErrorState {
+  readonly status: number | undefined;
+  readonly body: unknown;
+}
+
 interface ScenarioState {
   menuSnapshot?: MenuItem[];
   lastMenuItem?: MenuItem;
   createdItems: string[];
   order?: Order;
+  expectOrderFailure?: boolean;
+  lastOrderError: OrderErrorState | undefined;
   orders?: Map<string, { ticketId: string; status: string; events: unknown[] }>;
   loyaltyAccount?: LoyaltyAccount;
   lastInventory?: InventoryItem;
@@ -67,6 +74,8 @@ const DEFAULT_SCENARIO_STATE: ScenarioState = {
   createdItems: [],
   streamWarnings: [],
   streamErrors: [],
+  expectOrderFailure: false,
+  lastOrderError: undefined,
 };
 
 export const brewBuddyWorldDefaults: Omit<BrewBuddyWorldBase, "runtime"> = {
