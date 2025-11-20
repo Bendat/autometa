@@ -1,5 +1,8 @@
+import path from "node:path";
+
 import type { FeatureNode, ScenarioExecution } from "@autometa/test-builder";
 import type { ScopeExecutionAdapter, ScopeNode, ScenarioSummary, StepDefinition } from "@autometa/scopes";
+import { GherkinStepError, getGherkinErrorContext } from "@autometa/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import { Pending } from "../pending";
@@ -86,7 +89,10 @@ describe("runScenarioExecution pending handling", () => {
       scope: scenarioScope,
       summary,
       gherkin: {} as never,
-      gherkinSteps: [{}, {}] as never,
+      gherkinSteps: [
+        { text: "", keyword: "Given " },
+        { text: "", keyword: "Then " },
+      ] as never,
       steps,
       ancestors: [],
       result: { status: "pending" },
@@ -101,6 +107,7 @@ describe("runScenarioExecution pending handling", () => {
 
     const adapter = {
       createWorld: vi.fn(async () => ({})),
+      getParameterRegistry: vi.fn(() => undefined),
     } as unknown as ScopeExecutionAdapter<unknown>;
 
     await expect(runScenarioExecution(execution, { adapter })).resolves.toBeUndefined();
@@ -167,7 +174,7 @@ describe("runScenarioExecution world disposal", () => {
       scope: scenarioScope,
       summary,
       gherkin: {} as never,
-      gherkinSteps: steps.map(() => ({})) as never,
+      gherkinSteps: steps.map(() => ({ text: "", keyword: "" })) as never,
       steps,
       ancestors: [],
       result: { status: "pending" },
@@ -204,6 +211,7 @@ describe("runScenarioExecution world disposal", () => {
 
     const adapter = {
       createWorld: vi.fn(async () => world),
+      getParameterRegistry: vi.fn(() => undefined),
     } as unknown as ScopeExecutionAdapter<unknown>;
 
     await expect(runScenarioExecution(execution, { adapter })).resolves.toBeUndefined();
@@ -239,15 +247,128 @@ describe("runScenarioExecution world disposal", () => {
 
     const adapter = {
       createWorld: vi.fn(async () => world),
+      getParameterRegistry: vi.fn(() => undefined),
     } as unknown as ScopeExecutionAdapter<unknown>;
 
-    await expect(runScenarioExecution(execution, { adapter })).rejects.toThrow(failure);
+    let thrown: unknown;
+    await runScenarioExecution(execution, { adapter }).catch((error: unknown) => {
+      thrown = error;
+    });
+
+    expect(thrown).toBeInstanceOf(GherkinStepError);
+    const wrapped = thrown as GherkinStepError;
+    expect(wrapped.cause).toBe(failure);
 
     expect(markFailed).toHaveBeenCalledTimes(1);
-    expect(markFailed).toHaveBeenCalledWith(failure);
+    expect(markFailed).toHaveBeenCalledWith(wrapped);
     expect(markPassed).not.toHaveBeenCalled();
     expect(appDispose).toHaveBeenCalledTimes(1);
     expect(containerDispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("wraps step failures with gherkin metadata", async () => {
+    const failure = new Error("annotated failure");
+    const featurePath = path.resolve("features/sample.feature");
+    const stepPath = path.resolve("src/steps/sample.ts");
+
+    const step: StepDefinition<unknown> = {
+      id: "step-annotated",
+      keyword: "Given",
+      expression: "a failing step",
+      handler: vi.fn(async () => {
+        throw failure;
+      }),
+      options: { tags: [], mode: "default" },
+      source: { file: stepPath, line: 42, column: 7 },
+    };
+
+    const scenarioScope = createScopeNode("scenario");
+    scenarioScope.source = { file: featurePath, line: 8, column: 1 };
+
+    const featureScope = createScopeNode("feature");
+    featureScope.source = { file: featurePath, line: 1, column: 1 };
+
+    const featureNode: FeatureNode<unknown> = {
+      type: "feature",
+      name: "Feature",
+      keyword: "Feature",
+      feature: { uri: featurePath, location: { line: 1, column: 1 } } as never,
+      scope: featureScope,
+      scenarios: [],
+      scenarioOutlines: [],
+      rules: [],
+      background: undefined,
+      listExecutables: () => [],
+    };
+
+    const summary: ScenarioSummary<unknown> = {
+      id: "summary-context",
+      scenario: scenarioScope,
+      feature: featureScope,
+      ancestors: [],
+      steps: [],
+    };
+
+    const execution: ScenarioExecution<unknown> = {
+      id: "scenario-context",
+      type: "scenario",
+      name: "Context scenario",
+      keyword: "Scenario",
+      qualifiedName: "Feature Context scenario",
+      tags: [],
+      mode: "default",
+      pending: false,
+      pendingReason: undefined,
+      feature: featureNode,
+      scope: scenarioScope,
+      summary,
+      gherkin: { location: { line: 8, column: 1 } } as never,
+      gherkinSteps: [
+        {
+          keyword: "Given ",
+          text: "a failing step",
+          location: { line: 12, column: 5 },
+        },
+      ] as never,
+      steps: [step],
+      ancestors: [],
+      result: { status: "pending" },
+      markPassed: vi.fn(),
+      markFailed: vi.fn(),
+      markSkipped: vi.fn(),
+      markPending: vi.fn(),
+      reset: vi.fn(),
+      rule: undefined,
+      outline: undefined,
+    } as unknown as ScenarioExecution<unknown>;
+
+    const adapter = {
+      createWorld: vi.fn(async () => ({})),
+      getParameterRegistry: vi.fn(() => undefined),
+    } as unknown as ScopeExecutionAdapter<unknown>;
+
+    let thrown: unknown;
+    await runScenarioExecution(execution, { adapter }).catch((error: unknown) => {
+      thrown = error;
+    });
+
+    expect(thrown).toBeInstanceOf(GherkinStepError);
+    const context = getGherkinErrorContext(thrown);
+    expect(context?.gherkin?.location.filePath).toBe(featurePath);
+    expect(context?.gherkin?.location.start.line).toBe(12);
+    expect(context?.code?.location.filePath).toBe(stepPath);
+    expect(context?.code?.location.start.line).toBe(42);
+    expect(context?.path?.map((segment) => segment.role)).toEqual([
+      "feature",
+      "scenario",
+      "step",
+    ]);
+    const featureSegment = context?.path?.[0];
+    expect(featureSegment?.location.start.line).toBe(1);
+    const scenarioSegment = context?.path?.[1];
+    expect(scenarioSegment?.location.start.line).toBe(8);
+    const stepSegment = context?.path?.[context.path.length - 1]!;
+    expect(stepSegment.location.start.line).toBe(12);
   });
 
   it("aggregates errors thrown while disposing world resources", async () => {
@@ -278,6 +399,7 @@ describe("runScenarioExecution world disposal", () => {
 
     const adapter = {
       createWorld: vi.fn(async () => world),
+      getParameterRegistry: vi.fn(() => undefined),
     } as unknown as ScopeExecutionAdapter<unknown>;
 
     let thrown: unknown;

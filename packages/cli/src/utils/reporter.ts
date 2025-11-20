@@ -6,6 +6,7 @@ import pc from "picocolors";
 
 import {
   getGherkinErrorContext,
+  type GherkinContextPathSegment,
   type GherkinErrorContext,
   type SourceLocation,
 } from "@autometa/errors";
@@ -201,12 +202,25 @@ export class HierarchicalReporter implements RuntimeReporter {
     const [headline, ...rest] = lines;
     console.log(`${indent}${pc.red(headline)}`);
 
+    const { messageLines, stackLines } = this.partitionErrorLines(rest);
+
+    if (messageLines.length > 0) {
+      for (const line of messageLines) {
+        const trimmed = line.trimEnd();
+        if (trimmed.length === 0) {
+          console.log("");
+          continue;
+        }
+        console.log(`${indent}${pc.red(trimmed)}`);
+      }
+    }
+
     const context = getGherkinErrorContext(error);
     if (context) {
       this.printGherkinContext(context, depth + 1);
     }
 
-    const { lines: formattedStack, truncated } = this.formatStackLines(rest, 4);
+    const { lines: formattedStack, truncated } = this.formatStackLines(stackLines, 4);
     for (const line of formattedStack) {
       console.log(`${indent}${pc.dim(line)}`);
     }
@@ -287,7 +301,20 @@ export class HierarchicalReporter implements RuntimeReporter {
   private printGherkinContext(context: GherkinErrorContext, depth: number): void {
     if (context.gherkin) {
       const details = this.describeGherkinSegment(context.gherkin);
-      this.printCodeFrameSection("Gherkin", context.gherkin.location, details, depth);
+      const pathSegments = context.path;
+      this.printCodeFrameSection(
+        "Gherkin",
+        context.gherkin.location,
+        details,
+        depth,
+        {
+          includeLocation: !pathSegments || pathSegments.length === 0,
+        }
+      );
+
+      if (pathSegments && pathSegments.length > 0) {
+        this.printGherkinPath(pathSegments, depth + 1);
+      }
     }
 
     if (context.code) {
@@ -300,18 +327,17 @@ export class HierarchicalReporter implements RuntimeReporter {
     title: string,
     location: SourceLocation,
     details: string | undefined,
-    depth: number
+    depth: number,
+    options: { includeLocation?: boolean } = {}
   ): void {
     const indent = "  ".repeat(depth);
     const headerParts = [title];
     if (details) {
       headerParts.push(details);
     }
-    headerParts.push(
-      pc.dim(
-        `${this.relativePath(location.filePath)}:${location.start.line}:${location.start.column}`
-      )
-    );
+    if (options.includeLocation !== false) {
+      headerParts.push(pc.dim(this.formatSourceLocation(location)));
+    }
     console.log(`${indent}${pc.cyan(headerParts.join(" - "))}`);
 
     const frame = this.buildCodeFrame(location);
@@ -352,27 +378,129 @@ export class HierarchicalReporter implements RuntimeReporter {
     if (!segment) {
       return undefined;
     }
-    const parts: string[] = [];
+    const keyword = segment.stepKeyword?.trim();
+    const text = segment.stepText?.trim();
+    const parts = [keyword, text].filter((value): value is string => Boolean(value && value.length));
+    if (parts.length) {
+      return parts.join(" ");
+    }
     if (segment.featureName) {
-      parts.push(`Feature: ${segment.featureName}`);
+      return `Feature: ${segment.featureName}`;
     }
-    const stepParts = [segment.stepKeyword, segment.stepText].filter(Boolean);
-    if (stepParts.length) {
-      parts.push(stepParts.join(" "));
-    }
-    return parts.length ? parts.join(" | ") : undefined;
+    return undefined;
   }
 
   private describeCodeSegment(segment: GherkinErrorContext["code"]): string | undefined {
     if (!segment) {
       return undefined;
     }
-    return segment.functionName ? `Function: ${segment.functionName}` : undefined;
+    return segment.functionName ?? undefined;
+  }
+
+  private printGherkinPath(
+    path: readonly GherkinContextPathSegment[],
+    depth: number
+  ): void {
+    if (path.length === 0) {
+      return;
+    }
+    const indent = "  ".repeat(depth);
+    path.forEach((segment, index) => {
+      const prefix = this.describePathPrefix(segment.role, index);
+      const label = this.describePathSegment(segment);
+      console.log(`${indent}${pc.dim(`${prefix} ${label}`)}`);
+    });
+  }
+
+  private describePathPrefix(
+    role: GherkinContextPathSegment["role"],
+    index: number
+  ): string {
+    if (index === 0) {
+      return "at";
+    }
+    return role === "step" ? "at" : "as";
+  }
+
+  private describePathSegment(segment: GherkinContextPathSegment): string {
+    const location = this.formatSourceLocation(segment.location);
+    switch (segment.role) {
+      case "feature": {
+        const name = segment.name?.trim();
+        return name ? `Feature: ${name}(${location})` : `Feature(${location})`;
+      }
+      case "rule": {
+        const name = segment.name?.trim();
+        return name ? `Rule: ${name}(${location})` : `Rule(${location})`;
+      }
+      case "outline": {
+        const name = segment.name?.trim();
+        return name ? `Scenario Outline: ${name}(${location})` : `Scenario Outline(${location})`;
+      }
+      case "scenario": {
+        const name = segment.name?.trim();
+        return name ? `Scenario: ${name}(${location})` : `Scenario(${location})`;
+      }
+      case "example": {
+        const label = segment.name ?? (segment.index !== undefined ? `#${segment.index + 1}` : "");
+        return label ? `Example: ${label}(${location})` : `Example(${location})`;
+      }
+      case "step": {
+        const keyword = segment.keyword?.trim();
+        const label = keyword ? `Step ${keyword}` : "Step";
+        return `${label}(${location})`;
+      }
+      default:
+        return `${segment.role}(${location})`;
+    }
+  }
+
+  private formatSourceLocation(location: SourceLocation): string {
+    return `${this.relativePath(location.filePath)}:${location.start.line}:${location.start.column}`;
   }
 
   private relativePath(filePath: string): string {
     const cwd = process.cwd();
     const relative = path.relative(cwd, filePath);
     return relative || filePath;
+  }
+
+  private partitionErrorLines(lines: readonly string[]): {
+    messageLines: string[];
+    stackLines: string[];
+  } {
+    const messageLines: string[] = [];
+    const stackLines: string[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (this.isStackLine(trimmed)) {
+        stackLines.push(line);
+      } else {
+        messageLines.push(line);
+      }
+    }
+
+    // Remove trailing blank lines from message block for tidier output
+    while (messageLines.length > 0) {
+      const last = messageLines[messageLines.length - 1];
+      if (!last || last.trim().length === 0) {
+        messageLines.pop();
+        continue;
+      }
+      break;
+    }
+
+    return { messageLines, stackLines };
+  }
+
+  private isStackLine(line: string): boolean {
+    if (!line) {
+      return false;
+    }
+    if (line.startsWith("at ")) {
+      return true;
+    }
+    return /\((?:[a-zA-Z]:)?[^():]+:\d+:\d+\)$/.test(line);
   }
 }

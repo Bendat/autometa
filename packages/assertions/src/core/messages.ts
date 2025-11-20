@@ -8,6 +8,7 @@ export interface FailureMessageOptions {
   readonly actual?: unknown;
   readonly diff?: string | undefined;
   readonly extra?: readonly (string | undefined)[];
+  readonly actualLabel?: string;
 }
 
 export function buildFailureMessage(
@@ -22,7 +23,8 @@ export function buildFailureMessage(
   }
 
   if (Object.prototype.hasOwnProperty.call(options, "actual")) {
-    sections.push(`Received: ${printReceived(options.actual)}`);
+    const label = options.actualLabel ?? "Received";
+    sections.push(`${label}: ${printReceived(options.actual)}`);
   }
 
   if (options.extra) {

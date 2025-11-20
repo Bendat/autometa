@@ -1,3 +1,6 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import type {
   CucumberExpressionTypeMap,
   ExecutableScopeFn,
@@ -13,6 +16,7 @@ import type {
   ScopeNode,
   ScopeRegistrationOptions,
   ScenarioOutlineExamples,
+  SourceRef,
   StepArgumentsForExpression,
   StepDsl,
   StepExpression,
@@ -204,6 +208,133 @@ function mergeStepOptions(
   };
 
   return result;
+}
+
+function captureCallSite(): SourceRef | undefined {
+  const prepare = Error.prepareStackTrace;
+  try {
+    Error.prepareStackTrace = (_error, stack) => stack;
+    const capture = Error.captureStackTrace;
+    if (typeof capture !== "function") {
+      return undefined;
+    }
+    const error = new Error();
+    capture(error, captureCallSite);
+    const frames = error.stack as unknown as readonly NodeJS.CallSite[] | undefined;
+    if (!frames) {
+      return undefined;
+    }
+
+    const selected = selectRelevantFrame(frames);
+    if (!selected) {
+      return undefined;
+    }
+
+    const file = normalizeStackPath(selected.file);
+    if (!file) {
+      return undefined;
+    }
+
+    return {
+      file,
+      ...(selected.line !== undefined ? { line: selected.line } : {}),
+      ...(selected.column !== undefined ? { column: selected.column } : {}),
+    } satisfies SourceRef;
+  } catch {
+    return undefined;
+  } finally {
+    Error.prepareStackTrace = prepare;
+  }
+}
+
+interface StackFrameInfo {
+  readonly file: string;
+  readonly line?: number;
+  readonly column?: number;
+}
+
+function selectRelevantFrame(frames: readonly NodeJS.CallSite[]): StackFrameInfo | undefined {
+  const fallback: StackFrameInfo[] = [];
+
+  for (const frame of frames) {
+    const fileName = frame.getFileName?.();
+    if (!fileName) {
+      continue;
+    }
+
+    const normalized = normalizeStackPath(fileName);
+    if (!normalized) {
+      continue;
+    }
+
+    const comparable = normalized.replace(/\\/g, "/");
+    if (isInternalFrame(comparable)) {
+      continue;
+    }
+
+    const line = frame.getLineNumber?.() ?? undefined;
+    const column = frame.getColumnNumber?.() ?? undefined;
+    const info: StackFrameInfo = {
+      file: normalized,
+      ...(line !== undefined ? { line } : {}),
+      ...(column !== undefined ? { column } : {}),
+    };
+
+    if (isFrameworkFrame(comparable)) {
+      fallback.push(info);
+      continue;
+    }
+
+    return info;
+  }
+
+  return fallback[0];
+}
+
+function normalizeStackPath(candidate: string): string {
+  if (candidate.startsWith("node:")) {
+    return candidate;
+  }
+  if (candidate.startsWith("file://")) {
+    try {
+      return fileURLToPath(candidate);
+    } catch {
+      return candidate;
+    }
+  }
+  if (!path.isAbsolute(candidate)) {
+    return path.resolve(candidate);
+  }
+  return candidate;
+}
+
+function isInternalFrame(candidate: string): boolean {
+  if (candidate.startsWith("node:")) {
+    return true;
+  }
+  if (candidate.includes("node:internal")) {
+    return true;
+  }
+  if (candidate.includes("internal/modules")) {
+    return true;
+  }
+  return false;
+}
+
+const FRAME_SKIP_PATTERNS = [
+  "/node_modules/@autometa/",
+  "/packages/scopes/",
+  "/packages/runner/",
+  "/.autometa-cli/cache/",
+];
+
+function isFrameworkFrame(candidate: string): boolean {
+  for (const pattern of FRAME_SKIP_PATTERNS) {
+    if (candidate.includes(pattern)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function applyExecutionModeToHookOptions(
@@ -434,11 +565,13 @@ export function createStepBuilder<
         options?: StepOptions
       ) => {
         const mergedOptions = mergeStepOptions(inheritedOptions, options);
+        const source = captureCallSite();
         return composer.registerStep(
           keyword,
           expression,
           handler as StepHandler<World>,
-          applyExecutionModeToStepOptions(mode, mergedOptions)
+          applyExecutionModeToStepOptions(mode, mergedOptions),
+          source
         );
       };
 
@@ -564,6 +697,7 @@ export function createHookBuilder<World>(
       handlerOrOptions as HookHandler<World> | HookOptions | undefined,
       maybeOptions as HookOptions | undefined
     );
-    return composer.registerHook(type, handler, options, description);
+    const source = captureCallSite();
+    return composer.registerHook(type, handler, options, description, source);
   });
 }

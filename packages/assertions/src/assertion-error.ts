@@ -25,19 +25,25 @@ export class EnsureError extends Error {
 
 function buildMessage({ matcher, message, actual, expected, receivedLabel }: EnsureErrorDetails): string {
   const parts = [message];
-  const hasExpected = typeof expected !== "undefined";
-  const hasActual = typeof actual !== "undefined";
+  const extras: string[] = [];
 
-  if (hasExpected || hasActual) {
-    parts.push("");
-    if (hasExpected) {
-      parts.push(`Expected: ${formatValue(expected)}`);
+  if (typeof expected !== "undefined" && !containsSection(message, "Expected:")) {
+    extras.push(`Expected: ${formatValue(expected)}`);
+  }
+
+  if (typeof actual !== "undefined") {
+    const label = receivedLabel ? `Received ${receivedLabel}` : "Received";
+    if (!containsSection(message, `${label}:`)) {
+      extras.push(`${label}: ${formatValue(actual)}`);
     }
-    if (hasActual) {
-      const label = receivedLabel ? `Received ${receivedLabel}` : "Received";
-      parts.push(`${label}: ${formatValue(actual)}`);
-    }
-    parts.push(`Matcher: ${matcher}`);
+  }
+
+  if (!containsSection(message, "Matcher:")) {
+    extras.push(`Matcher: ${matcher}`);
+  }
+
+  if (extras.length > 0) {
+    parts.push("", ...extras);
   }
 
   return parts.join("\n");
@@ -45,4 +51,10 @@ function buildMessage({ matcher, message, actual, expected, receivedLabel }: Ens
 
 function formatValue(value: unknown): string {
   return inspect(value, { depth: 4, maxArrayLength: 10, breakLength: 60, sorted: true });
+}
+
+function containsSection(message: string, label: string): boolean {
+  return message
+    .split("\n")
+    .some((line) => line.trimStart().startsWith(label));
 }

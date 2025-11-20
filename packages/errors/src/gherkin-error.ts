@@ -25,9 +25,27 @@ export interface CodeContextSegment {
   readonly location: SourceLocation;
 }
 
+export type GherkinContextRole =
+  | "feature"
+  | "rule"
+  | "scenario"
+  | "outline"
+  | "example"
+  | "step";
+
+export interface GherkinContextPathSegment {
+  readonly role: GherkinContextRole;
+  readonly keyword?: string;
+  readonly name?: string;
+  readonly text?: string;
+  readonly index?: number;
+  readonly location: SourceLocation;
+}
+
 export interface GherkinErrorContext {
   readonly gherkin?: GherkinContextSegment;
   readonly code?: CodeContextSegment;
+  readonly path?: readonly GherkinContextPathSegment[];
 }
 
 export interface GherkinStepErrorOptions extends AutomationErrorOptions {
@@ -65,10 +83,28 @@ function freezeCodeSegment(segment: CodeContextSegment): CodeContextSegment {
   });
 }
 
+function freezePathSegment(segment: GherkinContextPathSegment): GherkinContextPathSegment {
+  return Object.freeze({
+    role: segment.role,
+    location: freezeLocation(segment.location),
+    ...(segment.keyword !== undefined ? { keyword: segment.keyword } : {}),
+    ...(segment.name !== undefined ? { name: segment.name } : {}),
+    ...(segment.text !== undefined ? { text: segment.text } : {}),
+    ...(segment.index !== undefined ? { index: segment.index } : {}),
+  });
+}
+
+function freezePath(
+  path: readonly GherkinContextPathSegment[]
+): readonly GherkinContextPathSegment[] {
+  return Object.freeze(path.map((segment) => freezePathSegment(segment)));
+}
+
 function freezeContext(context: GherkinErrorContext): GherkinErrorContext {
   return Object.freeze({
     ...(context.gherkin ? { gherkin: freezeGherkinSegment(context.gherkin) } : {}),
     ...(context.code ? { code: freezeCodeSegment(context.code) } : {}),
+    ...(context.path ? { path: freezePath(context.path) } : {}),
   });
 }
 

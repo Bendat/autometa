@@ -419,6 +419,10 @@ function generateCompiledScenarios(scenarioOutline: SimpleScenarioOutline): Simp
           keyword: step.keyword,
           text: interpolateString(step.text, paramMap)
         };
+
+        if (step.location) {
+          interpolatedStep.location = { ...step.location };
+        }
         
         if (step.docString) {
           interpolatedStep.docString = {

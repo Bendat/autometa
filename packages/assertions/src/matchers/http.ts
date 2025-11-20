@@ -61,6 +61,7 @@ export function assertToHaveStatus<T>(
       message: buildFailureMessage("toHaveStatus", baseMessage, {
         actual: normalized.status,
         expected: description,
+        actualLabel: "Received http response",
       }),
       actual: normalized.status,
       expected: description,

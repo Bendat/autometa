@@ -8,6 +8,8 @@ export {
 	isGherkinStepError,
 	type CodeContextSegment,
 	type GherkinContextSegment,
+	type GherkinContextPathSegment,
+	type GherkinContextRole,
 	type GherkinErrorContext,
 	type GherkinStepErrorOptions,
 	type SourceLocation,

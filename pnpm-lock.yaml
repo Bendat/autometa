@@ -863,6 +863,9 @@ importers:
       '@autometa/config':
         specifier: workspace:*
         version: link:../config
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../errors
       '@autometa/scopes':
         specifier: workspace:*
         version: link:../scopes

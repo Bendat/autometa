@@ -10,6 +10,7 @@ export default defineConfig({
       "@autometa/gherkin": resolve(workspaceRoot, "packages/gherkin/src"),
       "@autometa/scopes": resolve(workspaceRoot, "packages/scopes/src"),
       "@autometa/config": resolve(workspaceRoot, "packages/config/src"),
+      "@autometa/errors": resolve(workspaceRoot, "packages/errors/src"),
     },
   },
   test: {

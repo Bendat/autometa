@@ -1,3 +1,6 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import {
   CucumberExpression,
   ParameterTypeRegistry,
@@ -17,6 +20,13 @@ import type {
   SimpleScenario,
   SimpleStep,
 } from "@autometa/gherkin";
+import {
+  GherkinStepError,
+  isGherkinStepError,
+  type GherkinContextPathSegment,
+  type GherkinErrorContext,
+  type SourceLocation,
+} from "@autometa/errors";
 import {
   clearStepDocstring,
   clearStepTable,
@@ -62,11 +72,11 @@ export async function runScenarioExecution<World>(
         continue;
       }
       const gherkinStep = gherkinSteps[index];
+      const metadata = buildStepMetadata(execution, index);
+      setStepMetadata(world, metadata);
+      setStepTable(world, gherkinStep?.dataTable);
+      setStepDocstring(world, gherkinStep?.docString?.content);
       try {
-        const metadata = buildStepMetadata(execution, index);
-        setStepMetadata(world, metadata);
-        setStepTable(world, gherkinStep?.dataTable);
-        setStepDocstring(world, gherkinStep?.docString?.content);
         const args = resolveStepArguments(
           step,
           gherkinStep,
@@ -74,6 +84,11 @@ export async function runScenarioExecution<World>(
           world
         );
         await step.handler(world, ...args);
+      } catch (error) {
+        if (isScenarioPendingError(error)) {
+          throw error;
+        }
+        throw enrichStepError(error, metadata);
       } finally {
         clearStepTable(world);
         clearStepDocstring(world);
@@ -249,10 +264,7 @@ function buildStepMetadata<World>(
 
   const definitionMeta = stepDefinition
     ? (() => {
-        const definitionSource = combineSourceRef(
-          stepDefinition.source,
-          feature.uri
-        );
+        const definitionSource = normalizeDefinitionSource(stepDefinition.source);
         return {
           keyword: stepDefinition.keyword,
           expression: stepDefinition.expression,
@@ -290,6 +302,18 @@ function combineSourceRef(
     ...(file !== undefined ? { file } : {}),
     ...(line !== undefined ? { line } : {}),
     ...(column !== undefined ? { column } : {}),
+  } satisfies SourceRef;
+}
+
+function normalizeDefinitionSource(source: SourceRef | undefined): SourceRef | undefined {
+  if (!source) {
+    return undefined;
+  }
+
+  return {
+    ...(source.file !== undefined ? { file: source.file } : {}),
+    ...(source.line !== undefined ? { line: source.line } : {}),
+    ...(source.column !== undefined ? { column: source.column } : {}),
   } satisfies SourceRef;
 }
 
@@ -392,6 +416,262 @@ function createWorldDisposer(world: unknown): () => Promise<void> {
       throw summary;
     }
   };
+}
+
+function enrichStepError(
+  error: unknown,
+  metadata: StepRuntimeMetadata | undefined
+): Error {
+  const base = error instanceof Error ? error : new Error(String(error));
+
+  if (isGherkinStepError(base)) {
+    return base;
+  }
+
+  const wrapped = new GherkinStepError(base.message, {
+    cause: base,
+    context: buildGherkinErrorContext(metadata, base) ?? {},
+  });
+
+  if (base.stack) {
+    Object.defineProperty(wrapped, "stack", {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: base.stack,
+    });
+  }
+
+  return wrapped;
+}
+
+function buildGherkinErrorContext(
+  metadata: StepRuntimeMetadata | undefined,
+  error?: Error
+): GherkinErrorContext | undefined {
+  if (!metadata) {
+    return undefined;
+  }
+
+  const gherkinLocation = toSourceLocation(metadata.step?.source);
+  const definitionLocation = toSourceLocation(metadata.definition?.source);
+  const errorLocation = extractErrorLocation(error);
+  const pathSegments = buildGherkinPath(metadata);
+
+  const gherkinSegment = gherkinLocation
+    ? {
+        location: gherkinLocation,
+        ...(metadata.feature?.name !== undefined
+          ? { featureName: metadata.feature.name }
+          : {}),
+        ...(metadata.step?.keyword !== undefined
+          ? { stepKeyword: metadata.step.keyword }
+          : {}),
+        ...(metadata.step?.text !== undefined ? { stepText: metadata.step.text } : {}),
+      }
+    : undefined;
+
+  const expression = metadata.definition?.expression;
+  const functionName =
+    typeof expression === "string"
+      ? expression
+      : expression !== undefined
+        ? String(expression)
+        : undefined;
+
+  const codeLocation = errorLocation ?? definitionLocation;
+
+  const codeSegment = codeLocation
+    ? {
+        location: codeLocation,
+        ...(functionName !== undefined ? { functionName } : {}),
+      }
+    : undefined;
+
+  if (!gherkinSegment && !codeSegment && !pathSegments) {
+    return undefined;
+  }
+
+  return {
+    ...(gherkinSegment ? { gherkin: gherkinSegment } : {}),
+    ...(codeSegment ? { code: codeSegment } : {}),
+    ...(pathSegments ? { path: pathSegments } : {}),
+  };
+}
+
+function buildGherkinPath(
+  metadata: StepRuntimeMetadata | undefined
+): GherkinContextPathSegment[] | undefined {
+  if (!metadata) {
+    return undefined;
+  }
+
+  const segments: GherkinContextPathSegment[] = [];
+
+  const featureLocation = toSourceLocation(metadata.feature?.source);
+  if (featureLocation) {
+    segments.push({
+      role: "feature",
+      location: featureLocation,
+      ...(metadata.feature?.keyword !== undefined
+        ? { keyword: metadata.feature.keyword }
+        : {}),
+      ...(metadata.feature?.name !== undefined ? { name: metadata.feature.name } : {}),
+    });
+  }
+
+  const outlineLocation = toSourceLocation(metadata.outline?.source);
+  if (outlineLocation) {
+    segments.push({
+      role: "outline",
+      location: outlineLocation,
+      ...(metadata.outline?.keyword !== undefined
+        ? { keyword: metadata.outline.keyword }
+        : {}),
+      ...(metadata.outline?.name !== undefined ? { name: metadata.outline.name } : {}),
+    });
+  }
+
+  const scenarioLocation = toSourceLocation(metadata.scenario?.source);
+  if (scenarioLocation) {
+    segments.push({
+      role: "scenario",
+      location: scenarioLocation,
+      ...(metadata.scenario?.keyword !== undefined
+        ? { keyword: metadata.scenario.keyword }
+        : {}),
+      ...(metadata.scenario?.name !== undefined ? { name: metadata.scenario.name } : {}),
+    });
+  }
+
+  const exampleLocation = toSourceLocation(metadata.example?.source);
+  if (exampleLocation) {
+    segments.push({
+      role: "example",
+      keyword: "Example",
+      location: exampleLocation,
+      ...(metadata.example?.name !== undefined ? { name: metadata.example.name } : {}),
+      ...(metadata.example?.index !== undefined ? { index: metadata.example.index } : {}),
+    });
+  }
+
+  const stepLocation = toSourceLocation(metadata.step?.source);
+  if (stepLocation) {
+    segments.push({
+      role: "step",
+      location: stepLocation,
+      ...(metadata.step?.keyword !== undefined ? { keyword: metadata.step.keyword } : {}),
+      ...(metadata.step?.text !== undefined ? { text: metadata.step.text } : {}),
+    });
+  }
+
+  return segments.length ? segments : undefined;
+}
+
+interface ParsedStackFrame {
+  readonly file: string;
+  readonly line: number;
+  readonly column: number;
+}
+
+const STACK_FRAME_IGNORE_PATTERNS: readonly RegExp[] = [
+  /^node:/,
+  /node:internal\//,
+  /internal\/(?:modules|process)/,
+  /node_modules\/@autometa\//,
+  /packages\/(?:runner|executor|errors|cli|assertions)\//,
+  /\/\.autometa-cli\/cache\//,
+];
+
+function extractErrorLocation(error: Error | undefined): SourceLocation | undefined {
+  if (!error?.stack) {
+    return undefined;
+  }
+
+  const lines = error.stack.split("\n").slice(1);
+  for (const raw of lines) {
+    const trimmed = raw.trim();
+    if (!trimmed.startsWith("at ")) {
+      continue;
+    }
+    const parsed = parseStackFrame(trimmed);
+    if (!parsed) {
+      continue;
+    }
+    if (isFrameworkStackFile(parsed.file)) {
+      continue;
+    }
+    const filePath = normalizeFilePath(parsed.file);
+    return {
+      filePath,
+      start: {
+        line: parsed.line,
+        column: parsed.column,
+      },
+    } satisfies SourceLocation;
+  }
+
+  return undefined;
+}
+
+function parseStackFrame(line: string): ParsedStackFrame | undefined {
+  const match = line.match(/at (?:.+?\()?((?:[a-zA-Z]:)?[^():]+):(\d+):(\d+)\)?$/);
+  if (!match) {
+    return undefined;
+  }
+
+  const [, file = "", lineText = "", columnText = ""] = match;
+  if (!file || !lineText) {
+    return undefined;
+  }
+
+  const lineNumber = Number.parseInt(lineText, 10);
+  if (Number.isNaN(lineNumber)) {
+    return undefined;
+  }
+
+  const columnNumber = Number.parseInt(columnText, 10);
+
+  return {
+    file,
+    line: lineNumber,
+    column: Number.isNaN(columnNumber) ? 1 : columnNumber,
+  };
+}
+
+function isFrameworkStackFile(file: string): boolean {
+  const normalized = file.replace(/\\/g, "/");
+  return STACK_FRAME_IGNORE_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+function toSourceLocation(source: SourceRef | undefined): SourceLocation | undefined {
+  if (!source?.file) {
+    return undefined;
+  }
+
+  const filePath = normalizeFilePath(source.file);
+  const line = source.line ?? 1;
+  const column = source.column ?? 1;
+
+  return {
+    filePath,
+    start: {
+      line,
+      column,
+    },
+  };
+}
+
+function normalizeFilePath(file: string): string {
+  if (file.startsWith("file://")) {
+    try {
+      return fileURLToPath(file);
+    } catch {
+      // fall back to treating the URI as a plain path
+      return file;
+    }
+  }
+  return path.isAbsolute(file) ? file : path.resolve(file);
 }
 
 function isDisposable(value: unknown): value is DisposableLike {

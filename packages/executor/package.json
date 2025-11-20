@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@autometa/config": "workspace:*",
+    "@autometa/errors": "workspace:*",
     "@autometa/scopes": "workspace:*",
     "@autometa/test-builder": "workspace:*",
     "@cucumber/cucumber-expressions": "^16.1.2",
