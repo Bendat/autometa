@@ -15,6 +15,7 @@ export {
   TimeUnitSchema,
   TimeoutSchema,
   PartialExecutorConfigSchema,
+  ReporterSchema,
 } from "./schema";
 export type {
   ConfigDefinition,
@@ -35,4 +36,5 @@ export type {
   BuildHookContext,
   SourceMapSetting,
   LoggingConfig,
+  ReporterConfig,
 } from "./types";

@@ -187,16 +187,21 @@ function createFeatureScopePlan<World>(
 
 export async function runFeatures(options: RunCommandOptions = {}): Promise<RunCommandResult> {
   const cwd = options.cwd ?? process.cwd();
+  const cacheDir = join(cwd, ".autometa-cli", "cache");
+  const summaryFormatter = options.summaryFormatter ?? formatSummary;
+  const { resolved } = await loadExecutorConfig(cwd, { cacheDir });
+  const executorConfig = resolved.config;
+  const hierarchicalBufferOutput = executorConfig.reporting?.hierarchical?.bufferOutput;
+  const reporterOptions: RuntimeOptions["reporter"] | undefined =
+    hierarchicalBufferOutput !== undefined
+      ? { hierarchical: { bufferOutput: hierarchicalBufferOutput } }
+      : undefined;
   const runtimeOptions: RuntimeOptions = {
     ...(typeof options.dryRun === "boolean" ? { dryRun: options.dryRun } : {}),
     ...(options.reporters ? { reporters: options.reporters } : {}),
+    ...(reporterOptions ? { reporter: reporterOptions } : {}),
   };
-  const cacheDir = join(cwd, ".autometa-cli", "cache");
-  const summaryFormatter = options.summaryFormatter ?? formatSummary;
-
   const { runtime, execute } = createCliRuntime(runtimeOptions);
-  const { resolved } = await loadExecutorConfig(cwd, { cacheDir });
-  const executorConfig = resolved.config;
   configureHttpLogging(executorConfig.logging);
 
   const patternSource =

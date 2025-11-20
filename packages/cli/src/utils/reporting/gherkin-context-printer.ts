@@ -10,8 +10,11 @@ import type {
 } from "@autometa/errors";
 
 import { formatSourceLocation } from "./location";
+import {
+  ImmediateHierarchicalLog,
+  type HierarchicalLog,
+} from "../logging/hierarchical-log";
 
-type LogFn = (line: string) => void;
 export interface GherkinContextPrinterOptions {
   readonly includePath?: boolean;
   readonly includeCodeFrame?: boolean;
@@ -19,7 +22,7 @@ export interface GherkinContextPrinterOptions {
 
 export class GherkinContextPrinter {
   constructor(
-    private readonly log: LogFn = console.log,
+    private readonly log: HierarchicalLog = new ImmediateHierarchicalLog(),
     private readonly options: GherkinContextPrinterOptions = {}
   ) {}
 
@@ -55,7 +58,6 @@ export class GherkinContextPrinter {
     depth: number,
     options: { includeLocation?: boolean } = {}
   ): void {
-    const indent = "  ".repeat(depth);
     const headerParts = [title];
     if (details) {
       headerParts.push(details);
@@ -63,16 +65,17 @@ export class GherkinContextPrinter {
     if (options.includeLocation !== false) {
       headerParts.push(pc.dim(formatSourceLocation(location)));
     }
-    this.log(`${indent}${pc.cyan(headerParts.join(" - "))}`);
+    const scope = this.log.scoped(depth);
+    scope.write(pc.cyan(headerParts.join(" - ")));
 
     const frame = this.buildCodeFrame(location);
     if (!frame) {
-      this.log(`${indent}  ${pc.dim("Unable to read source snippet")}`);
+      scope.scoped(1).write(pc.dim("Unable to read source snippet"));
       return;
     }
 
     for (const line of frame) {
-      this.log(`${indent}  ${line}`);
+      scope.scoped(1).write(line);
     }
   }
 
@@ -105,7 +108,7 @@ export class GherkinContextPrinter {
       return;
     }
 
-    let currentDepth = depth;
+    let scope = this.log.scoped(depth);
     let previousKey: string | undefined;
 
     for (const segment of pathSegments) {
@@ -114,10 +117,8 @@ export class GherkinContextPrinter {
         continue;
       }
       previousKey = segmentKey;
-
-      const indent = "  ".repeat(currentDepth);
-      this.log(`${indent}${pc.dim(`at ${this.describePathLabel(segment)}`)}`);
-      currentDepth += 1;
+      scope.write(pc.dim(`at ${this.describePathLabel(segment)}`));
+      scope = scope.scoped(1);
     }
   }
 

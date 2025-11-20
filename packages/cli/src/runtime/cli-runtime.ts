@@ -10,6 +10,7 @@ import type {
 import type { RuntimeSummary, ScenarioReport } from "./types";
 import {
   HierarchicalReporter,
+  type HierarchicalReporterOptions,
   type RuntimeReporter,
   type RunEndEvent,
   type RunStartEvent,
@@ -31,6 +32,9 @@ const clock: Clock =
 export interface RuntimeOptions {
   readonly dryRun?: boolean;
   readonly reporters?: readonly RuntimeReporter[];
+  readonly reporter?: {
+    readonly hierarchical?: HierarchicalReporterOptions;
+  };
 }
 
 type SuiteMode = "default" | "skip" | "only" | "concurrent";
@@ -301,7 +305,9 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
     const startedAt = clock.now();
     const reports: ScenarioReport[] = [];
     const reporters: RuntimeReporter[] = [
-      ...(options.reporters ? [...options.reporters] : [new HierarchicalReporter()]),
+      ...(options.reporters
+        ? [...options.reporters]
+        : [new HierarchicalReporter(undefined, options.reporter?.hierarchical)]),
     ];
 
     await dispatchRunStart({ timestamp: startedAt });

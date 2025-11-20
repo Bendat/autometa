@@ -18,6 +18,7 @@ import {
   ShimConfig,
   TestConfig,
   LoggingConfig,
+  ReporterConfig,
   TimeoutSetting,
 } from "./types";
 
@@ -142,10 +143,15 @@ const mergeExecutorConfig = (
     result.logging = mergeLogging(result.logging, override.logging);
   }
 
+  if (override.reporting !== undefined) {
+    result.reporting = mergeReporting(result.reporting, override.reporting);
+  }
+
   return result;
 };
 
 type LoggingConfigValue = NonNullable<LoggingConfig>;
+type ReportingConfigValue = NonNullable<ReporterConfig>;
 
 const mergeTest = (
   base: TestConfig | undefined,
@@ -199,6 +205,36 @@ const mergeLogging = (
 
   if (override.http !== undefined) {
     result.http = override.http;
+  }
+
+  return Object.keys(result).length === 0 ? undefined : result;
+};
+
+const mergeReporting = (
+  base: ReporterConfig | undefined,
+  override: PartialExecutorConfig["reporting"]
+): ReporterConfig | undefined => {
+  if (override === undefined) {
+    return base ? cloneReporting(base) : undefined;
+  }
+
+  const result: ReportingConfigValue = base ? cloneReporting(base) : {};
+
+  if (override.hierarchical !== undefined) {
+    const hierarchicalOverride = override.hierarchical;
+    if (hierarchicalOverride) {
+      const hierarchical = result.hierarchical ? { ...result.hierarchical } : {};
+      if (hierarchicalOverride.bufferOutput !== undefined) {
+        hierarchical.bufferOutput = hierarchicalOverride.bufferOutput;
+      }
+      if (Object.keys(hierarchical).length > 0) {
+        result.hierarchical = hierarchical;
+      } else {
+        delete result.hierarchical;
+      }
+    } else {
+      delete result.hierarchical;
+    }
   }
 
   return Object.keys(result).length === 0 ? undefined : result;
@@ -292,6 +328,7 @@ const cloneConfig = (config: ExecutorConfig): ExecutorConfig => ({
   events: cloneOptionalArray(config.events),
   builder: config.builder ? cloneBuilder(config.builder) : undefined,
   logging: config.logging ? cloneLogging(config.logging) : undefined,
+  reporting: config.reporting ? cloneReporting(config.reporting) : undefined,
 });
 
 const cloneRoots = (roots: RootsConfig): RootsConfig => {
@@ -332,6 +369,16 @@ const cloneLogging = (
   const clone: LoggingConfigValue = {};
   if (logging.http !== undefined) {
     clone.http = logging.http;
+  }
+  return clone;
+};
+
+const cloneReporting = (
+  reporting: ReportingConfigValue
+): ReportingConfigValue => {
+  const clone: ReportingConfigValue = {};
+  if (reporting.hierarchical) {
+    clone.hierarchical = { ...reporting.hierarchical };
   }
   return clone;
 };

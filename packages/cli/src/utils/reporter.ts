@@ -10,6 +10,11 @@ import { BaselineErrorRenderer, ScenarioErrorRenderer } from "./reporting/scenar
 import { GherkinContextPrinter, type GherkinContextPrinterOptions } from "./reporting/gherkin-context-printer";
 import { colorizeScenarioStatus, getScenarioStatusIcon } from "./reporting/status-formatters";
 import { formatStackLines, partitionErrorLines } from "./reporting/stack-utils";
+import {
+  BufferedHierarchicalLog,
+  ImmediateHierarchicalLog,
+  type HierarchicalLog,
+} from "./logging/hierarchical-log";
 
 export interface ReportNode {
   readonly type: "suite" | "test";
@@ -54,28 +59,28 @@ interface SuiteState {
 
 export interface HierarchicalReporterOptions {
   readonly showGherkinStack?: boolean;
+  readonly bufferOutput?: boolean;
 }
 
 export class HierarchicalReporter implements RuntimeReporter {
   private suiteStack: SuiteState[] = [];
   private rootSuites: ReportNode[] = [];
-  private readonly logLine: (line: string) => void;
+  private readonly log: HierarchicalLog;
   private readonly gherkinContextPrinter: GherkinContextPrinter;
   private readonly baselineErrorRenderer: BaselineErrorRenderer;
   private readonly scenarioErrorRenderer: ScenarioErrorRenderer;
-  private readonly options: HierarchicalReporterOptions;
 
   constructor(log: (line: string) => void = console.log, options: HierarchicalReporterOptions = {}) {
-    this.logLine = log;
-    this.options = options;
+    const useBuffer = options.bufferOutput ?? true;
+    this.log = useBuffer ? new BufferedHierarchicalLog(log) : new ImmediateHierarchicalLog(log);
     const includeGherkinContext = options.showGherkinStack ?? false;
     const printerOptions: GherkinContextPrinterOptions = {
       includePath: includeGherkinContext,
       includeCodeFrame: includeGherkinContext,
     };
-    this.gherkinContextPrinter = new GherkinContextPrinter(log, printerOptions);
-    this.baselineErrorRenderer = new BaselineErrorRenderer(this.gherkinContextPrinter, log);
-    this.scenarioErrorRenderer = new ScenarioErrorRenderer(this.baselineErrorRenderer, log);
+    this.gherkinContextPrinter = new GherkinContextPrinter(this.log, printerOptions);
+    this.baselineErrorRenderer = new BaselineErrorRenderer(this.gherkinContextPrinter, this.log);
+    this.scenarioErrorRenderer = new ScenarioErrorRenderer(this.baselineErrorRenderer, this.log);
   }
 
   async onRunStart(): Promise<void> {
@@ -136,13 +141,12 @@ export class HierarchicalReporter implements RuntimeReporter {
     for (const suite of this.rootSuites) {
       this.printNode(suite, 0);
     }
+    this.log.flush();
   }
 
   private printNode(node: ReportNode, depth: number): void {
-    const indent = "  ".repeat(depth);
-
     if (node.type === "suite") {
-      this.logLine(`${indent}${pc.bold(node.name)}`);
+      this.log.write(pc.bold(node.name), depth);
       if (node.children) {
         for (const child of node.children) {
           this.printNode(child, depth + 1);
@@ -161,12 +165,12 @@ export class HierarchicalReporter implements RuntimeReporter {
       ? pc.dim(` (${this.formatDuration(node.durationMs)})`)
       : "";
 
-    this.logLine(`${indent}${icon} ${coloredName}${duration}`);
+    this.log.write(`${icon} ${coloredName}${duration}`, depth);
 
     if (node.error) {
       this.printError(node.error, depth + 1);
     } else if (node.reason) {
-      this.logLine(`${indent}  ${pc.dim(`Reason: ${node.reason}`)}`);
+      this.log.write(pc.dim(`Reason: ${node.reason}`), depth + 1);
     }
   }
 
@@ -185,14 +189,12 @@ export class HierarchicalReporter implements RuntimeReporter {
     const lines = stack.split("\n");
 
     if (lines.length === 0) {
-      const indent = "  ".repeat(depth);
-      this.logLine(`${indent}${pc.red(error.message)}`);
+      this.log.write(pc.red(error.message), depth);
       return;
     }
 
     const [headline, ...rest] = lines;
-    const indent = "  ".repeat(depth);
-    this.logLine(`${indent}${pc.red(headline)}`);
+    this.log.write(pc.red(headline), depth);
 
     const { messageLines, stackLines } = partitionErrorLines(rest);
     const { lines: formattedStack, truncated } = formatStackLines(stackLines, 4);

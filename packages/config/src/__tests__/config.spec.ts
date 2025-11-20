@@ -118,4 +118,33 @@ describe("defineConfig", () => {
       resolved.roots.features.push("new");
     }).toThrow();
   });
+
+  it("merges reporter buffering preferences", () => {
+    const config = defineConfig({
+      default: {
+        ...createDefaultConfig(),
+        reporting: {
+          hierarchical: {
+            bufferOutput: true,
+          },
+        },
+      },
+      environments: {
+        ci: {
+          reporting: {
+            hierarchical: {
+              bufferOutput: false,
+            },
+          },
+        },
+      },
+      environment: (env) => env.byLiteral("ci"),
+    });
+
+    const ciResolved = config.resolve();
+    expect(ciResolved.config.reporting?.hierarchical?.bufferOutput).toBe(false);
+
+    const defaultResolved = config.resolve({ environment: "default" });
+    expect(defaultResolved.config.reporting?.hierarchical?.bufferOutput).toBe(true);
+  });
 });

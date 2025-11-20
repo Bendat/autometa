@@ -55,6 +55,16 @@ export const LoggingSchema = z
   })
   .optional();
 
+export const ReporterSchema = z
+  .object({
+    hierarchical: z
+      .object({
+        bufferOutput: z.boolean().optional(),
+      })
+      .optional(),
+  })
+  .optional();
+
 export const ModuleFormatSchema: z.ZodType<ModuleFormat> = z.enum(["cjs", "esm"]);
 
 const SourceMapSchema: z.ZodType<SourceMapSetting> = z.union([
@@ -94,6 +104,7 @@ export const ExecutorConfigSchema = z.object({
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
   logging: LoggingSchema.optional(),
+  reporting: ReporterSchema.optional(),
 });
 
 export const PartialRootSchema = RootSchema.partial();
@@ -106,4 +117,5 @@ export const PartialExecutorConfigSchema = z.object({
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
   logging: LoggingSchema.optional(),
+  reporting: ReporterSchema.optional(),
 });

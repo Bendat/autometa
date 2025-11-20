@@ -11,5 +11,13 @@ export default defineConfig({
     test: {
       timeout: [30, "s"],
     },
+    logging: {
+      http: true,
+    },
+    reporting: {
+      hierarchical: {
+        bufferOutput: false,
+      },
+    },
   },
 });

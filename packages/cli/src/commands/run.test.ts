@@ -129,6 +129,48 @@ describe("runFeatures", () => {
     expect(compileModulesMock).not.toHaveBeenCalled();
   });
 
+  it("configures reporter buffering from executor config", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["features"],
+        steps: ["steps"],
+      },
+      reporting: {
+        hierarchical: {
+          bufferOutput: false,
+        },
+      },
+    } as ExecutorConfig;
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+    expandFilePatternsMock.mockResolvedValue([]);
+
+    await expect(runFeatures({ cwd })).rejects.toThrowError(
+      'No feature files found for patterns: "features"'
+    );
+
+    expect(createCliRuntimeMock).toHaveBeenCalledTimes(1);
+    expect(createCliRuntimeMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reporter: {
+          hierarchical: {
+            bufferOutput: false,
+          },
+        },
+      })
+    );
+  });
+
   it("registers HTTP logging when enabled", async () => {
     const executorConfig: ExecutorConfig = {
       runner: "vitest",

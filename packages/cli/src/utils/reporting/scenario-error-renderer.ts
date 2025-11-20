@@ -5,8 +5,10 @@ import type { GherkinErrorContext } from "@autometa/errors";
 import { GherkinContextPrinter } from "./gherkin-context-printer";
 import { describeStepSummary } from "./step-summary";
 import { colorizeStepDescription, getStepStatusIcon } from "./status-formatters";
-
-type LogFn = (line: string) => void;
+import {
+  ImmediateHierarchicalLog,
+  type HierarchicalLog,
+} from "../logging/hierarchical-log";
 
 type BaselineOptions = {
   readonly context?: GherkinErrorContext;
@@ -23,7 +25,7 @@ type ScenarioOptions = BaselineOptions & {
 export class BaselineErrorRenderer {
   constructor(
     private readonly contextPrinter: GherkinContextPrinter,
-    private readonly log: LogFn = console.log
+    private readonly log: HierarchicalLog = new ImmediateHierarchicalLog()
   ) {}
 
   print(options: BaselineOptions): void {
@@ -34,16 +36,16 @@ export class BaselineErrorRenderer {
       formattedStack,
       truncated,
     } = options;
-    const indent = "  ".repeat(depth);
+    const scope = this.log.scoped(depth);
 
     if (messageLines.length > 0) {
       for (const line of messageLines) {
         const trimmed = line.trimEnd();
         if (trimmed.length === 0) {
-          this.log("");
+          scope.write("");
           continue;
         }
-        this.log(`${indent}${pc.red(trimmed)}`);
+        scope.write(pc.red(trimmed));
       }
     }
 
@@ -52,11 +54,11 @@ export class BaselineErrorRenderer {
     }
 
     for (const line of formattedStack) {
-      this.log(`${indent}${pc.dim(line)}`);
+      scope.write(pc.dim(line));
     }
 
     if (truncated) {
-      this.log(`${indent}${pc.dim("    …")}`);
+      scope.write(pc.dim("    …"));
     }
   }
 }
@@ -64,7 +66,7 @@ export class BaselineErrorRenderer {
 export class ScenarioErrorRenderer {
   constructor(
     private readonly baselineRenderer: BaselineErrorRenderer,
-    private readonly log: LogFn = console.log
+    private readonly log: HierarchicalLog = new ImmediateHierarchicalLog()
   ) {}
 
   print(options: ScenarioOptions): void {
@@ -90,7 +92,7 @@ export class ScenarioErrorRenderer {
       return;
     }
 
-    const indent = "  ".repeat(depth);
+    const scope = this.log.scoped(depth);
     let detailsPrinted = false;
 
     for (const step of steps) {
@@ -98,7 +100,7 @@ export class ScenarioErrorRenderer {
       const icon = getStepStatusIcon(step.status);
       const coloredDescription = colorizeStepDescription(description, step.status);
       const label = location ? `${coloredDescription}${location}` : coloredDescription;
-      this.log(`${indent}${icon} ${label}`);
+      scope.write(`${icon} ${label}`);
 
       if (!detailsPrinted && step.status === "failed") {
         this.baselineRenderer.print({
