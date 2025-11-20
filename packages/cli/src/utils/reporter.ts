@@ -6,7 +6,6 @@ import pc from "picocolors";
 
 import {
   getGherkinErrorContext,
-  type GherkinContextPathSegment,
   type GherkinErrorContext,
   type SourceLocation,
 } from "@autometa/errors";
@@ -312,9 +311,6 @@ export class HierarchicalReporter implements RuntimeReporter {
         }
       );
 
-      if (pathSegments && pathSegments.length > 0) {
-        this.printGherkinPath(pathSegments, depth + 1);
-      }
     }
 
     if (context.code) {
@@ -395,64 +391,6 @@ export class HierarchicalReporter implements RuntimeReporter {
       return undefined;
     }
     return segment.functionName ?? undefined;
-  }
-
-  private printGherkinPath(
-    path: readonly GherkinContextPathSegment[],
-    depth: number
-  ): void {
-    if (path.length === 0) {
-      return;
-    }
-    const indent = "  ".repeat(depth);
-    path.forEach((segment, index) => {
-      const prefix = this.describePathPrefix(segment.role, index);
-      const label = this.describePathSegment(segment);
-      console.log(`${indent}${pc.dim(`${prefix} ${label}`)}`);
-    });
-  }
-
-  private describePathPrefix(
-    role: GherkinContextPathSegment["role"],
-    index: number
-  ): string {
-    if (index === 0) {
-      return "at";
-    }
-    return role === "step" ? "at" : "as";
-  }
-
-  private describePathSegment(segment: GherkinContextPathSegment): string {
-    const location = this.formatSourceLocation(segment.location);
-    switch (segment.role) {
-      case "feature": {
-        const name = segment.name?.trim();
-        return name ? `Feature: ${name}(${location})` : `Feature(${location})`;
-      }
-      case "rule": {
-        const name = segment.name?.trim();
-        return name ? `Rule: ${name}(${location})` : `Rule(${location})`;
-      }
-      case "outline": {
-        const name = segment.name?.trim();
-        return name ? `Scenario Outline: ${name}(${location})` : `Scenario Outline(${location})`;
-      }
-      case "scenario": {
-        const name = segment.name?.trim();
-        return name ? `Scenario: ${name}(${location})` : `Scenario(${location})`;
-      }
-      case "example": {
-        const label = segment.name ?? (segment.index !== undefined ? `#${segment.index + 1}` : "");
-        return label ? `Example: ${label}(${location})` : `Example(${location})`;
-      }
-      case "step": {
-        const keyword = segment.keyword?.trim();
-        const label = keyword ? `Step ${keyword}` : "Step";
-        return `${label}(${location})`;
-      }
-      default:
-        return `${segment.role}(${location})`;
-    }
   }
 
   private formatSourceLocation(location: SourceLocation): string {
