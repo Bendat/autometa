@@ -3,22 +3,31 @@ import { extname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { Command } from "commander";
-import type { ExecutorConfig } from "@autometa/config";
+import type { ExecutorConfig, LoggingConfig } from "@autometa/config";
+import { HTTP, createLoggingPlugin, type HTTPLogEvent } from "@autometa/http";
 import { CucumberRunner } from "@autometa/runner";
 import type { GlobalWorld, RunnerStepsSurface } from "@autometa/runner";
 import { parseGherkin, type SimpleFeature, type SimpleRule } from "@autometa/gherkin";
 import type { ScopePlan, ScopeNode } from "@autometa/scopes";
 
 import { compileModules } from "../compiler/module-compiler";
-import { createCliRuntime, type RuntimeSummary } from "../runtime/cli-runtime";
+import {
+  createCliRuntime,
+  type RuntimeOptions,
+} from "../runtime/cli-runtime";
 import { expandFilePatterns } from "../utils/glob";
 import { loadExecutorConfig } from "../loaders/config";
 import { formatSummary } from "../utils/formatter";
+import type { SummaryFormatter } from "../runtime/types";
+import type { RuntimeReporter } from "../utils/reporter";
+import type { RuntimeSummary } from "../runtime/types";
 
 export interface RunCommandOptions {
   readonly cwd?: string;
   readonly patterns?: readonly string[];
   readonly dryRun?: boolean;
+  readonly reporters?: readonly RuntimeReporter[];
+  readonly summaryFormatter?: SummaryFormatter;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -178,13 +187,17 @@ function createFeatureScopePlan<World>(
 
 export async function runFeatures(options: RunCommandOptions = {}): Promise<RunCommandResult> {
   const cwd = options.cwd ?? process.cwd();
-  const runtimeOptions =
-    typeof options.dryRun === "boolean" ? { dryRun: options.dryRun } : {};
+  const runtimeOptions: RuntimeOptions = {
+    ...(typeof options.dryRun === "boolean" ? { dryRun: options.dryRun } : {}),
+    ...(options.reporters ? { reporters: options.reporters } : {}),
+  };
   const cacheDir = join(cwd, ".autometa-cli", "cache");
+  const summaryFormatter = options.summaryFormatter ?? formatSummary;
 
   const { runtime, execute } = createCliRuntime(runtimeOptions);
   const { resolved } = await loadExecutorConfig(cwd, { cacheDir });
   const executorConfig = resolved.config;
+  configureHttpLogging(executorConfig.logging);
 
   const patternSource =
     options.patterns && options.patterns.length > 0
@@ -236,7 +249,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   }
 
   const summary = await execute();
-  logSummary(summary, resolved.environment);
+  logSummary(summary, resolved.environment, summaryFormatter);
 
   return summary;
 }
@@ -450,17 +463,70 @@ async function readFeatureFile(path: string, cwd: string): Promise<SimpleFeature
   return feature;
 }
 
-function logSummary(summary: RuntimeSummary, environment: string): void {
+function logSummary(
+  summary: RuntimeSummary,
+  environment: string,
+  formatter: SummaryFormatter
+): void {
   // eslint-disable-next-line no-console -- CLI summary output
-  console.log(
-    formatSummary(
-      summary.total,
-      summary.passed,
-      summary.failed,
-      summary.skipped,
-      summary.pending,
-      summary.durationMs,
-      environment
-    )
-  );
+  console.log(formatter(summary, { environment }));
+}
+
+function configureHttpLogging(logging: LoggingConfig | undefined): void {
+  if (!logging?.http) {
+    return;
+  }
+
+  const registered = HTTP.getSharedPlugins();
+  if (registered.some((plugin) => plugin.name === "http-logging")) {
+    return;
+  }
+
+  HTTP.registerSharedPlugin(createLoggingPlugin(logHttpEvent));
+}
+
+function logHttpEvent(event: HTTPLogEvent): void {
+  const timestamp = new Date(event.timestamp).toISOString();
+  const url = resolveRequestUrl(event.request);
+
+  switch (event.type) {
+    case "request": {
+      const method = event.request.method ?? "<unknown>";
+      console.log(`[HTTP ${timestamp}] → ${method} ${url}`);
+      break;
+    }
+    case "response": {
+      const status = event.response.status;
+      console.log(`[HTTP ${timestamp}] ← ${status} ${url}`);
+      break;
+    }
+    case "error": {
+      const message =
+        event.error instanceof Error ? event.error.message : String(event.error);
+      console.error(`[HTTP ${timestamp}] ! ${url} ${message}`);
+      break;
+    }
+  }
+}
+
+function resolveRequestUrl(request: HTTPLogEvent["request"]): string {
+  const url = request.fullUrl;
+  if (url) {
+    return url;
+  }
+
+  if (request.baseUrl && request.route && request.route.length > 0) {
+    const normalizedRoute = request.route.join("/");
+    return `${request.baseUrl.replace(/\/?$/u, "")}/${normalizedRoute}`;
+  }
+
+  if (request.baseUrl) {
+    return request.baseUrl;
+  }
+
+  if (request.route && request.route.length > 0) {
+    return request.route.join("/");
+  }
+
+  return "<unknown>";
 }

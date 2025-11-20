@@ -34,4 +34,5 @@ export type {
   BuildHook,
   BuildHookContext,
   SourceMapSetting,
+  LoggingConfig,
 } from "./types";

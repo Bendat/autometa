@@ -168,6 +168,18 @@ function wrapStepHandler<World, TArgs extends unknown[]>(
 	handler: RunnerStepHandler<World, TArgs>
 ): StepHandler<World, TArgs> {
 	return ((world: World, ...args: TArgs) => {
+		console.log(
+			"[DEBUG wrapStepHandler]",
+			JSON.stringify({
+				paramLength: typeof handler === "function" ? handler.length : null,
+				argsCount: args.length,
+				argTypes: args.map((value) =>
+					typeof value === "object" && value !== null
+						? value.constructor?.name ?? "object"
+						: typeof value
+				),
+			})
+		);
 		const runtime = createStepRuntime(world);
 		const withRuntime = handler as StepHandlerWithOptionalThis<
 			World,

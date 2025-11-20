@@ -26,6 +26,7 @@ export type TimeoutSetting = ExecutorConfig["test"] extends infer Test
 export type TestConfig = NonNullable<ExecutorConfig["test"]>;
 export type ShimConfig = NonNullable<ExecutorConfig["shim"]>;
 export type RootsConfig = ExecutorConfig["roots"];
+export type LoggingConfig = ExecutorConfig["logging"];
 
 export interface ConfigDefinitionInput {
   default: ExecutorConfig;

@@ -49,6 +49,12 @@ export const RootSchema = z
 
 export const EventsSchema = z.array(z.string());
 
+export const LoggingSchema = z
+  .object({
+    http: z.boolean().optional(),
+  })
+  .optional();
+
 export const ModuleFormatSchema: z.ZodType<ModuleFormat> = z.enum(["cjs", "esm"]);
 
 const SourceMapSchema: z.ZodType<SourceMapSetting> = z.union([
@@ -87,6 +93,7 @@ export const ExecutorConfigSchema = z.object({
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
+  logging: LoggingSchema.optional(),
 });
 
 export const PartialRootSchema = RootSchema.partial();
@@ -98,4 +105,5 @@ export const PartialExecutorConfigSchema = z.object({
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
+  logging: LoggingSchema.optional(),
 });

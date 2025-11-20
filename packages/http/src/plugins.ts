@@ -55,6 +55,7 @@ export type HTTPLogSink = (event: HTTPLogEvent) => void | Promise<void>;
 
 export function createLoggingPlugin(sink: HTTPLogSink): HTTPPlugin {
   return {
+    name: "http-logging",
     async onRequest(context) {
       await sink({
         type: "request",

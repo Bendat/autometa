@@ -28,6 +28,12 @@
   ],
   "references": [
     {
+      "path": "../assertions/tsconfig.types.json"
+    },
+    {
+      "path": "../coordinator/tsconfig.types.json"
+    },
+    {
       "path": "../cucumber-expressions/tsconfig.types.json"
     },
     {

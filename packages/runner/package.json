@@ -46,6 +46,8 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "dependencies": {
+    "@autometa/assertions": "workspace:*",
+    "@autometa/coordinator": "workspace:*",
     "@autometa/cucumber-expressions": "workspace:*",
     "@autometa/executor": "workspace:*",
     "@autometa/injection": "workspace:*",

@@ -35,6 +35,7 @@
     "@autometa/config": "workspace:*",
     "@autometa/scopes": "workspace:*",
     "@autometa/test-builder": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
     "@cucumber/tag-expressions": "^5.0.1"
   },
   "license": "MIT",

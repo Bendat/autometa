@@ -81,6 +81,7 @@ export interface HTTPCreateOptions {
  * Fluent HTTP client with pluggable transport, schema validation and hook support.
  */
 export class HTTP {
+  private static sharedPlugins: HTTPPlugin[] = [];
   private transport: HTTPTransport;
   private builder: HTTPRequestBuilder<HTTPRequest<unknown>>;
   private meta: MetaConfigBuilder;
@@ -106,7 +107,7 @@ export class HTTP {
    */
   static create(options: HTTPCreateOptions = {}) {
     const transport = options.transport ?? createFetchTransport();
-    const plugins = [...(options.plugins ?? [])];
+    const plugins = [...HTTP.sharedPlugins, ...(options.plugins ?? [])];
     return new HTTP(
       transport,
       HTTPRequestBuilder.create(),
@@ -114,6 +115,27 @@ export class HTTP {
       plugins,
       []
     );
+  }
+
+  /**
+   * Registers a plugin applied to every client created via {@link HTTP.create}.
+   */
+  static registerSharedPlugin(plugin: HTTPPlugin): void {
+    this.sharedPlugins = [...this.sharedPlugins, plugin];
+  }
+
+  /**
+   * Replaces the shared plugin registry used by {@link HTTP.create}.
+   */
+  static setSharedPlugins(plugins: readonly HTTPPlugin[]): void {
+    this.sharedPlugins = [...plugins];
+  }
+
+  /**
+   * Returns a copy of the currently registered shared plugins.
+   */
+  static getSharedPlugins(): readonly HTTPPlugin[] {
+    return [...this.sharedPlugins];
   }
 
   /**

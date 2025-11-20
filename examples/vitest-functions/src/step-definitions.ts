@@ -56,3 +56,9 @@ export const {
   lookupParameterType,
   ensure,
 } = stepsEnvironment;
+
+const registrySnapshot = stepsEnvironment.parameterRegistry as unknown as Record<string, unknown>;
+
+console.log("[DEBUG] parameter registry keys:", Object.keys(registrySnapshot));
+
+console.log("[DEBUG] has default int type:", Boolean(lookupParameterType("int")));

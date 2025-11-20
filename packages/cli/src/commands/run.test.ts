@@ -1,9 +1,10 @@
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 import type { ExecutorConfig } from "@autometa/config";
 import type { LoadedExecutorConfig } from "../loaders/config";
-import type { RuntimeSummary } from "../runtime/cli-runtime";
+import type { RuntimeSummary } from "../runtime/types";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import { runFeatures } from "./run";
@@ -14,6 +15,11 @@ const loadModuleMock = vi.fn();
 const cucumberRunnerBuilderMock = vi.fn();
 const parseGherkinMock = vi.fn();
 const createCliRuntimeMock = vi.fn();
+const registerSharedPluginMock = vi.fn();
+const getSharedPluginsMock = vi.fn();
+const createLoggingPluginMock = vi.fn();
+const compileModulesMock = vi.fn();
+const setStepsMock = vi.fn();
 
 vi.mock("../loaders/config", () => ({
   loadExecutorConfig: (...args: unknown[]) => loadExecutorConfigMock(...args),
@@ -30,6 +36,7 @@ vi.mock("../loaders/module-loader", () => ({
 vi.mock("@autometa/runner", () => ({
   CucumberRunner: {
     builder: (...args: unknown[]) => cucumberRunnerBuilderMock(...args),
+    setSteps: (...args: unknown[]) => setStepsMock(...args),
   },
 }));
 
@@ -41,9 +48,22 @@ vi.mock("../runtime/cli-runtime", () => ({
   createCliRuntime: (...args: unknown[]) => createCliRuntimeMock(...args),
 }));
 
+vi.mock("@autometa/http", () => ({
+  HTTP: {
+    registerSharedPlugin: (...args: unknown[]) => registerSharedPluginMock(...args),
+    getSharedPlugins: (...args: unknown[]) => getSharedPluginsMock(...args),
+  },
+  createLoggingPlugin: (...args: unknown[]) => createLoggingPluginMock(...args),
+}));
+
+vi.mock("../compiler/module-compiler", () => ({
+  compileModules: (...args: unknown[]) => compileModulesMock(...args),
+}));
+
 describe("runFeatures", () => {
-  const cwd = "/project";
-  const cacheDir = join(cwd, ".autometa-cli", "cache");
+  let cwd: string;
+  let cacheDir: string;
+  let bundlePath: string;
   const defaultSummary: RuntimeSummary = {
     total: 0,
     passed: 0,
@@ -55,17 +75,28 @@ describe("runFeatures", () => {
     scenarios: [],
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetAllMocks();
+    cwd = await fs.mkdtemp(join(tmpdir(), "autometa-cli-test-"));
+    cacheDir = join(cwd, ".autometa-cli", "cache");
+    await fs.mkdir(cacheDir, { recursive: true });
+    bundlePath = join(cacheDir, "__modules__.mjs");
+    await fs.writeFile(bundlePath, "export const modules = [];\nexport default modules;\n", "utf8");
     createCliRuntimeMock.mockReturnValue({
       runtime: { label: "runtime" },
       execute: vi.fn().mockResolvedValue(defaultSummary),
     });
     loadModuleMock.mockResolvedValue({});
+    getSharedPluginsMock.mockReturnValue([]);
+    createLoggingPluginMock.mockImplementation(() => ({ name: "http-logging" }));
+    compileModulesMock.mockResolvedValue({ bundlePath, format: "esm" });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.clearAllMocks();
+    if (cwd) {
+      await fs.rm(cwd, { recursive: true, force: true });
+    }
   });
 
   it("throws when no feature files are discovered", async () => {
@@ -94,6 +125,110 @@ describe("runFeatures", () => {
     );
 
     expect(loadExecutorConfigMock).toHaveBeenCalledWith(cwd, { cacheDir });
+    expect(registerSharedPluginMock).not.toHaveBeenCalled();
+    expect(compileModulesMock).not.toHaveBeenCalled();
+  });
+
+  it("registers HTTP logging when enabled", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["features"],
+        steps: ["steps"],
+      },
+      logging: {
+        http: true,
+      },
+    };
+
+    const featurePath = join(cwd, "features", "example.feature");
+    const stepFile = join(cwd, "steps", "step.ts");
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+
+    expandFilePatternsMock.mockImplementation(async (patterns: readonly string[]) => {
+      if (patterns.some((pattern) => pattern.endsWith(".feature"))) {
+        return [featurePath];
+      }
+      if (patterns.some((pattern) => pattern.includes("steps"))) {
+        return [stepFile];
+      }
+      return [];
+    });
+
+    parseGherkinMock.mockReturnValue({
+      id: "feature",
+      keyword: "Feature",
+      language: "en",
+      name: "Example",
+      tags: [],
+      elements: [],
+      comments: [],
+    });
+
+    const rootScope = {
+      id: "root",
+      kind: "root",
+      name: "root",
+      mode: "default",
+      tags: [],
+      steps: [],
+      hooks: [],
+      children: [],
+      pending: false,
+    };
+
+    const basePlan = {
+      root: rootScope,
+      stepsById: new Map<string, unknown>(),
+      hooksById: new Map<string, unknown>(),
+      scopesById: new Map([[rootScope.id, rootScope]]),
+    };
+
+    const stepsEnvironment = {
+      coordinateFeature: vi.fn().mockReturnValue({
+        register: vi.fn(),
+        config: executorConfig,
+      }),
+      Given: vi.fn(),
+      When: vi.fn(),
+      Then: vi.fn(),
+      getPlan: vi.fn().mockReturnValue(basePlan),
+    };
+
+    cucumberRunnerBuilderMock.mockReturnValue({
+      steps: () => stepsEnvironment,
+    });
+
+    createCliRuntimeMock.mockReturnValue({
+      runtime: {},
+      execute: vi.fn().mockResolvedValue(defaultSummary),
+    });
+
+    const readFileSpy = vi.spyOn(fs, "readFile").mockResolvedValue("Feature: Example");
+
+    await runFeatures({ cwd });
+
+    expect(createLoggingPluginMock).toHaveBeenCalledTimes(1);
+    expect(registerSharedPluginMock).toHaveBeenCalledTimes(1);
+    expect(compileModulesMock).toHaveBeenCalledTimes(1);
+    expect(compileModulesMock).toHaveBeenCalledWith([stepFile], expect.objectContaining({
+      cwd,
+      cacheDir,
+    }));
+    expect(setStepsMock).toHaveBeenCalledWith(stepsEnvironment);
+    expect(readFileSpy).toHaveBeenCalledWith(featurePath, "utf8");
+
+    readFileSpy.mockRestore();
   });
 
   it("loads configuration, hydrates modules, and executes features", async () => {
@@ -165,8 +300,31 @@ describe("runFeatures", () => {
         config: executorConfig,
       }));
 
+    const rootScope = {
+      id: "root",
+      kind: "root",
+      name: "root",
+      mode: "default",
+      tags: [],
+      steps: [],
+      hooks: [],
+      children: [],
+      pending: false,
+    };
+
+    const basePlan = {
+      root: rootScope,
+      stepsById: new Map<string, unknown>(),
+      hooksById: new Map<string, unknown>(),
+      scopesById: new Map([[rootScope.id, rootScope]]),
+    };
+
     const stepsEnvironment = {
       coordinateFeature: coordinateFeatureMock,
+      Given: vi.fn(),
+      When: vi.fn(),
+      Then: vi.fn(),
+      getPlan: vi.fn().mockReturnValue(basePlan),
     };
 
     cucumberRunnerBuilderMock.mockReturnValue({
@@ -198,34 +356,32 @@ describe("runFeatures", () => {
     expect(cucumberRunnerBuilderMock).toHaveBeenCalledTimes(1);
 
     expect(expandFilePatternsMock).toHaveBeenCalledTimes(4);
-    expect(loadModuleMock).toHaveBeenCalledTimes(3);
-    expect(loadModuleMock).toHaveBeenCalledWith(stepFile, {
-      cwd,
-      cacheDir,
-    });
-    expect(loadModuleMock).toHaveBeenCalledWith(parameterTypesFile, {
-      cwd,
-      cacheDir,
-    });
-    expect(loadModuleMock).toHaveBeenCalledWith(supportFile, {
-      cwd,
-      cacheDir,
-    });
+    expect(registerSharedPluginMock).not.toHaveBeenCalled();
+    expect(compileModulesMock).toHaveBeenCalledTimes(1);
+    expect(compileModulesMock).toHaveBeenCalledWith(
+      [parameterTypesFile, supportFile, stepFile],
+      expect.objectContaining({ cwd, cacheDir })
+    );
+    expect(setStepsMock).toHaveBeenCalledWith(stepsEnvironment);
 
     expect(readFileSpy).toHaveBeenCalledWith(featurePath, "utf8");
     expect(parseGherkinMock).toHaveBeenCalledWith(fileContent);
 
-    expect(coordinateFeatureMock).toHaveBeenCalledWith({
-      feature: expect.objectContaining({ name: "Example", uri: "features/example.feature" }),
-      config: executorConfig,
-      runtime,
-    });
+    expect(coordinateFeatureMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        feature: expect.objectContaining({ name: "Example", uri: "features/example.feature" }),
+        config: executorConfig,
+        runtime,
+      })
+    );
 
     expect(registerPlanMock).toHaveBeenCalledWith(runtime);
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Environment: default | Total: 1 | Passed: 1 | Failed: 0")
-    );
+    const loggedSummary = consoleLogSpy.mock.calls[0]?.[0] as string | undefined;
+    expect(typeof loggedSummary).toBe("string");
+    expect(loggedSummary).toContain("Environment: default");
+    expect(loggedSummary).toContain("Total: 1");
+    expect(loggedSummary).toContain("Passed: 1");
 
     readFileSpy.mockRestore();
     consoleLogSpy.mockRestore();

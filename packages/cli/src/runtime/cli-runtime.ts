@@ -7,14 +7,17 @@ import type {
   TestFn,
 } from "@autometa/executor";
 
+import type { RuntimeSummary, ScenarioReport } from "./types";
 import {
-  formatScenarioReport,
-  formatError,
-  formatReason,
-  formatSummary,
-  type ScenarioStatus,
-} from "../utils/formatter";
-import { HierarchicalReporter } from "../utils/reporter";
+  HierarchicalReporter,
+  type RuntimeReporter,
+  type RunEndEvent,
+  type RunStartEvent,
+  type SuiteLifecycleEvent,
+  type TestResultEvent,
+} from "../utils/reporter";
+
+export type { RuntimeSummary, ScenarioReport } from "./types";
 
 type Clock = {
   now(): number;
@@ -25,28 +28,9 @@ const clock: Clock =
     ? globalThis.performance
     : { now: () => Date.now() };
 
-export interface ScenarioReport {
-  readonly name: string;
-  readonly fullName: string;
-  readonly status: ScenarioStatus;
-  readonly durationMs?: number;
-  readonly error?: Error;
-  readonly reason?: string;
-}
-
-export interface RuntimeSummary {
-  readonly total: number;
-  readonly passed: number;
-  readonly failed: number;
-  readonly skipped: number;
-  readonly pending: number;
-  readonly durationMs: number;
-  readonly success: boolean;
-  readonly scenarios: readonly ScenarioReport[];
-}
-
 export interface RuntimeOptions {
   readonly dryRun?: boolean;
+  readonly reporters?: readonly RuntimeReporter[];
 }
 
 type SuiteMode = "default" | "skip" | "only" | "concurrent";
@@ -316,7 +300,11 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
   async function execute(): Promise<RuntimeSummary> {
     const startedAt = clock.now();
     const reports: ScenarioReport[] = [];
-    const reporter = new HierarchicalReporter();
+    const reporters: RuntimeReporter[] = [
+      ...(options.reporters ? [...options.reporters] : [new HierarchicalReporter()]),
+    ];
+
+    await dispatchRunStart({ timestamp: startedAt });
 
     await runSuite(root, {
       skip: false,
@@ -324,11 +312,8 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       path: [],
     });
 
-    // Print the hierarchical report
-    reporter.print();
-
     const finishedAt = clock.now();
-    return {
+    const summary: RuntimeSummary = {
       total: state.total,
       passed: state.passed,
       failed: state.failed,
@@ -339,27 +324,38 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       scenarios: reports,
     };
 
+    await dispatchRunEnd({ timestamp: finishedAt, summary });
+
+    return summary;
+
     async function runSuite(node: SuiteNode, context: ExecutionContext): Promise<void> {
       const skip = context.skip || node.mode === "skip";
       const focus = context.focus || node.mode === "only";
-      const path = node.parent ? [...context.path, node.title] : context.path;
+      const suitePath = node.parent ? [...context.path, node.title] : context.path;
 
-      // Enter suite if it has a meaningful title
       const shouldTrack = node.title && node.title !== "(root)";
       if (shouldTrack) {
-        reporter.enterSuite(node.title);
+        await dispatchSuiteStart({
+          title: node.title,
+          ancestors: context.path,
+          path: suitePath,
+        });
       }
 
       for (const child of node.children) {
         if (child.kind === "suite") {
-          await runSuite(child.node, { skip, focus, path });
+          await runSuite(child.node, { skip, focus, path: suitePath });
           continue;
         }
-        await runTest(child.node, path, skip, focus);
+        await runTest(child.node, suitePath, skip, focus);
       }
 
       if (shouldTrack) {
-        reporter.exitSuite();
+        await dispatchSuiteEnd({
+          title: node.title,
+          ancestors: context.path,
+          path: suitePath,
+        });
       }
     }
 
@@ -373,7 +369,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       const fullName = fullPath.join(" › ");
 
       if (node.kind === "todo" || node.kind === "pending") {
-        record({
+        await record({
           status: "pending",
           name: node.title,
           fullName,
@@ -386,7 +382,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       const shouldSkip = skipBranch || node.mode === "skip" || skipDueToFocus;
 
       if (options.dryRun) {
-        record({
+        await record({
           status: "pending",
           name: node.title,
           fullName,
@@ -396,7 +392,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       }
 
       if (shouldSkip || !node.handler) {
-        record({
+        await record({
           status: "skipped",
           name: node.title,
           fullName,
@@ -413,7 +409,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           await (result as Promise<unknown>);
         }
         const duration = clock.now() - startedAt;
-        record({
+        await record({
           status: "passed",
           name: node.title,
           fullName,
@@ -421,7 +417,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
         });
       } catch (error) {
         const duration = clock.now() - startedAt;
-        record({
+        await record({
           status: "failed",
           name: node.title,
           fullName,
@@ -433,7 +429,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       }
     }
 
-    function record(report: ScenarioReport): void {
+    async function record(report: ScenarioReport): Promise<void> {
       state.total += 1;
       switch (report.status) {
         case "passed":
@@ -453,16 +449,48 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           break;
       }
 
-      // Record in hierarchical reporter
-      reporter.recordTest(
-        report.name,
-        report.status,
-        report.durationMs,
-        report.error,
-        report.reason
-      );
-
       reports.push(report);
+      await dispatchTestResult({ result: report });
+    }
+
+    async function dispatchRunStart(event: RunStartEvent): Promise<void> {
+      for (const reporter of reporters) {
+        if (typeof reporter.onRunStart === "function") {
+          await reporter.onRunStart(event);
+        }
+      }
+    }
+
+    async function dispatchSuiteStart(event: SuiteLifecycleEvent): Promise<void> {
+      for (const reporter of reporters) {
+        if (typeof reporter.onSuiteStart === "function") {
+          await reporter.onSuiteStart(event);
+        }
+      }
+    }
+
+    async function dispatchSuiteEnd(event: SuiteLifecycleEvent): Promise<void> {
+      for (const reporter of reporters) {
+        if (typeof reporter.onSuiteEnd === "function") {
+          await reporter.onSuiteEnd(event);
+        }
+      }
+    }
+
+    async function dispatchTestResult(event: TestResultEvent): Promise<void> {
+      for (const reporter of reporters) {
+        if (typeof reporter.onTestResult === "function") {
+          await reporter.onTestResult(event);
+        }
+      }
+    }
+
+    async function dispatchRunEnd(event: RunEndEvent): Promise<void> {
+      for (const reporter of reporters) {
+        if (typeof reporter.onRunEnd === "function") {
+          await reporter.onRunEnd(event);
+        }
+      }
     }
   }
 

@@ -17,6 +17,7 @@ import {
   RootsConfig,
   ShimConfig,
   TestConfig,
+  LoggingConfig,
   TimeoutSetting,
 } from "./types";
 
@@ -137,8 +138,14 @@ const mergeExecutorConfig = (
     result.builder = mergeBuilder(result.builder, override.builder);
   }
 
+  if (override.logging !== undefined) {
+    result.logging = mergeLogging(result.logging, override.logging);
+  }
+
   return result;
 };
+
+type LoggingConfigValue = NonNullable<LoggingConfig>;
 
 const mergeTest = (
   base: TestConfig | undefined,
@@ -175,6 +182,23 @@ const mergeShim = (
 
   if (override.errorCause !== undefined) {
     result.errorCause = override.errorCause;
+  }
+
+  return Object.keys(result).length === 0 ? undefined : result;
+};
+
+const mergeLogging = (
+  base: LoggingConfig | undefined,
+  override: PartialExecutorConfig["logging"]
+): LoggingConfig | undefined => {
+  if (override === undefined) {
+    return base ? cloneLogging(base) : undefined;
+  }
+
+  const result: LoggingConfigValue = base ? cloneLogging(base) : {};
+
+  if (override.http !== undefined) {
+    result.http = override.http;
   }
 
   return Object.keys(result).length === 0 ? undefined : result;
@@ -267,6 +291,7 @@ const cloneConfig = (config: ExecutorConfig): ExecutorConfig => ({
   shim: config.shim ? cloneShim(config.shim) : undefined,
   events: cloneOptionalArray(config.events),
   builder: config.builder ? cloneBuilder(config.builder) : undefined,
+  logging: config.logging ? cloneLogging(config.logging) : undefined,
 });
 
 const cloneRoots = (roots: RootsConfig): RootsConfig => {
@@ -297,6 +322,16 @@ const cloneShim = (shim: ShimConfig): ShimConfig => {
   const clone: ShimConfig = {};
   if (shim.errorCause !== undefined) {
     clone.errorCause = shim.errorCause;
+  }
+  return clone;
+};
+
+const cloneLogging = (
+  logging: LoggingConfigValue
+): LoggingConfigValue => {
+  const clone: LoggingConfigValue = {};
+  if (logging.http !== undefined) {
+    clone.http = logging.http;
   }
   return clone;
 };

@@ -1,9 +1,21 @@
-import type { ScopeExecutionAdapter, SourceRef } from "@autometa/scopes";
+import {
+  CucumberExpression,
+  ParameterTypeRegistry,
+  RegularExpression,
+} from "@cucumber/cucumber-expressions";
+import type {
+  ParameterRegistryLike,
+  ScopeExecutionAdapter,
+  SourceRef,
+  StepDefinition,
+  StepExpression,
+} from "@autometa/scopes";
 import type { ScenarioExecution, ScenarioOutlineExample } from "@autometa/test-builder";
 import type {
   SimpleExampleGroup,
   SimpleLocation,
   SimpleScenario,
+  SimpleStep,
 } from "@autometa/gherkin";
 import {
   clearStepDocstring,
@@ -20,6 +32,17 @@ export interface ScenarioRunContext<World> {
   readonly adapter: ScopeExecutionAdapter<World>;
 }
 
+type StepArgumentMatcher<World> = (text: string, world: World) => unknown[];
+
+interface ParameterRegistryCarrier {
+  readonly registry?: ParameterTypeRegistry;
+}
+
+const matcherCache = new WeakMap<
+  StepDefinition<unknown>,
+  StepArgumentMatcher<unknown>
+>();
+
 export async function runScenarioExecution<World>(
   execution: ScenarioExecution<World>,
   context: ScenarioRunContext<World>
@@ -27,6 +50,9 @@ export async function runScenarioExecution<World>(
   execution.reset();
   const world = await context.adapter.createWorld();
   const disposeWorld = createWorldDisposer(world);
+  const parameterRegistry = resolveParameterRegistry(
+    context.adapter.getParameterRegistry()
+  );
 
   try {
     const { steps, gherkinSteps } = execution;
@@ -41,7 +67,13 @@ export async function runScenarioExecution<World>(
         setStepMetadata(world, metadata);
         setStepTable(world, gherkinStep?.dataTable);
         setStepDocstring(world, gherkinStep?.docString?.content);
-        await step.handler(world);
+        const args = resolveStepArguments(
+          step,
+          gherkinStep,
+          parameterRegistry,
+          world
+        );
+        await step.handler(world, ...args);
       } finally {
         clearStepTable(world);
         clearStepDocstring(world);
@@ -59,6 +91,81 @@ export async function runScenarioExecution<World>(
   } finally {
     await disposeWorld();
   }
+}
+
+function resolveStepArguments<World>(
+  definition: StepDefinition<World>,
+  gherkinStep: SimpleStep | undefined,
+  registry: ParameterTypeRegistry,
+  world: World
+): unknown[] {
+  if (!gherkinStep) {
+    return [];
+  }
+  const matcher = getStepArgumentMatcher(definition, registry);
+  return matcher(gherkinStep.text, world);
+}
+
+function getStepArgumentMatcher<World>(
+  definition: StepDefinition<World>,
+  registry: ParameterTypeRegistry
+): StepArgumentMatcher<World> {
+  const cached = matcherCache.get(definition as StepDefinition<unknown>);
+  if (cached) {
+    return cached as StepArgumentMatcher<World>;
+  }
+  const matcher = createStepArgumentMatcher<World>(
+    definition.expression,
+    registry
+  );
+  matcherCache.set(
+    definition as StepDefinition<unknown>,
+    matcher as StepArgumentMatcher<unknown>
+  );
+  return matcher;
+}
+
+function createStepArgumentMatcher<World>(
+  expression: StepExpression,
+  registry: ParameterTypeRegistry
+): StepArgumentMatcher<World> {
+  if (expression instanceof RegExp) {
+    const evaluator = new RegularExpression(expression, registry);
+    return (text, world) =>
+      collectArguments(evaluator.match(text), world, text, expression);
+  }
+  const evaluator = new CucumberExpression(expression, registry);
+  return (text, world) =>
+    collectArguments(evaluator.match(text), world, text, expression);
+}
+
+function collectArguments<World>(
+  match:
+    | readonly { getValue(context?: unknown): unknown }[]
+    | null,
+  world: World,
+  text: string,
+  expression: StepExpression
+): unknown[] {
+  if (!match) {
+    throw new Error(
+      `Step '${text}' did not match expression ${String(expression)}`
+    );
+  }
+  return match.map((argument) => argument.getValue(world));
+}
+
+function resolveParameterRegistry(
+  source: ParameterRegistryLike | undefined
+): ParameterTypeRegistry {
+  if (source instanceof ParameterTypeRegistry) {
+    return source;
+  }
+  const carrier = source as ParameterRegistryCarrier | undefined;
+  if (carrier?.registry instanceof ParameterTypeRegistry) {
+    return carrier.registry;
+  }
+  return new ParameterTypeRegistry();
 }
 
 function buildStepMetadata<World>(

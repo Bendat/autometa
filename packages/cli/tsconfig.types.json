@@ -40,10 +40,16 @@
       "path": "../gherkin/tsconfig.types.json"
     },
     {
+      "path": "../http/tsconfig.types.json"
+    },
+    {
       "path": "../runner/tsconfig.types.json"
     },
     {
       "path": "../test-builder/tsconfig.types.json"
+    },
+    {
+      "path": "../errors/tsconfig.types.json"
     }
   ]
 }

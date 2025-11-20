@@ -1,6 +1,10 @@
 import pc from "picocolors";
 
-export type ScenarioStatus = "passed" | "failed" | "skipped" | "pending";
+import type {
+  RuntimeSummary,
+  ScenarioStatus,
+  SummaryContext,
+} from "../runtime/types";
 
 export interface FormattedReport {
   readonly status: ScenarioStatus;
@@ -66,36 +70,31 @@ export function formatReason(reason: string): string {
 }
 
 export function formatSummary(
-  total: number,
-  passed: number,
-  failed: number,
-  skipped: number,
-  pending: number,
-  durationMs: number,
-  environment: string
+  summary: RuntimeSummary,
+  context: SummaryContext
 ): string {
-  const parts: string[] = [`Environment: ${pc.cyan(environment)}`];
-  
-  parts.push(`Total: ${pc.bold(String(total))}`);
-  
-  if (passed > 0) {
-    parts.push(`Passed: ${pc.green(String(passed))}`);
+  const parts: string[] = [`Environment: ${pc.cyan(context.environment)}`];
+
+  parts.push(`Total: ${pc.bold(String(summary.total))}`);
+
+  if (summary.passed > 0) {
+    parts.push(`Passed: ${pc.green(String(summary.passed))}`);
   }
-  
-  if (failed > 0) {
-    parts.push(`Failed: ${pc.red(String(failed))}`);
+
+  if (summary.failed > 0) {
+    parts.push(`Failed: ${pc.red(String(summary.failed))}`);
   }
-  
-  if (skipped > 0) {
-    parts.push(`Skipped: ${pc.yellow(String(skipped))}`);
+
+  if (summary.skipped > 0) {
+    parts.push(`Skipped: ${pc.yellow(String(summary.skipped))}`);
   }
-  
-  if (pending > 0) {
-    parts.push(`Pending: ${pc.cyan(String(pending))}`);
+
+  if (summary.pending > 0) {
+    parts.push(`Pending: ${pc.cyan(String(summary.pending))}`);
   }
-  
-  parts.push(`Duration: ${pc.dim(formatDuration(durationMs))}`);
-  
+
+  parts.push(`Duration: ${pc.dim(formatDuration(summary.durationMs))}`);
+
   return parts.join(" | ");
 }
 

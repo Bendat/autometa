@@ -28,6 +28,16 @@ Given(
   }
 );
 
+Given(
+  "the recipe catalog is reset to the default recipes",
+  async (world) => {
+    await performRequest(world, "post", "/admin/reset", {
+      body: { scopes: ["recipes"] },
+    });
+    ensure(world).response.hasStatus(204);
+  }
+);
+
 Given("the order queue is cleared", async (world) => {
   await performRequest(world, "post", "/admin/reset", {
     body: { scopes: ["orders"] },
