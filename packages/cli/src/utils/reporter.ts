@@ -7,7 +7,7 @@ import type {
   ScenarioStatus,
 } from "../runtime/types";
 import { BaselineErrorRenderer, ScenarioErrorRenderer } from "./reporting/scenario-error-renderer";
-import { GherkinContextPrinter } from "./reporting/gherkin-context-printer";
+import { GherkinContextPrinter, type GherkinContextPrinterOptions } from "./reporting/gherkin-context-printer";
 import { colorizeScenarioStatus, getScenarioStatusIcon } from "./reporting/status-formatters";
 import { formatStackLines, partitionErrorLines } from "./reporting/stack-utils";
 
@@ -52,6 +52,10 @@ interface SuiteState {
   readonly node: ReportNode & { readonly children: ReportNode[] };
 }
 
+export interface HierarchicalReporterOptions {
+  readonly showGherkinStack?: boolean;
+}
+
 export class HierarchicalReporter implements RuntimeReporter {
   private suiteStack: SuiteState[] = [];
   private rootSuites: ReportNode[] = [];
@@ -59,10 +63,15 @@ export class HierarchicalReporter implements RuntimeReporter {
   private readonly gherkinContextPrinter: GherkinContextPrinter;
   private readonly baselineErrorRenderer: BaselineErrorRenderer;
   private readonly scenarioErrorRenderer: ScenarioErrorRenderer;
+  private readonly options: HierarchicalReporterOptions;
 
-  constructor(log: (line: string) => void = console.log) {
+  constructor(log: (line: string) => void = console.log, options: HierarchicalReporterOptions = {}) {
     this.logLine = log;
-    this.gherkinContextPrinter = new GherkinContextPrinter(log);
+    this.options = options;
+    const printerOptions: GherkinContextPrinterOptions = {
+      includePath: options.showGherkinStack ?? false,
+    };
+    this.gherkinContextPrinter = new GherkinContextPrinter(log, printerOptions);
     this.baselineErrorRenderer = new BaselineErrorRenderer(this.gherkinContextPrinter, log);
     this.scenarioErrorRenderer = new ScenarioErrorRenderer(this.baselineErrorRenderer, log);
   }

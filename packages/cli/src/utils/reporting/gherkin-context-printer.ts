@@ -12,9 +12,15 @@ import type {
 import { formatSourceLocation } from "./location";
 
 type LogFn = (line: string) => void;
+export interface GherkinContextPrinterOptions {
+  readonly includePath?: boolean;
+}
 
 export class GherkinContextPrinter {
-  constructor(private readonly log: LogFn = console.log) {}
+  constructor(
+    private readonly log: LogFn = console.log,
+    private readonly options: GherkinContextPrinterOptions = {}
+  ) {}
 
   printContext(context: GherkinErrorContext, depth: number): void {
     if (context.gherkin) {
@@ -31,7 +37,7 @@ export class GherkinContextPrinter {
       );
     }
 
-    if (context.path && context.path.length > 0) {
+    if (this.options.includePath && context.path && context.path.length > 0) {
       this.printGherkinPath(context.path, depth);
     }
 
