@@ -6,6 +6,7 @@ import pc from "picocolors";
 
 import {
   getGherkinErrorContext,
+  type GherkinContextPathSegment,
   type GherkinErrorContext,
   type SourceLocation,
 } from "@autometa/errors";
@@ -202,6 +203,13 @@ export class HierarchicalReporter implements RuntimeReporter {
     console.log(`${indent}${pc.red(headline)}`);
 
     const { messageLines, stackLines } = this.partitionErrorLines(rest);
+    const { lines: formattedStack, truncated } = this.formatStackLines(stackLines, 4);
+    const context = getGherkinErrorContext(error);
+
+    if (context?.path && context.path.length > 0) {
+      this.printErrorWithPath(context, depth, messageLines, formattedStack, truncated);
+      return;
+    }
 
     if (messageLines.length > 0) {
       for (const line of messageLines) {
@@ -214,12 +222,10 @@ export class HierarchicalReporter implements RuntimeReporter {
       }
     }
 
-    const context = getGherkinErrorContext(error);
     if (context) {
       this.printGherkinContext(context, depth + 1);
     }
 
-    const { lines: formattedStack, truncated } = this.formatStackLines(stackLines, 4);
     for (const line of formattedStack) {
       console.log(`${indent}${pc.dim(line)}`);
     }
@@ -316,6 +322,93 @@ export class HierarchicalReporter implements RuntimeReporter {
     if (context.code) {
       const details = this.describeCodeSegment(context.code);
       this.printCodeFrameSection("Step implementation", context.code.location, details, depth);
+    }
+  }
+
+  private printErrorWithPath(
+    context: GherkinErrorContext,
+    depth: number,
+    messageLines: readonly string[],
+    formattedStack: readonly string[],
+    truncated: boolean
+  ): void {
+    const pathSegments = context.path ?? [];
+    const detailDepth = this.printGherkinPathTree(pathSegments, depth);
+    const detailIndent = "  ".repeat(detailDepth);
+
+    if (messageLines.length > 0) {
+      for (const line of messageLines) {
+        const trimmed = line.trimEnd();
+        if (trimmed.length === 0) {
+          console.log("");
+          continue;
+        }
+        console.log(`${detailIndent}${pc.red(trimmed)}`);
+      }
+    }
+
+    this.printGherkinContext(context, detailDepth);
+
+    for (const line of formattedStack) {
+      console.log(`${detailIndent}${pc.dim(line)}`);
+    }
+
+    if (truncated) {
+      console.log(`${detailIndent}${pc.dim("    …")}`);
+    }
+  }
+
+  private printGherkinPathTree(
+    path: readonly GherkinContextPathSegment[],
+    depth: number
+  ): number {
+    if (!path.length) {
+      return depth;
+    }
+
+    let currentDepth = depth;
+    for (const segment of path) {
+      const indent = "  ".repeat(currentDepth);
+      console.log(`${indent}${pc.dim(this.describePathLabel(segment))}`);
+      currentDepth += 1;
+    }
+
+    return currentDepth;
+  }
+
+  private describePathLabel(segment: GherkinContextPathSegment): string {
+    const location = this.formatSourceLocation(segment.location);
+    switch (segment.role) {
+      case "feature": {
+        const name = segment.name?.trim();
+        return name ? `Feature: ${name} (${location})` : `Feature (${location})`;
+      }
+      case "rule": {
+        const name = segment.name?.trim();
+        return name ? `Rule: ${name} (${location})` : `Rule (${location})`;
+      }
+      case "outline": {
+        const name = segment.name?.trim();
+        return name ? `Scenario Outline: ${name} (${location})` : `Scenario Outline (${location})`;
+      }
+      case "scenario": {
+        const name = segment.name?.trim();
+        return name ? `Scenario: ${name} (${location})` : `Scenario (${location})`;
+      }
+      case "example": {
+        const label =
+          segment.name?.trim() ?? (segment.index !== undefined ? `Example #${segment.index + 1}` : undefined);
+        return label ? `${label} (${location})` : `Example (${location})`;
+      }
+      case "step": {
+        const keyword = segment.keyword?.trim();
+        const text = segment.text?.trim();
+        const labelParts = [keyword, text].filter((value): value is string => Boolean(value && value.length));
+        const label = labelParts.length ? labelParts.join(" ") : "Step";
+        return `Step: ${label} (${location})`;
+      }
+      default:
+        return `${segment.role} (${location})`;
     }
   }
 
