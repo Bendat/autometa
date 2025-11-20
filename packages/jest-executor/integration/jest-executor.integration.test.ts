@@ -53,7 +53,7 @@ function createCalculatorPlan(options: {
 }): PlanContext {
   const worlds: CalculatorWorld[] = [];
   const scopes = createScopes<CalculatorWorld>({
-    worldFactory: () => {
+    worldFactory: (_context) => {
       const world: CalculatorWorld = { numbers: [] };
       worlds.push(world);
       return world;

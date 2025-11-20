@@ -12,6 +12,7 @@ import type {
 	CucumberExpressionTypeMap,
 	DefaultCucumberExpressionTypes,
 	WorldFactory,
+	WorldFactoryContext,
 } from "@autometa/scopes";
 import type { RunnerContextOptions } from "../core/runner-context";
 import {
@@ -39,6 +40,18 @@ import { WORLD_TOKEN } from "../tokens";
 type Mutable<T> = {
 	-readonly [K in keyof T]: T[K];
 };
+
+function normalizeWorldFactory<World>(
+	factory: WorldFactory<World> | (() => World | Promise<World>)
+): WorldFactory<World> {
+	const callable = factory as (...args: readonly unknown[]) =>
+		World | Promise<World>;
+	if (callable.length >= 1) {
+		return factory as WorldFactory<World>;
+	}
+	return async (_context: WorldFactoryContext<World>) =>
+		await callable();
+}
 
 type MutableRunnerContextOptions<World> = Mutable<RunnerContextOptions<World>>;
 
@@ -210,12 +223,16 @@ class RunnerBuilderImpl<
 		value?: Partial<NextWorld> | WorldFactory<NextWorld>
 	): RunnerBuilder<NextWorld, ExpressionTypes, DefaultEnsureFacets> {
 		if (typeof value === "function") {
-			this.state.worldFactory = value as WorldFactory<unknown>;
+			this.state.worldFactory = normalizeWorldFactory<NextWorld>(
+				value as
+					| WorldFactory<NextWorld>
+					| (() => NextWorld | Promise<NextWorld>)
+			) as WorldFactory<unknown>;
 		} else if (value) {
 			const validated = ensureWorldDefaults(value);
 			this.state.worldFactory = createDefaultsWorldFactory(validated) as WorldFactory<unknown>;
 		} else {
-			this.state.worldFactory = async () => ({} as NextWorld);
+			this.state.worldFactory = async (_context) => ({} as NextWorld);
 		}
 		delete this.state.ensureFactory;
 		invalidateCaches(this.state);
@@ -286,10 +303,15 @@ function initializeState<World>(
 	const { worldFactory, ...rest } = initial;
 	const state: BuilderState = {
 		options: { ...rest } as MutableRunnerContextOptions<unknown>,
-		...(worldFactory
-			? { worldFactory: worldFactory as WorldFactory<unknown> }
-			: {}),
 	};
+
+	if (worldFactory) {
+		state.worldFactory = normalizeWorldFactory<unknown>(
+			worldFactory as
+				| WorldFactory<unknown>
+				| (() => unknown | Promise<unknown>)
+		);
+	}
 	return state;
 }
 
@@ -316,7 +338,11 @@ function applyOptions<World>(
 	} as MutableRunnerContextOptions<unknown>;
 	if ("worldFactory" in options) {
 		if (worldFactory) {
-			state.worldFactory = worldFactory as WorldFactory<unknown>;
+			state.worldFactory = normalizeWorldFactory<unknown>(
+				worldFactory as
+					| WorldFactory<unknown>
+					| (() => unknown | Promise<unknown>)
+			);
 		} else {
 			delete state.worldFactory;
 		}
@@ -346,7 +372,7 @@ function createDefaultsWorldFactory<Defaults extends WorldDefaults>(
 	defaults: Defaults
 ): WorldFactory<Defaults> {
 	const snapshot = cloneDefaults(defaults);
-	return async () => cloneDefaults(snapshot);
+	return async (_context) => cloneDefaults(snapshot);
 }
 
 function ensureWorldDefaults(value: unknown): WorldDefaults {
@@ -512,10 +538,11 @@ function composeWorldFactory<World>(
 		return undefined;
 	}
 
-	const factory = baseFactory ?? (async () => ({} as World));
-	return async () => {
+	const factory =
+		baseFactory ?? (async (_context: WorldFactoryContext<World>) => ({} as World));
+	return async (context: WorldFactoryContext<World>) => {
 		const container = createContainer();
-		const world = await factory();
+		const world = await factory(context);
 		const asObject = ensureWorldObject(world);
 		attachFeatureRegistry(asObject, featureRegistry);
 		attachContainer(asObject, container);

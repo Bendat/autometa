@@ -84,7 +84,7 @@ function createAdapter<World>(plan: ScopePlan<World>): ScopeExecutionAdapter<Wor
   return {
     plan,
     features: plan.root.children,
-    async createWorld() {
+    async createWorld(_scope) {
       return {} as World;
     },
     getScope: (id: string) => plan.scopesById.get(id),

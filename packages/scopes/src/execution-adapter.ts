@@ -28,11 +28,11 @@ export function createExecutionAdapter<World>(
   return {
     plan,
     features: plan.root.children,
-    async createWorld() {
+    async createWorld(scope, parentWorld) {
       if (!worldFactory) {
         throw new Error("No world factory configured for execution");
       }
-      return worldFactory();
+      return worldFactory({ scope, ...(parentWorld !== undefined ? { parent: parentWorld } : {}) });
     },
     getScope(id) {
       return plan.scopesById.get(id);

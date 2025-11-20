@@ -71,7 +71,9 @@ describe("ScopeComposer", () => {
   });
 
   it("merges plan metadata including world factory and parameter registry", async () => {
-    const worldFactory = vi.fn(async () => ({ value: 42 } satisfies World));
+    const worldFactory = vi.fn(async (_context: { readonly scope: ScopeNode<World> }) => ({
+      value: 42,
+    } satisfies World));
     const parameterRegistry: ParameterRegistryLike = { defineParameterType: vi.fn() };
     const composer = createComposer({ worldFactory, parameterRegistry });
 
@@ -80,7 +82,9 @@ describe("ScopeComposer", () => {
     expect(plan.parameterRegistry).toBe(parameterRegistry);
     expect(plan.root.kind).toBe("root");
 
-    const adapterWorld = await plan.worldFactory?.();
+    const adapterWorld = plan.worldFactory
+      ? await plan.worldFactory({ scope: plan.root })
+      : undefined;
     expect(adapterWorld).toEqual({ value: 42 });
     expect(worldFactory).toHaveBeenCalled();
   });

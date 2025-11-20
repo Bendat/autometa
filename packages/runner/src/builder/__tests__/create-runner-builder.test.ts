@@ -137,7 +137,7 @@ function createAdapterStub<World>(plan: ScopePlan<World>): ScopeExecutionAdapter
 	return {
 		plan,
 		features: plan.root.children,
-		async createWorld() {
+		async createWorld(_scope) {
 			return { value: 0 } as unknown as World;
 		},
 		getScope: () => undefined,
@@ -186,7 +186,7 @@ describe("createRunnerBuilder", () => {
 		}
 
 		const builder = createRunnerBuilder<BaseWorld>({
-			worldFactory: () => ({ value: 1 }),
+			worldFactory: (_context) => ({ value: 1 }),
 		})
 			.app<App>(() => ({ name: "test-app" }))
 			.withWorld(async () => ({ value: 2 }));
@@ -195,7 +195,8 @@ describe("createRunnerBuilder", () => {
 		const plan = steps.getPlan();
 		const worldFactory = plan.worldFactory;
 		expect(worldFactory).toBeDefined();
-		const world = worldFactory ? await worldFactory() : undefined;
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = worldFactory ? await worldFactory({ scope }) : undefined;
 		expect(world).toMatchObject({ value: 2, app: { name: "test-app" } });
 	});
 
@@ -223,8 +224,9 @@ describe("createRunnerBuilder", () => {
 		const plan = steps.getPlan();
 		const worldFactory = plan.worldFactory;
 		expect(worldFactory).toBeDefined();
-		const createdA = worldFactory ? await worldFactory() : undefined;
-		const createdB = worldFactory ? await worldFactory() : undefined;
+		const scope = plan.root.children[0] ?? plan.root;
+		const createdA = worldFactory ? await worldFactory({ scope }) : undefined;
+		const createdB = worldFactory ? await worldFactory({ scope }) : undefined;
 		expect(createdA).toMatchObject({
 			value: 5,
 			scenarioState: {},
@@ -281,7 +283,7 @@ describe("createRunnerBuilder", () => {
 
 		const builder = createRunnerBuilder<BaseWorld>()
 			.configure({
-				worldFactory: () => ({ value: 10 }),
+				worldFactory: (_context) => ({ value: 10 }),
 			})
 			.app<App>({ id: "decorator-app" });
 
@@ -289,7 +291,8 @@ describe("createRunnerBuilder", () => {
 		const plan: ScopePlan<BaseWorld & { app: App }> =
 			decorators.environment.buildPlan();
 
-		const created = plan.worldFactory ? await plan.worldFactory() : undefined;
+		const scope = plan.root.children[0] ?? plan.root;
+		const created = plan.worldFactory ? await plan.worldFactory({ scope }) : undefined;
 		expect(created).toMatchObject({ value: 10, app: { id: "decorator-app" } });
 	});
 
@@ -324,9 +327,11 @@ describe("createRunnerBuilder", () => {
 			.configure({ defaultMode: "failing" });
 
 		const steps: RunnerStepsSurface<BaseWorld> = builder.steps();
-		const worldFactory = steps.getPlan().worldFactory;
+		const plan = steps.getPlan();
+		const worldFactory = plan.worldFactory;
 		expect(worldFactory).toBeDefined();
-		const world = worldFactory ? await worldFactory() : undefined;
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = worldFactory ? await worldFactory({ scope }) : undefined;
 		expect(world).toEqual({ value: 5 });
 	});
 

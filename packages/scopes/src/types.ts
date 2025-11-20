@@ -239,7 +239,7 @@ export interface ScenarioSummary<World> {
 export interface ScopeExecutionAdapter<World> {
   readonly plan: ScopePlan<World>;
   readonly features: readonly ScopeNode<World>[];
-  createWorld(): Promise<World>;
+  createWorld(scope: ScopeNode<World>, parentWorld?: World): Promise<World>;
   getScope(id: string): ScopeNode<World> | undefined;
   getSteps(scopeId: string): readonly StepDefinition<World>[];
   getHooks(scopeId: string): readonly HookDefinition<World>[];
@@ -253,7 +253,14 @@ export interface ParameterRegistryLike {
   readonly defineParameterType?: (definition: unknown) => void;
 }
 
-export type WorldFactory<World> = () => World | Promise<World>;
+export interface WorldFactoryContext<World> {
+  readonly scope: ScopeNode<World>;
+  readonly parent?: World;
+}
+
+export type WorldFactory<World> = (
+  context: WorldFactoryContext<World>
+) => World | Promise<World>;
 
 export interface CreateScopesOptions<World = unknown> {
   readonly idFactory?: () => string;

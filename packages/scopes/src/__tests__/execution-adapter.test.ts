@@ -15,7 +15,7 @@ describe("createExecutionAdapter", () => {
 
   it("provides feature and scenario summaries with world creation", async () => {
     const scopes = createScopes<TestWorld>({
-      worldFactory: async () => ({ name: "world" }),
+      worldFactory: async (_context) => ({ name: "world" }),
     });
 
     let scenarioNode: ScopeNode<TestWorld> | undefined;
@@ -51,7 +51,7 @@ describe("createExecutionAdapter", () => {
     expect(adapter.getSteps(scenarioNode.id)).toHaveLength(1);
     expect(adapter.getHooks(scenarioNode.id)).toHaveLength(0);
 
-    const world = await adapter.createWorld();
+    const world = await adapter.createWorld(scenarioNode);
     expect(world).toEqual({ name: "world" });
   });
 
@@ -63,7 +63,9 @@ describe("createExecutionAdapter", () => {
       });
     });
 
-    const fallbackWorldFactory: () => Promise<TestWorld> = async () => ({ name: "fallback" });
+    const fallbackWorldFactory: () => Promise<TestWorld> = async (_context) => ({
+      name: "fallback",
+    });
     const parameterRegistry = { defineParameterType: () => undefined };
 
     const adapter = createExecutionAdapter(scopes.plan(), {
@@ -71,15 +73,25 @@ describe("createExecutionAdapter", () => {
       parameterRegistry,
     });
 
-    const world = await adapter.createWorld();
+    const [featureScope] = scopes.plan().root.children;
+    if (!featureScope) {
+      throw new Error("Feature scope missing");
+    }
+    const world = await adapter.createWorld(featureScope);
     expect(world).toEqual({ name: "fallback" });
     expect(adapter.getParameterRegistry()).toBe(parameterRegistry);
   });
 
   it("throws if no world factory is available", async () => {
     const scopes = createScopes<TestWorld>();
-  scopes.feature("Feature", () => undefined);
+    scopes.feature("Feature", () => undefined);
     const adapter = createExecutionAdapter(scopes.plan());
-    await expect(adapter.createWorld()).rejects.toThrow(/No world factory configured/);
+    const [featureScope] = scopes.plan().root.children;
+    if (!featureScope) {
+      throw new Error("Feature scope missing");
+    }
+    await expect(adapter.createWorld(featureScope)).rejects.toThrow(
+      /No world factory configured/
+    );
   });
 });

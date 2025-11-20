@@ -176,7 +176,7 @@ function createAdapterStub<World>(plan: ScopePlan<World>): ScopeExecutionAdapter
   return {
     plan,
     features: plan.root.children,
-    async createWorld() {
+    async createWorld(_scope) {
       return { id: "world" } as unknown as World;
     },
     getScope: () => undefined,

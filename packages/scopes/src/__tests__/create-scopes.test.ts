@@ -289,7 +289,9 @@ describe("createScopes DSL", () => {
   });
 
   it("exposes provided world factory and parameter registry on the plan", async () => {
-    const worldFactory: () => Promise<TestWorld> = vi.fn(async () => ({ user: "plan" }));
+    const worldFactory = vi.fn(async (_context: { readonly scope: ScopeNode<TestWorld> }) => ({
+      user: "plan",
+    }));
     const parameterRegistry = { lookupByTypeName: vi.fn() };
 
     const scopes = createScopes<TestWorld>({
@@ -307,7 +309,11 @@ describe("createScopes DSL", () => {
 
     expect(plan.worldFactory).toBe(worldFactory);
     expect(plan.parameterRegistry).toBe(parameterRegistry);
-    const createdWorld = plan.worldFactory ? await plan.worldFactory() : undefined;
+    const featureScope = plan.root.children[0];
+    const createdWorld =
+      plan.worldFactory && featureScope
+        ? await plan.worldFactory({ scope: featureScope })
+        : undefined;
     expect(createdWorld).toEqual({ user: "plan" });
     expect(parameterRegistry.lookupByTypeName).not.toHaveBeenCalled();
   });

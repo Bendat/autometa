@@ -34,7 +34,7 @@ describe("createDecoratorRunner", () => {
 		interface World { greeting: string }
 
 		const runner = createDecoratorRunner<World>({
-			worldFactory: () => ({ greeting: "hello" }),
+			worldFactory: (_context) => ({ greeting: "hello" }),
 		});
 
 		const featureToken = Symbol("feature");
@@ -53,7 +53,10 @@ describe("createDecoratorRunner", () => {
 		const plan = runner.buildPlan();
 
 		expect(plan.worldFactory).toBeDefined();
-		const world = await plan.worldFactory?.();
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = plan.worldFactory
+			? await plan.worldFactory({ scope })
+			: undefined;
 		expect(world).toEqual({ greeting: "hello" });
 	});
 });

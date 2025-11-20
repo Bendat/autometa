@@ -347,7 +347,7 @@ describe("buildTestPlan", () => {
         scopesById: new Map(),
       },
       features: [featureScope],
-      async createWorld() {
+      async createWorld(_scope) {
         return {};
       },
       getScope() {
@@ -425,7 +425,7 @@ describe("buildTestPlan", () => {
         scopesById: new Map(),
       },
       features: [featureScope],
-      async createWorld() {
+      async createWorld(_scope) {
         return {};
       },
       getScope() {
