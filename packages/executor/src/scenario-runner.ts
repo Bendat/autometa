@@ -25,6 +25,7 @@ import {
   isGherkinStepError,
   type GherkinContextPathSegment,
   type GherkinErrorContext,
+  type GherkinStepSummary,
   type SourceLocation,
 } from "@autometa/errors";
 import {
@@ -63,6 +64,7 @@ export async function runScenarioExecution<World>(
   const parameterRegistry = resolveParameterRegistry(
     context.adapter.getParameterRegistry()
   );
+  const stepSummaries: GherkinStepSummary[] = [];
 
   try {
     const { steps, gherkinSteps } = execution;
@@ -84,11 +86,20 @@ export async function runScenarioExecution<World>(
           world
         );
         await step.handler(world, ...args);
+        stepSummaries.push(createStepSummary(metadata, gherkinStep, "passed"));
       } catch (error) {
         if (isScenarioPendingError(error)) {
           throw error;
         }
-        throw enrichStepError(error, metadata);
+        stepSummaries.push(createStepSummary(metadata, gherkinStep, "failed"));
+        for (let remaining = index + 1; remaining < gherkinSteps.length; remaining++) {
+          const remainingMetadata = buildStepMetadata(execution, remaining);
+          const remainingStep = gherkinSteps[remaining];
+          stepSummaries.push(
+            createStepSummary(remainingMetadata, remainingStep, "skipped")
+          );
+        }
+        throw enrichStepError(error, metadata, stepSummaries);
       } finally {
         clearStepTable(world);
         clearStepDocstring(world);
@@ -420,7 +431,8 @@ function createWorldDisposer(world: unknown): () => Promise<void> {
 
 function enrichStepError(
   error: unknown,
-  metadata: StepRuntimeMetadata | undefined
+  metadata: StepRuntimeMetadata | undefined,
+  steps?: readonly GherkinStepSummary[]
 ): Error {
   const base = error instanceof Error ? error : new Error(String(error));
 
@@ -430,7 +442,7 @@ function enrichStepError(
 
   const wrapped = new GherkinStepError(base.message, {
     cause: base,
-    context: buildGherkinErrorContext(metadata, base) ?? {},
+    context: buildGherkinErrorContext(metadata, base, steps) ?? {},
   });
 
   if (base.stack) {
@@ -447,7 +459,8 @@ function enrichStepError(
 
 function buildGherkinErrorContext(
   metadata: StepRuntimeMetadata | undefined,
-  error?: Error
+  error?: Error,
+  steps?: readonly GherkinStepSummary[]
 ): GherkinErrorContext | undefined {
   if (!metadata) {
     return undefined;
@@ -488,7 +501,9 @@ function buildGherkinErrorContext(
       }
     : undefined;
 
-  if (!gherkinSegment && !codeSegment && !pathSegments) {
+  const hasSteps = Boolean(steps && steps.length > 0);
+
+  if (!gherkinSegment && !codeSegment && !pathSegments && !hasSteps) {
     return undefined;
   }
 
@@ -496,7 +511,27 @@ function buildGherkinErrorContext(
     ...(gherkinSegment ? { gherkin: gherkinSegment } : {}),
     ...(codeSegment ? { code: codeSegment } : {}),
     ...(pathSegments ? { path: pathSegments } : {}),
+    ...(hasSteps && steps ? { steps } : {}),
   };
+}
+
+function createStepSummary(
+  metadata: StepRuntimeMetadata | undefined,
+  gherkinStep: SimpleStep | undefined,
+  status: GherkinStepSummary["status"]
+): GherkinStepSummary {
+  const keyword = metadata?.step?.keyword ?? gherkinStep?.keyword;
+  const text = metadata?.step?.text ?? gherkinStep?.text;
+  const location = metadata?.step?.source
+    ? toSourceLocation(metadata.step.source)
+    : undefined;
+
+  return {
+    status,
+    ...(keyword !== undefined ? { keyword } : {}),
+    ...(text !== undefined ? { text } : {}),
+    ...(location ? { location } : {}),
+  } satisfies GherkinStepSummary;
 }
 
 function buildGherkinPath(

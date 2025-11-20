@@ -42,10 +42,20 @@ export interface GherkinContextPathSegment {
   readonly location: SourceLocation;
 }
 
+export type GherkinStepStatus = "passed" | "failed" | "skipped";
+
+export interface GherkinStepSummary {
+  readonly keyword?: string;
+  readonly text?: string;
+  readonly location?: SourceLocation;
+  readonly status: GherkinStepStatus;
+}
+
 export interface GherkinErrorContext {
   readonly gherkin?: GherkinContextSegment;
   readonly code?: CodeContextSegment;
   readonly path?: readonly GherkinContextPathSegment[];
+  readonly steps?: readonly GherkinStepSummary[];
 }
 
 export interface GherkinStepErrorOptions extends AutomationErrorOptions {
@@ -100,11 +110,27 @@ function freezePath(
   return Object.freeze(path.map((segment) => freezePathSegment(segment)));
 }
 
+function freezeStepSummary(step: GherkinStepSummary): GherkinStepSummary {
+  return Object.freeze({
+    status: step.status,
+    ...(step.keyword !== undefined ? { keyword: step.keyword } : {}),
+    ...(step.text !== undefined ? { text: step.text } : {}),
+    ...(step.location ? { location: freezeLocation(step.location) } : {}),
+  });
+}
+
+function freezeSteps(
+  steps: readonly GherkinStepSummary[]
+): readonly GherkinStepSummary[] {
+  return Object.freeze(steps.map((step) => freezeStepSummary(step)));
+}
+
 function freezeContext(context: GherkinErrorContext): GherkinErrorContext {
   return Object.freeze({
     ...(context.gherkin ? { gherkin: freezeGherkinSegment(context.gherkin) } : {}),
     ...(context.code ? { code: freezeCodeSegment(context.code) } : {}),
     ...(context.path ? { path: freezePath(context.path) } : {}),
+    ...(context.steps ? { steps: freezeSteps(context.steps) } : {}),
   });
 }
 

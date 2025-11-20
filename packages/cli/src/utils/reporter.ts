@@ -6,8 +6,8 @@ import pc from "picocolors";
 
 import {
   getGherkinErrorContext,
-  type GherkinContextPathSegment,
   type GherkinErrorContext,
+  type GherkinStepSummary,
   type SourceLocation,
 } from "@autometa/errors";
 import type {
@@ -206,8 +206,8 @@ export class HierarchicalReporter implements RuntimeReporter {
     const { lines: formattedStack, truncated } = this.formatStackLines(stackLines, 4);
     const context = getGherkinErrorContext(error);
 
-    if (context?.path && context.path.length > 0) {
-      this.printErrorWithPath(context, depth, messageLines, formattedStack, truncated);
+    if (context?.steps && context.steps.length > 0) {
+      this.printScenarioError(context, depth, messageLines, formattedStack, truncated);
       return;
     }
 
@@ -325,16 +325,52 @@ export class HierarchicalReporter implements RuntimeReporter {
     }
   }
 
-  private printErrorWithPath(
+  private printScenarioError(
     context: GherkinErrorContext,
     depth: number,
     messageLines: readonly string[],
     formattedStack: readonly string[],
     truncated: boolean
   ): void {
-    const pathSegments = context.path ?? [];
-    const detailDepth = this.printGherkinPathTree(pathSegments, depth);
-    const detailIndent = "  ".repeat(detailDepth);
+    const steps = context.steps ?? [];
+    if (!steps.length) {
+      this.printScenarioErrorDetails(context, depth, messageLines, formattedStack, truncated);
+      return;
+    }
+
+    const indent = "  ".repeat(depth);
+    let detailsRendered = false;
+
+    for (const step of steps) {
+      const icon = this.getStepStatusIcon(step.status);
+      const label = this.describeStepSummary(step);
+      console.log(`${indent}${icon} ${label}`);
+
+      if (!detailsRendered && step.status === "failed") {
+        this.printScenarioErrorDetails(
+          context,
+          depth + 1,
+          messageLines,
+          formattedStack,
+          truncated
+        );
+        detailsRendered = true;
+      }
+    }
+
+    if (!detailsRendered) {
+      this.printScenarioErrorDetails(context, depth + 1, messageLines, formattedStack, truncated);
+    }
+  }
+
+  private printScenarioErrorDetails(
+    context: GherkinErrorContext,
+    depth: number,
+    messageLines: readonly string[],
+    formattedStack: readonly string[],
+    truncated: boolean
+  ): void {
+    const indent = "  ".repeat(depth);
 
     if (messageLines.length > 0) {
       for (const line of messageLines) {
@@ -343,73 +379,40 @@ export class HierarchicalReporter implements RuntimeReporter {
           console.log("");
           continue;
         }
-        console.log(`${detailIndent}${pc.red(trimmed)}`);
+        console.log(`${indent}${pc.red(trimmed)}`);
       }
     }
 
-    this.printGherkinContext(context, detailDepth);
+    this.printGherkinContext(context, depth + 1);
 
     for (const line of formattedStack) {
-      console.log(`${detailIndent}${pc.dim(line)}`);
+      console.log(`${indent}${pc.dim(line)}`);
     }
 
     if (truncated) {
-      console.log(`${detailIndent}${pc.dim("    …")}`);
+      console.log(`${indent}${pc.dim("    …")}`);
     }
   }
 
-  private printGherkinPathTree(
-    path: readonly GherkinContextPathSegment[],
-    depth: number
-  ): number {
-    if (!path.length) {
-      return depth;
-    }
-
-    let currentDepth = depth;
-    for (const segment of path) {
-      const indent = "  ".repeat(currentDepth);
-      console.log(`${indent}${pc.dim(this.describePathLabel(segment))}`);
-      currentDepth += 1;
-    }
-
-    return currentDepth;
-  }
-
-  private describePathLabel(segment: GherkinContextPathSegment): string {
-    const location = this.formatSourceLocation(segment.location);
-    switch (segment.role) {
-      case "feature": {
-        const name = segment.name?.trim();
-        return name ? `Feature: ${name} (${location})` : `Feature (${location})`;
-      }
-      case "rule": {
-        const name = segment.name?.trim();
-        return name ? `Rule: ${name} (${location})` : `Rule (${location})`;
-      }
-      case "outline": {
-        const name = segment.name?.trim();
-        return name ? `Scenario Outline: ${name} (${location})` : `Scenario Outline (${location})`;
-      }
-      case "scenario": {
-        const name = segment.name?.trim();
-        return name ? `Scenario: ${name} (${location})` : `Scenario (${location})`;
-      }
-      case "example": {
-        const label =
-          segment.name?.trim() ?? (segment.index !== undefined ? `Example #${segment.index + 1}` : undefined);
-        return label ? `${label} (${location})` : `Example (${location})`;
-      }
-      case "step": {
-        const keyword = segment.keyword?.trim();
-        const text = segment.text?.trim();
-        const labelParts = [keyword, text].filter((value): value is string => Boolean(value && value.length));
-        const label = labelParts.length ? labelParts.join(" ") : "Step";
-        return `Step: ${label} (${location})`;
-      }
+  private getStepStatusIcon(status: GherkinStepSummary["status"]): string {
+    switch (status) {
+      case "passed":
+        return pc.green("✓");
+      case "failed":
+        return pc.red("✗");
+      case "skipped":
       default:
-        return `${segment.role} (${location})`;
+        return pc.yellow("○");
     }
+  }
+
+  private describeStepSummary(step: GherkinStepSummary): string {
+    const keyword = step.keyword?.trim();
+    const text = step.text?.trim();
+    const descriptionParts = [keyword, text].filter((value): value is string => Boolean(value && value.length));
+    const description = descriptionParts.length ? descriptionParts.join(" ") : "Step";
+    const location = step.location ? pc.dim(` (${this.formatSourceLocation(step.location)})`) : "";
+    return `${description}${location}`;
   }
 
   private printCodeFrameSection(

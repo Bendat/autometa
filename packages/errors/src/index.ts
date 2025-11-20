@@ -11,6 +11,8 @@ export {
 	type GherkinContextPathSegment,
 	type GherkinContextRole,
 	type GherkinErrorContext,
+	type GherkinStepStatus,
+	type GherkinStepSummary,
 	type GherkinStepErrorOptions,
 	type SourceLocation,
 	type SourcePosition,
