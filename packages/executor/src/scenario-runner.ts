@@ -8,7 +8,6 @@ import {
 } from "@cucumber/cucumber-expressions";
 import type {
   ParameterRegistryLike,
-  ScopeExecutionAdapter,
   SourceRef,
   StepDefinition,
   StepExpression,
@@ -38,10 +37,14 @@ import {
   type StepRuntimeMetadata,
 } from "./runtime/step-data";
 import { isScenarioPendingError } from "./pending";
+import type {
+  ScenarioRunContext,
+  StepHookDetails,
+  StepHookInvocationOptions,
+  StepStatus,
+} from "./scope-lifecycle";
 
-export interface ScenarioRunContext<World> {
-  readonly adapter: ScopeExecutionAdapter<World>;
-}
+export type { ScenarioRunContext } from "./scope-lifecycle";
 
 type StepArgumentMatcher<World> = (text: string, world: World) => unknown[];
 
@@ -59,11 +62,8 @@ export async function runScenarioExecution<World>(
   context: ScenarioRunContext<World>
 ): Promise<void> {
   execution.reset();
-  const world = await context.adapter.createWorld();
-  const disposeWorld = createWorldDisposer(world);
-  const parameterRegistry = resolveParameterRegistry(
-    context.adapter.getParameterRegistry()
-  );
+  const { world, beforeStepHooks, afterStepHooks, invokeHooks } = context;
+  const parameterRegistry = resolveParameterRegistry(context.parameterRegistry);
   const stepSummaries: GherkinStepSummary[] = [];
 
   try {
@@ -75,9 +75,20 @@ export async function runScenarioExecution<World>(
       }
       const gherkinStep = gherkinSteps[index];
       const metadata = buildStepMetadata(execution, index);
+      const stepDetails: StepHookDetails<World> = {
+        index,
+        definition: step,
+        ...(gherkinStep ? { gherkin: gherkinStep } : {}),
+      };
+      const beforeOptions: StepHookInvocationOptions<World> = {
+        direction: "asc",
+        step: stepDetails,
+      };
+      await invokeHooks(beforeStepHooks, beforeOptions);
       setStepMetadata(world, metadata);
       setStepTable(world, gherkinStep?.dataTable);
       setStepDocstring(world, gherkinStep?.docString?.content);
+      let status: StepStatus = "passed";
       try {
         const args = resolveStepArguments(
           step,
@@ -89,8 +100,10 @@ export async function runScenarioExecution<World>(
         stepSummaries.push(createStepSummary(metadata, gherkinStep, "passed"));
       } catch (error) {
         if (isScenarioPendingError(error)) {
+          status = "skipped";
           throw error;
         }
+        status = "failed";
         stepSummaries.push(createStepSummary(metadata, gherkinStep, "failed"));
         for (let remaining = index + 1; remaining < gherkinSteps.length; remaining++) {
           const remainingMetadata = buildStepMetadata(execution, remaining);
@@ -101,6 +114,15 @@ export async function runScenarioExecution<World>(
         }
         throw enrichStepError(error, metadata, stepSummaries);
       } finally {
+        const afterStepDetails: StepHookDetails<World> = {
+          ...stepDetails,
+          status,
+        };
+        const afterOptions: StepHookInvocationOptions<World> = {
+          direction: "desc",
+          step: afterStepDetails,
+        };
+        await invokeHooks(afterStepHooks, afterOptions);
         clearStepTable(world);
         clearStepDocstring(world);
         clearStepMetadata(world);
@@ -114,8 +136,6 @@ export async function runScenarioExecution<World>(
     }
     execution.markFailed(error);
     throw error;
-  } finally {
-    await disposeWorld();
   }
 }
 
@@ -370,63 +390,6 @@ function hasMetadata(metadata: StepRuntimeMetadata): boolean {
       metadata.step ||
       metadata.definition
   );
-}
-
-interface DisposableLike {
-  dispose(): void | Promise<void>;
-}
-
-function createWorldDisposer(world: unknown): () => Promise<void> {
-  const disposers: Array<() => Promise<void>> = [];
-
-  if (world && typeof world === "object") {
-    const record = world as Record<string, unknown>;
-
-    const app = record.app;
-    if (isDisposable(app)) {
-      disposers.push(async () => {
-        await app.dispose();
-      });
-    }
-
-    const container = (record.di ?? record.container) as unknown;
-    if (isDisposable(container)) {
-      disposers.push(async () => {
-        await container.dispose();
-      });
-    }
-  }
-
-  return async () => {
-    if (disposers.length === 0) {
-      return;
-    }
-
-    const errors: unknown[] = [];
-    for (const dispose of disposers) {
-      try {
-        await dispose();
-      } catch (error) {
-        errors.push(error);
-      }
-    }
-
-    if (errors.length === 1) {
-      throw errors[0];
-    }
-
-    if (errors.length > 1) {
-      const summary = new Error(
-        "Multiple errors occurred while disposing world resources"
-      );
-      Object.defineProperty(summary, "cause", {
-        configurable: true,
-        enumerable: false,
-        value: errors,
-      });
-      throw summary;
-    }
-  };
 }
 
 function enrichStepError(
@@ -707,13 +670,4 @@ function normalizeFilePath(file: string): string {
     }
   }
   return path.isAbsolute(file) ? file : path.resolve(file);
-}
-
-function isDisposable(value: unknown): value is DisposableLike {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-  const candidate = value as Record<string, unknown>;
-  const dispose = candidate.dispose;
-  return typeof dispose === "function";
 }

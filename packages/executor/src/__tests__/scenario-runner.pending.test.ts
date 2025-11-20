@@ -1,12 +1,13 @@
 import path from "node:path";
 
 import type { FeatureNode, ScenarioExecution } from "@autometa/test-builder";
-import type { ScopeExecutionAdapter, ScopeNode, ScenarioSummary, StepDefinition } from "@autometa/scopes";
+import type { ScopeNode, ScenarioSummary, StepDefinition } from "@autometa/scopes";
 import { GherkinStepError, getGherkinErrorContext } from "@autometa/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import { Pending } from "../pending";
 import { runScenarioExecution } from "../scenario-runner";
+import type { ScenarioRunContext } from "../scope-lifecycle";
 
 function createScopeNode(kind: ScopeNode<unknown>["kind"]): ScopeNode<unknown> {
   return {
@@ -105,22 +106,27 @@ describe("runScenarioExecution pending handling", () => {
       outline: undefined,
     } as unknown as ScenarioExecution<unknown>;
 
-    const adapter = {
-      createWorld: vi.fn(async () => ({})),
-      getParameterRegistry: vi.fn(() => undefined),
-    } as unknown as ScopeExecutionAdapter<unknown>;
+    const invokeHooks = vi.fn(async () => undefined);
+    const context: ScenarioRunContext<unknown> = {
+      world: {},
+      parameterRegistry: undefined,
+      beforeStepHooks: [],
+      afterStepHooks: [],
+      invokeHooks,
+    };
 
-    await expect(runScenarioExecution(execution, { adapter })).resolves.toBeUndefined();
+    await expect(runScenarioExecution(execution, context)).resolves.toBeUndefined();
 
     expect(markPending).toHaveBeenCalledTimes(1);
     expect(markPending).toHaveBeenCalledWith("needs implementation");
     expect(markFailed).not.toHaveBeenCalled();
     expect(markPassed).not.toHaveBeenCalled();
     expect(secondHandler).not.toHaveBeenCalled();
+    expect(invokeHooks).toHaveBeenCalledTimes(2);
   });
 });
 
-describe("runScenarioExecution world disposal", () => {
+describe("runScenarioExecution status transitions", () => {
   function createScenarioExecutionWithSteps(
     steps: StepDefinition<unknown>[]
   ): {
@@ -190,7 +196,24 @@ describe("runScenarioExecution world disposal", () => {
     return { execution, markPassed, markFailed, markPending, reset };
   }
 
-  it("disposes app and container after successful execution", async () => {
+  function createScenarioContext(
+    world: unknown = {}
+  ): {
+    context: ScenarioRunContext<unknown>;
+    invokeHooks: ReturnType<typeof vi.fn>;
+  } {
+    const invokeHooks = vi.fn(async () => undefined);
+    const context: ScenarioRunContext<unknown> = {
+      world,
+      parameterRegistry: undefined,
+      beforeStepHooks: [],
+      afterStepHooks: [],
+      invokeHooks,
+    };
+    return { context, invokeHooks };
+  }
+
+  it("marks the scenario as passed when all steps succeed", async () => {
     const step: StepDefinition<unknown> = {
       id: "step-success",
       keyword: "Given",
@@ -200,29 +223,18 @@ describe("runScenarioExecution world disposal", () => {
     };
 
     const { execution, markPassed, markFailed } = createScenarioExecutionWithSteps([step]);
+    const { context, invokeHooks } = createScenarioContext();
 
-    const appDispose = vi.fn().mockResolvedValue(undefined);
-    const containerDispose = vi.fn().mockResolvedValue(undefined);
-
-    const world = {
-      app: { dispose: appDispose },
-      di: { dispose: containerDispose },
-    };
-
-    const adapter = {
-      createWorld: vi.fn(async () => world),
-      getParameterRegistry: vi.fn(() => undefined),
-    } as unknown as ScopeExecutionAdapter<unknown>;
-
-    await expect(runScenarioExecution(execution, { adapter })).resolves.toBeUndefined();
+    await expect(runScenarioExecution(execution, context)).resolves.toBeUndefined();
 
     expect(markPassed).toHaveBeenCalledTimes(1);
     expect(markFailed).not.toHaveBeenCalled();
-    expect(appDispose).toHaveBeenCalledTimes(1);
-    expect(containerDispose).toHaveBeenCalledTimes(1);
+    expect(invokeHooks).toHaveBeenCalledTimes(2);
+    const afterCall = invokeHooks.mock.calls[1]?.[1] as { step?: { status?: string } } | undefined;
+    expect(afterCall?.step?.status).toBe("passed");
   });
 
-  it("disposes world resources when a step throws", async () => {
+  it("marks the scenario as failed when a step throws", async () => {
     const failure = new Error("step failure");
 
     const step: StepDefinition<unknown> = {
@@ -236,22 +248,10 @@ describe("runScenarioExecution world disposal", () => {
     };
 
     const { execution, markPassed, markFailed } = createScenarioExecutionWithSteps([step]);
-
-    const appDispose = vi.fn().mockResolvedValue(undefined);
-    const containerDispose = vi.fn().mockResolvedValue(undefined);
-
-    const world = {
-      app: { dispose: appDispose },
-      di: { dispose: containerDispose },
-    };
-
-    const adapter = {
-      createWorld: vi.fn(async () => world),
-      getParameterRegistry: vi.fn(() => undefined),
-    } as unknown as ScopeExecutionAdapter<unknown>;
+    const { context, invokeHooks } = createScenarioContext();
 
     let thrown: unknown;
-    await runScenarioExecution(execution, { adapter }).catch((error: unknown) => {
+    await runScenarioExecution(execution, context).catch((error: unknown) => {
       thrown = error;
     });
 
@@ -262,8 +262,9 @@ describe("runScenarioExecution world disposal", () => {
     expect(markFailed).toHaveBeenCalledTimes(1);
     expect(markFailed).toHaveBeenCalledWith(wrapped);
     expect(markPassed).not.toHaveBeenCalled();
-    expect(appDispose).toHaveBeenCalledTimes(1);
-    expect(containerDispose).toHaveBeenCalledTimes(1);
+    expect(invokeHooks).toHaveBeenCalledTimes(2);
+    const afterCall = invokeHooks.mock.calls[1]?.[1] as { step?: { status?: string } } | undefined;
+    expect(afterCall?.step?.status).toBe("failed");
   });
 
   it("wraps step failures with gherkin metadata", async () => {
@@ -342,79 +343,29 @@ describe("runScenarioExecution world disposal", () => {
       outline: undefined,
     } as unknown as ScenarioExecution<unknown>;
 
-    const adapter = {
-      createWorld: vi.fn(async () => ({})),
-      getParameterRegistry: vi.fn(() => undefined),
-    } as unknown as ScopeExecutionAdapter<unknown>;
+    const { context } = createScenarioContext();
 
     let thrown: unknown;
-    await runScenarioExecution(execution, { adapter }).catch((error: unknown) => {
+    await runScenarioExecution(execution, context).catch((error: unknown) => {
       thrown = error;
     });
 
     expect(thrown).toBeInstanceOf(GherkinStepError);
-    const context = getGherkinErrorContext(thrown);
-    expect(context?.gherkin?.location.filePath).toBe(featurePath);
-    expect(context?.gherkin?.location.start.line).toBe(12);
-    expect(context?.code?.location.filePath).toBe(stepPath);
-    expect(context?.code?.location.start.line).toBe(42);
-    expect(context?.path?.map((segment) => segment.role)).toEqual([
+    const gherkinContext = getGherkinErrorContext(thrown);
+    expect(gherkinContext?.gherkin?.location.filePath).toBe(featurePath);
+    expect(gherkinContext?.gherkin?.location.start.line).toBe(12);
+    expect(gherkinContext?.code?.location.filePath).toBe(stepPath);
+    expect(gherkinContext?.code?.location.start.line).toBe(42);
+    expect(gherkinContext?.path?.map((segment) => segment.role)).toEqual([
       "feature",
       "scenario",
       "step",
     ]);
-    const featureSegment = context?.path?.[0];
+    const featureSegment = gherkinContext?.path?.[0];
     expect(featureSegment?.location.start.line).toBe(1);
-    const scenarioSegment = context?.path?.[1];
+    const scenarioSegment = gherkinContext?.path?.[1];
     expect(scenarioSegment?.location.start.line).toBe(8);
-    const stepSegment = context?.path?.[context.path.length - 1]!;
+    const stepSegment = gherkinContext?.path?.[gherkinContext.path.length - 1]!;
     expect(stepSegment.location.start.line).toBe(12);
-  });
-
-  it("aggregates errors thrown while disposing world resources", async () => {
-    const step: StepDefinition<unknown> = {
-      id: "step-clean",
-      keyword: "Given",
-      expression: "",
-      handler: vi.fn(),
-      options: { tags: [], mode: "default" },
-    };
-
-    const { execution, markPassed, markFailed } = createScenarioExecutionWithSteps([step]);
-
-    const appError = new Error("app dispose failure");
-    const containerError = new Error("container dispose failure");
-
-    const appDispose = vi.fn(async () => {
-      throw appError;
-    });
-    const containerDispose = vi.fn(async () => {
-      throw containerError;
-    });
-
-    const world = {
-      app: { dispose: appDispose },
-      di: { dispose: containerDispose },
-    };
-
-    const adapter = {
-      createWorld: vi.fn(async () => world),
-      getParameterRegistry: vi.fn(() => undefined),
-    } as unknown as ScopeExecutionAdapter<unknown>;
-
-    let thrown: unknown;
-    await runScenarioExecution(execution, { adapter }).catch((error: unknown) => {
-      thrown = error;
-    });
-
-    expect(thrown).toBeInstanceOf(Error);
-    const error = thrown as Error;
-    expect(error.message).toBe("Multiple errors occurred while disposing world resources");
-    const causeDescriptor = Object.getOwnPropertyDescriptor(error, "cause");
-    expect(causeDescriptor?.value).toEqual([appError, containerError]);
-    expect(markPassed).toHaveBeenCalledTimes(1);
-    expect(markFailed).not.toHaveBeenCalled();
-    expect(appDispose).toHaveBeenCalledTimes(1);
-    expect(containerDispose).toHaveBeenCalledTimes(1);
   });
 });
