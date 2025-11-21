@@ -5,3 +5,4 @@ import "./debug";
 import "./recipes";
 import "./orders";
 import "./tags";
+import "./lifecycle";

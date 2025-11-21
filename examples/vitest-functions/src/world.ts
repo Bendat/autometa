@@ -10,6 +10,7 @@ import type {
 import type { SseSession } from "./utils/sse.js";
 import type { MenuRegion } from "./utils/regions";
 import { BrewBuddyApp } from "./utils/http";
+import type { WorldFactoryContext } from "@autometa/scopes";
 
 const DEFAULT_API_BASE_URL = "http://localhost:4000";
 
@@ -28,6 +29,7 @@ export interface BrewBuddyWorldBase {
   readonly scenario: ScenarioState;
   readonly features: SimpleFeature[];
   readonly runtime: StepRuntimeHelpers;
+  lifecycle: LifecycleMetrics;
 }
 
 export type BrewBuddyWorld = BrewBuddyWorldBase & { readonly app: BrewBuddyApp };
@@ -70,25 +72,96 @@ export interface TagRegistryEntry {
   readonly description: string;
 }
 
-const DEFAULT_SCENARIO_STATE: ScenarioState = {
-  createdItems: [],
-  streamWarnings: [],
-  streamErrors: [],
-  expectOrderFailure: false,
-  lastOrderError: undefined,
-};
+export type StepLifecycleStatus = "passed" | "failed" | "skipped";
 
-export const brewBuddyWorldDefaults: Omit<BrewBuddyWorldBase, "runtime"> = {
-  baseUrl: process.env.BREW_BUDDY_BASE_URL ?? DEFAULT_API_BASE_URL,
-  http: HTTP.create(),
-  aliases: {
+export interface LifecycleStepRecord {
+  readonly scenario: string;
+  readonly step: string;
+  readonly status: StepLifecycleStatus;
+}
+
+export interface LifecycleMetrics {
+  featureName?: string;
+  beforeFeatureRuns: number;
+  afterFeatureRuns: number;
+  scenarioOrder: string[];
+  stepHistory: LifecycleStepRecord[];
+}
+
+function createScenarioState(): ScenarioState {
+  return {
+    createdItems: [],
+    streamWarnings: [],
+    streamErrors: [],
+    expectOrderFailure: false,
+    lastOrderError: undefined,
+  } satisfies ScenarioState;
+}
+
+function createLifecycleMetrics(featureName?: string): LifecycleMetrics {
+  const metrics: LifecycleMetrics = {
+    beforeFeatureRuns: 0,
+    afterFeatureRuns: 0,
+    scenarioOrder: [],
+    stepHistory: [],
+  } satisfies LifecycleMetrics;
+
+  if (featureName !== undefined) {
+    metrics.featureName = featureName;
+  }
+
+  return metrics;
+}
+
+interface BaseWorldOverrides {
+  baseUrl?: string;
+  http?: HTTP;
+  aliases?: BrewBuddyWorldBase["aliases"];
+  features?: SimpleFeature[];
+  lifecycle?: LifecycleMetrics;
+  featureName?: string;
+}
+
+function defaultAliases(): BrewBuddyWorldBase["aliases"] {
+  return {
     tickets: new Map(),
     orders: new Map(),
     recipes: new Map(),
-  },
-  scenario: DEFAULT_SCENARIO_STATE,
-  features: [],
-};
+  };
+}
+
+function createBaseWorld(overrides: BaseWorldOverrides = {}): BrewBuddyWorldBase {
+  const world = {
+    baseUrl: overrides.baseUrl ?? process.env.BREW_BUDDY_BASE_URL ?? DEFAULT_API_BASE_URL,
+    http: overrides.http ?? HTTP.create(),
+    aliases: overrides.aliases ?? defaultAliases(),
+    scenario: createScenarioState(),
+    features: overrides.features ?? [],
+    lifecycle: overrides.lifecycle ?? createLifecycleMetrics(overrides.featureName),
+  };
+
+  return world as BrewBuddyWorldBase;
+}
+
+export function createBrewBuddyWorld(
+  context: WorldFactoryContext<BrewBuddyWorldBase>
+): BrewBuddyWorldBase {
+  if (context.scope.kind === "feature") {
+    return createBaseWorld({ featureName: context.scope.name });
+  }
+
+  const parentWorld = context.parent as BrewBuddyWorldBase | undefined;
+  const overrides: BaseWorldOverrides = {};
+
+  if (parentWorld) {
+    overrides.baseUrl = parentWorld.baseUrl;
+    overrides.http = parentWorld.http;
+    overrides.features = parentWorld.features;
+    overrides.lifecycle = parentWorld.lifecycle;
+  }
+
+  return createBaseWorld(overrides);
+}
 
 export function disposeStream(world: BrewBuddyWorld): void {
   if (world.scenario.stream) {
