@@ -3,6 +3,7 @@ import "source-map-support/register";
 import type {
   ExecutorRuntime,
   HookHandler,
+  HookLogListener,
   SuiteFn,
   TestFn,
 } from "@autometa/executor";
@@ -69,6 +70,7 @@ interface ExecutionContext {
 
 export function createCliRuntime(options: RuntimeOptions = {}): {
   readonly runtime: ExecutorRuntime;
+  readonly hookLogger: HookLogListener;
   execute(): Promise<RuntimeSummary>;
 } {
   const root: SuiteNode = {
@@ -88,6 +90,8 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
     pending: 0,
     success: true,
   };
+
+  let emitHookLog: HookLogListener = () => undefined;
 
 
   function registerSuite(
@@ -301,6 +305,10 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
     currentTestName: () => currentTestName,
   };
 
+  const hookLogger: HookLogListener = (event) => {
+    emitHookLog(event);
+  };
+
   async function execute(): Promise<RuntimeSummary> {
     const startedAt = clock.now();
     const reports: ScenarioReport[] = [];
@@ -309,6 +317,14 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
         ? [...options.reporters]
         : [new HierarchicalReporter(undefined, options.reporter?.hierarchical)]),
     ];
+
+    emitHookLog = (event) => {
+      for (const reporter of reporters) {
+        if (typeof reporter.onHookLog === "function") {
+          reporter.onHookLog(event);
+        }
+      }
+    };
 
     await dispatchRunStart({ timestamp: startedAt });
 
@@ -331,6 +347,8 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
     };
 
     await dispatchRunEnd({ timestamp: finishedAt, summary });
+
+    emitHookLog = () => undefined;
 
     return summary;
 
@@ -502,6 +520,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
 
   return {
     runtime,
+    hookLogger,
     async execute(): Promise<RuntimeSummary> {
       return execute();
     },

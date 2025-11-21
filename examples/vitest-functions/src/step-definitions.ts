@@ -71,27 +71,41 @@ interface HookMetadata {
   };
 }
 
-BeforeFeature(({ world, scope }) => {
+function writeLifecycleLog(
+  logger: ((message: string) => void) | undefined,
+  message: string
+): void {
+  if (logger) {
+    logger(message);
+    return;
+  }
+  console.info(message);
+}
+
+BeforeFeature(({ world, scope, log }) => {
   world.lifecycle.featureName = scope.name;
   world.lifecycle.beforeFeatureRuns += 1;
-  console.info(`[lifecycle] beforeFeature → ${scope.name}`);
+  writeLifecycleLog(log, `Preparing "${scope.name}"`);
 });
 
-AfterFeature(({ world }) => {
+AfterFeature(({ world, log }) => {
   world.lifecycle.afterFeatureRuns += 1;
-  console.info(`[lifecycle] afterFeature → ${world.lifecycle.featureName ?? "<unknown>"}`);
+  writeLifecycleLog(
+    log,
+    `Finished "${world.lifecycle.featureName ?? "<unknown>"}"`
+  );
 });
 
-BeforeScenario(({ world, scope, metadata }) => {
+BeforeScenario(({ world, scope, metadata, log }) => {
   const details = (metadata ?? {}) as HookMetadata;
   const scenarioName = details.scenario?.name ?? scope.name;
   if (!world.lifecycle.scenarioOrder.includes(scenarioName)) {
     world.lifecycle.scenarioOrder.push(scenarioName);
   }
-  console.info(`[lifecycle] beforeScenario → ${scenarioName}`);
+  writeLifecycleLog(log, `Scenario "${scenarioName}" ready`);
 });
 
-AfterStep(({ world, scope, metadata }) => {
+AfterStep(({ world, scope, metadata, log }) => {
   const details = (metadata ?? {}) as HookMetadata;
   const scenarioName = details.scenario?.name ?? scope.name;
   const step = details.step;
@@ -109,6 +123,9 @@ AfterStep(({ world, scope, metadata }) => {
   };
 
   world.lifecycle.stepHistory.push(entry);
-  console.info(`[lifecycle] afterStep → ${scenarioName} :: ${label} (${entry.status})`);
+  writeLifecycleLog(
+    log,
+    `Scenario "${scenarioName}" :: ${label} (${entry.status})`
+  );
 });
 

@@ -2,6 +2,15 @@ export { resolveTimeout, chooseTimeout, TimeoutResolution, TimeoutSource } from 
 export { collectScenarioHooks, HookCollection, ResolvedHook } from "./hooks";
 export { runScenarioExecution, ScenarioRunContext } from "./scenario-runner";
 export { registerFeaturePlan, ExecuteFeatureOptions } from "./execute-plan";
+export {
+	ScopeLifecycle,
+	type HookLogEvent,
+	type HookLogListener,
+	type HookLogPathSegment,
+	type HookLogScenarioDetails,
+	type HookLogStepDetails,
+	type HookLogPhase,
+} from "./scope-lifecycle";
 export { selectSuiteByMode, selectTestByMode, resolveModeFromTags } from "./modes";
 export { createTagFilter, type TagFilter } from "./tag-filter";
 export {

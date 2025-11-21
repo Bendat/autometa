@@ -62,6 +62,51 @@ export type HookInvoker<World> = (
   options: StepHookInvocationOptions<World>
 ) => Promise<void>;
 
+export interface HookLogPathSegment {
+  readonly id: string;
+  readonly kind: ScopeKind | "step";
+  readonly name: string;
+  readonly keyword?: string;
+}
+
+export interface HookLogStepDetails {
+  readonly index: number;
+  readonly keyword?: string;
+  readonly text?: string;
+  readonly status?: StepStatus;
+}
+
+export interface HookLogScenarioDetails {
+  readonly id: string;
+  readonly name: string;
+  readonly fullName: string;
+  readonly keyword?: string;
+  readonly language?: string;
+}
+
+export type HookLogPhase = "before" | "after";
+
+export interface HookLogEvent {
+  readonly message: string;
+  readonly hookId: string;
+  readonly hookType: HookType;
+  readonly hookDescription?: string;
+  readonly phase: HookLogPhase;
+  readonly path: readonly HookLogPathSegment[];
+  readonly scenario?: HookLogScenarioDetails;
+  readonly step?: HookLogStepDetails;
+  readonly targetKeyword?: string;
+  readonly language?: string;
+}
+
+export type HookLogListener = (event: HookLogEvent) => void;
+
+export interface ScopeLifecycleOptions {
+  readonly hookLogger?: HookLogListener;
+  readonly featureLanguage?: string;
+  readonly scopeKeywords?: ReadonlyMap<string, string>;
+}
+
 export interface ScenarioRunContext<World> {
   readonly world: World;
   readonly parameterRegistry: ParameterRegistryLike | undefined;
@@ -85,10 +130,21 @@ export class ScopeLifecycle<World> {
   private readonly states = new Map<string, ScopeState<World>>();
   private readonly depthMap = new Map<string, number>();
   private readonly root: ScopeNode<World>;
+  private readonly hookLogger?: HookLogListener;
+  private readonly featureLanguage: string | undefined;
+  private readonly scopeKeywords: ReadonlyMap<string, string>;
 
-  constructor(private readonly adapter: ScopeExecutionAdapter<World>) {
+  constructor(
+    private readonly adapter: ScopeExecutionAdapter<World>,
+    options: ScopeLifecycleOptions = {}
+  ) {
     this.root = adapter.plan.root;
     this.buildDepthMap(this.root, 0);
+    if (options.hookLogger) {
+      this.hookLogger = options.hookLogger;
+    }
+    this.featureLanguage = options.featureLanguage;
+    this.scopeKeywords = options.scopeKeywords ?? new Map<string, string>();
   }
 
   configurePersistentScope(scope: ScopeNode<World>, runtime: ExecutorRuntime): void {
@@ -325,10 +381,12 @@ export class ScopeLifecycle<World> {
 
     for (const entry of sorted) {
       const metadata = this.buildHookMetadata(entry, params);
+      const log = this.createContextLogger(entry, params);
       const context = {
         world: params.world,
         scope: entry.scope,
         ...(metadata ? { metadata } : {}),
+        ...(log ? { log } : {}),
       } as const;
 
       // eslint-disable-next-line no-await-in-loop
@@ -400,6 +458,209 @@ export class ScopeLifecycle<World> {
   private buildChain(scope: ScopeNode<World>): ScopeNode<World>[] {
     const ancestors = this.adapter.getAncestors(scope.id);
     return [this.root, ...ancestors, scope];
+  }
+
+  private createContextLogger(
+    entry: ResolvedHook<World>,
+    params: HookInvocationParams<World>
+  ): ((message: string) => void) | undefined {
+    if (!this.hookLogger) {
+      return undefined;
+    }
+
+    const emit = this.hookLogger;
+    return (rawMessage: string) => {
+      if (rawMessage === undefined || rawMessage === null) {
+        return;
+      }
+      const message = String(rawMessage);
+      if (message.length === 0) {
+        return;
+      }
+      try {
+        emit(this.buildHookLogEvent(entry, params, message));
+      } catch (error) {
+        if (typeof console !== "undefined" && typeof console.error === "function") {
+          console.error(error);
+        }
+      }
+    };
+  }
+
+  private buildHookLogEvent(
+    entry: ResolvedHook<World>,
+    params: HookInvocationParams<World>,
+    message: string
+  ): HookLogEvent {
+    const ancestors = this.adapter.getAncestors(params.scope.id);
+    const path: HookLogPathSegment[] = ancestors.map((node) => this.toPathSegment(node));
+    const targetSegment = this.toPathSegment(params.scope);
+    path.push(targetSegment);
+
+    const direction = params.direction ?? "asc";
+    const phase: HookLogPhase = direction === "desc" ? "after" : "before";
+
+    const scenarioIndex = this.findScenarioSegmentIndex(path);
+    const scenarioDetails = this.buildScenarioDetails(path, scenarioIndex, params);
+
+    const language = this.resolveLanguage(params, scenarioDetails);
+    const targetKeyword = this.scopeKeywords.get(params.scope.id);
+
+    if (params.step) {
+      path.push(this.toStepSegment(params.scope, params.step));
+    }
+
+    return {
+      message,
+      hookId: entry.hook.id,
+      hookType: entry.hook.type,
+      ...(entry.hook.description ? { hookDescription: entry.hook.description } : {}),
+      phase,
+      path,
+      ...(scenarioDetails ? { scenario: scenarioDetails } : {}),
+      ...(params.step ? { step: this.toStepDetails(params.step) } : {}),
+      ...(targetKeyword ? { targetKeyword } : {}),
+      ...(language ? { language } : {}),
+    };
+  }
+
+  private toPathSegment(scope: ScopeNode<World>): HookLogPathSegment {
+    const keyword = this.scopeKeywords.get(scope.id);
+    return {
+      id: scope.id,
+      kind: scope.kind,
+      name: scope.name,
+      ...(keyword ? { keyword } : {}),
+    };
+  }
+
+  private toStepSegment(
+    scope: ScopeNode<World>,
+    step: StepHookDetails<World>
+  ): HookLogPathSegment {
+    const keyword = step.gherkin?.keyword ?? step.definition?.keyword;
+    return {
+      id: `${scope.id}:step:${step.index}`,
+      kind: "step",
+      name: this.describeStep(step),
+      ...(keyword ? { keyword: keyword.trim() } : {}),
+    };
+  }
+
+  private toStepDetails(step: StepHookDetails<World>): HookLogStepDetails {
+    return {
+      index: step.index,
+      ...(step.gherkin?.keyword ? { keyword: step.gherkin.keyword } : {}),
+      ...(step.gherkin?.text ? { text: step.gherkin.text } : {}),
+      ...(step.status ? { status: step.status } : {}),
+    };
+  }
+
+  private describeStep(step: StepHookDetails<World>): string {
+    const keyword = step.gherkin?.keyword ?? step.definition?.keyword;
+    const text = step.gherkin?.text ?? this.describeStepExpression(step.definition);
+
+    if (keyword) {
+      const trimmedKeyword = keyword.trim();
+      if (text && text.length > 0) {
+        const needsSpace = text.startsWith(" ");
+        return `${trimmedKeyword}${needsSpace ? "" : " "}${text}`;
+      }
+      return trimmedKeyword;
+    }
+
+    if (text && text.length > 0) {
+      return text;
+    }
+
+    return `Step #${step.index + 1}`;
+  }
+
+  private describeStepExpression(
+    definition: StepDefinition<World> | undefined
+  ): string | undefined {
+    if (!definition) {
+      return undefined;
+    }
+
+    const expression = definition.expression;
+    if (typeof expression === "string") {
+      return expression;
+    }
+    return expression.toString();
+  }
+
+  private findScenarioSegmentIndex(path: readonly HookLogPathSegment[]): number {
+    for (let index = path.length - 1; index >= 0; index -= 1) {
+      const segment = path[index];
+      if (!segment) {
+        continue;
+      }
+      if (segment.kind === "scenario") {
+        return index;
+      }
+      if (segment.kind === "scenarioOutline") {
+        return index;
+      }
+    }
+    return -1;
+  }
+
+  private buildScenarioDetails(
+    path: readonly HookLogPathSegment[],
+    scenarioIndex: number,
+    params: HookInvocationParams<World>
+  ): HookLogScenarioDetails | undefined {
+    if (scenarioIndex < 0) {
+      return undefined;
+    }
+
+    const scenarioSegment = path[scenarioIndex];
+    if (!scenarioSegment) {
+      return undefined;
+    }
+
+    const segments = path.slice(0, scenarioIndex + 1).map((segment) => segment.name);
+    const fullName = segments.join(" › ");
+
+    const scenario = params.scenario;
+    const keyword = scenario?.keyword ?? scenarioSegment.keyword;
+    const language = scenario?.feature.feature.language ?? this.featureLanguage;
+    if (scenario) {
+      return {
+        id: scenario.id,
+        name: scenario.name,
+        fullName,
+        ...(keyword ? { keyword } : {}),
+        ...(language ? { language } : {}),
+      };
+    }
+
+    return {
+      id: scenarioSegment.id,
+      name: scenarioSegment.name,
+      fullName,
+      ...(keyword ? { keyword } : {}),
+      ...(language ? { language } : {}),
+    };
+  }
+
+  private resolveLanguage(
+    params: HookInvocationParams<World>,
+    scenarioDetails: HookLogScenarioDetails | undefined
+  ): string | undefined {
+    if (params.scenario) {
+      const scenarioLanguage = params.scenario.feature.feature.language;
+      if (scenarioLanguage) {
+        return scenarioLanguage;
+      }
+    }
+
+    if (scenarioDetails?.language) {
+      return scenarioDetails.language;
+    }
+
+    return this.featureLanguage;
   }
 
   private sortHooks(

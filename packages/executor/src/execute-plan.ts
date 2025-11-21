@@ -12,7 +12,7 @@ import { createTagFilter } from "./tag-filter";
 import { resolveModeFromTags, selectSuiteByMode, selectTestByMode } from "./modes";
 import { resolveTimeout } from "./timeouts";
 import { runScenarioExecution } from "./scenario-runner";
-import { ScopeLifecycle } from "./scope-lifecycle";
+import { ScopeLifecycle, type HookLogListener } from "./scope-lifecycle";
 import type { ExecutorRuntime } from "./types";
 
 export interface ExecuteFeatureOptions<World> {
@@ -20,13 +20,19 @@ export interface ExecuteFeatureOptions<World> {
   readonly adapter: ScopeExecutionAdapter<World>;
   readonly runtime: ExecutorRuntime;
   readonly config: ExecutorConfig;
+  readonly hookLogger?: HookLogListener;
 }
 
 export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>): void {
-  const { plan, runtime, adapter, config } = options;
+  const { plan, runtime, adapter, config, hookLogger } = options;
   const feature = plan.feature;
   const tagFilter = createTagFilter(config.test?.tagFilter);
-  const lifecycle = new ScopeLifecycle(adapter);
+  const scopeKeywords = collectScopeKeywords(feature);
+  const lifecycle = new ScopeLifecycle(adapter, {
+    ...(hookLogger ? { hookLogger } : {}),
+    featureLanguage: feature.feature.language,
+    scopeKeywords,
+  });
 
   const featureTags = [
     ...(feature.feature.tags ?? []),
@@ -42,6 +48,38 @@ export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>
     registerScenarioOutlines(feature.scenarioOutlines, runtime, config, tagFilter, lifecycle);
     registerRules(feature.rules, runtime, config, tagFilter, lifecycle);
   }, featureTimeout.milliseconds);
+}
+
+function collectScopeKeywords<World>(feature: TestPlan<World>["feature"]): ReadonlyMap<string, string> {
+  const entries: Array<[string, string]> = [];
+
+  entries.push([feature.scope.id, feature.keyword]);
+
+  for (const scenario of feature.scenarios) {
+    entries.push([scenario.scope.id, scenario.keyword]);
+  }
+
+  for (const outline of feature.scenarioOutlines) {
+    entries.push([outline.scope.id, outline.keyword]);
+    for (const example of outline.examples) {
+      entries.push([example.scope.id, example.keyword]);
+    }
+  }
+
+  for (const rule of feature.rules) {
+    entries.push([rule.scope.id, rule.keyword]);
+    for (const scenario of rule.scenarios) {
+      entries.push([scenario.scope.id, scenario.keyword]);
+    }
+    for (const outline of rule.scenarioOutlines) {
+      entries.push([outline.scope.id, outline.keyword]);
+      for (const example of outline.examples) {
+        entries.push([example.scope.id, example.keyword]);
+      }
+    }
+  }
+
+  return new Map(entries);
 }
 
 function registerRules<World>(

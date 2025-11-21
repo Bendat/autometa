@@ -1,7 +1,7 @@
 import type { ExecutorConfig } from "@autometa/config";
 import { AutomationError } from "@autometa/errors";
 import type { ExecuteFeatureOptions, ExecutorRuntime } from "@autometa/executor";
-import { registerFeaturePlan } from "@autometa/executor";
+import { registerFeaturePlan, type HookLogListener } from "@autometa/executor";
 import type {
 	ScopeExecutionAdapter,
 	ScopePlan,
@@ -27,6 +27,7 @@ export interface CoordinateFeatureOptions<World> {
 	readonly adapterFactory?: AdapterFactory<World>;
 	readonly registerPlan?: RegistrationHandler<World>;
 	readonly featureScope?: BuildTestPlanOptions<World>["featureScope"];
+	readonly hookLogger?: HookLogListener;
 }
 
 export interface CoordinateFeatureResult<World> {
@@ -78,6 +79,7 @@ export function coordinateFeature<World>(
 				adapter,
 				runtime: executorRuntime,
 				config,
+				...(options.hookLogger ? { hookLogger: options.hookLogger } : {}),
 			});
 		},
 	};

@@ -29,6 +29,7 @@ export interface CoordinateRunnerFeatureOptions<World> {
 	readonly featureScope?:
 		| BuildTestPlanOptions<World>["featureScope"]
 		| undefined;
+	readonly hookLogger?: CoordinateFeatureOptions<World>["hookLogger"];
 }
 
 export function coordinateRunnerFeature<World>(
@@ -44,6 +45,7 @@ export function coordinateRunnerFeature<World>(
 		planBuilder,
 		registerPlan,
 		featureScope,
+		hookLogger,
 	} = options;
 
 	const scopePlan = plan ?? environment.getPlan();
@@ -57,5 +59,6 @@ export function coordinateRunnerFeature<World>(
 		...(planBuilder ? { planBuilder } : {}),
 		...(registerPlan ? { registerPlan } : {}),
 		...(featureScope ? { featureScope } : {}),
+		...(hookLogger ? { hookLogger } : {}),
 	});
 }

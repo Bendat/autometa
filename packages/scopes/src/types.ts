@@ -150,6 +150,7 @@ export interface HookContext<World> {
   readonly world: World;
   readonly scope: ScopeNode<World>;
   readonly metadata?: Record<string, unknown>;
+  readonly log?: (message: string) => void;
 }
 
 export interface HookDefinition<World> {

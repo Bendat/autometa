@@ -201,7 +201,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
     ...(options.reporters ? { reporters: options.reporters } : {}),
     ...(reporterOptions ? { reporter: reporterOptions } : {}),
   };
-  const { runtime, execute } = createCliRuntime(runtimeOptions);
+  const { runtime, hookLogger, execute } = createCliRuntime(runtimeOptions);
   configureHttpLogging(executorConfig.logging);
 
   const patternSource =
@@ -249,6 +249,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
       plan: scopePlan,
       config: executorConfig,
       runtime,
+      hookLogger,
     });
     coordinated.register(runtime);
   }
