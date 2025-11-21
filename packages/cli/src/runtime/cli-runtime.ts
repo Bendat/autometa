@@ -47,6 +47,7 @@ interface SuiteNode {
   readonly timeout?: number;
   readonly parent?: SuiteNode;
   readonly children: Array<SuiteChild>;
+  readonly metadata?: SuiteMetadata;
 }
 
 type SuiteChild =
@@ -67,6 +68,15 @@ interface ExecutionContext {
   readonly focus: boolean;
   readonly path: readonly string[];
 }
+
+type SuiteMetadata = {
+  readonly kind?: "feature" | "rule" | "scenarioOutline" | "examples";
+  readonly keyword?: string;
+};
+
+type SuiteFnWithMetadata = SuiteFn & {
+  __withMetadata?: (metadata: SuiteMetadata | undefined, register: () => void) => void;
+};
 
 export function createCliRuntime(options: RuntimeOptions = {}): {
   readonly runtime: ExecutorRuntime;
@@ -92,6 +102,21 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
   };
 
   let emitHookLog: HookLogListener = () => undefined;
+  let pendingSuiteMetadata: SuiteMetadata | undefined;
+
+  const assignMetadataHandler = (target: SuiteFn): SuiteFnWithMetadata => {
+    const fn = target as SuiteFnWithMetadata;
+    fn.__withMetadata = (metadata, register) => {
+      const previous = pendingSuiteMetadata;
+      pendingSuiteMetadata = metadata;
+      try {
+        register();
+      } finally {
+        pendingSuiteMetadata = previous;
+      }
+    };
+    return fn;
+  };
 
 
   function registerSuite(
@@ -100,12 +125,14 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
     handler?: () => void,
     timeout?: number
   ): void {
+    const metadata = pendingSuiteMetadata;
     const node: SuiteNode = {
       title,
       mode,
       ...(timeout !== undefined ? { timeout } : {}),
       ...(currentSuite === root ? {} : { parent: currentSuite }),
       children: [],
+      ...(metadata ? { metadata: { ...metadata } } : {}),
     };
 
     currentSuite.children.push({ kind: "suite", node });
@@ -150,21 +177,21 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
     currentSuite.children.push({ kind: "test", node });
   }
 
-  const suiteDefault = ((title: string, handler: () => void, timeout?: number) => {
+  const suiteDefault = assignMetadataHandler(((title: string, handler: () => void, timeout?: number) => {
     registerSuite("default", title, handler, timeout);
-  }) as SuiteFn;
+  }) as SuiteFn);
 
-  const suiteSkip = ((title: string, _handler: () => void, timeout?: number) => {
+  const suiteSkip = assignMetadataHandler(((title: string, _handler: () => void, timeout?: number) => {
     registerSuite("skip", title, undefined, timeout);
-  }) as SuiteFn;
+  }) as SuiteFn);
 
-  const suiteOnly = ((title: string, handler: () => void, timeout?: number) => {
+  const suiteOnly = assignMetadataHandler(((title: string, handler: () => void, timeout?: number) => {
     registerSuite("only", title, handler, timeout);
-  }) as SuiteFn;
+  }) as SuiteFn);
 
-  const suiteConcurrent = ((title: string, handler: () => void, timeout?: number) => {
+  const suiteConcurrent = assignMetadataHandler(((title: string, handler: () => void, timeout?: number) => {
     registerSuite("concurrent", title, handler, timeout);
-  }) as SuiteFn;
+  }) as SuiteFn);
 
   suiteDefault.skip = suiteSkip;
   suiteDefault.only = suiteOnly;
@@ -363,6 +390,8 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           title: node.title,
           ancestors: context.path,
           path: suitePath,
+          ...(node.metadata?.kind ? { kind: node.metadata.kind } : {}),
+          ...(node.metadata?.keyword ? { keyword: node.metadata.keyword } : {}),
         });
       }
 
@@ -379,6 +408,8 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           title: node.title,
           ancestors: context.path,
           path: suitePath,
+          ...(node.metadata?.kind ? { kind: node.metadata.kind } : {}),
+          ...(node.metadata?.keyword ? { keyword: node.metadata.keyword } : {}),
         });
       }
     }
@@ -389,7 +420,8 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
       skipBranch: boolean,
       focusBranch: boolean
     ): Promise<void> {
-      const fullPath = [...ancestors, node.title];
+      const suitePath = [...ancestors];
+      const fullPath = [...suitePath, node.title];
       const fullName = fullPath.join(" › ");
 
       if (node.kind === "todo" || node.kind === "pending") {
@@ -397,6 +429,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           status: "pending",
           name: node.title,
           fullName,
+          path: suitePath,
           ...(node.reason !== undefined ? { reason: node.reason } : {}),
         });
         return;
@@ -410,6 +443,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           status: "pending",
           name: node.title,
           fullName,
+          path: suitePath,
           reason: "dry run",
         });
         return;
@@ -420,6 +454,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           status: "skipped",
           name: node.title,
           fullName,
+          path: suitePath,
         });
         return;
       }
@@ -437,6 +472,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           status: "passed",
           name: node.title,
           fullName,
+          path: suitePath,
           durationMs: duration,
         });
       } catch (error) {
@@ -445,6 +481,7 @@ export function createCliRuntime(options: RuntimeOptions = {}): {
           status: "failed",
           name: node.title,
           fullName,
+          path: suitePath,
           durationMs: duration,
           error: error instanceof Error ? error : new Error(String(error)),
         });

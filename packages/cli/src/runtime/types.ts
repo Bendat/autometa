@@ -3,6 +3,7 @@ export type ScenarioStatus = "passed" | "failed" | "skipped" | "pending";
 export interface ScenarioReport {
   readonly name: string;
   readonly fullName: string;
+  readonly path: readonly string[];
   readonly status: ScenarioStatus;
   readonly durationMs?: number;
   readonly error?: Error;

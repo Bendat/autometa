@@ -21,6 +21,8 @@ type ReportNode = SuiteReportNode | TestReportNode | LogReportNode;
 
 type HookTargetKind = "feature" | "rule" | "scenario" | "scenarioOutline" | "step";
 
+type SuiteHierarchyKind = "feature" | "rule" | "scenarioOutline" | "examples";
+
 interface HookLogFormattingContext {
   readonly scenarioName?: string;
 }
@@ -28,6 +30,8 @@ interface HookLogFormattingContext {
 interface SuiteReportNode {
   readonly type: "suite";
   readonly name: string;
+  kind?: SuiteHierarchyKind;
+  keyword?: string;
   readonly children: ReportNode[];
 }
 
@@ -55,6 +59,8 @@ export interface SuiteLifecycleEvent {
   readonly title: string;
   readonly ancestors: readonly string[];
   readonly path: readonly string[];
+  readonly kind?: SuiteHierarchyKind;
+  readonly keyword?: string;
 }
 
 export interface TestResultEvent {
@@ -92,6 +98,8 @@ export class HierarchicalReporter implements RuntimeReporter {
   private readonly baselineErrorRenderer: BaselineErrorRenderer;
   private readonly scenarioErrorRenderer: ScenarioErrorRenderer;
   private readonly testNodesByFullName = new Map<string, TestReportNode>();
+  private readonly suiteMetadataCache = new Map<string, { kind?: SuiteHierarchyKind; keyword?: string }>();
+  private suiteFailureCache = new WeakMap<SuiteReportNode, boolean>();
 
   constructor(log: (line: string) => void = console.log, options: HierarchicalReporterOptions = {}) {
     const useBuffer = options.bufferOutput ?? true;
@@ -134,6 +142,21 @@ export class HierarchicalReporter implements RuntimeReporter {
       }
     }
 
+    if (event.kind) {
+      suiteNode.kind = event.kind;
+    }
+    if (event.keyword) {
+      suiteNode.keyword = event.keyword;
+    }
+
+    const path = [...parentNames, event.title];
+    if (event.kind || event.keyword) {
+      this.updateSuiteMetadataCache(path, {
+        ...(event.kind ? { kind: event.kind } : {}),
+        ...(event.keyword ? { keyword: event.keyword } : {}),
+      });
+    }
+
     this.suiteStack.push({ node: suiteNode });
   }
 
@@ -144,7 +167,9 @@ export class HierarchicalReporter implements RuntimeReporter {
   async onTestResult(event: TestResultEvent): Promise<void> {
     const fullName = event.result.fullName;
     const segments = fullName.split(" › ");
-    const suiteNames = segments.slice(0, -1);
+    const suiteNames = event.result.path && event.result.path.length > 0
+      ? [...event.result.path]
+      : segments.slice(0, -1);
     const parentSuite = this.ensureSuitePathByNames(suiteNames);
 
     let testNode = this.testNodesByFullName.get(fullName);
@@ -219,6 +244,7 @@ export class HierarchicalReporter implements RuntimeReporter {
     this.suiteStack = [];
     this.rootSuites = [];
     this.testNodesByFullName.clear();
+    this.suiteFailureCache = new WeakMap<SuiteReportNode, boolean>();
   }
 
   private flush(): void {
@@ -234,13 +260,15 @@ export class HierarchicalReporter implements RuntimeReporter {
       const nextDepth = isSyntheticRoot ? depth : depth + 1;
 
       if (!isSyntheticRoot) {
-        const label = depth === 0 ? `Feature: ${node.name}` : node.name;
-        this.log.write(pc.bold(label), depth);
+        const heading = this.formatSuiteHeading(node);
+        this.log.write(heading, depth);
       }
 
       for (const child of node.children) {
         if (child.type === "log") {
-          this.log.write(child.message, nextDepth + child.offset);
+          if (this.suiteHasFailingDescendant(node)) {
+            this.log.write(child.message, nextDepth + child.offset);
+          }
           continue;
         }
         this.printNode(child, nextDepth);
@@ -266,14 +294,111 @@ export class HierarchicalReporter implements RuntimeReporter {
     const scenarioLabel = `${pc.bold("Scenario:")} ${coloredName}`;
     this.log.write(`${icon} ${scenarioLabel}${duration}`, depth);
 
-    for (const logEntry of node.logs) {
-      this.log.write(logEntry.message, depth + 1 + logEntry.offset);
+    if (node.status !== "passed") {
+      for (const logEntry of node.logs) {
+        this.log.write(logEntry.message, depth + 1 + logEntry.offset);
+      }
     }
 
     if (node.error) {
       this.printError(node.error, depth + 1);
     } else if (node.reason) {
       this.log.write(pc.dim(`Reason: ${node.reason}`), depth + 1);
+    }
+  }
+
+  private suiteHasFailingDescendant(node: SuiteReportNode): boolean {
+    const cached = this.suiteFailureCache.get(node);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    let hasFailure = false;
+
+    for (const child of node.children) {
+      if (child.type === "test") {
+        if (child.status === "failed") {
+          hasFailure = true;
+          break;
+        }
+        continue;
+      }
+
+      if (child.type === "suite") {
+        if (this.suiteHasFailingDescendant(child)) {
+          hasFailure = true;
+          break;
+        }
+      }
+    }
+
+    this.suiteFailureCache.set(node, hasFailure);
+    return hasFailure;
+  }
+
+  private formatSuiteHeading(node: SuiteReportNode): string {
+    const keyword = this.resolveSuiteKeyword(node);
+    if (!keyword) {
+      return pc.bold(node.name);
+    }
+
+    const prefix = this.highlightSuiteKeyword(keyword, node.kind);
+    const name = node.name ? this.sanitizeSuiteName(node.name, keyword) : undefined;
+    return name && name.length > 0 ? `${prefix} ${name}` : prefix;
+  }
+
+  private resolveSuiteKeyword(node: SuiteReportNode): string | undefined {
+    const preferred = node.keyword;
+    const fallback = this.defaultSuiteKeyword(node.kind);
+    const chosen = (preferred ?? fallback)?.trim();
+    if (!chosen || chosen.length === 0) {
+      return undefined;
+    }
+    return chosen.replace(/:\s*$/u, "");
+  }
+
+  private sanitizeSuiteName(name: string, keyword: string): string {
+    const trimmed = name.trim();
+    if (trimmed.length === 0) {
+      return "";
+    }
+
+    const pattern = new RegExp(`^${HierarchicalReporter.escapeRegExp(keyword)}\\s*:`, "i");
+    if (pattern.test(trimmed)) {
+      return trimmed.replace(pattern, "").trim();
+    }
+
+    return trimmed;
+  }
+
+  private defaultSuiteKeyword(kind: SuiteHierarchyKind | undefined): string | undefined {
+    switch (kind) {
+      case "feature":
+        return "Feature";
+      case "rule":
+        return "Rule";
+      case "scenarioOutline":
+        return "Scenario Outline";
+      case "examples":
+        return "Examples";
+      default:
+        return undefined;
+    }
+  }
+
+  private highlightSuiteKeyword(keyword: string, kind: SuiteHierarchyKind | undefined): string {
+    const label = `${keyword}:`;
+    switch (kind) {
+      case "feature":
+        return pc.bold(pc.cyan(label));
+      case "rule":
+        return pc.bold(pc.magenta(label));
+      case "scenarioOutline":
+        return pc.bold(pc.blue(label));
+      case "examples":
+        return pc.bold(pc.yellow(label));
+      default:
+        return pc.bold(label);
     }
   }
 
@@ -295,12 +420,17 @@ export class HierarchicalReporter implements RuntimeReporter {
 
     let currentChildren: ReportNode[] = this.rootSuites;
     let currentSuite: SuiteReportNode | undefined;
+    const path: string[] = [];
 
     for (const name of names) {
+      path.push(name);
       let suite = this.findSuite(currentChildren, name);
       if (!suite) {
         suite = { type: "suite", name, children: [] };
+        this.applyMetadataFromCache(path, suite);
         currentChildren.push(suite);
+      } else {
+        this.applyMetadataFromCache(path, suite);
       }
       currentSuite = suite;
       currentChildren = suite.children;
@@ -320,6 +450,58 @@ export class HierarchicalReporter implements RuntimeReporter {
       }
     }
     return undefined;
+  }
+
+  private findSuiteByPath(path: readonly string[]): SuiteReportNode | undefined {
+    let currentChildren: readonly ReportNode[] = this.rootSuites;
+    let current: SuiteReportNode | undefined;
+
+    for (const name of path) {
+      const next = this.findSuite(currentChildren, name);
+      if (!next) {
+        return undefined;
+      }
+      current = next;
+      currentChildren = next.children;
+    }
+
+    return current;
+  }
+
+  private getSuitePathKey(path: readonly string[]): string {
+    return path.join(" › ");
+  }
+
+  private applyMetadataFromCache(path: readonly string[], node: SuiteReportNode): void {
+    const cached = this.suiteMetadataCache.get(this.getSuitePathKey(path));
+    if (!cached) {
+      return;
+    }
+    if (cached.kind) {
+      node.kind = cached.kind;
+    }
+    if (cached.keyword) {
+      node.keyword = cached.keyword;
+    }
+  }
+
+  private updateSuiteMetadataCache(
+    path: readonly string[],
+    metadata: { kind?: SuiteHierarchyKind; keyword?: string }
+  ): void {
+    const key = this.getSuitePathKey(path);
+    const existing = this.suiteMetadataCache.get(key) ?? {};
+    this.suiteMetadataCache.set(key, { ...existing, ...metadata });
+
+    const node = this.findSuiteByPath(path);
+    if (node) {
+      if (metadata.kind) {
+        node.kind = metadata.kind;
+      }
+      if (metadata.keyword) {
+        node.keyword = metadata.keyword;
+      }
+    }
   }
 
   private ensureTestNode(
@@ -344,6 +526,8 @@ export class HierarchicalReporter implements RuntimeReporter {
 
   private extractSuiteNames(path: readonly HookLogPathSegment[]): string[] {
     const suites: string[] = [];
+    const currentPath: string[] = [];
+
     for (const segment of path) {
       if (!segment) {
         continue;
@@ -354,9 +538,31 @@ export class HierarchicalReporter implements RuntimeReporter {
         || segment.kind === "scenarioOutline"
       ) {
         suites.push(segment.name);
+        currentPath.push(segment.name);
+        const suiteKind = this.toSuiteHierarchyKind(segment.kind);
+        if (suiteKind) {
+          const metadata = {
+            kind: suiteKind,
+            ...(segment.keyword ? { keyword: segment.keyword } : {}),
+          } as const;
+          this.updateSuiteMetadataCache(currentPath, metadata);
+        }
       }
     }
     return suites;
+  }
+
+  private toSuiteHierarchyKind(kind: HookLogPathSegment["kind"]): SuiteHierarchyKind | undefined {
+    switch (kind) {
+      case "feature":
+        return "feature";
+      case "rule":
+        return "rule";
+      case "scenarioOutline":
+        return "scenarioOutline";
+      default:
+        return undefined;
+    }
   }
 
   private findScenarioSegment(

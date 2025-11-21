@@ -5,6 +5,7 @@ import type {
   ScenarioExecution,
   ScenarioNode,
   ScenarioOutlineNode,
+  ScenarioOutlineExample,
   TestPlan,
 } from "@autometa/test-builder";
 
@@ -13,7 +14,7 @@ import { resolveModeFromTags, selectSuiteByMode, selectTestByMode } from "./mode
 import { resolveTimeout } from "./timeouts";
 import { runScenarioExecution } from "./scenario-runner";
 import { ScopeLifecycle, type HookLogListener } from "./scope-lifecycle";
-import type { ExecutorRuntime } from "./types";
+import type { ExecutorRuntime, SuiteFn } from "./types";
 
 export interface ExecuteFeatureOptions<World> {
   readonly plan: TestPlan<World>;
@@ -21,6 +22,69 @@ export interface ExecuteFeatureOptions<World> {
   readonly runtime: ExecutorRuntime;
   readonly config: ExecutorConfig;
   readonly hookLogger?: HookLogListener;
+}
+
+type SuiteMetadata = {
+  readonly kind?: "feature" | "rule" | "scenarioOutline" | "examples";
+  readonly keyword?: string;
+};
+
+type SuiteFnWithMetadata = SuiteFn & {
+  __withMetadata?: (metadata: SuiteMetadata | undefined, register: () => void) => void;
+};
+
+type ScenarioOutlineExampleGroup<World> = {
+  readonly group: ScenarioOutlineExample<World>["exampleGroup"];
+  readonly examples: ScenarioOutlineExample<World>[];
+};
+
+type OutlineExampleCollection<World> = {
+  readonly outline: ScenarioOutlineNode<World>;
+  readonly order: string[];
+  readonly groups: Map<string, ScenarioOutlineExampleGroup<World>>;
+};
+
+function runSuiteWithMetadata(
+  suite: SuiteFn,
+  metadata: SuiteMetadata,
+  title: string,
+  handler: () => void,
+  timeout?: number
+): void {
+  const target = suite as SuiteFnWithMetadata;
+  if (typeof target.__withMetadata === "function") {
+    target.__withMetadata(metadata, () => {
+      suite(title, handler, timeout);
+    });
+    return;
+  }
+  suite(title, handler, timeout);
+}
+
+function isScenarioOutlineExample<World>(
+  execution: ScenarioExecution<World>
+): execution is ScenarioOutlineExample<World> {
+  return execution.type === "example";
+}
+
+function shouldDisplayExamplesGroup(group: ScenarioOutlineExample<unknown>["exampleGroup"], totalGroups: number): boolean {
+  if (totalGroups > 1) {
+    return true;
+  }
+
+  const name = group.name?.trim();
+  return Boolean(name && name.length > 0);
+}
+
+function formatExamplesGroupTitle(
+  group: ScenarioOutlineExample<unknown>["exampleGroup"],
+  index: number
+): string {
+  const trimmed = group.name?.trim();
+  if (trimmed && trimmed.length > 0) {
+    return trimmed;
+  }
+  return `Table #${index + 1}`;
 }
 
 export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>): void {
@@ -42,12 +106,18 @@ export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>
   const featureTimeout = resolveTimeout(feature.scope.timeout, config);
   const featureSuite = selectSuiteByMode(runtime.suite, featureMode);
 
-  featureSuite(feature.name, () => {
-    lifecycle.configurePersistentScope(feature.scope, runtime);
-    registerScenarios(feature.scenarios, runtime, config, tagFilter, lifecycle);
-    registerScenarioOutlines(feature.scenarioOutlines, runtime, config, tagFilter, lifecycle);
-    registerRules(feature.rules, runtime, config, tagFilter, lifecycle);
-  }, featureTimeout.milliseconds);
+  runSuiteWithMetadata(
+    featureSuite,
+    { kind: "feature", keyword: feature.keyword },
+    feature.name,
+    () => {
+      lifecycle.configurePersistentScope(feature.scope, runtime);
+      registerScenarios(feature.scenarios, runtime, config, tagFilter, lifecycle);
+      registerScenarioOutlines(feature.scenarioOutlines, runtime, config, tagFilter, lifecycle);
+      registerRules(feature.rules, runtime, config, tagFilter, lifecycle);
+    },
+    featureTimeout.milliseconds
+  );
 }
 
 function collectScopeKeywords<World>(feature: TestPlan<World>["feature"]): ReadonlyMap<string, string> {
@@ -97,11 +167,17 @@ function registerRules<World>(
     const ruleMode = resolveModeFromTags(rule.scope.mode, ruleTags);
     const suite = selectSuiteByMode(runtime.suite, ruleMode);
     const timeout = resolveTimeout(rule.scope.timeout, config);
-    suite(rule.name, () => {
-      lifecycle.configurePersistentScope(rule.scope, runtime);
-      registerScenarios(rule.scenarios, runtime, config, tagFilter, lifecycle);
-      registerScenarioOutlines(rule.scenarioOutlines, runtime, config, tagFilter, lifecycle);
-    }, timeout.milliseconds);
+    runSuiteWithMetadata(
+      suite,
+      { kind: "rule", keyword: rule.keyword },
+      rule.name,
+      () => {
+        lifecycle.configurePersistentScope(rule.scope, runtime);
+        registerScenarios(rule.scenarios, runtime, config, tagFilter, lifecycle);
+        registerScenarioOutlines(rule.scenarioOutlines, runtime, config, tagFilter, lifecycle);
+      },
+      timeout.milliseconds
+    );
   }
 }
 
@@ -116,10 +192,16 @@ function registerScenarioOutlines<World>(
     const outlineMode = resolveModeFromTags(outline.mode, outline.tags);
     const suite = selectSuiteByMode(runtime.suite, outlineMode);
     const timeout = resolveTimeout(outline.timeout, config);
-    suite(outline.name, () => {
-      lifecycle.configurePersistentScope(outline.scope, runtime);
-      registerScenarioExecutions(outline.examples, runtime, config, tagFilter, lifecycle);
-    }, timeout.milliseconds);
+    runSuiteWithMetadata(
+      suite,
+      { kind: "scenarioOutline", keyword: outline.keyword },
+      outline.name,
+      () => {
+        lifecycle.configurePersistentScope(outline.scope, runtime);
+        registerScenarioExecutions(outline.examples, runtime, config, tagFilter, lifecycle);
+      },
+      timeout.milliseconds
+    );
   }
 }
 
@@ -140,8 +222,77 @@ function registerScenarioExecutions<World>(
   tagFilter: ReturnType<typeof createTagFilter>,
   lifecycle: ScopeLifecycle<World>
 ): void {
+  const standaloneExecutions: ScenarioExecution<World>[] = [];
+  const outlineExamples = new Map<string, OutlineExampleCollection<World>>();
+
   for (const execution of executions) {
+    if (isScenarioOutlineExample(execution)) {
+      const outlineId = execution.outline.scope.id;
+      let collection = outlineExamples.get(outlineId);
+      if (!collection) {
+        collection = {
+          outline: execution.outline,
+          order: [],
+          groups: new Map(),
+        } satisfies OutlineExampleCollection<World>;
+        outlineExamples.set(outlineId, collection);
+      }
+
+      const groupId = execution.exampleGroup.id;
+      let groupInfo = collection.groups.get(groupId);
+      if (!groupInfo) {
+        groupInfo = {
+          group: execution.exampleGroup,
+          examples: [],
+        } satisfies ScenarioOutlineExampleGroup<World>;
+        collection.groups.set(groupId, groupInfo);
+        collection.order.push(groupId);
+      }
+
+      groupInfo.examples.push(execution);
+      continue;
+    }
+
+    standaloneExecutions.push(execution);
+  }
+
+  for (const execution of standaloneExecutions) {
     scheduleScenario(execution, runtime, config, tagFilter, lifecycle);
+  }
+
+  for (const collection of outlineExamples.values()) {
+    const orderedGroups = collection.order
+      .map((id) => collection.groups.get(id))
+      .filter((info): info is ScenarioOutlineExampleGroup<World> => Boolean(info));
+
+    if (orderedGroups.length === 0) {
+      continue;
+    }
+
+      if (orderedGroups.length === 1) {
+        const [singleGroup] = orderedGroups;
+        if (singleGroup && !shouldDisplayExamplesGroup(singleGroup.group, orderedGroups.length)) {
+          for (const example of singleGroup.examples) {
+            scheduleScenario(example, runtime, config, tagFilter, lifecycle);
+          }
+          continue;
+        }
+      }
+
+    orderedGroups.forEach((info, index) => {
+      const title = formatExamplesGroupTitle(info.group, index);
+      const keyword = (info.group.keyword ?? "Examples").trim() || "Examples";
+      runSuiteWithMetadata(
+        runtime.suite,
+        { kind: "examples", keyword },
+        title,
+        () => {
+          for (const example of info.examples) {
+            scheduleScenario(example, runtime, config, tagFilter, lifecycle);
+          }
+        }
+      );
+    });
   }
 }
 
