@@ -33,8 +33,5 @@ export {
 // Export utility functions
 export { generateId } from './utils';
 
-// Export dialects for localization support
-export { dialects } from '@cucumber/gherkin';
-
 // Export table helpers
 export * from './tables';
