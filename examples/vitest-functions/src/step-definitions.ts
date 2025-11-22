@@ -1,5 +1,4 @@
-import { CucumberRunner, WORLD_TOKEN } from "@autometa/runner";
-import { Scope } from "@autometa/injection";
+import { App, CucumberRunner } from "@autometa/runner";
 
 import {
   createBrewBuddyWorld,
@@ -16,6 +15,7 @@ import { BrewBuddyMemoryService } from "./utils/memory";
 import type { HttpMethod } from "./utils/http";
 import type { MenuExpectation, MenuRegion } from "./utils/regions";
 import { brewBuddyPlugins } from "./utils/assertions";
+import { registerBrewBuddyServices } from "./composition/brew-buddy-app";
 
 interface BrewBuddyExpressionTypes extends Record<string, unknown> {
   readonly httpMethod: HttpMethod;
@@ -27,17 +27,12 @@ interface BrewBuddyExpressionTypes extends Record<string, unknown> {
 const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
   .withWorld<BrewBuddyWorldBase>(createBrewBuddyWorld)
-  .app((compose) => {
-    compose.registerClass(BrewBuddyMemoryService, {
-      scope: Scope.SCENARIO,
-      inject: {
-        world: { token: WORLD_TOKEN, lazy: true },
-      },
-    });
-
-    const memory = compose.resolve(BrewBuddyMemoryService);
-    return new BrewBuddyApp(compose.world.http, compose.world.baseUrl, memory);
-  })
+  .app(
+    App.withExperimental<BrewBuddyWorldBase, BrewBuddyApp>(BrewBuddyApp, {
+      deps: [BrewBuddyMemoryService],
+      setup: registerBrewBuddyServices,
+    })
+  )
   .assertionPlugins(brewBuddyPlugins);
   
 export const stepsEnvironment = runner.steps();
