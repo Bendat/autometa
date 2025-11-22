@@ -26,11 +26,23 @@ export enum Scope {
 }
 
 // Registration options
+export type PropertyInjectionDescriptor =
+  | Identifier
+  | {
+      readonly token: Identifier;
+      readonly lazy?: boolean;
+    };
+
+export type PropertyInjectionMap = {
+  readonly [Key in string | number | symbol]?: PropertyInjectionDescriptor;
+};
+
 export interface RegistrationOptions {
   scope?: Scope;
   tags?: string[];
   factory?: boolean;
   deps?: Identifier[];
+  props?: PropertyDep[] | PropertyInjectionMap;
 }
 
 // Binding types

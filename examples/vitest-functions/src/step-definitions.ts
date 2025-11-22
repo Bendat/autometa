@@ -1,5 +1,5 @@
 import { CucumberRunner, WORLD_TOKEN } from "@autometa/runner";
-import { createDecorators, Scope } from "@autometa/injection";
+import { Scope } from "@autometa/injection";
 
 import {
   createBrewBuddyWorld,
@@ -27,15 +27,16 @@ interface BrewBuddyExpressionTypes extends Record<string, unknown> {
 const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
   .withWorld<BrewBuddyWorldBase>(createBrewBuddyWorld)
-  .app(({ container, world }) => {
-    const decorators = createDecorators(container);
-    decorators.LazyInject(WORLD_TOKEN)(
-      BrewBuddyMemoryService.prototype,
-      "world"
-    );
-    decorators.Injectable({ scope: Scope.SCENARIO })(BrewBuddyMemoryService);
-    const memory = container.resolve(BrewBuddyMemoryService);
-    return new BrewBuddyApp(world.http, world.baseUrl, memory);
+  .app((compose) => {
+    compose.registerClass(BrewBuddyMemoryService, {
+      scope: Scope.SCENARIO,
+      inject: {
+        world: { token: WORLD_TOKEN, lazy: true },
+      },
+    });
+
+    const memory = compose.resolve(BrewBuddyMemoryService);
+    return new BrewBuddyApp(compose.world.http, compose.world.baseUrl, memory);
   })
   .assertionPlugins(brewBuddyPlugins);
   

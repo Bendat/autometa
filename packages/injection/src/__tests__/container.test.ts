@@ -163,6 +163,45 @@ describe('Container', () => {
     });
   });
 
+  describe('Property Injection', () => {
+    it('supports property descriptors via registration options', () => {
+      class FooService {
+        readonly label = 'foo';
+      }
+
+      const WORLD_TOKEN = createToken<{ id: string }>('world');
+
+      class TargetService {
+        public foo!: FooService;
+        public world!: { id: string };
+      }
+
+      container.registerClass(FooService);
+      container.registerValue(WORLD_TOKEN, { id: 'alpha' });
+      container.registerClass(TargetService, {
+        props: {
+          foo: FooService,
+          world: { token: WORLD_TOKEN, lazy: true },
+        },
+      });
+
+      const instance = container.resolve(TargetService);
+
+      expect(instance.foo).toBeInstanceOf(FooService);
+      expect(instance.foo.label).toBe('foo');
+
+      const descriptorBefore = Object.getOwnPropertyDescriptor(instance, 'world');
+      expect(descriptorBefore?.get).toBeTypeOf('function');
+
+      const worldReference = instance.world;
+      expect(worldReference).toEqual({ id: 'alpha' });
+
+      const descriptorAfter = Object.getOwnPropertyDescriptor(instance, 'world');
+      expect(descriptorAfter?.get).toBeUndefined();
+      expect(descriptorAfter?.value).toEqual(worldReference);
+    });
+  });
+
   describe('Child Containers', () => {
     it('should create child containers', () => {
       const child = container.createChild();

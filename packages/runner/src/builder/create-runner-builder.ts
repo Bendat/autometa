@@ -9,7 +9,15 @@ import {
 } from "@autometa/assertions";
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { SimpleFeature } from "@autometa/gherkin";
-import { createContainer, type IContainer, Scope } from "@autometa/injection";
+import {
+	createContainer,
+	Scope,
+	type Constructor,
+	type IContainer,
+	type Identifier,
+	type RegistrationOptions,
+	type Token,
+} from "@autometa/injection";
 import { createStepRuntime } from "@autometa/executor";
 import type {
 	CucumberExpressionTypeMap,
@@ -70,12 +78,57 @@ export type AssertionSetup<
 	Facets extends Record<string, unknown>
 > = (ensure: EnsureInvoke) => RunnerEnsureFactory<World, Facets>;
 
+type AppPropertyInjection =
+	| Identifier
+	| {
+		readonly token: Identifier;
+		readonly lazy?: boolean;
+	};
+
+export interface AppClassRegistrationOptions {
+	readonly scope?: Scope;
+	readonly tags?: readonly string[];
+	readonly deps?: readonly Identifier[];
+	readonly inject?: Record<PropertyKey, AppPropertyInjection>;
+}
+
+export interface AppRegistrationOptions<App, World> extends AppClassRegistrationOptions {
+	readonly configure?: (
+		instance: App,
+		context: AppFactoryContext<World>
+	) => void | Promise<void>;
+}
+
 export interface AppFactoryContext<World> {
 	readonly container: IContainer;
 	readonly world: World;
+	registerClass<T>(
+		target: Constructor<T>,
+		options?: AppClassRegistrationOptions
+	): AppFactoryContext<World>;
+	registerValue<T>(
+		identifier: Identifier<T>,
+		value: T,
+		options?: RegistrationOptions
+	): AppFactoryContext<World>;
+	registerFactory<T>(
+		identifier: Identifier<T>,
+		factory: (container: IContainer) => T,
+		options?: RegistrationOptions
+	): AppFactoryContext<World>;
+	registerToken<T>(
+		token: Token<T>,
+		target: Constructor<T> | ((container: IContainer) => T),
+		options?: RegistrationOptions
+	): AppFactoryContext<World>;
+	registerApp<T>(
+		target: Constructor<T>,
+		options?: AppRegistrationOptions<T, World>
+	): Promise<T>;
+	resolve<T>(identifier: Identifier<T>): T;
 }
 
-type AppFactory<World, App> = (context: AppFactoryContext<World>) => Promise<App>;
+type AppFactory<World, App> = (context: AppFactoryContext<World>) => App | Promise<App>;
 
 type AppFactoryInput<World, App> =
 	| App
@@ -580,11 +633,15 @@ function composeWorldFactory<World>(
 
 		if (appFactory) {
 			const resolvedAppFactory = appFactory as AppFactory<World, unknown>;
-			const app = await resolvedAppFactory({
-				container,
-				world: asObject as World,
-			});
-			(asObject as Record<string, unknown>).app = app;
+			const composer = createAppFactoryContext(container, asObject as World);
+			const appResult = await resolvedAppFactory(composer);
+			const app = appResult ?? composer.getRegisteredApp();
+			if (app === undefined) {
+				throw new Error(
+					"App factory did not return an application instance. Use return or registerApp to provide one."
+				);
+			}
+			(asObject as Record<string, unknown>).app = app as unknown;
 		}
 
 		return asObject as World;
@@ -685,6 +742,85 @@ function attachContainer(world: Record<string, unknown>, container: IContainer):
 	if (!Reflect.has(world, "container")) {
 		Object.defineProperty(world, "container", descriptor);
 	}
+}
+
+function createAppFactoryContext<World>(
+	container: IContainer,
+	world: World
+): AppFactoryContext<World> & { getRegisteredApp(): unknown } {
+	let registeredApp: unknown;
+
+	const context: AppFactoryContext<World> = {
+		container,
+		world,
+		registerClass(target, options) {
+			const { scope, tags, deps, inject } = options ?? {};
+			let propsMap: RegistrationOptions["props"] | undefined;
+
+			if (inject) {
+				const keys = Reflect.ownKeys(inject);
+				if (keys.length > 0) {
+					const entries: Array<readonly [PropertyKey, AppPropertyInjection]> = [];
+					for (const key of keys) {
+					const descriptor = inject[key as PropertyKey];
+					if (!descriptor) {
+						continue;
+					}
+					entries.push([key, descriptor]);
+				}
+					if (entries.length > 0) {
+						propsMap = Object.fromEntries(entries.map(([key, descriptor]) => {
+						if (typeof descriptor === "object" && "token" in descriptor) {
+							return [key, {
+								token: descriptor.token,
+								...(descriptor.lazy ? { lazy: descriptor.lazy } : {}),
+							}];
+						}
+						return [key, descriptor as Identifier];
+						})) as RegistrationOptions["props"];
+					}
+				}
+			}
+
+			const registration: RegistrationOptions = {
+				...(scope ? { scope } : {}),
+				...(tags ? { tags: [...tags] } : {}),
+				...(deps ? { deps: [...deps] } : {}),
+				...(propsMap ? { props: propsMap } : {}),
+			};
+
+			container.registerClass(target, registration);
+			return context;
+		},
+		registerValue(identifier, value, options) {
+			container.registerValue(identifier, value, options);
+			return context;
+		},
+		registerFactory(identifier, factory, options) {
+			container.registerFactory(identifier, factory, options);
+			return context;
+		},
+		registerToken(token, target, options) {
+			container.registerToken(token, target, options);
+			return context;
+		},
+		async registerApp(target, options) {
+			context.registerClass(target, options);
+			const instance = container.resolve(target);
+			registeredApp = instance;
+			if (options?.configure) {
+				await options.configure(instance, context);
+			}
+			return instance;
+		},
+		resolve(identifier) {
+			return container.resolve(identifier);
+		},
+	};
+
+	return Object.assign(context, {
+		getRegisteredApp: () => registeredApp,
+	});
 }
 
 function attachRuntime(world: Record<string, unknown>): void {

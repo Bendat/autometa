@@ -14,6 +14,9 @@ import {
   TokenBinding,
   Scope,
   RegistrationOptions,
+  PropertyDep,
+  PropertyInjectionDescriptor,
+  PropertyInjectionMap,
   ResolutionContext,
   CircularDependencyError,
   UnregisteredDependencyError,
@@ -54,12 +57,14 @@ export class Container implements IContainer {
     target: Constructor<T>,
     options: RegistrationOptions = {}
   ): IContainer {
+    const propertyDeps = this.normalizePropertyOptions(options.props);
     const binding: ClassBinding<T> = {
       type: "class",
       target,
       scope: options.scope || Scope.TRANSIENT,
       tags: options.tags || [],
       deps: options.deps || [],
+      ...(propertyDeps.length > 0 ? { props: propertyDeps } : {}),
     };
 
     this.bindings.set(target as Identifier, binding as Binding);
@@ -357,14 +362,13 @@ export class Container implements IContainer {
 
     // Resolve and set property dependencies from the 'props' array
     if (binding.props) {
-      const container = this;
       for (const prop of binding.props) {
         if (prop.lazy) {
           Object.defineProperty(instance, prop.property, {
             configurable: true,
             enumerable: true,
-            get() {
-              const resolved = container.resolve(prop.token);
+            get: () => {
+              const resolved = this.resolveWithContext(prop.token, context);
               Object.defineProperty(instance, prop.property, {
                 configurable: true,
                 enumerable: true,
@@ -455,6 +459,51 @@ export class Container implements IContainer {
       return false;
     }
     return binding.tags.includes(identifier);
+  }
+
+  private normalizePropertyOptions(
+    props?: RegistrationOptions["props"]
+  ): PropertyDep[] {
+    if (!props) {
+      return [];
+    }
+
+    if (Array.isArray(props)) {
+      return props.map((prop) => ({ ...prop }));
+    }
+
+    const map = props as PropertyInjectionMap;
+    const normalized: PropertyDep[] = [];
+    const descriptorMap = map as Record<PropertyKey, PropertyInjectionDescriptor>;
+
+    for (const key of Reflect.ownKeys(descriptorMap)) {
+      const descriptor = descriptorMap[key as PropertyKey];
+      if (!descriptor) {
+        continue;
+      }
+
+      if (!this.isPropertyInjectionObject(descriptor)) {
+        normalized.push({
+          property: key,
+          token: descriptor as Identifier,
+        });
+        continue;
+      }
+
+      normalized.push({
+        property: key,
+        token: descriptor.token,
+        ...(descriptor.lazy ? { lazy: descriptor.lazy } : {}),
+      });
+    }
+
+    return normalized;
+  }
+
+  private isPropertyInjectionObject(
+    descriptor: PropertyInjectionDescriptor
+  ): descriptor is { token: Identifier; lazy?: boolean } {
+    return typeof descriptor === "object" && descriptor !== null && "token" in descriptor;
   }
 }
 

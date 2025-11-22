@@ -9,6 +9,9 @@ import type { ExecutorConfig } from "@autometa/config";
 import type { ExecutorRuntime } from "@autometa/executor";
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { TestPlan } from "@autometa/test-builder";
+import { Scope } from "@autometa/injection";
+
+import { WORLD_TOKEN } from "../../tokens";
 
 import {
 	createRunnerBuilder,
@@ -200,6 +203,52 @@ describe("createRunnerBuilder", () => {
 		expect(world).toMatchObject({ value: 2, app: { name: "test-app" } });
 	});
 
+	it("exposes composition helpers in app factory context", async () => {
+		interface World extends BaseWorld {
+			readonly http: { readonly baseUrl: string };
+			readonly baseUrl: string;
+		}
+
+		class MemoryService {
+			world!: World;
+			getWorldValue(): number {
+				return this.world.value;
+			}
+		}
+
+		class App {
+			constructor(public readonly memory: MemoryService) {}
+		}
+
+		const builder = createRunnerBuilder<World>({
+			worldFactory: async () => ({
+				value: 7,
+				http: { baseUrl: "http://example.com" },
+				baseUrl: "http://example.com",
+			}) as World,
+		})
+			.app((compose) => {
+				compose.registerClass(MemoryService, {
+					scope: Scope.SCENARIO,
+					inject: {
+						world: { token: WORLD_TOKEN, lazy: true },
+					},
+				});
+				return compose.registerApp(App, {
+					deps: [MemoryService],
+				});
+			});
+
+		const steps = builder.steps();
+		const plan = steps.getPlan();
+		const worldFactory = plan.worldFactory;
+		expect(worldFactory).toBeDefined();
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = worldFactory ? await worldFactory({ scope }) : undefined;
+		expect(world?.app).toBeInstanceOf(App);
+		expect(world?.app.memory.getWorldValue()).toBe(7);
+	});
+
 	it("exposes typed step DSL when expression map is provided", () => {
 		interface Expressions extends Record<string, unknown> {
 			readonly flag: boolean;
@@ -332,7 +381,7 @@ describe("createRunnerBuilder", () => {
 		expect(worldFactory).toBeDefined();
 		const scope = plan.root.children[0] ?? plan.root;
 		const world = worldFactory ? await worldFactory({ scope }) : undefined;
-		expect(world).toEqual({ value: 5 });
+		expect(world).toMatchObject({ value: 5 });
 	});
 
 	it("coordinates features using the steps surface helper", () => {
