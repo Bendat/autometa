@@ -2,13 +2,9 @@ import type { HTTPResponse } from "@autometa/http";
 import type { TableRecord } from "@autometa/gherkin";
 
 import {
-  createEnsureFactory,
   fromHttpResponse,
   type AssertionPlugin,
   type EnsureChain,
-  type EnsureFacade,
-  type EnsureFactory,
-  type EnsureInvoke,
   type EnsurePluginFacets,
   type HttpResponseLike,
   type HeaderExpectation,
@@ -106,7 +102,7 @@ const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure })
     };
   };
 
-const brewBuddyPlugins = {
+export const brewBuddyPlugins = {
   response: responsePlugin,
   json: jsonPlugin,
 } as const;
@@ -115,20 +111,6 @@ export type BrewBuddyEnsureFacets = EnsurePluginFacets<
   BrewBuddyWorld,
   typeof brewBuddyPlugins
 >;
-
-export type BrewBuddyEnsure = EnsureFacade<BrewBuddyWorld, BrewBuddyEnsureFacets>;
-
-export type BrewBuddyEnsureFactory = EnsureFactory<
-  BrewBuddyWorld,
-  BrewBuddyEnsureFacets
->;
-
-export function createBrewBuddyEnsureFactory(ensureInvoke: EnsureInvoke): BrewBuddyEnsureFactory {
-  return createEnsureFactory<BrewBuddyWorld, typeof brewBuddyPlugins>(
-    ensureInvoke,
-    brewBuddyPlugins
-  );
-}
 
 export function toPathExpectations(records: TableRecord[]): PathExpectation[] {
   return records.map((record) => {

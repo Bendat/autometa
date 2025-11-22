@@ -15,7 +15,7 @@ import { BrewBuddyApp } from "./utils/http";
 import { BrewBuddyMemoryService } from "./utils/memory";
 import type { HttpMethod } from "./utils/http";
 import type { MenuExpectation, MenuRegion } from "./utils/regions";
-import { createBrewBuddyEnsureFactory } from "./utils/assertions";
+import { brewBuddyPlugins } from "./utils/assertions";
 
 interface BrewBuddyExpressionTypes extends Record<string, unknown> {
   readonly httpMethod: HttpMethod;
@@ -37,7 +37,7 @@ const runner = CucumberRunner.builder()
     const memory = container.resolve(BrewBuddyMemoryService);
     return new BrewBuddyApp(world.http, world.baseUrl, memory);
   })
-  .assertions(createBrewBuddyEnsureFactory);
+  .assertionPlugins(brewBuddyPlugins);
   
 export const stepsEnvironment = runner.steps();
 

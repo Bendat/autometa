@@ -1,8 +1,11 @@
 import {
 	createDefaultEnsureFactory,
+	createEnsureFactory,
 	ensure as baseEnsure,
+	type AssertionPlugin,
 	type EnsureFacade,
 	type EnsureInvoke,
+	type EnsurePluginFacets,
 } from "@autometa/assertions";
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { SimpleFeature } from "@autometa/gherkin";
@@ -132,6 +135,15 @@ export interface RunnerBuilder<
 	>(
 		setup: AssertionSetup<World, NextFacets>
 	): RunnerBuilder<World, ExpressionTypes, NextFacets>;
+	assertionPlugins<
+		NextPlugins extends Record<string, AssertionPlugin<World, unknown>>
+	>(
+		plugins: NextPlugins
+	): RunnerBuilder<
+		World,
+		ExpressionTypes,
+		EnsurePluginFacets<World, NextPlugins>
+	>;
 	steps(): RunnerStepsSurface<World, ExpressionTypes, Facets>;
 	decorators(): RunnerDecoratorsSurface<World>;
 }
@@ -281,6 +293,21 @@ class RunnerBuilderImpl<
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<World, ExpressionTypes, NextFacets>(
 			this.state
+		);
+	}
+
+	assertionPlugins<
+		NextPlugins extends Record<string, AssertionPlugin<World, unknown>>
+	>(
+		plugins: NextPlugins
+	): RunnerBuilder<
+		World,
+		ExpressionTypes,
+		EnsurePluginFacets<World, NextPlugins>
+	> {
+		return this.assertions<EnsurePluginFacets<World, NextPlugins>>(
+			(ensureInvoke) =>
+				createEnsureFactory<World, NextPlugins>(ensureInvoke, plugins)
 		);
 	}
 
