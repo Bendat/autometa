@@ -14,7 +14,13 @@ export type {
 	DefaultEnsureFacets,
 	RunnerEnsureFactory,
 	AssertionSetup,
+ 	AppFactoryContext,
+ 	AppClassRegistrationOptions,
+ 	AppRegistrationOptions,
+	AppCompositionOptions,
 } from "./builder/create-runner-builder";
+
+export { App } from "./builder/create-runner-builder";
 
 export { createDecoratorRunner } from "./dsl/create-decorator-runner";
 export type {

@@ -99,6 +99,10 @@ export interface AppRegistrationOptions<App, World> extends AppClassRegistration
 	) => void | Promise<void>;
 }
 
+export interface AppCompositionOptions<App, World> extends AppRegistrationOptions<App, World> {
+	readonly setup?: (context: AppFactoryContext<World>) => void | Promise<void>;
+}
+
 export interface AppFactoryContext<World> {
 	readonly container: IContainer;
 	readonly world: World;
@@ -127,6 +131,24 @@ export interface AppFactoryContext<World> {
 	): Promise<T>;
 	resolve<T>(identifier: Identifier<T>): T;
 }
+
+export const App = {
+	compositionRoot<World, AppInstance>(
+		ctor: Constructor<AppInstance>,
+		options?: AppCompositionOptions<AppInstance, World>
+	): AppFactoryInput<World, AppInstance> {
+		return async (context) => {
+			const { setup, ...registration } = options ?? {};
+			if (setup) {
+				await setup(context);
+			}
+			return context.registerApp(
+				ctor,
+				registration as AppRegistrationOptions<AppInstance, World>
+			);
+		};
+	},
+};
 
 type AppFactory<World, App> = (context: AppFactoryContext<World>) => App | Promise<App>;
 

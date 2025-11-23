@@ -1,8 +1,9 @@
 import { Scope } from "@autometa/injection";
-import { WORLD_TOKEN, type AppFactoryContext } from "@autometa/runner";
+import { App, WORLD_TOKEN, type AppFactoryContext } from "@autometa/runner";
 
 import { BrewBuddyMemoryService } from "../utils/memory";
 import type { BrewBuddyWorldBase } from "../world";
+import { BrewBuddyApp } from "../utils/http";
 
 export function registerBrewBuddyServices(
   compose: AppFactoryContext<BrewBuddyWorldBase>
@@ -14,3 +15,11 @@ export function registerBrewBuddyServices(
     },
   });
 }
+
+export const CompositionRoot = App.compositionRoot<BrewBuddyWorldBase, BrewBuddyApp>(
+  BrewBuddyApp,
+  {
+    deps: [BrewBuddyMemoryService],
+    setup: registerBrewBuddyServices,
+  }
+);

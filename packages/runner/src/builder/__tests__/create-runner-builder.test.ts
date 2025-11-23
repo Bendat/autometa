@@ -14,6 +14,7 @@ import { Scope } from "@autometa/injection";
 import { WORLD_TOKEN } from "../../tokens";
 
 import {
+	App,
 	createRunnerBuilder,
 	type RunnerStepsSurface,
 	type RunnerCoordinateFeatureOptions,
@@ -247,6 +248,35 @@ describe("createRunnerBuilder", () => {
 		const world = worldFactory ? await worldFactory({ scope }) : undefined;
 		expect(world?.app).toBeInstanceOf(App);
 		expect(world?.app.memory.getWorldValue()).toBe(7);
+	});
+
+	it("provides composition helper for quick app wiring", async () => {
+		class Dependency {
+			readonly id = "dependency";
+		}
+
+		class TestApp {
+			constructor(public readonly dependency: Dependency) {}
+		}
+
+		const builder = createRunnerBuilder<BaseWorld>()
+			.withWorld(() => ({ value: 3 }))
+			.app(
+				App.compositionRoot<BaseWorld, TestApp>(TestApp, {
+					deps: [Dependency],
+					setup: (compose) => {
+						compose.registerClass(Dependency, { scope: Scope.SCENARIO });
+					},
+				})
+			);
+
+		const steps = builder.steps();
+		const plan = steps.getPlan();
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = plan.worldFactory ? await plan.worldFactory({ scope }) : undefined;
+		expect(world?.app).toBeInstanceOf(TestApp);
+		expect(world?.app.dependency).toBeInstanceOf(Dependency);
+		expect(world?.value).toBe(3);
 	});
 
 	it("exposes typed step DSL when expression map is provided", () => {

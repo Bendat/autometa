@@ -1,4 +1,4 @@
-import { App, CucumberRunner } from "@autometa/runner";
+import { CucumberRunner } from "@autometa/runner";
 
 import {
   createBrewBuddyWorld,
@@ -10,12 +10,10 @@ import {
 // Import parameter types to register custom cucumber expression types
 import "./support/parameter-types";
 
-import { BrewBuddyApp } from "./utils/http";
-import { BrewBuddyMemoryService } from "./utils/memory";
 import type { HttpMethod } from "./utils/http";
 import type { MenuExpectation, MenuRegion } from "./utils/regions";
 import { brewBuddyPlugins } from "./utils/assertions";
-import { registerBrewBuddyServices } from "./composition/brew-buddy-app";
+import { CompositionRoot } from "./composition/brew-buddy-app";
 
 interface BrewBuddyExpressionTypes extends Record<string, unknown> {
   readonly httpMethod: HttpMethod;
@@ -27,14 +25,9 @@ interface BrewBuddyExpressionTypes extends Record<string, unknown> {
 const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
   .withWorld<BrewBuddyWorldBase>(createBrewBuddyWorld)
-  .app(
-    App.withExperimental<BrewBuddyWorldBase, BrewBuddyApp>(BrewBuddyApp, {
-      deps: [BrewBuddyMemoryService],
-      setup: registerBrewBuddyServices,
-    })
-  )
+  .app(CompositionRoot)
   .assertionPlugins(brewBuddyPlugins);
-  
+
 export const stepsEnvironment = runner.steps();
 
 export const {
@@ -111,7 +104,9 @@ AfterStep(({ world, scope, metadata, log }) => {
 
   const keyword = step.keyword?.trim() ?? "";
   const text = step.text ?? "";
-  const label = keyword ? `${keyword}${text.startsWith(" ") ? "" : " "}${text}` : text || `${step.keyword ?? "Step"} #${step.index ?? 0}`;
+  const label = keyword
+    ? `${keyword}${text.startsWith(" ") ? "" : " "}${text}`
+    : text || `${step.keyword ?? "Step"} #${step.index ?? 0}`;
   const entry: LifecycleStepRecord = {
     scenario: scenarioName,
     step: label,
@@ -124,4 +119,3 @@ AfterStep(({ world, scope, metadata, log }) => {
     `Scenario "${scenarioName}" :: ${label} (${entry.status})`
   );
 });
-
