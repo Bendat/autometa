@@ -88,24 +88,6 @@ function caseInsensitivePattern(values: Iterable<string>): RegExp {
   return new RegExp(bodies.join("|"));
 }
 
-function caseInsensitivePatterns(values: Iterable<string>): readonly RegExp[] {
-  const result: RegExp[] = [];
-  const seen = new Set<string>();
-  for (const value of values) {
-    const normalized = value.trim();
-    if (!normalized) {
-      continue;
-    }
-    const key = normalized.toLowerCase();
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    result.push(new RegExp(`^${createCaseInsensitiveBody(normalized)}$`));
-  }
-  return result;
-}
-
 function createCaseInsensitiveBody(value: string): string {
   let pattern = "";
   for (const char of value) {

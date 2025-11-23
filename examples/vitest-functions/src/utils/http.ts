@@ -5,6 +5,7 @@ import { HTTP, HTTPError, type HTTPResponse } from "@autometa/http";
 
 import type { BrewBuddyWorld, BrewBuddyWorldBase } from "../world";
 import { BrewBuddyStreamManager } from "../services/stream-manager";
+import { TagRegistryService } from "../services/tag-registry.service";
 import { BrewBuddyMemoryService } from "./memory";
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
@@ -14,12 +15,14 @@ export interface RequestOptions {
   readonly body?: unknown;
   readonly headers?: Record<string, string>;
   readonly query?: Record<string, unknown>;
+  readonly updateHistory?: boolean;
 }
 
 export class BrewBuddyClient {
   readonly http: HTTP;
   readonly memory: BrewBuddyMemoryService;
   private _streamManager?: BrewBuddyStreamManager;
+  private _tags?: TagRegistryService;
   private _world?: BrewBuddyWorldBase;
 
   lastResponse?: HTTPResponse<unknown>;
@@ -57,6 +60,17 @@ export class BrewBuddyClient {
     return this._streamManager;
   }
 
+  set tags(tags: TagRegistryService) {
+    this._tags = tags;
+  }
+
+  get tags(): TagRegistryService {
+    if (!this._tags) {
+      throw new Error("Tag registry service has not been configured");
+    }
+    return this._tags;
+  }
+
   request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
     const segments = normalisePath(path);
     const client = this.http
@@ -71,15 +85,27 @@ export class BrewBuddyClient {
   async perform(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
     try {
       const response = await this.request(method, path, options);
-      this.lastResponse = response;
-      this.lastResponseBody = response.data;
-      this.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
-      delete this.lastError;
+      if (options.updateHistory !== false) {
+        this.lastResponse = response;
+        this.lastResponseBody = response.data;
+        this.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
+        delete this.lastError;
+      }
+      if (response.status >= 400) {
+        const error = new HTTPError(
+          `Request failed with status ${response.status}`,
+          response.request,
+          response
+        );
+        throw error;
+      }
     } catch (error) {
-      delete this.lastResponse;
-      delete this.lastResponseBody;
-      delete this.lastResponseHeaders;
-      this.lastError = error;
+      if (options.updateHistory !== false) {
+        delete this.lastResponse;
+        delete this.lastResponseBody;
+        delete this.lastResponseHeaders;
+        this.lastError = error;
+      }
       throw error;
     }
   }

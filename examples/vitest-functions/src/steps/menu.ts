@@ -4,6 +4,7 @@ import { Given, Then, When, ensure } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
 import { type BrewBuddyWorld } from "../world";
 import { performRequest } from "../utils/http";
+import { normalizeRegion } from "../utils/regions";
 
 class MenuExpectation {
   name = "";
@@ -108,7 +109,7 @@ When("I retire the drink named {string}", async (name, world) => {
 });
 
 Then("the menu should not include {string}", async (name, world) => {
-  await performRequest(world, "get", "/menu");
+  await performRequest(world, "get", "/menu", { updateHistory: false });
   const items = extractMenuItems(world);
   ensure(world)(
     items.some((item) => item.name.toLowerCase() === name.toLowerCase()),
@@ -146,13 +147,17 @@ Then("each price change should be reflected in the latest menu", (world) => {
 Given(
   'the seasonal schedule for {menuRegion} is configured',
   (region, world) => {
-    world.scenario.region = region;
+    const normalized = normalizeRegion(region);
+    if (!normalized) throw new Error(`Invalid region: ${region}`);
+    world.scenario.region = normalized;
   }
 );
 
 When('I request the menu listing for {menuRegion}', async (region, world) => {
-  world.scenario.region = region;
-  await performRequest(world, "get", "/menu");
+  const normalized = normalizeRegion(region);
+  if (!normalized) throw new Error(`Invalid region: ${region}`);
+  world.scenario.region = normalized;
+  await performRequest(world, "get", "/menu", { query: { region: normalized.toLowerCase() } });
   const items = extractMenuItems(world);
   world.app.memory.rememberMenuSnapshot(items);
 });
@@ -197,7 +202,10 @@ Then(
 );
 
 function extractMenuItems(world: BrewBuddyWorld): MenuItem[] {
-  const body = world.app.lastResponseBody as { items?: MenuItem[] } | undefined;
+  const body = world.app.lastResponseBody as { items?: MenuItem[] } | MenuItem[] | undefined;
+  if (Array.isArray(body)) {
+    return body.map((item) => ({ ...item }));
+  }
   const items = Array.isArray(body?.items) ? body?.items ?? [] : [];
   return items.map((item) => ({ ...item }));
 }

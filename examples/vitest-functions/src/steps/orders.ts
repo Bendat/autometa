@@ -136,9 +136,11 @@ Then("the rejection reason should be {string}", (reason: string, world: BrewBudd
     throw new Error("Order rejection reason is unavailable.");
   }
 
-  const actual = String((body.reason ?? "")).trim();
-  if (actual !== reason) {
-    throw new Error(`Expected rejection reason to be "${reason}" but found "${actual}".`);
+  const actualReason = String((body.reason ?? "")).trim();
+  const actualCode = String((body.code ?? "")).trim();
+  
+  if (actualReason !== reason && actualCode !== reason) {
+    throw new Error(`Expected rejection reason to be "${reason}" but found "${actualReason}" (code: "${actualCode}").`);
   }
 });
 

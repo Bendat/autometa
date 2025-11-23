@@ -13,7 +13,9 @@ Given("the SSE client is connected to {string}", async (endpoint, world) => {
 });
 
 Given("the SSE connection is interrupted", (world) => {
-  world.app.streamManager.dispose();
+  const stream = world.app.streamManager.current();
+  stream?.close();
+  stream?.appendError("CONNECTION_LOST");
 });
 
 // Order management steps

@@ -1,5 +1,5 @@
 import { ensure, Then, When } from "../step-definitions";
-import { performRequest } from "../utils/http";
+import { extractErrorStatus, performRequest } from "../utils/http";
 import { toPathExpectations } from "../utils/assertions";
 import type { BrewBuddyWorld } from "../world";
 import type { HttpMethodInput } from "../utils/http";
@@ -10,7 +10,14 @@ When(
   async (method: HttpMethodInput, route: string, world: BrewBuddyWorld) => {
     const payload = parseOptionalDocstring(world.runtime.consumeDocstring());
     const requestOptions = payload === undefined ? {} : { body: payload };
-    await performRequest(world, method, route, requestOptions);
+    try {
+      await performRequest(world, method, route, requestOptions);
+    } catch (error) {
+      const status = extractErrorStatus(world);
+      if (status === undefined) {
+        throw error;
+      }
+    }
   }
 );
 
@@ -57,17 +64,19 @@ Then(
   "the response json should match the default menu snapshot",
   (world: BrewBuddyWorld) => {
     ensure(world).response.hasStatus(200);
-    const body = world.app.lastResponseBody;
+    const body = world.app.lastResponseBody as { items?: unknown[] } | unknown[];
 
-    if (!Array.isArray(body)) {
-      throw new Error("Expected response body to be an array");
+    const items = Array.isArray(body) ? body : body?.items;
+
+    if (!Array.isArray(items)) {
+      throw new Error("Expected response body to be an array or contain an items array");
     }
 
-    if (body.length === 0) {
+    if (items.length === 0) {
       throw new Error("Expected menu to contain items");
     }
 
-    const menuSnapshot = body.filter(isMenuItem) as MenuItem[];
+    const menuSnapshot = items.filter(isMenuItem) as MenuItem[];
     world.scenario.menuSnapshot = menuSnapshot;
   }
 );

@@ -44,9 +44,6 @@ interface ScenarioState {
   loyaltyAccount?: LoyaltyAccount;
   lastInventory?: InventoryItem;
   brewRatio?: string;
-  tagRegistry?: TagRegistryEntry[];
-  tagExpression?: string;
-  selectedScenarioNames?: string[];
   streamWarnings: string[];
   streamErrors: string[];
   region?: MenuRegion;
@@ -58,11 +55,6 @@ interface ScenarioState {
   expectedStatusSequence?: string[];
   simulatedEvents?: Array<{ event: string; data: unknown }>;
   lastPickupCode?: string;
-}
-
-export interface TagRegistryEntry {
-  readonly tag: string;
-  readonly description: string;
 }
 
 export type StepLifecycleStatus = "passed" | "failed" | "skipped";

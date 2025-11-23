@@ -1,5 +1,6 @@
 import { Given, Then, When, ensure } from "../step-definitions";
-import type { BrewBuddyWorld, TagRegistryEntry } from "../world";
+import type { BrewBuddyWorld } from "../world";
+import type { TagRegistryEntry } from "../services/tag-registry.service";
 
 const TAG_REGISTRY: TagRegistryEntry[] = [
   { tag: "@smoke", description: "Core happy-path scenarios" },
@@ -16,13 +17,13 @@ const HTTP_TAG_SCENARIOS: readonly string[] = [
 ];
 
 When("I inspect the tag registry", (world: BrewBuddyWorld) => {
-  world.app.memory.rememberTagRegistry(TAG_REGISTRY);
+  world.app.tags.setRegistry(TAG_REGISTRY);
 });
 
 Then("I should see the following tag groups", (world: BrewBuddyWorld) => {
   const table = world.runtime.requireTable("horizontal");
   const expected = table.records<Record<string, string>>();
-  const actual = ensure(world)(world.scenario.tagRegistry, {
+  const actual = ensure(world)(world.app.tags.registry, {
     label: "Tag registry not initialised",
   })
     .toBeDefined()
@@ -44,37 +45,37 @@ Then("I should see the following tag groups", (world: BrewBuddyWorld) => {
 });
 
 Given("this scenario is intentionally skipped", (world: BrewBuddyWorld) => {
-  world.scenario.tagExpression = "@skip";
-  world.scenario.selectedScenarioNames = [];
+  world.app.tags.setExpression("@skip");
+  world.app.tags.setSelectedScenarios([]);
 });
 
 When("the runner evaluates tags", (world: BrewBuddyWorld) => {
-  if (world.scenario.tagExpression === "@skip") {
-    world.scenario.selectedScenarioNames = [];
+  if (world.app.tags.expression === "@skip") {
+    world.app.tags.setSelectedScenarios([]);
   }
 });
 
 Then("this scenario should not execute", (world: BrewBuddyWorld) => {
   const scenarioName = currentScenarioName(world);
-  const selected = world.scenario.selectedScenarioNames ?? [];
+  const selected = world.app.tags.selectedScenarios ?? [];
   if (selected.includes(scenarioName)) {
     throw new Error(`Scenario "${scenarioName}" should be skipped by tag evaluation.`);
   }
 });
 
 Given("this scenario is under investigation", (world: BrewBuddyWorld) => {
-  world.scenario.tagExpression = "@only";
-  world.scenario.selectedScenarioNames = [];
+  world.app.tags.setExpression("@only");
+  world.app.tags.setSelectedScenarios([]);
 });
 
 When("I run the suite with focus enabled", (world: BrewBuddyWorld) => {
   const scenarioName = currentScenarioName(world);
-  world.scenario.selectedScenarioNames = [scenarioName];
+  world.app.tags.setSelectedScenarios([scenarioName]);
 });
 
 Then("only this scenario should execute", (world: BrewBuddyWorld) => {
   const scenarioName = currentScenarioName(world);
-  const selected = ensure(world)(world.scenario.selectedScenarioNames, {
+  const selected = ensure(world)(world.app.tags.selectedScenarios, {
     label: "Focused execution did not record any scenarios.",
   })
     .toBeDefined()
@@ -89,16 +90,16 @@ Then("only this scenario should execute", (world: BrewBuddyWorld) => {
 
 When("I run the features with tag expression {string}", (expression: string, world: BrewBuddyWorld) => {
   const normalized = typeof expression === "string" ? expression.trim() : String(expression ?? "").trim();
-  world.scenario.tagExpression = normalized;
+  world.app.tags.setExpression(normalized);
   if (normalized === "@http and not @skip") {
-    world.scenario.selectedScenarioNames = [...HTTP_TAG_SCENARIOS];
+    world.app.tags.setSelectedScenarios([...HTTP_TAG_SCENARIOS]);
     return;
   }
-  world.scenario.selectedScenarioNames = [];
+  world.app.tags.setSelectedScenarios([]);
 });
 
 Then("the selected scenarios should include {string}", (scenarioName: string, world: BrewBuddyWorld) => {
-  const selected = ensure(world)(world.scenario.selectedScenarioNames, {
+  const selected = ensure(world)(world.app.tags.selectedScenarios, {
     label: "No scenarios were recorded for the provided tag expression.",
   })
     .toBeDefined()

@@ -4,6 +4,7 @@ import { App, WORLD_TOKEN, type AppFactoryContext } from "@autometa/runner";
 
 import { BrewBuddyMemoryService } from "../utils/memory";
 import { BrewBuddyStreamManager } from "../services/stream-manager";
+import { TagRegistryService } from "../services/tag-registry.service";
 import type { BrewBuddyWorldBase } from "../world";
 import { BrewBuddyClient } from "../utils/http";
 
@@ -25,6 +26,9 @@ export function registerBrewBuddyServices(
         world: { token: WORLD_TOKEN, lazy: true },
       },
     })
+    .registerClass(TagRegistryService, {
+      scope: Scope.SCENARIO,
+    })
     .registerFactory(HTTP_CLIENT, () => HTTP.create(), {
       scope: Scope.SCENARIO,
     });
@@ -38,6 +42,7 @@ export const CompositionRoot = App.compositionRoot<
   setup: registerBrewBuddyServices,
   inject: {
     streamManager: BrewBuddyStreamManager,
+    tags: TagRegistryService,
     world: { token: WORLD_TOKEN },
   },
 });

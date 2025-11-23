@@ -5,7 +5,7 @@ import type {
   Order,
   Recipe,
 } from "../../../.api/src/types/domain";
-import type { BrewBuddyWorldBase, TagRegistryEntry } from "../world";
+import type { BrewBuddyWorldBase } from "../world";
 
 export class BrewBuddyMemoryService {
   // World reference is injected lazily via the test container.
@@ -65,14 +65,5 @@ export class BrewBuddyMemoryService {
 
   rememberBrewRatio(ratio: string): void {
     this.state.scenario.brewRatio = ratio;
-  }
-
-  rememberTagRegistry(entries: TagRegistryEntry[]): void {
-    this.state.scenario.tagRegistry = entries;
-  }
-
-  rememberTagExpression(expression: string, selected: string[]): void {
-    this.state.scenario.tagExpression = expression;
-    this.state.scenario.selectedScenarioNames = selected;
   }
 }
