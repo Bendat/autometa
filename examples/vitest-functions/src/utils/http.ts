@@ -3,7 +3,8 @@ import { HTTP, HTTPError } from "@autometa/http";
 // import { createLoggingPlugin } from "@autometa/http";
 // HTTP.registerSharedPlugin(createLoggingPlugin(console.log));
 
-import type { BrewBuddyWorld } from "../world";
+import type { BrewBuddyWorld, BrewBuddyWorldBase } from "../world";
+import { BrewBuddyStreamManager } from "../services/stream-manager";
 import { BrewBuddyMemoryService } from "./memory";
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
@@ -18,13 +19,37 @@ export interface RequestOptions {
 export class BrewBuddyApp {
   readonly http: HTTP;
   readonly memory: BrewBuddyMemoryService;
+  private _streamManager?: BrewBuddyStreamManager;
+  private _world?: BrewBuddyWorldBase;
 
-  constructor(http: HTTP, baseUrl: string, memory: BrewBuddyMemoryService) {
+  constructor(http: HTTP, memory: BrewBuddyMemoryService) {
     this.http = http
-      .url(baseUrl)
       .sharedHeader("accept", "application/json")
       .sharedAllowPlainText(true);
     this.memory = memory;
+  }
+
+  set world(world: BrewBuddyWorldBase) {
+    this._world = world;
+    this.http.url(world.baseUrl);
+  }
+
+  get world(): BrewBuddyWorldBase {
+    if (!this._world) {
+      throw new Error("BrewBuddy app world is not set");
+    }
+    return this._world;
+  }
+
+  set streamManager(streamManager: BrewBuddyStreamManager) {
+    this._streamManager = streamManager;
+  }
+
+  get streamManager(): BrewBuddyStreamManager {
+    if (!this._streamManager) {
+      throw new Error("BrewBuddy stream manager has not been configured");
+    }
+    return this._streamManager;
   }
 
   request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
