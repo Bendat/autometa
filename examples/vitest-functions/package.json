@@ -17,10 +17,13 @@
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",
     "@autometa/runner": "workspace:*",
-    "@autometa/vitest-executor": "workspace:*"
+    "@autometa/vitest-executor": "workspace:*",
+    "@autometa/vitest-plugins": "workspace:*"
   },
   "devDependencies": {
     "@autometa/cli": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@cucumber/gherkin": "^26.0.3",
     "@types/node": "18.19.24",
     "typescript": "5.4.5",
     "vitest": "1.4.0"

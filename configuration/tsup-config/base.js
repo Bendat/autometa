@@ -1,6 +1,22 @@
 import { defineConfig } from "tsup";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 export const createTsupConfig = (options = {}) => {
+  const pkg = JSON.parse(readFileSync(resolve("package.json"), "utf-8"));
+  const external = [
+    // Common dependencies that should remain external
+    "react",
+    "react-dom",
+    "@types/node",
+    "vitest",
+    "typescript",
+    /^@autometa\//,
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {}),
+    ...(options.external || [])
+  ];
+  console.log("BASE CONFIG EXTERNAL:", external);
   return defineConfig({
     // Core settings
     clean: true,
@@ -20,23 +36,15 @@ export const createTsupConfig = (options = {}) => {
     // Bundle analysis
     metafile: false,
     
-    // Override external deps to reduce bundle size
-    external: [
-      // Common dependencies that should remain external
-      "react",
-      "react-dom",
-      "@types/node",
-      "vitest",
-      "typescript",
-      /^@autometa\//,
-      ...(options.external || [])
-    ],
-    
-    // TypeScript settings - generate declaration files
-    dts: true,
-    
     // Override with user options
     ...options,
+    
+    // Ensure external is merged correctly
+    external,
+    
+    esbuildOptions(options) {
+      options.preserveSymlinks = true;
+    }
   });
 };
 

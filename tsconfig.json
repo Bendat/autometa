@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "packages/vitest-plugins/tsconfig.types.json"
+    },
+    {
       "path": "packages/vitest-executor/tsconfig.types.json"
     },
     {
