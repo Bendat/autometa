@@ -20,7 +20,7 @@ export type {
 	AppCompositionOptions,
 } from "./builder/create-runner-builder";
 
-export { App } from "./builder/create-runner-builder";
+export { App, WORLD_INHERIT_KEYS } from "./builder/create-runner-builder";
 
 export { createDecoratorRunner } from "./dsl/create-decorator-runner";
 export type {

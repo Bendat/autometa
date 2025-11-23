@@ -1,7 +1,6 @@
 import { Given, Then, When, ensure } from "../step-definitions";
 import { extractErrorStatus, performRequest } from "../utils/http";
 import { normalizeValue } from "../utils/json";
-import { assertDefined } from "../utils/assertions";
 import type { BrewBuddyWorld, OrderErrorState } from "../world";
 import type {
   InventoryItem,
@@ -104,7 +103,11 @@ Then("the order should record the sweetener as {string}", async (expected: strin
 });
 
 Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) => {
-  const loyalty = assertDefined(world.scenario.loyaltyAccount, "No loyalty account is registered in the current scenario.");
+  const loyalty = ensure(world)(world.scenario.loyaltyAccount, {
+    label: "No loyalty account is registered in the current scenario.",
+  })
+    .toBeDefined()
+    .value as LoyaltyAccount;
   const baseline = loyalty.points;
 
   await performRequest(world, "get", `/loyalty/${encodeURIComponent(loyalty.email)}`);

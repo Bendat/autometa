@@ -4,13 +4,6 @@ import { Given, Then, When, ensure } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
 import { type BrewBuddyWorld } from "../world";
 import { performRequest } from "../utils/http";
-import {
-  assertCloseTo,
-  assertDefined,
-  assertFalse,
-  assertStrictEqual,
-  assertTrue,
-} from "../utils/assertions";
 
 class MenuExpectation {
   name = "";
@@ -34,14 +27,22 @@ When("I request the menu listing", async (world) => {
   world.app.memory.rememberMenuSnapshot(items);
 });
 
-Then("the menu should include the default drinks", function () {
+Then("the menu should include the default drinks", function (this: BrewBuddyWorld) {
   const table = this.runtime.requireTable("horizontal");
   const expectations = table.asInstances(MenuExpectation);
   const items = ensureMenuItems(this);
   for (const expectation of expectations) {
-    const item = findMenuItem(items, expectation.name);
-    assertCloseTo(item.price, expectation.price, 2, `Price mismatch for ${expectation.name}.`);
-    assertStrictEqual(item.size, expectation.size, `Size mismatch for ${expectation.name}.`);
+    const item = findMenuItem(this, items, expectation.name);
+    ensureCloseTo(
+      this,
+      item.price,
+      expectation.price,
+      2,
+      `Price mismatch for ${expectation.name}.`
+    );
+    ensure(this)(item.size, {
+      label: `Size mismatch for ${expectation.name}.`,
+    }).toStrictEqual(expectation.size);
   }
 });
 
@@ -65,16 +66,24 @@ Then(
   "the menu should include an item named {string} with price {float} and size {string}",
   (name, price, size, world) => {
     const items = ensureMenuItems(world);
-    const item = findMenuItem(items, name);
-    assertCloseTo(item.price, price, 2, `Price mismatch for ${name}.`);
-    assertStrictEqual(item.size, size, `Size mismatch for ${name}.`);
+    const item = findMenuItem(world, items, name);
+    ensureCloseTo(world, item.price, price, 2, `Price mismatch for ${name}.`);
+    ensure(world)(item.size, {
+      label: `Size mismatch for ${name}.`,
+    }).toStrictEqual(size);
     world.app.memory.rememberLastMenuItem(item);
   }
 );
 
 Then("the seasonal flag should be set to true", (world) => {
-  const item = assertDefined(world.scenario.lastMenuItem, "No menu item stored for assertion");
-  assertStrictEqual(item.seasonal, true, "Seasonal flag should be true.");
+  const item = ensure(world)(world.scenario.lastMenuItem, {
+    label: "No menu item stored for assertion",
+  })
+    .toBeDefined()
+    .value as MenuItem;
+  ensure(world)(item.seasonal, {
+    label: "Seasonal flag should be true.",
+  }).toStrictEqual(true);
 });
 
 Given(
@@ -105,10 +114,10 @@ When("I retire the drink named {string}", async (name, world) => {
 Then("the menu should not include {string}", async (name, world) => {
   await performRequest(world, "get", "/menu");
   const items = extractMenuItems(world);
-  assertFalse(
+  ensure(world)(
     items.some((item) => item.name.toLowerCase() === name.toLowerCase()),
-    `Menu should not include ${name}.`
-  );
+    { label: `Menu should not include ${name}.` }
+  ).toBeFalsy();
 });
 
 Given("the following menu price changes are pending", function () {
@@ -133,8 +142,8 @@ Then("each price change should be reflected in the latest menu", (world) => {
   const updates = world.scenario.priceUpdates ?? [];
   const items = ensureMenuItems(world);
   for (const update of updates) {
-    const item = findMenuItem(items, update.name);
-    assertCloseTo(item.price, update.price, 2, `Price mismatch for ${update.name}.`);
+    const item = findMenuItem(world, items, update.name);
+    ensureCloseTo(world, item.price, update.price, 2, `Price mismatch for ${update.name}.`);
   }
 });
 
@@ -156,31 +165,42 @@ Then(
   'the regional menu should include {menuSelection}',
   (expectation, world) => {
     const snapshot = ensureMenuItems(world);
-    const item = findMenuItem(snapshot, expectation.beverage);
+    const item = findMenuItem(world, snapshot, expectation.beverage);
     world.app.memory.rememberLastMenuItem(item);
   }
 );
 
 Then('the seasonal flag should reflect {menuSeasonal}', (expected, world) => {
-  const item = world.scenario.lastMenuItem;
-  const resolved = assertDefined(item, "No menu item stored for seasonal assertion");
-  assertStrictEqual(resolved.seasonal, expected, "Seasonal flag mismatch.");
+  const resolved = ensure(world)(world.scenario.lastMenuItem, {
+    label: "No menu item stored for seasonal assertion",
+  })
+    .toBeDefined()
+    .value as MenuItem;
+  ensure(world)(resolved.seasonal, {
+    label: "Seasonal flag mismatch.",
+  }).toStrictEqual(expected);
 });
 
 Then(
   "the menu snapshot should be available on the world context",
-  function (world) {
-    assertStrictEqual(this, world, "Step context should match world instance.");
+  function (this: BrewBuddyWorld, world: BrewBuddyWorld) {
+    ensure(world)(this, { label: "Step context should match world instance." }).toStrictEqual(world);
     const snapshot = this.scenario.menuSnapshot ?? [];
-    assertTrue(Array.isArray(snapshot), "Menu snapshot should be stored as an array.");
+    ensure(world)(Array.isArray(snapshot), {
+      label: "Menu snapshot should be stored as an array.",
+    }).toBeTruthy();
   }
 );
 
 Then(
   "the last tracked menu item should be {string} when accessed via this",
-  function (name, world) {
-    assertStrictEqual(this.scenario.lastMenuItem?.name, name, "Scenario item mismatch on step context.");
-    assertStrictEqual(world.scenario.lastMenuItem?.name, name, "Scenario item mismatch on world context.");
+  function (this: BrewBuddyWorld, name: string, world: BrewBuddyWorld) {
+    ensure(world)(this.scenario.lastMenuItem?.name, {
+      label: "Scenario item mismatch on step context.",
+    }).toStrictEqual(name);
+    ensure(world)(world.scenario.lastMenuItem?.name, {
+      label: "Scenario item mismatch on world context.",
+    }).toStrictEqual(name);
   }
 );
 
@@ -200,14 +220,13 @@ function ensureMenuItems(world: BrewBuddyWorld): MenuItem[] {
   return snapshot;
 }
 
-function findMenuItem(items: MenuItem[], name: string): MenuItem {
-  const match = items.find(
-    (item) => item.name.toLowerCase() === name.toLowerCase()
-  );
-  if (!match) {
-    throw new Error(`Menu item ${name} not found`);
-  }
-  return match;
+function findMenuItem(world: BrewBuddyWorld, items: MenuItem[], name: string): MenuItem {
+  return ensure(world)(
+    items.find((item) => item.name.toLowerCase() === name.toLowerCase()),
+    { label: `Menu item ${name} not found` }
+  )
+    .toBeDefined()
+    .value as MenuItem;
 }
 
 function buildMenuPayload(
@@ -243,7 +262,11 @@ function buildMenuPayload(
 }
 
 function parseMenuItem(world: BrewBuddyWorld): MenuItem {
-  const body = assertDefined(world.lastResponseBody as MenuItem | undefined, "Menu creation response is missing");
+  const body = ensure(world)(world.lastResponseBody as MenuItem | undefined, {
+    label: "Menu creation response is missing",
+  })
+    .toBeDefined()
+    .value as MenuItem;
   return {
     name: body?.name ?? "",
     price: body?.price ?? 0,
@@ -252,4 +275,22 @@ function parseMenuItem(world: BrewBuddyWorld): MenuItem {
     description: body?.description ?? null,
     season: body?.season ?? null,
   } as MenuItem;
+}
+
+function ensureCloseTo(
+  world: BrewBuddyWorld,
+  actual: number,
+  expected: number,
+  precision: number,
+  label: string
+): void {
+  ensure(world)(Number.isFinite(actual), {
+    label: `${label} (actual)`
+  }).toBeTruthy();
+  ensure(world)(Number.isFinite(expected), {
+    label: `${label} (expected)`
+  }).toBeTruthy();
+  const tolerance = Math.pow(10, -precision) / 2;
+  const difference = Math.abs(actual - expected);
+  ensure(world)(difference <= tolerance, { label }).toBeTruthy();
 }

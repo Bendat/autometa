@@ -4,7 +4,7 @@ import type {
   MenuItem,
   Order,
   Recipe,
-} from "../../../.api/src/types/domain.js";
+} from "../../../.api/src/types/domain";
 import type { BrewBuddyWorldBase, TagRegistryEntry } from "../world";
 
 export class BrewBuddyMemoryService {

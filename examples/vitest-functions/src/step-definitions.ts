@@ -1,7 +1,7 @@
 import { CucumberRunner } from "@autometa/runner";
 
 import {
-  createBrewBuddyWorld,
+  brewBuddyWorldDefaults,
   type BrewBuddyWorldBase,
   type LifecycleStepRecord,
   type StepLifecycleStatus,
@@ -24,7 +24,7 @@ interface BrewBuddyExpressionTypes extends Record<string, unknown> {
 
 const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
-  .withWorld<BrewBuddyWorldBase>(createBrewBuddyWorld)
+  .withWorld<BrewBuddyWorldBase>(brewBuddyWorldDefaults)
   .app(CompositionRoot)
   .assertionPlugins(brewBuddyPlugins);
 

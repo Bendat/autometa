@@ -1,7 +1,7 @@
 import type { TableRecord } from "@autometa/gherkin";
 
-import { Then, When } from "../step-definitions";
-import { assertStrictEqual } from "../utils/assertions";
+import { Then, When, ensure } from "../step-definitions";
+import type { BrewBuddyWorld } from "../world";
 
 interface Recipe extends TableRecord {
   name: string;
@@ -14,7 +14,7 @@ class InventoryRow {
   quantity = 0;
 }
 
-Then("the table can be materialised as instances", function () {
+Then("the table can be materialised as instances", function (this: BrewBuddyWorld) {
   const table = this.runtime.requireTable("horizontal");
   const items = table.asInstances(InventoryRow, {
     headerMap: { Item: "item", Quantity: "quantity" },
@@ -25,12 +25,16 @@ Then("the table can be materialised as instances", function () {
   }
   
   for (const instance of items) {
-    assertStrictEqual(typeof instance.item, "string", "Inventory item should be a string.");
-    assertStrictEqual(typeof instance.quantity, "number", "Inventory quantity should be a number.");
+    ensure(this)(typeof instance.item, {
+      label: "Inventory item should be a string.",
+    }).toStrictEqual("string");
+    ensure(this)(typeof instance.quantity, {
+      label: "Inventory quantity should be a number.",
+    }).toStrictEqual("number");
   }
 });
 
-Then("the table preserves raw values when raw true", function () {
+Then("the table preserves raw values when raw true", function (this: BrewBuddyWorld) {
   const table = this.runtime.requireTable("horizontal");
   const [first] = table.records<TableRecord & { readonly count: string }>({ raw: true });
   
@@ -38,7 +42,9 @@ Then("the table preserves raw values when raw true", function () {
     throw new Error("Expected at least one record when materialising with raw=true.");
   }
   
-  assertStrictEqual(typeof first.count, "string", "Raw count should remain a string.");
+  ensure(this)(typeof first.count, {
+    label: "Raw count should remain a string.",
+  }).toStrictEqual("string");
 });
 
 // Recipe catalog steps
@@ -65,7 +71,7 @@ Then("each recipe should exist in the recipe catalog", function () {
   }
 });
 
-Then("the recipe {string} should list {string} as an addition", function (recipeName: string, addition: string) {
+Then("the recipe {string} should list {string} as an addition", function (this: BrewBuddyWorld, recipeName: string, addition: string) {
   const recipes = this.scenario.recipes;
   if (!recipes) {
     throw new Error("Recipe catalog should be initialized.");
@@ -77,11 +83,9 @@ Then("the recipe {string} should list {string} as an addition", function (recipe
   }
   
   const additions = recipe.additions.split(",").map(a => a.trim());
-  assertStrictEqual(
-    additions.includes(addition),
-    true,
-    `Recipe "${recipeName}" should include "${addition}" in additions.`
-  );
+  ensure(this)(additions.includes(addition), {
+    label: `Recipe "${recipeName}" should include "${addition}" in additions.`,
+  }).toBeTruthy();
 });
 
 // Tasting notes steps
@@ -99,7 +103,7 @@ When("I attach tasting notes for {string}", function (recipeName: string) {
   this.scenario.tastingNotes.set(recipeName, docString);
 });
 
-Then("the recipe {string} should store the tasting notes", function (recipeName: string) {
+Then("the recipe {string} should store the tasting notes", function (this: BrewBuddyWorld, recipeName: string) {
   const tastingNotes = this.scenario.tastingNotes;
   if (!tastingNotes) {
     throw new Error("Tasting notes storage should be initialized.");
@@ -110,7 +114,9 @@ Then("the recipe {string} should store the tasting notes", function (recipeName:
     throw new Error(`Tasting notes for "${recipeName}" should exist.`);
   }
   
-  assertStrictEqual(notes.length > 0, true, "Tasting notes should not be empty.");
+  ensure(this)(notes.length > 0, {
+    label: "Tasting notes should not be empty.",
+  }).toBeTruthy();
 });
 
 // Brew ratio steps
@@ -133,7 +139,7 @@ When("I calculate brew ratio for {string}", function (beanName: string) {
   this.scenario.brewRatios.set(beanName, ratio);
 });
 
-Then("the brew ratio should equal {string}", function (expectedRatio: string) {
+Then("the brew ratio should equal {string}", function (this: BrewBuddyWorld, expectedRatio: string) {
   const brewRatios = this.scenario.brewRatios;
   if (!brewRatios) {
     throw new Error("Brew ratios storage should be initialized.");
@@ -147,5 +153,7 @@ Then("the brew ratio should equal {string}", function (expectedRatio: string) {
     throw new Error("A brew ratio should have been calculated.");
   }
   
-  assertStrictEqual(actualRatio, expectedRatio, `Brew ratio should be ${expectedRatio}.`);
+  ensure(this)(actualRatio, {
+    label: `Brew ratio should be ${expectedRatio}.`,
+  }).toStrictEqual(expectedRatio);
 });

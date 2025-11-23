@@ -78,6 +78,14 @@ export type AssertionSetup<
 	Facets extends Record<string, unknown>
 > = (ensure: EnsureInvoke) => RunnerEnsureFactory<World, Facets>;
 
+export const WORLD_INHERIT_KEYS: unique symbol = Symbol("autometa.runner.world.inherit");
+
+type WorldInheritanceMetadata = ReadonlySet<PropertyKey>;
+
+type WorldFactoryWithInheritance<World> = WorldFactory<World> & {
+	readonly [WORLD_INHERIT_KEYS]?: WorldInheritanceMetadata;
+};
+
 type AppPropertyInjection =
 	| Identifier
 	| {
@@ -470,11 +478,25 @@ function normalizeAppFactory<World, App>(
 
 type WorldDefaults = Record<string, unknown>;
 
+type WorldDefaultsWithMetadata = WorldDefaults & {
+	readonly [WORLD_INHERIT_KEYS]?: readonly PropertyKey[];
+};
+
 function createDefaultsWorldFactory<Defaults extends WorldDefaults>(
 	defaults: Defaults
 ): WorldFactory<Defaults> {
+	const inheritance = extractWorldInheritance(defaults as WorldDefaultsWithMetadata);
 	const snapshot = cloneDefaults(defaults);
-	return async (_context) => cloneDefaults(snapshot);
+	const factory: WorldFactoryWithInheritance<Defaults> = async () => cloneDefaults(snapshot);
+	if (inheritance.size > 0) {
+		Object.defineProperty(factory, WORLD_INHERIT_KEYS, {
+			value: inheritance,
+			writable: false,
+			enumerable: false,
+			configurable: false,
+		});
+	}
+	return factory;
 }
 
 function ensureWorldDefaults(value: unknown): WorldDefaults {
@@ -498,6 +520,27 @@ function cloneDefaults<Defaults extends WorldDefaults>(defaults: Defaults): Defa
 		}
 	}
 	return cloneWithFallback(defaults);
+}
+
+function extractWorldInheritance(
+	defaults: WorldDefaultsWithMetadata
+): WorldInheritanceMetadata {
+	const inherit = defaults[WORLD_INHERIT_KEYS];
+	if (!inherit || inherit.length === 0) {
+		return new Set();
+	}
+	const inheritance = new Set<PropertyKey>(inherit);
+	return inheritance;
+}
+
+function getWorldInheritance(
+	factory: WorldFactory<unknown> | undefined
+): WorldInheritanceMetadata | undefined {
+	if (!factory) {
+		return undefined;
+	}
+	const withMetadata = factory as WorldFactoryWithInheritance<unknown>;
+	return withMetadata[WORLD_INHERIT_KEYS];
 }
 
 function cloneWithFallback<T>(value: T): T {
@@ -642,20 +685,30 @@ function composeWorldFactory<World>(
 
 	const factory =
 		baseFactory ?? (async (_context: WorldFactoryContext<World>) => ({} as World));
+	const inheritance = getWorldInheritance(baseFactory as WorldFactory<unknown> | undefined);
 	return async (context: WorldFactoryContext<World>) => {
 		const container = createContainer();
 		const world = await factory(context);
 		const asObject = ensureWorldObject(world);
-		attachFeatureRegistry(asObject, featureRegistry);
-		attachContainer(asObject, container);
-		attachRuntime(asObject);
-		container.registerValue(WORLD_TOKEN, asObject, {
+		const parentObject =
+			context.parent !== undefined
+				? ensureWorldObject(context.parent)
+				: undefined;
+		const mergedWorld =
+			parentObject !== undefined
+				? mergeWorldWithParent(asObject, parentObject, inheritance)
+				: asObject;
+		attachWorldAncestors(mergedWorld, parentObject);
+		attachFeatureRegistry(mergedWorld, featureRegistry);
+		attachContainer(mergedWorld, container);
+		attachRuntime(mergedWorld);
+		container.registerValue(WORLD_TOKEN, mergedWorld, {
 			scope: Scope.SCENARIO,
 		});
 
 		if (appFactory) {
 			const resolvedAppFactory = appFactory as AppFactory<World, unknown>;
-			const composer = createAppFactoryContext(container, asObject as World);
+			const composer = createAppFactoryContext(container, mergedWorld as World);
 			const appResult = await resolvedAppFactory(composer);
 			const app = appResult ?? composer.getRegisteredApp();
 			if (app === undefined) {
@@ -663,10 +716,10 @@ function composeWorldFactory<World>(
 					"App factory did not return an application instance. Use return or registerApp to provide one."
 				);
 			}
-			(asObject as Record<string, unknown>).app = app as unknown;
+			(mergedWorld as Record<string, unknown>).app = app as unknown;
 		}
 
-		return asObject as World;
+		return mergedWorld as World;
 	};
 }
 
@@ -866,6 +919,64 @@ function attachFeatureRegistry(
 		return;
 	}
 	world.features = featureRegistry.snapshot();
+}
+
+const PARENT_WORLD_EXCLUDE_KEYS: ReadonlySet<PropertyKey> = new Set([
+	"di",
+	"container",
+	"runtime",
+	"app",
+	"ancestors",
+]);
+
+function mergeWorldWithParent(
+	child: Record<string, unknown>,
+	parent: Record<string, unknown> | undefined,
+	inheritance: WorldInheritanceMetadata | undefined
+): Record<string, unknown> {
+	if (!parent || !inheritance || inheritance.size === 0) {
+		return child;
+	}
+
+	for (const key of inheritance) {
+		if (PARENT_WORLD_EXCLUDE_KEYS.has(key)) {
+			continue;
+		}
+		if (!Reflect.has(parent, key)) {
+			continue;
+		}
+		const descriptor = Object.getOwnPropertyDescriptor(parent, key);
+		if (descriptor) {
+			Object.defineProperty(child, key, descriptor);
+		}
+	}
+
+	return child;
+}
+
+function attachWorldAncestors(
+	world: Record<string, unknown>,
+	parent: Record<string, unknown> | undefined
+): void {
+	const parentAncestors =
+		parent && Reflect.has(parent, "ancestors")
+			? (parent as Record<string, unknown> & {
+					ancestors?: readonly unknown[];
+				}).ancestors
+			: undefined;
+	const lineage = parent
+		? [
+			parent,
+			...(Array.isArray(parentAncestors) ? parentAncestors : []),
+		]
+		: [];
+
+	Object.defineProperty(world, "ancestors", {
+		value: lineage,
+		writable: false,
+		enumerable: false,
+		configurable: true,
+	});
 }
 
 interface FeatureRegistry {

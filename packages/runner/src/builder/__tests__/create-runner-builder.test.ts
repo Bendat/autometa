@@ -3,6 +3,7 @@ import type {
 	ScopeExecutionAdapter,
 	ScopeNode,
 	ScopePlan,
+	WorldFactory,
 } from "@autometa/scopes";
 import type { SimpleFeature } from "@autometa/gherkin";
 import type { ExecutorConfig } from "@autometa/config";
@@ -16,6 +17,7 @@ import { WORLD_TOKEN } from "../../tokens";
 import {
 	App,
 	createRunnerBuilder,
+	WORLD_INHERIT_KEYS,
 	type RunnerStepsSurface,
 	type RunnerCoordinateFeatureOptions,
 	type RunnerBuilder,
@@ -277,6 +279,60 @@ describe("createRunnerBuilder", () => {
 		expect(world?.app).toBeInstanceOf(TestApp);
 		expect(world?.app.dependency).toBeInstanceOf(Dependency);
 		expect(world?.value).toBe(3);
+	});
+
+	it("merges parent world values and records ancestry", async () => {
+		interface SharedWorld {
+			baseUrl: string;
+			value: number;
+			ancestors: readonly unknown[];
+		}
+
+		const defaults: SharedWorld & {
+			readonly [WORLD_INHERIT_KEYS]: readonly (keyof SharedWorld)[];
+		} = {
+			baseUrl: "feature",
+			value: 2,
+			ancestors: [] as readonly unknown[],
+			[WORLD_INHERIT_KEYS]: ["baseUrl"],
+		};
+
+		type SharedWorldWithInheritance = typeof defaults;
+
+		const builder = createRunnerBuilder<SharedWorld>().withWorld(defaults);
+
+		const steps = builder.steps();
+		const plan = steps.getPlan();
+		const worldFactory = plan.worldFactory;
+		expect(worldFactory).toBeDefined();
+		if (!worldFactory) {
+			throw new Error("worldFactory was not created");
+		}
+		const typedWorldFactory = worldFactory as WorldFactory<SharedWorldWithInheritance>;
+
+		const featureScope: ScopeNode<SharedWorldWithInheritance> = createScopeNode<SharedWorldWithInheritance>({
+			kind: "feature",
+			name: "Parent",
+		});
+		const featureWorld = await typedWorldFactory({ scope: featureScope });
+		expect(featureWorld).toMatchObject({ baseUrl: "feature", value: 2 });
+		featureWorld.baseUrl = "mutated";
+		featureWorld.value = 10;
+
+		const scenarioScope: ScopeNode<SharedWorldWithInheritance> = createScopeNode<SharedWorldWithInheritance>({
+			kind: "scenario",
+			name: "Scenario",
+		});
+		const scenarioWorld = await typedWorldFactory({
+			scope: scenarioScope,
+			parent: featureWorld,
+		});
+
+		expect(scenarioWorld.baseUrl).toBe("mutated");
+		expect(scenarioWorld.value).toBe(2);
+		const ancestors = scenarioWorld.ancestors;
+		expect(ancestors).toBeDefined();
+		expect(ancestors[0]).toBe(featureWorld);
 	});
 
 	it("exposes typed step DSL when expression map is provided", () => {

@@ -1,9 +1,8 @@
 import { AfterScenario, ensure, Given } from "../step-definitions";
-import { disposeStream } from "../world";
 import { performRequest } from "../utils/http";
 
 AfterScenario(({ world }) => {
-  disposeStream(world);
+  world.app.streamManager.dispose();
 });
 
 Given(
