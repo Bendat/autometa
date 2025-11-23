@@ -84,4 +84,121 @@ describe("HTTP retries", () => {
     expect(response.status).toBe(200);
     expect(attempts).toBe(2);
   });
+
+  it("retries on 500 status by default", async () => {
+    let attempts = 0;
+    const transport: HTTPTransport = {
+      async send<TRequest, TResponse>(
+        _request: HTTPRequest<TRequest>,
+        _options: HTTPAdditionalOptions<Record<string, unknown>>
+      ): Promise<HTTPTransportResponse<TResponse>> {
+        attempts += 1;
+        if (attempts === 1) {
+          return {
+            status: 500 as StatusCode,
+            statusText: "Internal Server Error",
+            headers: {},
+            data: {} as TResponse,
+          };
+        }
+        return {
+          status: 200 as StatusCode,
+          statusText: "OK",
+          headers: {},
+          data: { ok: true } as TResponse,
+        };
+      },
+    };
+
+    const client = HTTP.create({ transport })
+      .url("https://example.com")
+      .throwOnServerError(true)
+      .retry({ attempts: 1, delay: 0 });
+
+    const response = await client.get<{ ok: boolean }>();
+    expect(response.status).toBe(200);
+    expect(attempts).toBe(2);
+  });
+
+  it("uses default delay calculation", async () => {
+    let attempts = 0;
+    const start = Date.now();
+    const transport: HTTPTransport = {
+      async send<TRequest, TResponse>(
+        _request: HTTPRequest<TRequest>,
+        _options: HTTPAdditionalOptions<Record<string, unknown>>
+      ): Promise<HTTPTransportResponse<TResponse>> {
+        attempts += 1;
+        if (attempts === 1) {
+          throw new Error("fail");
+        }
+        return {
+          status: 200 as StatusCode,
+          statusText: "OK",
+          headers: {},
+          data: {} as TResponse,
+        };
+      },
+    };
+
+    const client = HTTP.create({ transport })
+      .url("https://example.com")
+      .retry({ attempts: 1 }); // default delay is attempt * 100
+
+    await client.get();
+    const duration = Date.now() - start;
+    expect(duration).toBeGreaterThanOrEqual(100);
+    expect(attempts).toBe(2);
+  });
+
+  it("uses numeric delay", async () => {
+    let attempts = 0;
+    const start = Date.now();
+    const transport: HTTPTransport = {
+      async send<TRequest, TResponse>(
+        _request: HTTPRequest<TRequest>,
+        _options: HTTPAdditionalOptions<Record<string, unknown>>
+      ): Promise<HTTPTransportResponse<TResponse>> {
+        attempts += 1;
+        if (attempts === 1) {
+          throw new Error("fail");
+        }
+        return {
+          status: 200 as StatusCode,
+          statusText: "OK",
+          headers: {},
+          data: {} as TResponse,
+        };
+      },
+    };
+
+    const client = HTTP.create({ transport })
+      .url("https://example.com")
+      .retry({ attempts: 1, delay: 50 }); // 50 * attempt
+
+    await client.get();
+    const duration = Date.now() - start;
+    expect(duration).toBeGreaterThanOrEqual(50);
+    expect(attempts).toBe(2);
+  });
+
+  it("stops retrying when attempts exhausted", async () => {
+    let attempts = 0;
+    const transport: HTTPTransport = {
+      async send<TRequest, TResponse>(
+        _request: HTTPRequest<TRequest>,
+        _options: HTTPAdditionalOptions<Record<string, unknown>>
+      ): Promise<HTTPTransportResponse<TResponse>> {
+        attempts += 1;
+        throw new Error("fail");
+      },
+    };
+
+    const client = HTTP.create({ transport })
+      .url("https://example.com")
+      .retry({ attempts: 2, delay: 0 });
+
+    await expect(client.get()).rejects.toThrow("Failed to execute HTTP request");
+    expect(attempts).toBe(3); // Initial + 2 retries
+  });
 });

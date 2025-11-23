@@ -63,6 +63,13 @@ export class HTTPSchemaValidationError extends HTTPError {
   }
 }
 
+export class HTTPServerError extends HTTPError {
+  constructor(request: HTTPRequest<unknown>, response: HTTPResponse<unknown>) {
+    super(`Server responded with status ${response.status}`, request, response);
+    this.name = "HTTPServerError";
+  }
+}
+
 /**
  * Optional configuration applied during {@link HTTP.create}.
  */
@@ -683,7 +690,7 @@ export class HTTP {
         }
 
         if (meta.throwOnServerError && response.status >= 500) {
-          throw new AutomationError(`Server responded with status ${response.status}`);
+          throw new HTTPServerError(request, response);
         }
 
         await this.runOnReceiveHooks(meta, response);
