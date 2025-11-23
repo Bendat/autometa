@@ -5,8 +5,19 @@ import { sendError } from "../utils/http.js";
 
 export const menuRouter = Router();
 
-menuRouter.get("/menu", (_req, res) => {
-  res.json({ items: listMenu() });
+menuRouter.get("/menu", (req, res) => {
+  const region = typeof req.query.region === "string" ? req.query.region.toLowerCase() : undefined;
+  const items = listMenu();
+  
+  if (region) {
+    const filtered = items.filter((item) => {
+      if (!item.seasonal) return true;
+      return item.season?.toLowerCase() === region;
+    });
+    return res.json({ items: filtered });
+  }
+  
+  res.json({ items });
 });
 
 menuRouter.post("/menu", (req, res) => {

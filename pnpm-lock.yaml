@@ -158,6 +158,9 @@ importers:
       '@autometa/app':
         specifier: workspace:*
         version: link:../../packages/app
+      '@autometa/assertions':
+        specifier: workspace:*
+        version: link:../../packages/assertions
       '@autometa/errors':
         specifier: workspace:*
         version: link:../../packages/errors

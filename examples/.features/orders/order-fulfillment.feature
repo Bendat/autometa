@@ -40,7 +40,7 @@ Feature: Fulfil customer beverage orders
     When I place an order for "<item>"
       | size | <size> |
     Then the order should be rejected with status 409
-    And the rejection reason should be "OUT_OF_STOCK"
+    And the rejection reason should be "Inventory depleted for <item>"
 
     Examples:
       | item           | size | remaining |

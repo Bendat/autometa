@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@autometa/app": "workspace:*",
+    "@autometa/assertions": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@autometa/executor": "workspace:*",
     "@autometa/gherkin": "workspace:*",

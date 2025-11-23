@@ -48,6 +48,6 @@ Feature: Interact with the Brew Buddy API
     When I send a DELETE request to "/inventory/non-existent"
     Then the response status should be 404
     And the response json should contain
-      | path   | value         |
-      | error  | NOT_FOUND     |
-      | reason | Unknown item  |
+      | path   | value                     |
+      | error  | NOT_FOUND                 |
+      | reason | Inventory item not found  |

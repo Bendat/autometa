@@ -18,6 +18,9 @@ export const defaultMenu = (): MenuItem[] => [
   { name: "Espresso", price: 3, size: "single", seasonal: false },
   { name: "Flat White", price: 4.5, size: "12oz", seasonal: false },
   { name: "Iced Cold Brew", price: 5, size: "16oz", seasonal: false },
+  { name: "Golden Latte", price: 5.5, size: "12oz", seasonal: true, season: "East" },
+  { name: "Midnight Mocha", price: 6, size: "16oz", seasonal: true, season: "West" },
+  { name: "Citrus Cold Foam", price: 5.5, size: "12oz", seasonal: true, season: "EU" },
 ];
 
 export const defaultRecipes = (): Recipe[] => [

@@ -28,7 +28,7 @@ Feature: Manage recipes through the Brew Buddy API
       Examples:
         | name            | base     | additions                                   | season | slug             | seasonal |
         | Lavender Latte  | espresso | ["lavender", "oat milk"]                    | Spring | lavender-latte   | true     |
-        | Classic Mocha   | espresso | ["cocoa", "steamed milk", "vanilla"]       | None   | classic-mocha    | false    |
+        | Classic Mocha   | espresso | ["cocoa", "steamed milk", "vanilla"]       | None   | classic-mocha    | true     |
 
     Scenario: Reject incomplete recipe payload
       When I send a POST request to "/recipes"

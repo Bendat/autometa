@@ -3,39 +3,41 @@ import type { SseSession } from "../utils/sse";
 
 export class BrewBuddyStreamManager {
   declare readonly world: BrewBuddyWorldBase;
-  #session: SseSession | undefined;
+  private _session: SseSession | undefined;
+  private _warnings: string[] = [];
+  private _errors: string[] = [];
 
   attach(session: SseSession): void {
     this.dispose();
-    this.#session = session;
+    this._session = session;
   }
 
   current(): SseSession | undefined {
-    return this.#session;
+    return this._session;
   }
 
   dispose(): void {
-    const stream = this.#session;
+    const stream = this._session;
     if (stream) {
       stream.close();
-      this.#session = undefined;
+      this._session = undefined;
     }
   }
 
   recordWarning(message: string): void {
-    this.ensureWorld().scenario.streamWarnings.push(message);
+    this._warnings.push(message);
   }
 
   recordError(message: string): void {
-    this.ensureWorld().scenario.streamErrors.push(message);
+    this._errors.push(message);
   }
 
   warnings(): readonly string[] {
-    return this.ensureWorld().scenario.streamWarnings;
+    return this._warnings;
   }
 
   errors(): readonly string[] {
-    return this.ensureWorld().scenario.streamErrors;
+    return this._errors;
   }
 
   private ensureWorld(): BrewBuddyWorldBase {

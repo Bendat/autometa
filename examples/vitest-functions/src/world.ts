@@ -44,8 +44,6 @@ interface ScenarioState {
   loyaltyAccount?: LoyaltyAccount;
   lastInventory?: InventoryItem;
   brewRatio?: string;
-  streamWarnings: string[];
-  streamErrors: string[];
   region?: MenuRegion;
   priceUpdates?: Array<{ readonly name: string; readonly price: number }>;
   recipes?: Array<{ name: string; base: string; additions: string }>;
@@ -84,8 +82,6 @@ function defaultAliases(): BrewBuddyWorldBase["aliases"] {
 function createScenarioState(): ScenarioState {
   return {
     createdItems: [],
-    streamWarnings: [],
-    streamErrors: [],
     expectOrderFailure: false,
     lastOrderError: undefined,
   } satisfies ScenarioState;
