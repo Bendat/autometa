@@ -6,6 +6,9 @@ import {
 	type EnsureFacade,
 	type EnsureInvoke,
 	type EnsurePluginFacets,
+	type EnsureFactory,
+	type EnsureOptions,
+	type EnsureChain,
 } from "@autometa/assertions";
 import type { CoordinateFeatureResult } from "@autometa/coordinator";
 import type { SimpleFeature } from "@autometa/gherkin";
@@ -18,7 +21,7 @@ import {
 	type RegistrationOptions,
 	type Token,
 } from "@autometa/injection";
-import { createStepRuntime } from "@autometa/executor";
+import { createStepRuntime, tryGetWorld } from "@autometa/executor";
 import type {
 	CucumberExpressionTypeMap,
 	DefaultCucumberExpressionTypes,
@@ -71,7 +74,11 @@ export type DefaultEnsureFacets = Record<string, never>;
 export type RunnerEnsureFactory<
 	World,
 	Facets extends Record<string, unknown>
-> = (world: World) => EnsureFacade<World, Facets>;
+> = Facets & {
+	(world: World): EnsureFacade<World, Facets>;
+	<T>(value: T, options?: EnsureOptions): EnsureChain<T>;
+	readonly world: World;
+};
 
 export type AssertionSetup<
 	World,
@@ -389,8 +396,13 @@ class RunnerBuilderImpl<
 		EnsurePluginFacets<World, NextPlugins>
 	> {
 		return this.assertions<EnsurePluginFacets<World, NextPlugins>>(
-			(ensureInvoke) =>
-				createEnsureFactory<World, NextPlugins>(ensureInvoke, plugins)
+			(ensureInvoke) => {
+				const factory = createEnsureFactory<World, NextPlugins>(
+					ensureInvoke,
+					plugins
+				);
+				return createImplicitEnsureProxy(factory);
+			}
 		);
 	}
 
@@ -774,11 +786,12 @@ function resolveEnsureFactory<
 		return state.ensureFactory as RunnerEnsureFactory<World, Facets>;
 	}
 	const factory = createDefaultEnsureFactory<World>();
-	state.ensureFactory = factory as RunnerEnsureFactory<
+	const proxy = createImplicitEnsureProxy(factory);
+	state.ensureFactory = proxy as RunnerEnsureFactory<
 		unknown,
 		Record<string, unknown>
 	>;
-	return factory as RunnerEnsureFactory<World, Facets>;
+	return proxy as RunnerEnsureFactory<World, Facets>;
 }
 
 function attachDecoratorEnvironment<World>(
@@ -1005,4 +1018,34 @@ function createFeatureRegistry(): FeatureRegistry {
 			return Array.from(byId.values());
 		},
 	};
+}
+
+function createImplicitEnsureProxy<World, Facets extends Record<string, unknown>>(
+	factory: EnsureFactory<World, Facets>
+): RunnerEnsureFactory<World, Facets> {
+	return new Proxy(factory, {
+		get(target, prop, receiver) {
+			if (prop === "world") {
+				return tryGetWorld<World>();
+			}
+			const world = tryGetWorld<World>();
+			if (world) {
+				const facade = factory(world);
+				return Reflect.get(facade, prop, receiver);
+			}
+			return Reflect.get(target, prop, receiver);
+		},
+		apply(target, _thisArg, args) {
+			const [arg, options] = args;
+			const world = tryGetWorld<World>();
+			if (world) {
+				if (arg === world) {
+					return factory(world);
+				}
+				const facade = factory(world);
+				return facade(arg, options as EnsureOptions);
+			}
+			return factory(arg as World);
+		},
+	}) as unknown as RunnerEnsureFactory<World, Facets>;
 }

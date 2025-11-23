@@ -11,6 +11,7 @@ import type { ScenarioExecution } from "@autometa/test-builder";
 
 import { collectScenarioHooks, type HookCollection, type ResolvedHook } from "./hooks";
 import type { ExecutorRuntime } from "./types";
+import { WorldContext } from "./async-context";
 
 const PERSISTENT_SCOPE_KINDS: ReadonlySet<ScopeKind> = new Set([
   "feature",
@@ -185,14 +186,16 @@ export class ScopeLifecycle<World> {
 
     const errors: unknown[] = [];
     try {
-      await this.invokeHooks(hooks.beforeScenario, {
-        world,
-        scope: execution.scope,
-        scenario: execution,
-        direction: "asc",
-      });
+      await WorldContext.run(world, async () => {
+        await this.invokeHooks(hooks.beforeScenario, {
+          world,
+          scope: execution.scope,
+          scenario: execution,
+          direction: "asc",
+        });
 
-      await runner(world, scenarioContext);
+        await runner(world, scenarioContext);
+      });
     } catch (error) {
       errors.push(error);
     } finally {

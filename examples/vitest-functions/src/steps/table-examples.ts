@@ -24,10 +24,10 @@ Then("the table can be materialised as instances", (world) => {
   }
   
   for (const instance of items) {
-    ensure(world)(typeof instance.item, {
+    ensure(typeof instance.item, {
       label: "Inventory item should be a string.",
     }).toStrictEqual("string");
-    ensure(world)(typeof instance.quantity, {
+    ensure(typeof instance.quantity, {
       label: "Inventory quantity should be a number.",
     }).toStrictEqual("number");
   }
@@ -41,7 +41,7 @@ Then("the table preserves raw values when raw true", (world) => {
     throw new Error("Expected at least one record when materialising with raw=true.");
   }
   
-  ensure(world)(typeof first.count, {
+  ensure(typeof first.count, {
     label: "Raw count should remain a string.",
   }).toStrictEqual("string");
 });
@@ -82,7 +82,7 @@ Then("the recipe {string} should list {string} as an addition", (recipeName, add
   }
   
   const additions = recipe.additions.split(",").map(a => a.trim());
-  ensure(world)(additions.includes(addition), {
+  ensure(additions.includes(addition), {
     label: `Recipe "${recipeName}" should include "${addition}" in additions.`,
   }).toBeTruthy();
 });
@@ -113,7 +113,7 @@ Then("the recipe {string} should store the tasting notes", (recipeName, world) =
     throw new Error(`Tasting notes for "${recipeName}" should exist.`);
   }
   
-  ensure(world)(notes.length > 0, {
+  ensure(notes.length > 0, {
     label: "Tasting notes should not be empty.",
   }).toBeTruthy();
 });
@@ -152,7 +152,7 @@ Then("the brew ratio should equal {string}", (expectedRatio, world) => {
     throw new Error("A brew ratio should have been calculated.");
   }
   
-  ensure(world)(actualRatio, {
+  ensure(actualRatio, {
     label: `Brew ratio should be ${expectedRatio}.`,
   }).toStrictEqual(expectedRatio);
 });

@@ -39,7 +39,7 @@ Given("a recipe exists named {string}", async (name: string, world: BrewBuddyWor
 
   try {
     await performRequest(world, "get", `/recipes/${slug}`);
-    ensure(world).response.hasStatus(200);
+    ensure.response.hasStatus(200);
     world.app.memory.rememberRecipeSlug(name, slug);
     return;
   } catch (error) {
@@ -57,7 +57,7 @@ Given("a recipe exists named {string}", async (name: string, world: BrewBuddyWor
       season: definition.season,
     },
   });
-  ensure(world).response.hasStatus(201);
+  ensure.response.hasStatus(201);
   world.app.memory.rememberRecipeSlug(name, slug);
 });
 
@@ -65,7 +65,7 @@ Then(
   "the recipe {string} should not be present when I list recipes",
   async (name: string, world: BrewBuddyWorld) => {
     await performRequest(world, "get", "/recipes");
-    ensure(world).response.hasStatus(200);
+    ensure.response.hasStatus(200);
 
     const body = world.app.lastResponseBody as { recipes?: Array<Record<string, unknown>> } | undefined;
     const recipes = body && Array.isArray(body.recipes) ? body.recipes : [];

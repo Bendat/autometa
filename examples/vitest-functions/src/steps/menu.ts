@@ -1,5 +1,4 @@
 import type { TableRecord, TableValue } from "@autometa/gherkin";
-
 import { Given, Then, When, ensure } from "../step-definitions";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
 import { type BrewBuddyWorld } from "../world";
@@ -23,6 +22,7 @@ type PriceUpdateRow = TableRecord & {
 };
 
 When("I request the menu listing", async (world) => {
+
   await performRequest(world, "get", "/menu");
   const items = extractMenuItems(world);
   world.app.memory.rememberMenuSnapshot(items);
@@ -35,13 +35,12 @@ Then("the menu should include the default drinks", (world) => {
   for (const expectation of expectations) {
     const item = findMenuItem(world, items, expectation.name);
     ensureCloseTo(
-      world,
       item.price,
       expectation.price,
       2,
       `Price mismatch for ${expectation.name}.`
     );
-    ensure(world)(item.size, {
+    ensure(item.size, {
       label: `Size mismatch for ${expectation.name}.`,
     }).toStrictEqual(expectation.size);
   }
@@ -53,7 +52,7 @@ Given("I create a seasonal drink named {string}", async (name, world) => {
     .records<MenuFieldRow>();
   const payload = buildMenuPayload(name, fields);
   await performRequest(world, "post", "/menu", { body: payload });
-  ensure(world).response.hasStatus(201);
+  ensure.response.hasStatus(201);
   const created = parseMenuItem(world);
   world.app.memory.rememberLastMenuItem(created);
   world.scenario.createdItems.push(created.name);
@@ -64,8 +63,8 @@ Then(
   (name, price, size, world) => {
     const items = ensureMenuItems(world);
     const item = findMenuItem(world, items, name);
-    ensureCloseTo(world, item.price, price, 2, `Price mismatch for ${name}.`);
-    ensure(world)(item.size, {
+    ensureCloseTo(item.price, price, 2, `Price mismatch for ${name}.`);
+    ensure(item.size, {
       label: `Size mismatch for ${name}.`,
     }).toStrictEqual(size);
     world.app.memory.rememberLastMenuItem(item);
@@ -73,12 +72,12 @@ Then(
 );
 
 Then("the seasonal flag should be set to true", (world) => {
-  const item = ensure(world)(world.scenario.lastMenuItem, {
+  const item = ensure(world.scenario.lastMenuItem, {
     label: "No menu item stored for assertion",
   })
     .toBeDefined()
     .value as MenuItem;
-  ensure(world)(item.seasonal, {
+  ensure(item.seasonal, {
     label: "Seasonal flag should be true.",
   }).toStrictEqual(true);
 });
@@ -99,19 +98,19 @@ Given(
       season: string;
     };
     await performRequest(world, "post", "/menu", { body: payload });
-    ensure(world).response.hasStatus(201);
+    ensure.response.hasStatus(201);
   }
 );
 
 When("I retire the drink named {string}", async (name, world) => {
   await performRequest(world, "delete", `/menu/${encodeURIComponent(name)}`);
-  ensure(world).response.hasStatus(204);
+  ensure.response.hasStatus(204);
 });
 
 Then("the menu should not include {string}", async (name, world) => {
   await performRequest(world, "get", "/menu", { updateHistory: false });
   const items = extractMenuItems(world);
-  ensure(world)(
+  ensure(
     items.some((item) => item.name.toLowerCase() === name.toLowerCase()),
     { label: `Menu should not include ${name}.` }
   ).toBeFalsy();
@@ -130,7 +129,7 @@ Given("the following menu price changes are pending", (world) => {
 When("I apply the bulk price update", async (world) => {
   const updates = world.scenario.priceUpdates ?? [];
   await performRequest(world, "patch", "/menu/prices", { body: { updates } });
-  ensure(world).response.hasStatus(200);
+  ensure.response.hasStatus(200);
   const updated = extractMenuItems(world);
   world.app.memory.rememberMenuSnapshot(updated);
 });
@@ -140,7 +139,7 @@ Then("each price change should be reflected in the latest menu", (world) => {
   const items = ensureMenuItems(world);
   for (const update of updates) {
     const item = findMenuItem(world, items, update.name);
-    ensureCloseTo(world, item.price, update.price, 2, `Price mismatch for ${update.name}.`);
+    ensureCloseTo(item.price, update.price, 2, `Price mismatch for ${update.name}.`);
   }
 });
 
@@ -172,12 +171,12 @@ Then(
 );
 
 Then('the seasonal flag should reflect {menuSeasonal}', (expected, world) => {
-  const resolved = ensure(world)(world.scenario.lastMenuItem, {
+  const resolved = ensure(world.scenario.lastMenuItem, {
     label: "No menu item stored for seasonal assertion",
   })
     .toBeDefined()
     .value as MenuItem;
-  ensure(world)(resolved.seasonal, {
+  ensure(resolved.seasonal, {
     label: "Seasonal flag mismatch.",
   }).toStrictEqual(expected);
 });
@@ -186,7 +185,7 @@ Then(
   "the menu snapshot should be available on the world context",
   (world) => {
     const snapshot = world.scenario.menuSnapshot ?? [];
-    ensure(world)(Array.isArray(snapshot), {
+    ensure(Array.isArray(snapshot), {
       label: "Menu snapshot should be stored as an array.",
     }).toBeTruthy();
   }
@@ -195,7 +194,7 @@ Then(
 Then(
   "the last tracked menu item should be {string}",
   (name, world) => {
-    ensure(world)(world.scenario.lastMenuItem?.name, {
+    ensure(world.scenario.lastMenuItem?.name, {
       label: "Scenario item mismatch on world context.",
     }).toStrictEqual(name);
   }
@@ -221,7 +220,7 @@ function ensureMenuItems(world: BrewBuddyWorld): MenuItem[] {
 }
 
 function findMenuItem(world: BrewBuddyWorld, items: MenuItem[], name: string): MenuItem {
-  return ensure(world)(
+  return ensure(
     items.find((item) => item.name.toLowerCase() === name.toLowerCase()),
     { label: `Menu item ${name} not found` }
   )
@@ -262,7 +261,7 @@ function buildMenuPayload(
 }
 
 function parseMenuItem(world: BrewBuddyWorld): MenuItem {
-  const body = ensure(world)(world.app.lastResponseBody as MenuItem | undefined, {
+  const body = ensure(world.app.lastResponseBody as MenuItem | undefined, {
     label: "Menu creation response is missing",
   })
     .toBeDefined()
@@ -278,19 +277,18 @@ function parseMenuItem(world: BrewBuddyWorld): MenuItem {
 }
 
 function ensureCloseTo(
-  world: BrewBuddyWorld,
   actual: number,
   expected: number,
   precision: number,
   label: string
 ): void {
-  ensure(world)(Number.isFinite(actual), {
+  ensure(Number.isFinite(actual), {
     label: `${label} (actual)`
   }).toBeTruthy();
-  ensure(world)(Number.isFinite(expected), {
+  ensure(Number.isFinite(expected), {
     label: `${label} (expected)`
   }).toBeTruthy();
   const tolerance = Math.pow(10, -precision) / 2;
   const difference = Math.abs(actual - expected);
-  ensure(world)(difference <= tolerance, { label }).toBeTruthy();
+  ensure(difference <= tolerance, { label }).toBeTruthy();
 }

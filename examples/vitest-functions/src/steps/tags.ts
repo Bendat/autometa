@@ -23,22 +23,22 @@ When("I inspect the tag registry", (world: BrewBuddyWorld) => {
 Then("I should see the following tag groups", (world: BrewBuddyWorld) => {
   const table = world.runtime.requireTable("horizontal");
   const expected = table.records<Record<string, string>>();
-  const actual = ensure(world)(world.app.tags.registry, {
+  const actual = ensure(world.app.tags.registry, {
     label: "Tag registry not initialised",
   })
     .toBeDefined()
     .value as TagRegistryEntry[];
-  ensure(world)(actual.length, {
+  ensure(actual.length, {
     label: `Expected ${expected.length} tag entries but found ${actual.length}.`,
   }).toStrictEqual(expected.length);
   expected.forEach((row) => {
     const match = actual.find((entry) => entry.tag === row.tag);
-    const resolved = ensure(world)(match, {
+    const resolved = ensure(match, {
       label: `Missing tag ${row.tag}`,
     })
       .toBeDefined()
       .value as TagRegistryEntry;
-    ensure(world)(resolved.description, {
+    ensure(resolved.description, {
       label: `Description for tag ${row.tag} did not match.`,
     }).toStrictEqual(row.description);
   });
@@ -75,15 +75,15 @@ When("I run the suite with focus enabled", (world: BrewBuddyWorld) => {
 
 Then("only this scenario should execute", (world: BrewBuddyWorld) => {
   const scenarioName = currentScenarioName(world);
-  const selected = ensure(world)(world.app.tags.selectedScenarios, {
+  const selected = ensure(world.app.tags.selectedScenarios, {
     label: "Focused execution did not record any scenarios.",
   })
     .toBeDefined()
     .value as string[];
-  ensure(world)(selected.length, {
+  ensure(selected.length, {
     label: `Expected exactly one focused scenario but received ${selected.length}.`,
   }).toStrictEqual(1);
-  ensure(world)(selected[0], {
+  ensure(selected[0], {
     label: "Focused scenario selection did not match the current scenario.",
   }).toStrictEqual(scenarioName);
 });
@@ -99,12 +99,12 @@ When("I run the features with tag expression {string}", (expression: string, wor
 });
 
 Then("the selected scenarios should include {string}", (scenarioName: string, world: BrewBuddyWorld) => {
-  const selected = ensure(world)(world.app.tags.selectedScenarios, {
+  const selected = ensure(world.app.tags.selectedScenarios, {
     label: "No scenarios were recorded for the provided tag expression.",
   })
     .toBeDefined()
     .value as string[];
-  ensure(world)(selected.includes(scenarioName), {
+  ensure(selected.includes(scenarioName), {
     label: `Expected scenario "${scenarioName}" to be included in the filtered results.`,
   }).toBeTruthy();
 });

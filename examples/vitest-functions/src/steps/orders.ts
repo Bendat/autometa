@@ -103,7 +103,7 @@ Then("the order should record the sweetener as {string}", async (expected: strin
 });
 
 Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) => {
-  const loyalty = ensure(world)(world.scenario.loyaltyAccount, {
+  const loyalty = ensure(world.scenario.loyaltyAccount, {
     label: "No loyalty account is registered in the current scenario.",
   })
     .toBeDefined()
@@ -111,7 +111,7 @@ Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) 
   const baseline = loyalty.points;
 
   await performRequest(world, "get", `/loyalty/${encodeURIComponent(loyalty.email)}`);
-  ensure(world).response.hasStatus(200);
+  ensure.response.hasStatus(200);
 
   const updated = parseLoyalty(world.app.lastResponseBody);
   if (updated.points !== baseline + 10) {
@@ -123,7 +123,7 @@ Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) 
 
 Then("the order should be rejected with status {int}", (status: number, world: BrewBuddyWorld) => {
   const error = requireOrderError(world);
-  ensure(world).response.hasStatus(status);
+  ensure.response.hasStatus(status);
   if (error.status !== status) {
     throw new Error(`Expected rejection status ${status} but received ${error.status ?? "unknown"}.`);
   }
@@ -148,7 +148,7 @@ Given("a loyalty account exists for {string}", async (email: string, world: Brew
   await performRequest(world, "patch", `/loyalty/${encodeURIComponent(email)}`, {
     body: { points: 0 },
   });
-  ensure(world).response.hasStatus(200);
+  ensure.response.hasStatus(200);
 
   const account = parseLoyalty(world.app.lastResponseBody);
   world.app.memory.rememberLoyalty(account);
@@ -158,7 +158,7 @@ Given("the inventory for {string} is set to {int} drinks", async (item: string, 
   await performRequest(world, "patch", `/inventory/${encodeURIComponent(item)}`, {
     body: { quantity },
   });
-  ensure(world).response.hasStatus(200);
+  ensure.response.hasStatus(200);
 
   const inventory = parseInventory(world.app.lastResponseBody);
   world.app.memory.rememberInventory(inventory);
@@ -216,7 +216,7 @@ async function submitOrder(
 
   try {
     await performRequest(world, "post", "/orders", { body: payload });
-    ensure(world).response.hasStatus(201);
+    ensure.response.hasStatus(201);
   } catch (error) {
     const status = extractErrorStatus(world);
     world.scenario.lastOrderError = { status, body: world.app.lastResponseBody } satisfies OrderErrorState;
@@ -350,7 +350,7 @@ function requireRecordedOrder(world: BrewBuddyWorld): Order {
 
 async function fetchOrder(world: BrewBuddyWorld, ticket: string): Promise<Order> {
   await performRequest(world, "get", `/orders/${encodeURIComponent(ticket)}`);
-  ensure(world).response.hasStatus(200);
+  ensure.response.hasStatus(200);
   const order = parseOrder(world.app.lastResponseBody);
   recordOrder(world, order);
   return order;

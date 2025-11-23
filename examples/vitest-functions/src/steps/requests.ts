@@ -23,24 +23,24 @@ When(
 
 Then(
   "the response status should be {int}",
-  (status: number, world: BrewBuddyWorld) => {
-    ensure(world).response.hasStatus(status);
+  (status: number, _world: BrewBuddyWorld) => {
+    ensure.response.hasStatus(status);
   }
 );
 
 Then(
   "the response header {string} should start with {string}",
-  (header: string, prefix: string, world: BrewBuddyWorld) => {
-    ensure(world).response.hasHeader(header, (value) => value.startsWith(prefix));
+  (header: string, prefix: string, _world: BrewBuddyWorld) => {
+    ensure.response.hasHeader(header, (value) => value.startsWith(prefix));
   }
 );
 
 Then(
   /^the response header "([^"]+)" should equal "([^"]+)"$/,
   (...args: unknown[]) => {
-    const world = args.pop() as BrewBuddyWorld;
+    const _world = args.pop() as BrewBuddyWorld;
     const [header, expected] = args as [string, string];
-    ensure(world).response.hasHeader(header, (value) => value === expected);
+    ensure.response.hasHeader(header, (value) => value === expected);
   }
 );
 
@@ -49,21 +49,21 @@ Then(
   (world: BrewBuddyWorld) => {
     const table = world.runtime.requireTable("horizontal");
     const expectations = toPathExpectations(table.records());
-    ensure(world).json.contains(expectations);
+    ensure.json.contains(expectations);
   }
 );
 
 Then(
   "the response json should contain an array at path {string}",
-  (path: string, world: BrewBuddyWorld) => {
-    ensure(world).json.array(path);
+  (path: string, _world: BrewBuddyWorld) => {
+    ensure.json.array(path);
   }
 );
 
 Then(
   "the response json should match the default menu snapshot",
   (world: BrewBuddyWorld) => {
-    ensure(world).response.hasStatus(200);
+    ensure.response.hasStatus(200);
     const body = world.app.lastResponseBody as { items?: unknown[] } | unknown[];
 
     const items = Array.isArray(body) ? body : body?.items;

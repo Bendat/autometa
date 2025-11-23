@@ -40,7 +40,7 @@ export {
 	type StepRuntimeHelpers,
 	type StepRuntimeMetadata,
 } from "./runtime/step-data";
-
+export { tryGetWorld, getWorld } from "./async-context";
 export * from "./types";
 
 export default {};
