@@ -1,7 +1,6 @@
 import type { TableRecord } from "@autometa/gherkin";
 
 import { Then, When, ensure } from "../step-definitions";
-import type { BrewBuddyWorld } from "../world";
 
 interface Recipe extends TableRecord {
   name: string;
@@ -14,8 +13,8 @@ class InventoryRow {
   quantity = 0;
 }
 
-Then("the table can be materialised as instances", function (this: BrewBuddyWorld) {
-  const table = this.runtime.requireTable("horizontal");
+Then("the table can be materialised as instances", (world) => {
+  const table = world.runtime.requireTable("horizontal");
   const items = table.asInstances(InventoryRow, {
     headerMap: { Item: "item", Quantity: "quantity" },
   });
@@ -25,44 +24,44 @@ Then("the table can be materialised as instances", function (this: BrewBuddyWorl
   }
   
   for (const instance of items) {
-    ensure(this)(typeof instance.item, {
+    ensure(world)(typeof instance.item, {
       label: "Inventory item should be a string.",
     }).toStrictEqual("string");
-    ensure(this)(typeof instance.quantity, {
+    ensure(world)(typeof instance.quantity, {
       label: "Inventory quantity should be a number.",
     }).toStrictEqual("number");
   }
 });
 
-Then("the table preserves raw values when raw true", function (this: BrewBuddyWorld) {
-  const table = this.runtime.requireTable("horizontal");
+Then("the table preserves raw values when raw true", (world) => {
+  const table = world.runtime.requireTable("horizontal");
   const [first] = table.records<TableRecord & { readonly count: string }>({ raw: true });
   
   if (!first) {
     throw new Error("Expected at least one record when materialising with raw=true.");
   }
   
-  ensure(this)(typeof first.count, {
+  ensure(world)(typeof first.count, {
     label: "Raw count should remain a string.",
   }).toStrictEqual("string");
 });
 
 // Recipe catalog steps
-When("I register the following recipes", function () {
-  const table = this.runtime.requireTable("horizontal");
+When("I register the following recipes", (world) => {
+  const table = world.runtime.requireTable("horizontal");
   const recipes = table.records<Recipe>();
   
-  if (!this.scenario.recipes) {
-    this.scenario.recipes = [];
+  if (!world.scenario.recipes) {
+    world.scenario.recipes = [];
   }
   
   for (const recipe of recipes) {
-    this.scenario.recipes.push(recipe);
+    world.scenario.recipes.push(recipe);
   }
 });
 
-Then("each recipe should exist in the recipe catalog", function () {
-  const recipes = this.scenario.recipes;
+Then("each recipe should exist in the recipe catalog", (world) => {
+  const recipes = world.scenario.recipes;
   if (!recipes) {
     throw new Error("Recipe catalog should be initialized.");
   }
@@ -71,8 +70,8 @@ Then("each recipe should exist in the recipe catalog", function () {
   }
 });
 
-Then("the recipe {string} should list {string} as an addition", function (this: BrewBuddyWorld, recipeName: string, addition: string) {
-  const recipes = this.scenario.recipes;
+Then("the recipe {string} should list {string} as an addition", (recipeName, addition, world) => {
+  const recipes = world.scenario.recipes;
   if (!recipes) {
     throw new Error("Recipe catalog should be initialized.");
   }
@@ -83,28 +82,28 @@ Then("the recipe {string} should list {string} as an addition", function (this: 
   }
   
   const additions = recipe.additions.split(",").map(a => a.trim());
-  ensure(this)(additions.includes(addition), {
+  ensure(world)(additions.includes(addition), {
     label: `Recipe "${recipeName}" should include "${addition}" in additions.`,
   }).toBeTruthy();
 });
 
 // Tasting notes steps
-When("I attach tasting notes for {string}", function (recipeName: string) {
-  const docString = this.runtime.consumeDocstring();
+When("I attach tasting notes for {string}", (recipeName, world) => {
+  const docString = world.runtime.consumeDocstring();
   
   if (!docString) {
     throw new Error("Expected a doc string for tasting notes");
   }
   
-  if (!this.scenario.tastingNotes) {
-    this.scenario.tastingNotes = new Map();
+  if (!world.scenario.tastingNotes) {
+    world.scenario.tastingNotes = new Map();
   }
   
-  this.scenario.tastingNotes.set(recipeName, docString);
+  world.scenario.tastingNotes.set(recipeName, docString);
 });
 
-Then("the recipe {string} should store the tasting notes", function (this: BrewBuddyWorld, recipeName: string) {
-  const tastingNotes = this.scenario.tastingNotes;
+Then("the recipe {string} should store the tasting notes", (recipeName, world) => {
+  const tastingNotes = world.scenario.tastingNotes;
   if (!tastingNotes) {
     throw new Error("Tasting notes storage should be initialized.");
   }
@@ -114,18 +113,18 @@ Then("the recipe {string} should store the tasting notes", function (this: BrewB
     throw new Error(`Tasting notes for "${recipeName}" should exist.`);
   }
   
-  ensure(this)(notes.length > 0, {
+  ensure(world)(notes.length > 0, {
     label: "Tasting notes should not be empty.",
   }).toBeTruthy();
 });
 
 // Brew ratio steps
-When("I calculate brew ratio for {string}", function (beanName: string) {
-  const table = this.runtime.requireTable("vertical");
+When("I calculate brew ratio for {string}", (beanName, world) => {
+  const table = world.runtime.requireTable("vertical");
   const data = table.getRecord(0) as { "coffee grams": number; "water grams": number };
   
-  if (!this.scenario.brewRatios) {
-    this.scenario.brewRatios = new Map();
+  if (!world.scenario.brewRatios) {
+    world.scenario.brewRatios = new Map();
   }
   
   const coffeeGrams = data["coffee grams"];
@@ -136,11 +135,11 @@ When("I calculate brew ratio for {string}", function (beanName: string) {
   }
   
   const ratio = `1:${Math.round(waterGrams / coffeeGrams)}`;
-  this.scenario.brewRatios.set(beanName, ratio);
+  world.scenario.brewRatios.set(beanName, ratio);
 });
 
-Then("the brew ratio should equal {string}", function (this: BrewBuddyWorld, expectedRatio: string) {
-  const brewRatios = this.scenario.brewRatios;
+Then("the brew ratio should equal {string}", (expectedRatio, world) => {
+  const brewRatios = world.scenario.brewRatios;
   if (!brewRatios) {
     throw new Error("Brew ratios storage should be initialized.");
   }
@@ -153,7 +152,7 @@ Then("the brew ratio should equal {string}", function (this: BrewBuddyWorld, exp
     throw new Error("A brew ratio should have been calculated.");
   }
   
-  ensure(this)(actualRatio, {
+  ensure(world)(actualRatio, {
     label: `Brew ratio should be ${expectedRatio}.`,
   }).toStrictEqual(expectedRatio);
 });

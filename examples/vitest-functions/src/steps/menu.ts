@@ -27,39 +27,35 @@ When("I request the menu listing", async (world) => {
   world.app.memory.rememberMenuSnapshot(items);
 });
 
-Then("the menu should include the default drinks", function (this: BrewBuddyWorld) {
-  const table = this.runtime.requireTable("horizontal");
+Then("the menu should include the default drinks", (world) => {
+  const table = world.runtime.requireTable("horizontal");
   const expectations = table.asInstances(MenuExpectation);
-  const items = ensureMenuItems(this);
+  const items = ensureMenuItems(world);
   for (const expectation of expectations) {
-    const item = findMenuItem(this, items, expectation.name);
+    const item = findMenuItem(world, items, expectation.name);
     ensureCloseTo(
-      this,
+      world,
       item.price,
       expectation.price,
       2,
       `Price mismatch for ${expectation.name}.`
     );
-    ensure(this)(item.size, {
+    ensure(world)(item.size, {
       label: `Size mismatch for ${expectation.name}.`,
     }).toStrictEqual(expectation.size);
   }
 });
 
-Given("I create a seasonal drink named {string}", async function (
-  this: BrewBuddyWorld,
-  name: string,
-  world: BrewBuddyWorld
-) {
-  const fields = this.runtime
+Given("I create a seasonal drink named {string}", async (name, world) => {
+  const fields = world.runtime
     .requireTable("horizontal")
     .records<MenuFieldRow>();
   const payload = buildMenuPayload(name, fields);
   await performRequest(world, "post", "/menu", { body: payload });
   ensure(world).response.hasStatus(201);
-  const created = parseMenuItem(this);
-  this.app.memory.rememberLastMenuItem(created);
-  this.scenario.createdItems.push(created.name);
+  const created = parseMenuItem(world);
+  world.app.memory.rememberLastMenuItem(created);
+  world.scenario.createdItems.push(created.name);
 });
 
 Then(
@@ -120,11 +116,11 @@ Then("the menu should not include {string}", async (name, world) => {
   ).toBeFalsy();
 });
 
-Given("the following menu price changes are pending", function () {
-  const records = this.runtime
+Given("the following menu price changes are pending", (world) => {
+  const records = world.runtime
     .requireTable("horizontal")
     .records<PriceUpdateRow>();
-  this.scenario.priceUpdates = records.map((record) => ({
+  world.scenario.priceUpdates = records.map((record) => ({
     name: String(record.name),
     price: Number(record.price),
   }));
@@ -183,9 +179,8 @@ Then('the seasonal flag should reflect {menuSeasonal}', (expected, world) => {
 
 Then(
   "the menu snapshot should be available on the world context",
-  function (this: BrewBuddyWorld, world: BrewBuddyWorld) {
-    ensure(world)(this, { label: "Step context should match world instance." }).toStrictEqual(world);
-    const snapshot = this.scenario.menuSnapshot ?? [];
+  (world) => {
+    const snapshot = world.scenario.menuSnapshot ?? [];
     ensure(world)(Array.isArray(snapshot), {
       label: "Menu snapshot should be stored as an array.",
     }).toBeTruthy();
@@ -193,11 +188,8 @@ Then(
 );
 
 Then(
-  "the last tracked menu item should be {string} when accessed via this",
-  function (this: BrewBuddyWorld, name: string, world: BrewBuddyWorld) {
-    ensure(world)(this.scenario.lastMenuItem?.name, {
-      label: "Scenario item mismatch on step context.",
-    }).toStrictEqual(name);
+  "the last tracked menu item should be {string}",
+  (name, world) => {
     ensure(world)(world.scenario.lastMenuItem?.name, {
       label: "Scenario item mismatch on world context.",
     }).toStrictEqual(name);

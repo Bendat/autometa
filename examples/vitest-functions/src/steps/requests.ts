@@ -4,7 +4,6 @@ import { toPathExpectations } from "../utils/assertions";
 import type { BrewBuddyWorld } from "../world";
 import type { HttpMethodInput } from "../utils/http";
 import type { MenuItem } from "../../../.api/src/types/domain.js";
-import type { StepRuntimeHelpers } from "@autometa/executor";
 
 When(
   "I send a {httpMethod} request to {string}",
@@ -17,44 +16,30 @@ When(
 
 Then(
   "the response status should be {int}",
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world, expression } = splitArguments(this, args);
-    const [status] = expression;
-    if (typeof status !== "number") {
-      throw new Error("Response status expectation requires a numeric argument.");
-    }
+  (status: number, world: BrewBuddyWorld) => {
     ensure(world).response.hasStatus(status);
   }
 );
 
 Then(
   "the response header {string} should start with {string}",
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world, expression } = splitArguments(this, args);
-    const [header, prefix] = expression;
-    if (typeof header !== "string" || typeof prefix !== "string") {
-      throw new Error("Header expectation requires string arguments.");
-    }
+  (header: string, prefix: string, world: BrewBuddyWorld) => {
     ensure(world).response.hasHeader(header, (value) => value.startsWith(prefix));
   }
 );
 
 Then(
   /^the response header "([^"]+)" should equal "([^"]+)"$/,
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world, expression } = splitArguments(this, args);
-    const [header, expected] = expression;
-    if (typeof header !== "string" || typeof expected !== "string") {
-      throw new Error("Header expectation requires string arguments.");
-    }
+  (...args: unknown[]) => {
+    const world = args.pop() as BrewBuddyWorld;
+    const [header, expected] = args as [string, string];
     ensure(world).response.hasHeader(header, (value) => value === expected);
   }
 );
 
 Then(
   "the response json should contain",
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world } = splitArguments(this, args);
+  (world: BrewBuddyWorld) => {
     const table = world.runtime.requireTable("horizontal");
     const expectations = toPathExpectations(table.records());
     ensure(world).json.contains(expectations);
@@ -63,20 +48,14 @@ Then(
 
 Then(
   "the response json should contain an array at path {string}",
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world, expression } = splitArguments(this, args);
-    const [path] = expression;
-    if (typeof path !== "string") {
-      throw new Error("Array expectation requires a string path argument.");
-    }
+  (path: string, world: BrewBuddyWorld) => {
     ensure(world).json.array(path);
   }
 );
 
 Then(
   "the response json should match the default menu snapshot",
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world } = splitArguments(this, args);
+  (world: BrewBuddyWorld) => {
     ensure(world).response.hasStatus(200);
     const body = world.lastResponseBody;
 
@@ -95,12 +74,9 @@ Then(
 
 Then(
   /^each recipe should include fields (.+)$/,
-  function (this: BrewBuddyWorld, ...args: unknown[]) {
-    const { world, expression } = splitArguments(this, args);
-    const [fieldsRaw] = expression;
-    if (typeof fieldsRaw !== "string") {
-      throw new Error("Recipe field expectation requires a string argument.");
-    }
+  (...args: unknown[]) => {
+    const world = args.pop() as BrewBuddyWorld;
+    const [fieldsRaw] = args as [string];
     const matches = Array.from(fieldsRaw.matchAll(/"([^"]+)"/g))
       .map(([, field]) => field)
       .filter((field): field is string => typeof field === "string" && field.length > 0);
@@ -131,42 +107,6 @@ Then(
     }
   }
 );
-
-function splitArguments(
-  thisWorld: BrewBuddyWorld,
-  args: readonly unknown[]
-): { world: BrewBuddyWorld; expression: readonly unknown[] } {
-  if (args.length === 0) {
-    return { world: thisWorld, expression: [] };
-  }
-
-  const values = Array.from(args);
-  const last = values[values.length - 1];
-  const world = isWorld(last) ? (last as BrewBuddyWorld) : thisWorld;
-  const trimmed = isWorld(last) ? values.slice(0, -1) : values;
-
-  if (trimmed.length === 0) {
-    return { world, expression: [] };
-  }
-
-  const maybeRuntime = trimmed[trimmed.length - 1];
-  const expression = isRuntimeHelpers(maybeRuntime)
-    ? trimmed.slice(0, -1)
-    : trimmed;
-
-  return { world, expression };
-}
-
-function isWorld(value: unknown): value is BrewBuddyWorld {
-  return Boolean(value && typeof value === "object" && "runtime" in (value as object));
-}
-
-function isRuntimeHelpers(value: unknown): value is StepRuntimeHelpers {
-  return (
-    Boolean(value && typeof value === "object") &&
-    "consumeDocstring" in (value as { consumeDocstring?: unknown })
-  );
-}
 
 function isMenuItem(value: unknown): value is MenuItem {
   if (!value || typeof value !== "object") {

@@ -3,33 +3,33 @@ import type { BrewBuddyWorld } from "../world";
 import { connectSse } from "../utils/sse";
 
 // Background steps
-Given("the SSE client is connected to {string}", async function (this: BrewBuddyWorld, endpoint: string) {
-  if (!this.scenario.apiBaseUrl) {
+Given("the SSE client is connected to {string}", async (endpoint, world) => {
+  if (!world.scenario.apiBaseUrl) {
     throw new Error("API base URL must be configured before connecting to SSE stream");
   }
-  const url = `${this.scenario.apiBaseUrl}${endpoint}`;
+  const url = `${world.scenario.apiBaseUrl}${endpoint}`;
   const session = await connectSse(url);
-  this.app.streamManager.attach(session);
+  world.app.streamManager.attach(session);
 });
 
-Given("the SSE connection is interrupted", function (this: BrewBuddyWorld) {
-  this.app.streamManager.dispose();
+Given("the SSE connection is interrupted", (world) => {
+  world.app.streamManager.dispose();
 });
 
 // Order management steps
-Given("an order exists with ticket {string}", function (this: BrewBuddyWorld, ticketId: string) {
-  if (!this.scenario.orders) {
-    this.scenario.orders = new Map();
+Given("an order exists with ticket {string}", (ticketId, world) => {
+  if (!world.scenario.orders) {
+    world.scenario.orders = new Map();
   }
-  this.scenario.orders.set(ticketId, {
+  world.scenario.orders.set(ticketId, {
     ticketId,
     status: "pending",
     events: [],
   });
 });
 
-When("the kitchen updates the order status sequence", function (this: BrewBuddyWorld) {
-  const table = this.runtime.requireTable("vertical");
+When("the kitchen updates the order status sequence", (world) => {
+  const table = world.runtime.requireTable("vertical");
   const rows = table.raw();
 
   const statuses: string[] = [];
@@ -40,17 +40,17 @@ When("the kitchen updates the order status sequence", function (this: BrewBuddyW
     }
   }
 
-  if (!this.scenario.expectedStatusSequence) {
-    this.scenario.expectedStatusSequence = [];
+  if (!world.scenario.expectedStatusSequence) {
+    world.scenario.expectedStatusSequence = [];
   }
-  this.scenario.expectedStatusSequence.push(...statuses);
+  world.scenario.expectedStatusSequence.push(...statuses);
 
-  if (!this.scenario.simulatedEvents) {
-    this.scenario.simulatedEvents = [];
+  if (!world.scenario.simulatedEvents) {
+    world.scenario.simulatedEvents = [];
   }
 
   for (const status of statuses) {
-    this.scenario.simulatedEvents.push({
+    world.scenario.simulatedEvents.push({
       event: status,
       data: { status },
     });
@@ -59,14 +59,14 @@ When("the kitchen updates the order status sequence", function (this: BrewBuddyW
 
 When(
   "the kitchen marks the order as completed with pickup code {string}",
-  function (this: BrewBuddyWorld, pickupCode: string) {
-  if (!this.scenario.simulatedEvents) {
-    this.scenario.simulatedEvents = [];
+  (pickupCode, world) => {
+  if (!world.scenario.simulatedEvents) {
+    world.scenario.simulatedEvents = [];
   }
 
-  const ticketId = this.scenario.orders ? Array.from(this.scenario.orders.keys())[0] : "UNKNOWN";
+  const ticketId = world.scenario.orders ? Array.from(world.scenario.orders.keys())[0] : "UNKNOWN";
 
-  this.scenario.simulatedEvents.push({
+  world.scenario.simulatedEvents.push({
     event: "completed",
     data: {
       ticket: ticketId,
@@ -75,16 +75,16 @@ When(
     },
   });
 
-  this.scenario.lastPickupCode = pickupCode;
+  world.scenario.lastPickupCode = pickupCode;
   }
 );
 
 // Event validation steps
-Then("the streamed events should arrive in order for ticket {string}", function (this: BrewBuddyWorld, _ticketId: string) {
-  const table = this.runtime.requireTable("horizontal");
+Then("the streamed events should arrive in order for ticket {string}", (_ticketId, world) => {
+  const table = world.runtime.requireTable("horizontal");
   const expectedEvents = table.records<{ event: string; "data.status": string }>();
 
-  const events = this.scenario.simulatedEvents;
+  const events = world.scenario.simulatedEvents;
   if (!events) {
     throw new Error("Simulated events should exist");
   }
@@ -101,13 +101,13 @@ Then("the streamed events should arrive in order for ticket {string}", function 
       throw new Error(`Event at index ${i} should exist`);
     }
 
-    ensure(this)(actual.event, {
+    ensure(world)(actual.event, {
       label: `Event ${i} should have event type "${expected.event}"`,
     }).toStrictEqual(expected.event);
 
     if (typeof actual.data === "object" && actual.data !== null) {
       const dataObj = actual.data as { status?: string };
-      ensure(this)(dataObj.status, {
+      ensure(world)(dataObj.status, {
         label: `Event ${i} should have status "${expected["data.status"]}"`,
       }).toStrictEqual(expected["data.status"]);
     }
@@ -116,11 +116,11 @@ Then("the streamed events should arrive in order for ticket {string}", function 
 
 Then(
   "the streamed events should include an event {string} with data",
-  function (this: BrewBuddyWorld, eventType: string) {
-    const table = this.runtime.requireTable("horizontal");
+  (eventType, world) => {
+    const table = world.runtime.requireTable("horizontal");
     const expectedData = table.records<{ path: string; value: string }>();
 
-    const events = this.scenario.simulatedEvents;
+    const events = world.scenario.simulatedEvents;
     if (!events) {
       throw new Error("Simulated events should exist");
     }
@@ -143,11 +143,11 @@ Then(
         if (!dataObj[path]) {
           throw new Error(`Data should have field "${path}"`);
         }
-        ensure(this)(typeof dataObj[path], {
+        ensure(world)(typeof dataObj[path], {
           label: `Field "${path}" should be a string timestamp`,
         }).toStrictEqual("string");
       } else {
-        ensure(this)(dataObj[path], {
+        ensure(world)(dataObj[path], {
           label: `Field "${path}" should equal "${value}"`,
         }).toStrictEqual(value);
       }
@@ -155,8 +155,8 @@ Then(
   }
 );
 
-When("I await the next stream event", async function () {
-  const stream = this.app.streamManager.current();
+When("I await the next stream event", async (world) => {
+  const stream = world.app.streamManager.current();
 
   if (!stream) {
     throw new Error("No SSE stream is connected");
@@ -166,36 +166,36 @@ When("I await the next stream event", async function () {
     await stream.waitForEvent(() => true, 1000);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    this.app.streamManager.recordError(message);
+    world.app.streamManager.recordError(message);
   }
 });
 
-Then("I should receive a stream error containing {string}", function (this: BrewBuddyWorld, errorText: string) {
-  const stream = this.app.streamManager.current();
+Then("I should receive a stream error containing {string}", (errorText, world) => {
+  const stream = world.app.streamManager.current();
   const sessionErrors = stream?.errors ?? [];
-  const worldErrors = this.app.streamManager.errors();
+  const worldErrors = world.app.streamManager.errors();
 
   const hasError = [...sessionErrors, ...worldErrors].some((err) => err.includes(errorText));
-  ensure(this)(hasError, {
+  ensure(world)(hasError, {
     label: `Stream errors should contain "${errorText}". Got: ${[...sessionErrors, ...worldErrors].join(", ")}`,
   }).toBeTruthy();
 });
 
 // Warning handling steps
-When("the stream emits an event {string}", function (this: BrewBuddyWorld, eventType: string) {
-  if (!this.scenario.simulatedEvents) {
-    this.scenario.simulatedEvents = [];
+When("the stream emits an event {string}", (eventType, world) => {
+  if (!world.scenario.simulatedEvents) {
+    world.scenario.simulatedEvents = [];
   }
 
-  this.scenario.simulatedEvents.push({
+  world.scenario.simulatedEvents.push({
     event: eventType,
     data: {},
   });
 
   const warningMessage = `Received unexpected event type: ${eventType}`;
-  this.app.streamManager.recordWarning(warningMessage);
+  world.app.streamManager.recordWarning(warningMessage);
 
-  const stream = this.app.streamManager.current();
+  const stream = world.app.streamManager.current();
   if (stream) {
     stream.appendWarning(warningMessage);
   }
@@ -203,29 +203,29 @@ When("the stream emits an event {string}", function (this: BrewBuddyWorld, event
 
 Then(
   "the client should log a warning containing {string}",
-  function (this: BrewBuddyWorld, warningText: string) {
-    const stream = this.app.streamManager.current();
+  (warningText, world) => {
+    const stream = world.app.streamManager.current();
     const sessionWarnings = stream?.warnings ?? [];
-    const worldWarnings = this.app.streamManager.warnings();
+    const worldWarnings = world.app.streamManager.warnings();
 
     const hasWarning = [...sessionWarnings, ...worldWarnings].some((warn) => warn.includes(warningText));
-    ensure(this)(hasWarning, {
+    ensure(world)(hasWarning, {
       label: `Stream warnings should contain "${warningText}". Got: ${[...sessionWarnings, ...worldWarnings].join(", ")}`,
     }).toBeTruthy();
   }
 );
 
-Then("the client should continue processing subsequent events", function (this: BrewBuddyWorld) {
-  const stream = this.app.streamManager.current();
+Then("the client should continue processing subsequent events", (world) => {
+  const stream = world.app.streamManager.current();
 
   if (!stream) {
     throw new Error("No SSE stream is connected");
   }
 
-  ensure(this)(this.scenario.simulatedEvents, {
+  ensure(world)(world.scenario.simulatedEvents, {
     label: "Events should continue to be processed",
   }).toBeDefined();
-  ensure(this)(true, {
+  ensure(world)(true, {
     label: "Stream should continue processing events after warnings",
   }).toBeTruthy();
 });

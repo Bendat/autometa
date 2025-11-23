@@ -2,8 +2,8 @@ import type { SourceRef } from "@autometa/scopes";
 
 import { Then } from "../step-definitions";
 
-Then("I log the current step metadata", function () {
-  const metadata = this.runtime.currentStep;
+Then("I log the current step metadata", (world) => {
+  const metadata = world.runtime.currentStep;
   if (!metadata) {
     console.info("[autometa:step] No metadata captured for the current step.");
     return;
