@@ -67,7 +67,7 @@ Then(
     await performRequest(world, "get", "/recipes");
     ensure(world).response.hasStatus(200);
 
-    const body = world.lastResponseBody as { recipes?: Array<Record<string, unknown>> } | undefined;
+    const body = world.app.lastResponseBody as { recipes?: Array<Record<string, unknown>> } | undefined;
     const recipes = Array.isArray(body?.recipes) ? body?.recipes : [];
     const expectedSlug = world.app.memory.resolveRecipeSlug(name);
 

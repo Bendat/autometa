@@ -27,10 +27,10 @@ type PathExpectation = {
 };
 
 export function requireResponse(world: BrewBuddyWorld): HTTPResponse<unknown> {
-  if (!world.lastResponse) {
+  if (!world.app.lastResponse) {
     throw new Error("No HTTP response recorded for the current scenario.");
   }
-  return world.lastResponse;
+  return world.app.lastResponse;
 }
 
 interface ResponseAssertions {
@@ -73,7 +73,7 @@ const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure })
   (world) => {
     const bodyLabel = "response json";
     const ensureBody = () =>
-      ensure(world.lastResponseBody, { label: bodyLabel }).toBeDefined().value;
+      ensure(world.app.lastResponseBody, { label: bodyLabel }).toBeDefined().value;
 
     return {
       contains(expectations: Iterable<PathExpectation>) {

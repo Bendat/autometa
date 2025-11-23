@@ -1,4 +1,3 @@
-import type { HTTPResponse } from "@autometa/http";
 import type { StepRuntimeHelpers } from "@autometa/executor";
 import type { SimpleFeature } from "@autometa/gherkin";
 import { WORLD_INHERIT_KEYS } from "@autometa/runner";
@@ -9,16 +8,12 @@ import type {
   Order,
 } from "../../.api/src/types/domain.js";
 import type { MenuRegion } from "./utils/regions";
-import { BrewBuddyApp } from "./utils/http";
+import { BrewBuddyClient } from "./utils/http";
 
 const DEFAULT_API_BASE_URL = "http://localhost:4000";
 
 export interface BrewBuddyWorldBase {
   baseUrl: string;
-  lastResponse?: HTTPResponse<unknown>;
-  lastResponseBody?: unknown;
-  lastResponseHeaders?: Record<string, string>;
-  lastError?: unknown;
   readonly aliases: {
     readonly tickets: Map<string, string>;
     readonly orders: Map<string, Order>;
@@ -31,7 +26,7 @@ export interface BrewBuddyWorldBase {
   readonly ancestors?: readonly BrewBuddyWorldBase[];
 }
 
-export type BrewBuddyWorld = BrewBuddyWorldBase & { readonly app: BrewBuddyApp };
+export type BrewBuddyWorld = BrewBuddyWorldBase & { readonly app: BrewBuddyClient };
 
 export interface OrderErrorState {
   readonly status: number | undefined;

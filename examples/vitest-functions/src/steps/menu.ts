@@ -197,7 +197,7 @@ Then(
 );
 
 function extractMenuItems(world: BrewBuddyWorld): MenuItem[] {
-  const body = world.lastResponseBody as { items?: MenuItem[] } | undefined;
+  const body = world.app.lastResponseBody as { items?: MenuItem[] } | undefined;
   const items = Array.isArray(body?.items) ? body?.items ?? [] : [];
   return items.map((item) => ({ ...item }));
 }
@@ -254,7 +254,7 @@ function buildMenuPayload(
 }
 
 function parseMenuItem(world: BrewBuddyWorld): MenuItem {
-  const body = ensure(world)(world.lastResponseBody as MenuItem | undefined, {
+  const body = ensure(world)(world.app.lastResponseBody as MenuItem | undefined, {
     label: "Menu creation response is missing",
   })
     .toBeDefined()

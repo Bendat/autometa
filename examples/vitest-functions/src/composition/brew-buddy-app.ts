@@ -5,7 +5,7 @@ import { App, WORLD_TOKEN, type AppFactoryContext } from "@autometa/runner";
 import { BrewBuddyMemoryService } from "../utils/memory";
 import { BrewBuddyStreamManager } from "../services/stream-manager";
 import type { BrewBuddyWorldBase } from "../world";
-import { BrewBuddyApp } from "../utils/http";
+import { BrewBuddyClient } from "../utils/http";
 
 const HTTP_CLIENT = createToken<HTTP>("brew-buddy.http-client");
 
@@ -32,8 +32,8 @@ export function registerBrewBuddyServices(
 
 export const CompositionRoot = App.compositionRoot<
   BrewBuddyWorldBase,
-  BrewBuddyApp
->(BrewBuddyApp, {
+  BrewBuddyClient
+>(BrewBuddyClient, {
   deps: [HTTP_CLIENT, BrewBuddyMemoryService],
   setup: registerBrewBuddyServices,
   inject: {

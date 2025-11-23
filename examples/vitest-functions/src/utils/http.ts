@@ -1,4 +1,4 @@
-import { HTTP, HTTPError } from "@autometa/http";
+import { HTTP, HTTPError, type HTTPResponse } from "@autometa/http";
 // Enable HTTP logging via autometa config (logging.http = true) or manually:
 // import { createLoggingPlugin } from "@autometa/http";
 // HTTP.registerSharedPlugin(createLoggingPlugin(console.log));
@@ -16,11 +16,16 @@ export interface RequestOptions {
   readonly query?: Record<string, unknown>;
 }
 
-export class BrewBuddyApp {
+export class BrewBuddyClient {
   readonly http: HTTP;
   readonly memory: BrewBuddyMemoryService;
   private _streamManager?: BrewBuddyStreamManager;
   private _world?: BrewBuddyWorldBase;
+
+  lastResponse?: HTTPResponse<unknown>;
+  lastResponseBody?: unknown;
+  lastResponseHeaders?: Record<string, string>;
+  lastError?: unknown;
 
   constructor(http: HTTP, memory: BrewBuddyMemoryService) {
     this.http = http
@@ -62,6 +67,34 @@ export class BrewBuddyApp {
 
     return dispatch(client, method);
   }
+
+  async perform(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
+    try {
+      const response = await this.request(method, path, options);
+      this.lastResponse = response;
+      this.lastResponseBody = response.data;
+      this.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
+      delete this.lastError;
+    } catch (error) {
+      delete this.lastResponse;
+      delete this.lastResponseBody;
+      delete this.lastResponseHeaders;
+      this.lastError = error;
+      throw error;
+    }
+  }
+
+  extractErrorStatus(): number | undefined {
+    const error = this.lastError;
+    if (error instanceof HTTPError && error.response) {
+      const status = error.response.status;
+      this.lastResponse = error.response;
+      this.lastResponseBody = error.response.data;
+      this.lastResponseHeaders = normalizeHeaders(error.response.headers ?? {});
+      return status;
+    }
+    return undefined;
+  }
 }
 
 export async function performRequest(
@@ -70,19 +103,11 @@ export async function performRequest(
   path: string,
   options: RequestOptions = {}
 ): Promise<void> {
-  try {
-    const response = await world.app.request(method, path, options);
-    world.lastResponse = response;
-    world.lastResponseBody = response.data;
-    world.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
-    delete world.lastError;
-  } catch (error) {
-    delete world.lastResponse;
-    delete world.lastResponseBody;
-    delete world.lastResponseHeaders;
-    world.lastError = error;
-    throw error;
-  }
+  await world.app.perform(method, path, options);
+}
+
+export function extractErrorStatus(world: BrewBuddyWorld): number | undefined {
+  return world.app.extractErrorStatus();
 }
 
 async function dispatch(client: HTTP, method: HttpMethodInput) {
@@ -100,18 +125,6 @@ async function dispatch(client: HTTP, method: HttpMethodInput) {
     default:
       throw new Error(`Unsupported HTTP method: ${method}`);
   }
-}
-
-export function extractErrorStatus(world: BrewBuddyWorld): number | undefined {
-  const error = world.lastError;
-  if (error instanceof HTTPError && error.response) {
-    const status = error.response.status;
-    world.lastResponse = error.response;
-    world.lastResponseBody = error.response.data;
-    world.lastResponseHeaders = normalizeHeaders(error.response.headers ?? {});
-    return status;
-  }
-  return undefined;
 }
 
 function normalisePath(path: string): string[] {

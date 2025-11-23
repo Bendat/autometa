@@ -57,7 +57,7 @@ Then(
   "the response json should match the default menu snapshot",
   (world: BrewBuddyWorld) => {
     ensure(world).response.hasStatus(200);
-    const body = world.lastResponseBody;
+    const body = world.app.lastResponseBody;
 
     if (!Array.isArray(body)) {
       throw new Error("Expected response body to be an array");
@@ -85,7 +85,7 @@ Then(
       throw new Error(`Expected at least one quoted field name in: ${fieldsRaw}`);
     }
 
-    const body = world.lastResponseBody as { recipes?: unknown } | undefined;
+    const body = world.app.lastResponseBody as { recipes?: unknown } | undefined;
     if (!body || typeof body !== "object") {
       throw new Error("Expected response body to be an object containing recipes");
     }
