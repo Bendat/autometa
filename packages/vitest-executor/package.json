@@ -37,7 +37,11 @@
     "@autometa/config": "workspace:*",
     "@autometa/executor": "workspace:*",
     "@autometa/scopes": "workspace:*",
-    "@autometa/test-builder": "workspace:*"
+    "@autometa/test-builder": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@cucumber/gherkin": "^26.0.3",
+    "@cucumber/tag-expressions": "^5.0.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@autometa/gherkin": "workspace:*",

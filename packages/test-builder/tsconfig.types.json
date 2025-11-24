@@ -10,11 +10,6 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "declarationDir": "./dist",
-    "paths": {
-      "@autometa/*": [
-        "../*/dist/index.d.ts"
-      ]
-    },
     "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo"
   },
   "include": [
