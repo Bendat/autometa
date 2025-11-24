@@ -6,3 +6,4 @@ import "./recipes";
 import "./orders";
 import "./tags";
 import "./lifecycle";
+import "./example";

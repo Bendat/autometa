@@ -1,4 +1,3 @@
-import { baseConfig } from "@autometa/tsup-config";
-import { defineConfig } from "tsup";
+import { createTsupConfig } from "tsup-config";
 
-export default defineConfig(baseConfig());
+export default createTsupConfig();

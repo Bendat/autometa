@@ -13,7 +13,7 @@ export type GlobalRunnerOptions = RunnerContextOptions<GlobalWorld>;
 
 let runnerInstance: GlobalRunner<GlobalWorld> | undefined;
 
-function instantiateRunner(options?: GlobalRunnerOptions) {
+function instantiateRunner(options?: GlobalRunnerOptions): GlobalRunner<GlobalWorld> {
 	return createGlobalRunner<GlobalWorld>(options);
 }
 
@@ -25,19 +25,19 @@ function requireConfigured(action: string): GlobalRunner<GlobalWorld> {
 	}
 	return runnerInstance;
 }
-export function getGlobalRunner(options?: GlobalRunnerOptions) {
+export function getGlobalRunner(options?: GlobalRunnerOptions): GlobalRunner<GlobalWorld> {
 	if (!runnerInstance) {
 		runnerInstance = instantiateRunner(options);
 	}
 	return runnerInstance;
 }
 
-export function configureGlobalRunner(options?: GlobalRunnerOptions) {
+export function configureGlobalRunner(options?: GlobalRunnerOptions): GlobalRunner<GlobalWorld> {
 	runnerInstance = instantiateRunner(options);
 	return runnerInstance;
 }
 
-export function resetGlobalRunner(options?: GlobalRunnerOptions) {
+export function resetGlobalRunner(options?: GlobalRunnerOptions): GlobalRunner<GlobalWorld> {
 	runnerInstance = instantiateRunner(options);
 	return runnerInstance;
 }
@@ -48,21 +48,21 @@ export function disposeGlobalRunner() {
 
 export function useGlobalRunnerEnvironment(
 	environment: RunnerEnvironment<GlobalWorld>
-) {
+): RunnerEnvironment<GlobalWorld> {
 	const runner = requireConfigured(
 		"Call configureGlobalRunner() before injecting environments."
 	);
 	return runner.useEnvironment(environment);
 }
 
-export function getGlobalRunnerEnvironment() {
+export function getGlobalRunnerEnvironment(): RunnerEnvironment<GlobalWorld> {
 	const runner = requireConfigured(
 		"Call configureGlobalRunner() before reading environments."
 	);
 	return runner.getEnvironment();
 }
 
-export function getConfiguredGlobalRunner() {
+export function getConfiguredGlobalRunner(): GlobalRunner<GlobalWorld> {
 	return requireConfigured(
 		"Call configureGlobalRunner() before accessing runner APIs."
 	);

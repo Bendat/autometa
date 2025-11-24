@@ -12,7 +12,6 @@
     "declarationDir": "./dist",
     "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo"
   },
-  },
   "include": [
     "src/**/*"
   ],
