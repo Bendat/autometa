@@ -18,56 +18,58 @@ const SELECTION_VARIANTS = caseInsensitivePattern(
 );
 const BOOLEAN_VARIANTS = caseInsensitivePattern(["true", "false"]);
 
-defineParameterType({
-  name: "httpMethod",
-  pattern: HTTP_METHOD_VARIANTS,
-  transform: (method: unknown): HttpMethod => String(method).toUpperCase() as HttpMethod,
-});
+export function registerParameterTypes(defineParameterType: (definition: any) => void) {
+  defineParameterType({
+    name: "httpMethod",
+    pattern: HTTP_METHOD_VARIANTS,
+    transform: (method: unknown): HttpMethod => String(method).toUpperCase() as HttpMethod,
+  });
 
-defineParameterType({
-  name: "menuRegion",
-  pattern: REGION_VARIANTS,
-  transform: (value: unknown): MenuRegion => {
-    const region = normalizeRegion(String(value));
-    if (!region) {
-      throw new Error(`Unknown Brew Buddy region: ${String(value)}`);
-    }
-    return region;
-  },
-});
+  defineParameterType({
+    name: "menuRegion",
+    pattern: REGION_VARIANTS,
+    transform: (value: unknown): MenuRegion => {
+      const region = normalizeRegion(String(value));
+      if (!region) {
+        throw new Error(`Unknown Brew Buddy region: ${String(value)}`);
+      }
+      return region;
+    },
+  });
 
-defineParameterType({
-  name: "menuSelection",
-  pattern: SELECTION_VARIANTS,
-  transform: (
-    value: unknown,
-    context: ParameterTransformContext<BrewBuddyWorld>
-  ): MenuExpectation => {
-    const expectation = resolveExpectationByBeverage(String(value));
-    if (!expectation) {
-      throw new Error(`No menu expectation registered for beverage ${String(value)}`);
-    }
+  defineParameterType({
+    name: "menuSelection",
+    pattern: SELECTION_VARIANTS,
+    transform: (
+      value: unknown,
+      context: ParameterTransformContext<BrewBuddyWorld>
+    ): MenuExpectation => {
+      const expectation = resolveExpectationByBeverage(String(value));
+      if (!expectation) {
+        throw new Error(`No menu expectation registered for beverage ${String(value)}`);
+      }
 
-    const activeRegion = context.world.scenario.region;
-    if (activeRegion && activeRegion !== expectation.region) {
-      throw new Error(
-        `Beverage ${expectation.beverage} is not available in the ${activeRegion} region`
-      );
-    }
+      const activeRegion = context.world.scenario.region;
+      if (activeRegion && activeRegion !== expectation.region) {
+        throw new Error(
+          `Beverage ${expectation.beverage} is not available in the ${activeRegion} region`
+        );
+      }
 
-    if (!context.world.scenario.region) {
-      context.world.scenario.region = expectation.region;
-    }
+      if (!context.world.scenario.region) {
+        context.world.scenario.region = expectation.region;
+      }
 
-    return expectation;
-  },
-});
+      return expectation;
+    },
+  });
 
-defineParameterType({
-  name: "menuSeasonal",
-  pattern: BOOLEAN_VARIANTS,
-  transform: (value: unknown): boolean => /^true$/i.test(String(value)),
-});
+  defineParameterType({
+    name: "menuSeasonal",
+    pattern: BOOLEAN_VARIANTS,
+    transform: (value: unknown): boolean => /^true$/i.test(String(value)),
+  });
+}
 
 function caseInsensitivePattern(values: Iterable<string>): RegExp {
   const bodies: string[] = [];

@@ -16,6 +16,7 @@
     "@autometa/executor": "workspace:*",
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",
+    "@autometa/injection": "workspace:*",
     "@autometa/runner": "workspace:*",
     "@autometa/vitest-executor": "workspace:*",
     "@autometa/vitest-plugins": "workspace:*"
