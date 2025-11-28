@@ -1,7 +1,7 @@
 {
-  "name": "@autometa/phrases",
+  "name": "@autometa/vitest-plugins",
   "version": "0.0.0",
-  "description": "",
+  "description": "Vitest plugin for Autometa - transforms .feature files into test suites",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -10,8 +10,8 @@
     "dist"
   ],
   "scripts": {
-    "type-check": "tsc --noEmit -p tsconfig.dev.json",
-    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
     "build": "tsup && pnpm run build:types",
     "build:types": "tsc --build --force tsconfig.types.json",
     "build:watch": "tsup --watch",
@@ -25,11 +25,6 @@
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "clean": "rimraf dist"
   },
-  "dependencies": {
-    "@autometa/asserters": "workspace:^",
-    "@autometa/types": "workspace:^",
-    "change-case": "^4.1.2"
-  },
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.cjs",
@@ -37,18 +32,27 @@
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "jiti": "^1.21.0"
+  },
   "devDependencies": {
     "@types/node": "^18.11.18",
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
-    "eslint-config-prettier": "^8.3.0",
     "rimraf": "^4.1.2",
     "tsconfig": "workspace:*",
-    "tsup-config": "workspace:*",
     "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
     "typescript": "^4.9.5",
+    "vite": "^5.0.0",
     "vitest": "1.4.0"
+  },
+  "peerDependencies": {
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/vitest-executor": "workspace:*",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
   }
 }

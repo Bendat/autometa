@@ -1,6 +1,5 @@
 import type { ParameterTransformContext } from "@autometa/cucumber-expressions";
 
-import { defineParameterType } from "../step-definitions";
 import type { BrewBuddyWorld } from "../world";
 import type { HttpMethod } from "../utils/http";
 import {
@@ -11,63 +10,75 @@ import {
   type MenuRegion,
 } from "../utils/regions";
 
-const HTTP_METHOD_VARIANTS = caseInsensitivePattern(["GET", "POST", "PATCH", "DELETE", "PUT"]);
-const REGION_VARIANTS = caseInsensitivePattern(Object.keys(REGION_EXPECTATIONS));
-const SELECTION_VARIANTS = caseInsensitivePattern(
-  Object.values(REGION_EXPECTATIONS).map((detail) => detail.expected)
-);
-const BOOLEAN_VARIANTS = caseInsensitivePattern(["true", "false"]);
+type DefineParameterTypeFn = (definition: {
+  name: string;
+  pattern: RegExp;
+  transform: (value: unknown, context: ParameterTransformContext<BrewBuddyWorld>) => unknown;
+}) => void;
 
-defineParameterType({
-  name: "httpMethod",
-  pattern: HTTP_METHOD_VARIANTS,
-  transform: (method: unknown): HttpMethod => String(method).toUpperCase() as HttpMethod,
-});
+/**
+ * Registers all custom parameter types for cucumber expressions.
+ * This function must be called after the steps environment is created.
+ */
+export function registerParameterTypes(defineParameterType: DefineParameterTypeFn): void {
+  const HTTP_METHOD_VARIANTS = caseInsensitivePattern(["GET", "POST", "PATCH", "DELETE", "PUT"]);
+  const REGION_VARIANTS = caseInsensitivePattern(Object.keys(REGION_EXPECTATIONS));
+  const SELECTION_VARIANTS = caseInsensitivePattern(
+    Object.values(REGION_EXPECTATIONS).map((detail) => detail.expected)
+  );
+  const BOOLEAN_VARIANTS = caseInsensitivePattern(["true", "false"]);
 
-defineParameterType({
-  name: "menuRegion",
-  pattern: REGION_VARIANTS,
-  transform: (value: unknown): MenuRegion => {
-    const region = normalizeRegion(String(value));
-    if (!region) {
-      throw new Error(`Unknown Brew Buddy region: ${String(value)}`);
-    }
-    return region;
-  },
-});
+  defineParameterType({
+    name: "httpMethod",
+    pattern: HTTP_METHOD_VARIANTS,
+    transform: (method: unknown): HttpMethod => String(method).toUpperCase() as HttpMethod,
+  });
 
-defineParameterType({
-  name: "menuSelection",
-  pattern: SELECTION_VARIANTS,
-  transform: (
-    value: unknown,
-    context: ParameterTransformContext<BrewBuddyWorld>
-  ): MenuExpectation => {
-    const expectation = resolveExpectationByBeverage(String(value));
-    if (!expectation) {
-      throw new Error(`No menu expectation registered for beverage ${String(value)}`);
-    }
+  defineParameterType({
+    name: "menuRegion",
+    pattern: REGION_VARIANTS,
+    transform: (value: unknown): MenuRegion => {
+      const region = normalizeRegion(String(value));
+      if (!region) {
+        throw new Error(`Unknown Brew Buddy region: ${String(value)}`);
+      }
+      return region;
+    },
+  });
 
-    const activeRegion = context.world.scenario.region;
-    if (activeRegion && activeRegion !== expectation.region) {
-      throw new Error(
-        `Beverage ${expectation.beverage} is not available in the ${activeRegion} region`
-      );
-    }
+  defineParameterType({
+    name: "menuSelection",
+    pattern: SELECTION_VARIANTS,
+    transform: (
+      value: unknown,
+      context: ParameterTransformContext<BrewBuddyWorld>
+    ): MenuExpectation => {
+      const expectation = resolveExpectationByBeverage(String(value));
+      if (!expectation) {
+        throw new Error(`No menu expectation registered for beverage ${String(value)}`);
+      }
 
-    if (!context.world.scenario.region) {
-      context.world.scenario.region = expectation.region;
-    }
+      const activeRegion = context.world.scenario.region;
+      if (activeRegion && activeRegion !== expectation.region) {
+        throw new Error(
+          `Beverage ${expectation.beverage} is not available in the ${activeRegion} region`
+        );
+      }
 
-    return expectation;
-  },
-});
+      if (!context.world.scenario.region) {
+        context.world.scenario.region = expectation.region;
+      }
 
-defineParameterType({
-  name: "menuSeasonal",
-  pattern: BOOLEAN_VARIANTS,
-  transform: (value: unknown): boolean => /^true$/i.test(String(value)),
-});
+      return expectation;
+    },
+  });
+
+  defineParameterType({
+    name: "menuSeasonal",
+    pattern: BOOLEAN_VARIANTS,
+    transform: (value: unknown): boolean => /^true$/i.test(String(value)),
+  });
+}
 
 function caseInsensitivePattern(values: Iterable<string>): RegExp {
   const bodies: string[] = [];

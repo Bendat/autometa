@@ -42,6 +42,7 @@
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",
     "@autometa/runner": "workspace:*",
+    "@autometa/scopes": "workspace:*",
     "@autometa/test-builder": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@babel/code-frame": "^7.23.5",

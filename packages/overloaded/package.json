@@ -4,7 +4,7 @@
   "description": "Function and method overloading made easy.",
   "type": "module",
   "main": "dist/index.js",
-  "module": "dist/esm/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -26,9 +26,9 @@
     "clean": "rimraf dist"
   },
   "exports": {
-    "import": "./dist/esm/index.js",
+    "import": "./dist/index.js",
     "require": "./dist/index.js",
-    "default": "./dist/esm/index.js",
+    "default": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",

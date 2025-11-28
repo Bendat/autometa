@@ -12,17 +12,28 @@
   "dependencies": {
     "@autometa/app": "workspace:*",
     "@autometa/assertions": "workspace:*",
+    "@autometa/config": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@autometa/executor": "workspace:*",
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",
+    "@autometa/injection": "workspace:*",
     "@autometa/runner": "workspace:*",
-    "@autometa/vitest-executor": "workspace:*"
+    "@autometa/scopes": "workspace:*",
+    "@autometa/vitest-executor": "workspace:*",
+    "@autometa/vitest-plugins": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@cucumber/gherkin": "^26.0.3",
+    "@cucumber/messages": "^21.0.1",
+    "@cucumber/tag-expressions": "^5.0.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@autometa/cli": "workspace:*",
     "@types/node": "18.19.24",
     "typescript": "5.4.5",
+    "vite": "^5.0.0",
     "vitest": "1.4.0"
   }
 }

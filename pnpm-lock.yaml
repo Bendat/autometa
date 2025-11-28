@@ -161,6 +161,12 @@ importers:
       '@autometa/assertions':
         specifier: workspace:*
         version: link:../../packages/assertions
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@autometa/cucumber-expressions':
+        specifier: workspace:*
+        version: link:../../packages/cucumber-expressions
       '@autometa/errors':
         specifier: workspace:*
         version: link:../../packages/errors
@@ -173,12 +179,36 @@ importers:
       '@autometa/http':
         specifier: workspace:*
         version: link:../../packages/http
+      '@autometa/injection':
+        specifier: workspace:*
+        version: link:../../packages/injection
       '@autometa/runner':
         specifier: workspace:*
         version: link:../../packages/runner
+      '@autometa/scopes':
+        specifier: workspace:*
+        version: link:../../packages/scopes
       '@autometa/vitest-executor':
         specifier: workspace:*
         version: link:../../packages/vitest-executor
+      '@autometa/vitest-plugins':
+        specifier: workspace:*
+        version: link:../../packages/vitest-plugins
+      '@cucumber/cucumber-expressions':
+        specifier: ^16.1.2
+        version: 16.1.2
+      '@cucumber/gherkin':
+        specifier: ^26.0.3
+        version: 26.0.3
+      '@cucumber/messages':
+        specifier: ^21.0.1
+        version: 21.0.1
+      '@cucumber/tag-expressions':
+        specifier: ^5.0.1
+        version: 5.0.1
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
     devDependencies:
       '@autometa/cli':
         specifier: workspace:*
@@ -189,6 +219,9 @@ importers:
       typescript:
         specifier: 5.4.5
         version: 5.4.5
+      vite:
+        specifier: ^5.0.0
+        version: 5.1.6(@types/node@18.19.24)(terser@5.16.6)
       vitest:
         specifier: 1.4.0
         version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
@@ -418,6 +451,9 @@ importers:
       '@autometa/runner':
         specifier: workspace:*
         version: link:../runner
+      '@autometa/scopes':
+        specifier: workspace:*
+        version: link:../scopes
       '@autometa/test-builder':
         specifier: workspace:*
         version: link:../test-builder
@@ -1636,6 +1672,55 @@ importers:
       typescript:
         specifier: ^4.9.5
         version: 4.9.5
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
+  packages/vitest-plugins:
+    dependencies:
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../config
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../gherkin
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../runner
+      '@autometa/vitest-executor':
+        specifier: workspace:*
+        version: link:../vitest-executor
+      jiti:
+        specifier: ^1.21.0
+        version: 1.21.7
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.19.24
+      eslint:
+        specifier: ^8.37.0
+        version: 8.37.0
+      eslint-config-custom:
+        specifier: workspace:*
+        version: link:../../configuration/eslint-config-custom
+      rimraf:
+        specifier: ^4.1.2
+        version: 4.1.2
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../configuration/tsconfig
+      tsup:
+        specifier: ^7.2.0
+        version: 7.2.0(postcss@8.4.36)(ts-node@10.9.2(@types/node@18.19.24)(typescript@4.9.5))(typescript@4.9.5)
+      tsup-config:
+        specifier: workspace:*
+        version: link:../../configuration/tsup-config
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
+      vite:
+        specifier: ^5.0.0
+        version: 5.1.6(@types/node@18.19.24)(terser@5.16.6)
       vitest:
         specifier: 1.4.0
         version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
@@ -6105,6 +6190,10 @@ packages:
     peerDependenciesMeta:
       node-notifier:
         optional: true
+
+  jiti@1.21.7:
+    resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
+    hasBin: true
 
   joi@17.10.1:
     resolution: {integrity: sha512-vIiDxQKmRidUVp8KngT8MZSOcmRVm2zV7jbMjNYWuHcJWI0bUck3nRTGQjhpPlQenIQIBC5Vp9AhcnHbWQqafw==}
@@ -12816,7 +12905,7 @@ snapshots:
       caniuse-lite: 1.0.30001507
       fraction.js: 4.2.0
       normalize-range: 0.1.2
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       postcss: 8.4.21
       postcss-value-parser: 4.2.0
 
@@ -12826,7 +12915,7 @@ snapshots:
       caniuse-lite: 1.0.30001507
       fraction.js: 4.2.0
       normalize-range: 0.1.2
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       postcss: 8.4.36
       postcss-value-parser: 4.2.0
 
@@ -15699,6 +15788,8 @@ snapshots:
       - supports-color
       - ts-node
 
+  jiti@1.21.7: {}
+
   joi@17.10.1:
     dependencies:
       '@hapi/hoek': 9.3.0
@@ -15777,7 +15868,7 @@ snapshots:
 
   launch-editor@2.6.0:
     dependencies:
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       shell-quote: 1.8.0
 
   leven@3.1.0: {}
@@ -16866,7 +16957,7 @@ snapshots:
   postcss@8.4.21:
     dependencies:
       nanoid: 3.3.7
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       source-map-js: 1.1.0
 
   postcss@8.4.36:
@@ -17396,7 +17487,7 @@ snapshots:
   rtlcss@3.5.0:
     dependencies:
       find-up: 5.0.0
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       postcss: 8.4.36
       strip-json-comments: 3.1.1
 
@@ -17920,7 +18011,7 @@ snapshots:
       css-select: 4.3.0
       css-tree: 1.1.3
       csso: 4.2.0
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       stable: 0.1.8
 
   swap-case@1.1.2:
@@ -18370,13 +18461,13 @@ snapshots:
     dependencies:
       browserslist: 4.21.5
       escalade: 3.1.2
-      picocolors: 1.0.1
+      picocolors: 1.1.1
 
   update-browserslist-db@1.0.13(browserslist@4.23.0):
     dependencies:
       browserslist: 4.23.0
       escalade: 3.1.2
-      picocolors: 1.0.1
+      picocolors: 1.1.1
 
   update-check@1.5.4:
     dependencies:

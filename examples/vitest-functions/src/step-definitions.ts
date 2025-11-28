@@ -7,13 +7,11 @@ import {
   type StepLifecycleStatus,
 } from "./world";
 
-// Import parameter types to register custom cucumber expression types
-import "./support/parameter-types";
-
 import type { HttpMethod } from "./utils/http";
 import type { MenuExpectation, MenuRegion } from "./utils/regions";
 import { brewBuddyPlugins } from "./utils/assertions";
 import { CompositionRoot } from "./composition/brew-buddy-app";
+import { registerParameterTypes } from "./support/parameter-types";
 
 interface BrewBuddyExpressionTypes extends Record<string, unknown> {
   readonly httpMethod: HttpMethod;
@@ -49,6 +47,9 @@ export const {
   lookupParameterType,
   ensure,
 } = stepsEnvironment;
+
+// Register custom parameter types after the steps environment is created
+registerParameterTypes(defineParameterType);
 
 interface HookMetadata {
   readonly scenario?: { readonly name?: string };
