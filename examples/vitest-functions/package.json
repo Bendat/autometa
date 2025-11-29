@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "type-check": "tsc --project tsconfig.json --noEmit",
-    "features": "pnpm --filter @autometa/runner run build:types && pnpm --filter @autometa/cli run build && pnpm --filter @autometa/examples-vitest-functions exec autometa run"
+    "test": "vitest run --config vitest.unit.config.ts",
+    "test:watch": "vitest --config vitest.unit.config.ts",
+    "features": "vitest run",
+    "features:watch": "vitest",
+    "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
     "@autometa/app": "workspace:*",
