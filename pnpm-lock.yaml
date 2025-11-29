@@ -1275,6 +1275,55 @@ importers:
         specifier: 1.4.0
         version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
 
+  packages/jest-transformer:
+    dependencies:
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../config
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../gherkin
+      '@autometa/jest-executor':
+        specifier: workspace:*
+        version: link:../jest-executor
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../runner
+      jest:
+        specifier: '>=29.0.0'
+        version: 29.7.0(@types/node@18.19.24)(ts-node@10.9.2(@types/node@18.19.24)(typescript@4.9.5))
+      jiti:
+        specifier: ^1.21.0
+        version: 1.21.7
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.19.24
+      eslint:
+        specifier: ^8.37.0
+        version: 8.37.0
+      eslint-config-custom:
+        specifier: workspace:*
+        version: link:../../configuration/eslint-config-custom
+      rimraf:
+        specifier: ^4.1.2
+        version: 4.1.2
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../configuration/tsconfig
+      tsup:
+        specifier: ^7.2.0
+        version: 7.2.0(postcss@8.4.36)(ts-node@10.9.2(@types/node@18.19.24)(typescript@4.9.5))(typescript@4.9.5)
+      tsup-config:
+        specifier: workspace:*
+        version: link:../../configuration/tsup-config
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
   packages/overloaded:
     dependencies:
       colors-cli:

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
+    "paths": {
+      "@autometa/*": [
+        "../*/dist/index.d.ts"
+      ]
+    },
+    "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    ".reference"
+  ],
+  "references": [
+    {
+      "path": "../config/tsconfig.types.json"
+    },
+    {
+      "path": "../gherkin/tsconfig.types.json"
+    },
+    {
+      "path": "../jest-executor/tsconfig.types.json"
+    },
+    {
+      "path": "../runner/tsconfig.types.json"
+    }
+  ]
+}
