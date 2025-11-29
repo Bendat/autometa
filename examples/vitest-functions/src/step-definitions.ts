@@ -11,7 +11,7 @@ import type { HttpMethod } from "./utils/http";
 import type { MenuExpectation, MenuRegion } from "./utils/regions";
 import { brewBuddyPlugins } from "./utils/assertions";
 import { CompositionRoot } from "./composition/brew-buddy-app";
-import { registerParameterTypes } from "./support/parameter-types";
+import { brewBuddyParameterTypes } from "./support/parameter-types";
 
 interface BrewBuddyExpressionTypes extends Record<string, unknown> {
   readonly httpMethod: HttpMethod;
@@ -24,7 +24,8 @@ const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
   .withWorld<BrewBuddyWorldBase>(brewBuddyWorldDefaults)
   .app(CompositionRoot)
-  .assertionPlugins(brewBuddyPlugins);
+  .assertionPlugins(brewBuddyPlugins)
+  .parameterTypes(brewBuddyParameterTypes);
 
 export const stepsEnvironment = runner.steps();
 
@@ -42,14 +43,8 @@ export const {
   AfterStep,
   BeforeFeature,
   AfterFeature,
-  defineParameterType,
-  defineParameterTypes,
-  lookupParameterType,
   ensure,
 } = stepsEnvironment;
-
-// Register custom parameter types after the steps environment is created
-registerParameterTypes(defineParameterType);
 
 interface HookMetadata {
   readonly scenario?: { readonly name?: string };

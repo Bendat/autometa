@@ -28,6 +28,7 @@ import type {
 	WorldFactory,
 	WorldFactoryContext,
 } from "@autometa/scopes";
+import type { ParameterTypeDefinitions } from "@autometa/cucumber-expressions";
 import type { RunnerContextOptions } from "../core/runner-context";
 import {
 	createRunner,
@@ -234,6 +235,9 @@ export interface RunnerBuilder<
 		ExpressionTypes,
 		EnsurePluginFacets<World, NextPlugins>
 	>;
+	parameterTypes(
+		definitions: ParameterTypeDefinitions<World>
+	): RunnerBuilder<World, ExpressionTypes, Facets>;
 	steps(): RunnerStepsSurface<World, ExpressionTypes, Facets>;
 	decorators(): RunnerDecoratorsSurface<World>;
 }
@@ -404,6 +408,18 @@ class RunnerBuilderImpl<
 				return createImplicitEnsureProxy(factory);
 			}
 		);
+	}
+
+	parameterTypes(
+		definitions: ParameterTypeDefinitions<World>
+	): RunnerBuilder<World, ExpressionTypes, Facets> {
+		const current = this.state.options.parameterTypes ?? [];
+		this.state.options.parameterTypes = [
+			...current,
+			...(definitions as ParameterTypeDefinitions<unknown>),
+		] as ParameterTypeDefinitions<unknown>;
+		invalidateCaches(this.state);
+		return new RunnerBuilderImpl<World, ExpressionTypes, Facets>(this.state);
 	}
 
 	steps(): RunnerStepsSurface<World, ExpressionTypes, Facets> {
