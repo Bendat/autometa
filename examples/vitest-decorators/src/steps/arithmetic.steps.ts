@@ -1,47 +1,56 @@
 import "reflect-metadata";
 import { Binding, Given, When, Then, And, getBindingSteps } from "../decorators";
 import type { ArithmeticWorld } from "../world";
+import { CalculatorService } from "../services";
 
 /**
- * Arithmetic step definitions using class-based decorator pattern.
+ * Arithmetic step definitions using class-based decorator pattern with DI.
  * 
- * The world is passed to step handlers through the runner's functional API,
- * but we use a factory pattern to create step handlers that work with the class instance.
+ * The world and services are injected via constructor.
+ * This enables a cleaner API where steps only receive their Cucumber parameters.
  */
 @Binding()
 export class ArithmeticSteps {
   /**
+   * Constructor injection - world and services are provided by the DI container
+   */
+  constructor(
+    private readonly world: ArithmeticWorld,
+    private readonly calculator: CalculatorService = new CalculatorService()
+  ) {}
+
+  /**
    * Sets the initial number in the world
    */
   @Given("I have the number {int}")
-  setNumber(value: number, world: ArithmeticWorld): void {
-    world.result = value;
+  setNumber(value: number): void {
+    this.world.result = value;
   }
 
   /**
-   * Adds a value to the current result
+   * Adds a value to the current result using the calculator service
    */
   @When("I add {int}")
-  addNumber(value: number, world: ArithmeticWorld): void {
-    world.result = (world.result ?? 0) + value;
+  addNumber(value: number): void {
+    this.world.result = this.calculator.add(this.world.result ?? 0, value);
   }
 
   /**
-   * Multiplies the current result by a value
+   * Multiplies the current result by a value using the calculator service
    */
   @When("I multiply by {int}")
   @And("I multiply by {int}")
-  multiplyNumber(value: number, world: ArithmeticWorld): void {
-    world.result = (world.result ?? 0) * value;
+  multiplyNumber(value: number): void {
+    this.world.result = this.calculator.multiply(this.world.result ?? 0, value);
   }
 
   /**
    * Asserts the result equals the expected value
    */
   @Then("the result should be {int}")
-  assertResult(expected: number, world: ArithmeticWorld): void {
-    if (world.result !== expected) {
-      throw new Error(`Expected ${expected} but got ${world.result}`);
+  assertResult(expected: number): void {
+    if (this.world.result !== expected) {
+      throw new Error(`Expected ${expected} but got ${this.world.result}`);
     }
   }
 }
