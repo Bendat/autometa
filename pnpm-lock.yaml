@@ -220,6 +220,82 @@ importers:
         specifier: ^4.9.5
         version: 4.9.5
 
+  examples/vitest-decorators:
+    dependencies:
+      '@autometa/app':
+        specifier: workspace:*
+        version: link:../../packages/app
+      '@autometa/assertions':
+        specifier: workspace:*
+        version: link:../../packages/assertions
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@autometa/cucumber-expressions':
+        specifier: workspace:*
+        version: link:../../packages/cucumber-expressions
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@autometa/executor':
+        specifier: workspace:*
+        version: link:../../packages/executor
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../../packages/gherkin
+      '@autometa/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@autometa/injection':
+        specifier: workspace:*
+        version: link:../../packages/injection
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../../packages/runner
+      '@autometa/scopes':
+        specifier: workspace:*
+        version: link:../../packages/scopes
+      '@autometa/vitest-executor':
+        specifier: workspace:*
+        version: link:../../packages/vitest-executor
+      '@autometa/vitest-plugins':
+        specifier: workspace:*
+        version: link:../../packages/vitest-plugins
+      '@cucumber/cucumber-expressions':
+        specifier: ^16.1.2
+        version: 16.1.2
+      '@cucumber/gherkin':
+        specifier: ^26.0.3
+        version: 26.0.3
+      '@cucumber/messages':
+        specifier: ^21.0.1
+        version: 21.0.1
+      '@cucumber/tag-expressions':
+        specifier: ^5.0.1
+        version: 5.0.1
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
+    devDependencies:
+      '@autometa/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@types/node':
+        specifier: 18.19.24
+        version: 18.19.24
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.0.0
+        version: 5.1.6(@types/node@18.19.24)(terser@5.16.6)
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
   examples/vitest-functions:
     dependencies:
       '@autometa/app':
@@ -7634,6 +7710,9 @@ packages:
   reflect-metadata@0.2.1:
     resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
     deprecated: This version has a critical bug in fallback handling. Please upgrade to reflect-metadata@0.2.2 or newer.
+
+  reflect-metadata@0.2.2:
+    resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
 
   regenerate-unicode-properties@10.1.0:
     resolution: {integrity: sha512-d1VudCLoIGitcU/hEg2QqvyGZQmdC0Lf8BqdOMXGFSvJP4bNV1+XqbPQeHHLD51Jh4QJJ225dlIFvY4Ly6MXmQ==}
@@ -17413,6 +17492,8 @@ snapshots:
   reflect-metadata@0.1.13: {}
 
   reflect-metadata@0.2.1: {}
+
+  reflect-metadata@0.2.2: {}
 
   regenerate-unicode-properties@10.1.0:
     dependencies:
