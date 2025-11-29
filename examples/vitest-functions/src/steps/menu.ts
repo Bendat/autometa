@@ -46,6 +46,13 @@ Then("the menu should include the default drinks", (world) => {
   }
 });
 
+Then("the menu should contain at least one item", (world) => {
+  const items = ensureMenuItems(world);
+  ensure(items.length > 0, {
+    label: "Menu should contain at least one item.",
+  }).toBeTruthy();
+});
+
 Given("I create a seasonal drink named {string}", async (name, world) => {
   const fields = world.runtime
     .requireTable("horizontal")

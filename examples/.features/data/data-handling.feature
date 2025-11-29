@@ -1,9 +1,6 @@
 Feature: Share recipe knowledge through data tables
   Brew Buddy crafts consistent drinks by following structured recipes and sharing tasting notes.
 
-  Background:
-    Given the Brew Buddy menu is reset to the default offerings
-
   Scenario: Import multiple recipes using a data table
     When I register the following recipes
       | name          | base     | additions         |

@@ -165,6 +165,13 @@ Given("the inventory for {string} is set to {int} drinks", async (item: string, 
   world.scenario.expectOrderFailure = quantity <= 0;
 });
 
+Then("the inventory for {string} is restored to {int} drinks", async (item: string, quantity: number, world: BrewBuddyWorld) => {
+  await performRequest(world, "patch", `/inventory/${encodeURIComponent(item)}`, {
+    body: { quantity },
+  });
+  ensure.response.hasStatus(200);
+});
+
 function readOrderOverrides(world: BrewBuddyWorld): Record<string, unknown> {
   const table = world.runtime.requireTable("vertical");
   const record = table.getRecord(0) as Record<string, unknown>;

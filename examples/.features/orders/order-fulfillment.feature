@@ -1,10 +1,5 @@
-@sequential
 Feature: Fulfil customer beverage orders
   Guests place drinks from the Brew Buddy menu. Orders drive preparation timing, payment, and loyalty rewards.
-
-  Background:
-    Given the Brew Buddy menu is reset to the default offerings
-    And the order queue is cleared
 
   Scenario: Submit a single drink order
     When I place an order for "Flat White"
@@ -42,8 +37,9 @@ Feature: Fulfil customer beverage orders
       | size | <size> |
     Then the order should be rejected with status 409
     And the rejection reason should be "Inventory depleted for <item>"
+    And the inventory for "<item>" is restored to 50 drinks
 
     Examples:
-      | item           | size | remaining |
-      | Espresso       | 8oz  | 0         |
-      | Iced Cold Brew | 16oz | 0         |
+      | item            | size | remaining |
+      | Golden Latte    | 12oz | 0         |
+      | Midnight Mocha  | 16oz | 0         |

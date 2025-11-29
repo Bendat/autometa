@@ -3,7 +3,6 @@ Feature: Manage recipes through the Brew Buddy API
 
   Background:
     Given the Brew Buddy API base URL is configured
-    And the recipe catalog is reset to the default recipes
 
   Rule: Creating recipes requires complete definitions
     Scenario Outline: Create a recipe with required fields
