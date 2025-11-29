@@ -22,6 +22,8 @@ export type {
 
 export { App, WORLD_INHERIT_KEYS } from "./builder/create-runner-builder";
 
+export type { RunnerBindingsSurface } from "./bindings/create-bindings-ts";
+
 export { createDecoratorRunner } from "./dsl/create-decorator-runner";
 export type {
 	DecoratorRunnerEnvironment,

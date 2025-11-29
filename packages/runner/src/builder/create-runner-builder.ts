@@ -47,6 +47,10 @@ import {
 	type RunnerDecorators,
 } from "../decorators/create-runner-decorators";
 import {
+	createBindingsTS,
+	type RunnerBindingsSurface,
+} from "../bindings/create-bindings-ts";
+import {
 	coordinateRunnerFeature,
 	type CoordinateRunnerFeatureOptions,
 } from "../runtime/coordinate-runner-feature";
@@ -240,6 +244,30 @@ export interface RunnerBuilder<
 	): RunnerBuilder<World, ExpressionTypes, Facets>;
 	steps(): RunnerStepsSurface<World, ExpressionTypes, Facets>;
 	decorators(): RunnerDecoratorsSurface<World>;
+	/**
+	 * Returns binding decorators for TypeScript experimental decorators.
+	 * Use this for class-based step definitions with dependency injection.
+	 * 
+	 * @example
+	 * ```typescript
+	 * const { Binding, Given, When, Then, Injectable, Inject } = runner.bindingsTS();
+	 * 
+	 * @Injectable()
+	 * class MyService { ... }
+	 * 
+	 * @Binding()
+	 * class MySteps {
+	 *   constructor(
+	 *     @Inject(WORLD_TOKEN) private world: MyWorld,
+	 *     @Inject(MyService) private service: MyService
+	 *   ) {}
+	 *   
+	 *   @Given("some step")
+	 *   myStep() { ... }
+	 * }
+	 * ```
+	 */
+	bindingsTS(): RunnerBindingsSurface<World>;
 }
 
 export type RunnerCoordinateFeatureOptions<World> = Omit<
@@ -254,6 +282,7 @@ interface BuilderState {
 	ensureFactory?: RunnerEnsureFactory<unknown, Record<string, unknown>>;
 	stepsCache?: StepsCache;
 	decoratorsCache?: DecoratorsCache;
+	bindingsTSCache?: BindingsTSCache;
 	featureRegistry?: FeatureRegistry;
 }
 
@@ -271,6 +300,10 @@ interface StepsCache {
 interface DecoratorsCache {
 	environment: DecoratorRunnerEnvironment<unknown>;
 	surface: RunnerDecoratorsSurface<unknown>;
+}
+
+interface BindingsTSCache {
+	surface: RunnerBindingsSurface<unknown>;
 }
 
 
@@ -428,6 +461,10 @@ class RunnerBuilderImpl<
 
 	decorators(): RunnerDecoratorsSurface<World> {
 		return ensureDecorators<World, ExpressionTypes>(this.state);
+	}
+
+	bindingsTS(): RunnerBindingsSurface<World> {
+		return ensureBindingsTS<World, ExpressionTypes, Facets>(this.state);
 	}
 }
 
@@ -599,6 +636,7 @@ function cloneWithFallback<T>(value: T): T {
 function invalidateCaches(state: BuilderState): void {
 	delete state.stepsCache;
 	delete state.decoratorsCache;
+	delete state.bindingsTSCache;
 }
 
 function ensureSteps<
@@ -671,6 +709,26 @@ function ensureDecorators<
 		state.decoratorsCache = cache;
 	}
 	return cache.surface as RunnerDecoratorsSurface<World>;
+}
+
+function ensureBindingsTS<
+	World,
+	ExpressionTypes extends CucumberExpressionTypeMap,
+	Facets extends Record<string, unknown>
+>(
+	state: BuilderState
+): RunnerBindingsSurface<World> {
+	let cache = state.bindingsTSCache;
+	if (!cache) {
+		// Get the steps environment to bridge decorator steps to
+		const stepsEnv = ensureSteps<World, ExpressionTypes, Facets>(state);
+		const surface = createBindingsTS<World>(stepsEnv);
+		cache = {
+			surface: surface as RunnerBindingsSurface<unknown>,
+		};
+		state.bindingsTSCache = cache;
+	}
+	return cache.surface as RunnerBindingsSurface<World>;
 }
 
 function buildRunnerOptions<World>(

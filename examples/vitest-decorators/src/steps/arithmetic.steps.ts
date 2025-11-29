@@ -1,6 +1,5 @@
 import "reflect-metadata";
-import { WORLD_TOKEN } from "@autometa/runner";
-import { Binding, Given, When, Then, And, Inject, getBindingSteps } from "../decorators";
+import { Binding, Given, When, Then, And, Inject, WORLD_TOKEN } from "../step-definitions";
 import type { ArithmeticWorld } from "../world";
 import { CalculatorService } from "../services";
 
@@ -56,6 +55,3 @@ export class ArithmeticSteps {
     }
   }
 }
-
-// Export metadata helper for the runner to use
-export { getBindingSteps };

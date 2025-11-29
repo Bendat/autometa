@@ -1,4 +1,4 @@
-import { Injectable } from "../decorators";
+import { Injectable } from "../step-definitions";
 
 /**
  * A simple calculator service that can be injected into step classes.
