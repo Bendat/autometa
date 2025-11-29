@@ -1,22 +1,24 @@
 import "reflect-metadata";
-import { Binding, Given, When, Then, And, getBindingSteps } from "../decorators";
+import { WORLD_TOKEN } from "@autometa/runner";
+import { Binding, Given, When, Then, And, Inject, getBindingSteps } from "../decorators";
 import type { ArithmeticWorld } from "../world";
 import { CalculatorService } from "../services";
 
 /**
  * Arithmetic step definitions using class-based decorator pattern with DI.
  * 
- * The world and services are injected via constructor.
+ * The world and services are injected via constructor using @Inject.
  * This enables a cleaner API where steps only receive their Cucumber parameters.
  */
 @Binding()
 export class ArithmeticSteps {
   /**
-   * Constructor injection - world and services are provided by the DI container
+   * Constructor injection - world and services are provided by the DI container.
+   * Use @Inject(WORLD_TOKEN) for the world, @Inject(ServiceClass) for services.
    */
   constructor(
-    private readonly world: ArithmeticWorld,
-    private readonly calculator: CalculatorService = new CalculatorService()
+    @Inject(WORLD_TOKEN) private readonly world: ArithmeticWorld,
+    @Inject(CalculatorService) private readonly calculator: CalculatorService
   ) {}
 
   /**

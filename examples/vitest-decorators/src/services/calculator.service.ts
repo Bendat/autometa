@@ -1,7 +1,10 @@
+import { Injectable } from "../decorators";
+
 /**
  * A simple calculator service that can be injected into step classes.
  * Demonstrates how services can be used with DI in step definitions.
  */
+@Injectable()
 export class CalculatorService {
   add(a: number, b: number): number {
     return a + b;

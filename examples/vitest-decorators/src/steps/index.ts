@@ -1,32 +1,56 @@
 import "reflect-metadata";
 import { CucumberRunner, WORLD_TOKEN } from "@autometa/runner";
-import { Scope, type IContainer } from "@autometa/injection";
+import type { Constructor } from "@autometa/injection";
 import { arithmeticWorldDefaults, type ArithmeticWorld } from "../world";
 import { ArithmeticSteps, getBindingSteps } from "./arithmetic.steps";
+import { globalContainer } from "../decorators";
 
-// Token for step class instances
-const STEP_CLASS_TOKEN = Symbol("autometa:step_class");
+// Import services to ensure they're registered with globalContainer
+import "../services";
 
-// Create the runner builder with world
+// ============================================================================
+// RUNNER SETUP
+// ============================================================================
+
 const runner = CucumberRunner.builder()
   .withWorld<ArithmeticWorld>(arithmeticWorldDefaults);
 
-// Get the steps environment
 export const stepsEnvironment = runner.steps();
 
-// Extract the step registration functions
 const { Given, When, Then, And, But } = stepsEnvironment;
+
+// ============================================================================
+// STEP CLASS REGISTRATION
+// ============================================================================
 
 // Cache for step class instances per scenario (keyed by world reference)
 const instanceCache = new WeakMap<object, Map<unknown, unknown>>();
+// Cache for scenario containers (child of globalContainer with WORLD_TOKEN)
+const containerCache = new WeakMap<object, ReturnType<typeof globalContainer.createChild>>();
+
+/**
+ * Get or create a scenario-scoped container.
+ * This is a child of globalContainer with WORLD_TOKEN registered for this scenario.
+ */
+function getScenarioContainer(world: ArithmeticWorld) {
+  let container = containerCache.get(world);
+  if (!container) {
+    // Create child from globalContainer - inherits all service registrations
+    container = globalContainer.createChild();
+    // Register WORLD_TOKEN for this scenario
+    container.registerValue(WORLD_TOKEN, world as unknown as Record<string, unknown>);
+    containerCache.set(world, container);
+  }
+  return container;
+}
 
 /**
  * Get or create a step class instance for the current scenario.
- * Uses the world's DI container to resolve dependencies.
+ * Uses a child of globalContainer with WORLD_TOKEN registered.
  */
 function getStepInstance<T>(
-  BindingClass: new (...args: unknown[]) => T,
-  world: ArithmeticWorld & { di?: IContainer }
+  BindingClass: Constructor<T>,
+  world: ArithmeticWorld
 ): T {
   // Get or create the instance cache for this world
   let cache = instanceCache.get(world);
@@ -41,43 +65,21 @@ function getStepInstance<T>(
     return instance;
   }
 
-  // Create a new instance using DI if available
-  if (world.di) {
-    // Register the class with the container if not already registered
-    try {
-      world.di.register(BindingClass, {
-        type: "class",
-        target: BindingClass,
-        scope: Scope.SCENARIO,
-        tags: [],
-        deps: [WORLD_TOKEN], // Inject world as first constructor parameter
-        props: [],
-      });
-    } catch {
-      // Class may already be registered
-    }
-    
-    // Resolve the instance
-    instance = world.di.resolve(BindingClass) as T;
-  } else {
-    // Fallback: create instance with world as first parameter
-    instance = new BindingClass(world) as T;
-  }
+  // Get the scenario-scoped container (child of globalContainer)
+  const container = getScenarioContainer(world);
 
+  // Resolve the instance - services come from globalContainer, world from this container
+  instance = container.resolve(BindingClass) as T;
   cache.set(BindingClass, instance);
   return instance;
 }
 
 /**
  * Register a binding class's steps with the runner.
- * 
- * This bridges the decorator-based step definitions to the functional API.
- * Step class instances are created per-scenario with DI support.
+ * Step class instances are created per-scenario with full DI support.
  */
-function registerBindingClass<T extends new (...args: unknown[]) => unknown>(
-  BindingClass: T
-): void {
-  const metadata = getBindingSteps(BindingClass);
+function registerBindingClass<T>(BindingClass: Constructor<T>): void {
+  const metadata = getBindingSteps(BindingClass as new (...args: unknown[]) => unknown);
   if (!metadata) {
     console.warn(`No binding metadata found for ${BindingClass.name}`);
     return;
@@ -85,10 +87,9 @@ function registerBindingClass<T extends new (...args: unknown[]) => unknown>(
 
   for (const step of metadata.steps) {
     // Create a handler that lazily gets the instance and calls the method
-    // The world is the last parameter from the runner
     const handler = (...args: unknown[]) => {
-      // World is always the last argument
-      const world = args[args.length - 1] as ArithmeticWorld & { di?: IContainer };
+      // World is always the last argument from the runner
+      const world = args[args.length - 1] as ArithmeticWorld;
       const stepArgs = args.slice(0, -1);
       
       // Get or create the step class instance for this scenario
@@ -99,7 +100,7 @@ function registerBindingClass<T extends new (...args: unknown[]) => unknown>(
         throw new Error(`Step method ${String(step.propertyKey)} is not a function`);
       }
 
-      // Call the method with the step arguments (no world - it's injected via constructor)
+      // Call the method with the step arguments (world is injected via constructor)
       return (method as (...args: unknown[]) => unknown).apply(instance, stepArgs);
     };
 
