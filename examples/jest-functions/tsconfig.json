@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": ["src/**/*", "autometa.config.ts", "jest.config.cjs", "jest.unit.config.cjs"],
+  "exclude": ["node_modules", "dist"]
+}

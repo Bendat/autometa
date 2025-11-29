@@ -319,11 +319,12 @@ describe(feature.name, () => {
 /**
  * Generate require statements for step definition files.
  * Since Jest doesn't have import.meta.glob, we need to explicitly require files.
+ * Uses absolute paths to ensure require works from any feature file location.
  */
 function generateStepRequires(
   stepRoots: readonly string[] | undefined,
   configDir: string,
-  projectRoot: string
+  _projectRoot: string
 ): string {
   if (!stepRoots || stepRoots.length === 0) {
     return "const stepModules = [];";
@@ -338,21 +339,16 @@ function generateStepRequires(
       continue;
     }
 
-    // Resolve the step root path
+    // Resolve the step root path to absolute
     const absolutePath = isAbsolute(normalizedRoot)
       ? normalizedRoot
       : resolve(configDir, normalizedRoot);
 
     // Check if it's a file or directory
     if (existsSync(absolutePath)) {
-      const relativePath = relative(projectRoot, absolutePath);
-      const requirePath = relativePath.startsWith(".")
-        ? relativePath
-        : `./${relativePath}`;
-
-      // Normalize to forward slashes for require
-      const normalizedRequirePath = requirePath.replace(/\\/g, "/");
-      requires.push(`const stepModule${moduleIndex} = require('${normalizedRequirePath}');`);
+      // Use absolute path to ensure require works from any feature file location
+      const normalizedAbsolutePath = normalizeSlashes(absolutePath);
+      requires.push(`const stepModule${moduleIndex} = require('${normalizedAbsolutePath}');`);
       moduleIndex++;
     }
   }
