@@ -5,6 +5,7 @@ export type SuiteFn = {
   skip: SuiteFn;
   only: SuiteFn;
   concurrent?: SuiteFn;
+  sequential?: SuiteFn;
 };
 
 export type TestFn = {
@@ -12,6 +13,7 @@ export type TestFn = {
   skip: TestFn;
   only: TestFn;
   concurrent?: TestFn;
+  sequential?: TestFn;
   failing?: TestFn;
   fails?: TestFn;
   todo?: (title: string, reason?: string) => void;

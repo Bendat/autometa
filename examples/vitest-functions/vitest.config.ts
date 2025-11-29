@@ -7,7 +7,10 @@ export default defineConfig({
     environment: "node",
     globals: false,
     include: ["../.features/**/*.feature"],
+    // Run all test files sequentially (not in parallel)
+    fileParallelism: false,
     sequence: {
+      // Run tests within a file sequentially
       concurrent: false,
     },
     hookTimeout: 30_000,

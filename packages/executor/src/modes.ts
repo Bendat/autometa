@@ -3,6 +3,7 @@ import type { SuiteFn, TestFn } from "./types";
 
 const MODE_TAG_ALIASES: Record<string, ExecutionMode> = {
   concurrent: "concurrent",
+  sequential: "sequential",
   failing: "failing",
   fails: "failing",
 };
@@ -59,6 +60,8 @@ export const selectSuiteByMode = (suite: SuiteFn, mode: ExecutionMode): SuiteFn 
       return suite.only;
     case "concurrent":
       return typeof suite.concurrent === "function" ? suite.concurrent : suite;
+    case "sequential":
+      return typeof suite.sequential === "function" ? suite.sequential : suite;
     default:
       return suite;
   }
@@ -72,6 +75,8 @@ export const selectTestByMode = (test: TestFn, mode: ExecutionMode): TestFn => {
       return test.only;
     case "concurrent":
       return typeof test.concurrent === "function" ? test.concurrent : test;
+    case "sequential":
+      return typeof test.sequential === "function" ? test.sequential : test;
     case "failing":
       return selectFailingTest(test);
     default:

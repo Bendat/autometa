@@ -1,3 +1,4 @@
+@sequential
 Feature: Manage Brew Buddy menu catalog
   Brew Buddy keeps a curated coffee menu. Baristas manage items, prices, and seasonal availability.
 

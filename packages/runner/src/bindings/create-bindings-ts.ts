@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import type { StepExpression } from "@autometa/scopes";
 import {
   createContainer,
@@ -78,10 +77,21 @@ const INJECT_PARAM_KEY = "autometa:inject_param"; // Same key used by createDeco
 /**
  * Creates the bindings surface for TypeScript experimental decorators.
  * This provides class-based step definitions with full DI support.
+ * 
+ * Note: This function requires reflect-metadata to be imported by the user.
+ * The import is done lazily to avoid breaking projects that don't use bindings.
  */
 export function createBindingsTS<World>(
   stepsEnvironment: RunnerEnvironment<World, Record<string, unknown>>
 ): RunnerBindingsSurface<World> {
+  // Ensure reflect-metadata is available (user must import it)
+  if (typeof Reflect === "undefined" || typeof Reflect.getMetadata !== "function") {
+    throw new Error(
+      "bindingsTS() requires reflect-metadata. " +
+      "Add `import 'reflect-metadata'` at the top of your step-definitions file."
+    );
+  }
+
   // Create global container for service registrations
   const globalContainer = createContainer();
 

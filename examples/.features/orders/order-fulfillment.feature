@@ -1,3 +1,4 @@
+@sequential
 Feature: Fulfil customer beverage orders
   Guests place drinks from the Brew Buddy menu. Orders drive preparation timing, payment, and loyalty rewards.
 

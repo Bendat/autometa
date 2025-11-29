@@ -6,7 +6,7 @@ export type ScopeKind =
   | "scenario"
   | "scenarioOutline";
 
-export type ExecutionMode = "default" | "skip" | "only" | "failing" | "concurrent";
+export type ExecutionMode = "default" | "skip" | "only" | "failing" | "concurrent" | "sequential";
 
 export type TimeoutUnit = "ms" | "s" | "m" | "h";
 
