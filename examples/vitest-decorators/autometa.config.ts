@@ -4,7 +4,7 @@ export default defineConfig({
   default: {
     runner: "vitest",
     roots: {
-      features: ["./.features"],
+      features: ["./features"],
       steps: ["./src/steps/index.ts"],
     },
     test: {

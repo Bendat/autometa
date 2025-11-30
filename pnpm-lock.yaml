@@ -167,6 +167,12 @@ importers:
       '@autometa/cucumber-expressions':
         specifier: workspace:*
         version: link:../../packages/cucumber-expressions
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@autometa/executor':
+        specifier: workspace:*
+        version: link:../../packages/executor
       '@autometa/gherkin':
         specifier: workspace:*
         version: link:../../packages/gherkin

@@ -8,7 +8,7 @@ import type {
   Order,
 } from "../../.api/src/types/domain.js";
 import type { MenuRegion } from "./utils/regions";
-import type { BrewBuddyClient } from "./utils/http";
+import { BrewBuddyClient } from "./utils/http";
 
 const DEFAULT_API_BASE_URL = "http://localhost:4000";
 
@@ -33,6 +33,16 @@ export interface OrderErrorState {
   readonly body: unknown;
 }
 
+interface CartItem {
+  name: string;
+  quantity: number;
+}
+
+interface Cart {
+  items: CartItem[];
+  total: number;
+}
+
 interface ScenarioState {
   createdItems: string[];
   menuSnapshot?: MenuItem[];
@@ -53,6 +63,9 @@ interface ScenarioState {
   expectedStatusSequence?: string[];
   simulatedEvents?: Array<{ event: string; data: unknown }>;
   lastPickupCode?: string;
+  cart?: Cart;
+  customerName?: string;
+  lastOrderId?: string;
 }
 
 export type StepLifecycleStatus = "passed" | "failed" | "skipped";

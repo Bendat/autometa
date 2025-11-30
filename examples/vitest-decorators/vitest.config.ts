@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: false,
-    include: [".features/**/*.feature"],
+    include: ["features/**/*.feature"],
     sequence: {
       concurrent: false,
     },

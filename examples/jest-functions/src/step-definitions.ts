@@ -1,17 +1,31 @@
 import { CucumberRunner } from "@autometa/runner";
 
-interface SimpleWorld {
-  value: number;
-  result: number | undefined;
+import {
+  brewBuddyWorldDefaults,
+  type BrewBuddyWorldBase,
+  type LifecycleStepRecord,
+  type StepLifecycleStatus,
+} from "./world";
+
+import type { HttpMethod } from "./utils/http";
+import type { MenuExpectation, MenuRegion } from "./utils/regions";
+import { brewBuddyPlugins } from "./utils/assertions";
+import { CompositionRoot } from "./composition/brew-buddy-app";
+import { brewBuddyParameterTypes } from "./support/parameter-types";
+
+interface BrewBuddyExpressionTypes extends Record<string, unknown> {
+  readonly httpMethod: HttpMethod;
+  readonly menuRegion: MenuRegion;
+  readonly menuSelection: MenuExpectation;
+  readonly menuSeasonal: boolean;
 }
 
-const worldDefaults: Partial<SimpleWorld> = {
-  value: 0,
-  result: undefined,
-};
-
 const runner = CucumberRunner.builder()
-  .withWorld<SimpleWorld>(worldDefaults);
+  .expressionMap<BrewBuddyExpressionTypes>()
+  .withWorld<BrewBuddyWorldBase>(brewBuddyWorldDefaults)
+  .app(CompositionRoot)
+  .assertionPlugins(brewBuddyPlugins)
+  .parameterTypes(brewBuddyParameterTypes);
 
 export const stepsEnvironment = runner.steps();
 
@@ -23,51 +37,84 @@ export const {
   But,
   BeforeScenario,
   AfterScenario,
+  BeforeScenarioOutline,
+  AfterScenarioOutline,
+  BeforeStep,
+  AfterStep,
   BeforeFeature,
   AfterFeature,
+  ensure,
 } = stepsEnvironment;
 
-// Simple arithmetic steps for testing
-Given("I have the number {int}", (value: number, world: SimpleWorld) => {
-  world.result = value;
-});
+interface HookMetadata {
+  readonly scenario?: { readonly name?: string };
+  readonly step?: {
+    readonly index?: number;
+    readonly keyword?: string;
+    readonly text?: string;
+    readonly status?: StepLifecycleStatus;
+  };
+}
 
-When("I add {int}", (value: number, world: SimpleWorld) => {
-  world.result = (world.result ?? 0) + value;
-});
-
-When("I multiply by {int}", (value: number, world: SimpleWorld) => {
-  world.result = (world.result ?? 0) * value;
-});
-
-Then("the result should be {int}", (expected: number, world: SimpleWorld) => {
-  if (world.result !== expected) {
-    throw new Error(`Expected ${expected} but got ${world.result}`);
+function writeLifecycleLog(
+  logger: ((message: string) => void) | undefined,
+  message: string
+): void {
+  if (logger) {
+    logger(message);
+    return;
   }
+  console.info(message);
+}
+
+BeforeFeature(({ world, scope, log }) => {
+  world.lifecycle.featureName = scope.name;
+  world.lifecycle.beforeFeatureRuns += 1;
+  writeLifecycleLog(log, `Preparing "${scope.name}"`);
 });
 
-// String steps
-Given("I have the text {string}", (_text: string, _world: SimpleWorld) => {
-  // Store text (simplified for demo)
+AfterFeature(({ world, log }) => {
+  world.lifecycle.afterFeatureRuns += 1;
+  writeLifecycleLog(
+    log,
+    `Finished "${world.lifecycle.featureName ?? "<unknown>"}"`
+  );
 });
 
-Then("the text should contain {string}", (_substring: string, _world: SimpleWorld) => {
-  // Check text (simplified for demo)
+BeforeScenario(({ world, scope, metadata, log }) => {
+  const details = (metadata ?? {}) as HookMetadata;
+  const scenarioName = details.scenario?.name ?? scope.name;
+  if (!world.lifecycle.scenarioOrder.includes(scenarioName)) {
+    world.lifecycle.scenarioOrder.push(scenarioName);
+  }
+  writeLifecycleLog(log, `Scenario "${scenarioName}" ready`);
 });
 
-// Lifecycle hooks for debugging
-BeforeFeature(({ scope, log }) => {
-  log?.(`Starting feature: ${scope.name}`);
+AfterStep(({ world, scope, metadata, log }) => {
+  const details = (metadata ?? {}) as HookMetadata;
+  const scenarioName = details.scenario?.name ?? scope.name;
+  const step = details.step;
+  if (!step) {
+    return;
+  }
+
+  const keyword = step.keyword?.trim() ?? "";
+  const text = step.text ?? "";
+  const label = keyword
+    ? `${keyword}${text.startsWith(" ") ? "" : " "}${text}`
+    : text || `${step.keyword ?? "Step"} #${step.index ?? 0}`;
+  const entry: LifecycleStepRecord = {
+    scenario: scenarioName,
+    step: label,
+    status: (step.status as StepLifecycleStatus | undefined) ?? "passed",
+  };
+
+  world.lifecycle.stepHistory.push(entry);
+  writeLifecycleLog(
+    log,
+    `Scenario "${scenarioName}" :: ${label} (${entry.status})`
+  );
 });
 
-AfterFeature(({ scope, log }) => {
-  log?.(`Finished feature: ${scope.name}`);
-});
-
-BeforeScenario(({ scope, log }) => {
-  log?.(`Starting scenario: ${scope.name}`);
-});
-
-AfterScenario(({ scope, log }) => {
-  log?.(`Finished scenario: ${scope.name}`);
-});
+// Import all step definitions
+import "./steps";

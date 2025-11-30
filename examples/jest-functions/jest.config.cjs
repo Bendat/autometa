@@ -9,7 +9,7 @@ module.exports = {
       },
     ],
   },
-  testMatch: ["**/*.feature"],
+  testMatch: ["**/features/**/*.feature"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "feature"],
   extensionsToTreatAsEsm: [".ts"],
   testEnvironment: "node",
