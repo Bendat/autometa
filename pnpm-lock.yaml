@@ -226,6 +226,73 @@ importers:
         specifier: ^4.9.5
         version: 4.9.5
 
+  examples/playwright-functions:
+    dependencies:
+      '@autometa/app':
+        specifier: workspace:*
+        version: link:../../packages/app
+      '@autometa/assertions':
+        specifier: workspace:*
+        version: link:../../packages/assertions
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@autometa/cucumber-expressions':
+        specifier: workspace:*
+        version: link:../../packages/cucumber-expressions
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@autometa/executor':
+        specifier: workspace:*
+        version: link:../../packages/executor
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../../packages/gherkin
+      '@autometa/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@autometa/injection':
+        specifier: workspace:*
+        version: link:../../packages/injection
+      '@autometa/playwright-loader':
+        specifier: workspace:*
+        version: link:../../packages/playwright-loader
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../../packages/runner
+      '@autometa/scopes':
+        specifier: workspace:*
+        version: link:../../packages/scopes
+      '@cucumber/cucumber-expressions':
+        specifier: ^16.1.2
+        version: 16.1.2
+      '@cucumber/gherkin':
+        specifier: ^26.0.3
+        version: 26.0.3
+      '@cucumber/messages':
+        specifier: ^21.0.1
+        version: 21.0.1
+      '@cucumber/tag-expressions':
+        specifier: ^5.0.1
+        version: 5.0.1
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
+    devDependencies:
+      '@autometa/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@playwright/test':
+        specifier: ^1.40.0
+        version: 1.57.0
+      '@types/node':
+        specifier: 18.19.24
+        version: 18.19.24
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+
   examples/vitest-decorators:
     dependencies:
       '@autometa/app':
@@ -1558,6 +1625,49 @@ importers:
       eslint-config-prettier:
         specifier: ^8.3.0
         version: 8.6.0(eslint@8.37.0)
+      rimraf:
+        specifier: ^4.1.2
+        version: 4.1.2
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../configuration/tsconfig
+      tsup:
+        specifier: ^7.2.0
+        version: 7.2.0(postcss@8.4.36)(ts-node@10.9.2(@types/node@18.19.24)(typescript@4.9.5))(typescript@4.9.5)
+      tsup-config:
+        specifier: workspace:*
+        version: link:../../configuration/tsup-config
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
+  packages/playwright-loader:
+    dependencies:
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../config
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../gherkin
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../runner
+      '@playwright/test':
+        specifier: ^1.40.0
+        version: 1.57.0
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.19.24
+      eslint:
+        specifier: ^8.37.0
+        version: 8.37.0
+      eslint-config-custom:
+        specifier: workspace:*
+        version: link:../../configuration/eslint-config-custom
       rimraf:
         specifier: ^4.1.2
         version: 4.1.2
@@ -3440,6 +3550,11 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
+
+  '@playwright/test@1.57.0':
+    resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@polka/url@1.0.0-next.21':
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
@@ -5525,6 +5640,11 @@ packages:
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -7199,6 +7319,16 @@ packages:
   pkg-up@3.1.0:
     resolution: {integrity: sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==}
     engines: {node: '>=8'}
+
+  playwright-core@1.57.0:
+    resolution: {integrity: sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.57.0:
+    resolution: {integrity: sha512-ilYQj1s8sr2ppEJ2YVadYBN0Mb3mdo9J0wQ+UuDhzYqURwSoW4n1Xs5vs7ORwgDGmyEh33tRMeS8KhdkMoLXQw==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   postcss-calc@8.2.4:
     resolution: {integrity: sha512-SmWMSJmB8MRnnULldx0lQIyhSNvuDl9HfrZkaqqE/WHAhToYsAvDq+yAsA/kIyINDszOp3Rh0GFoNuH5Ypsm3Q==}
@@ -12158,6 +12288,10 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
+  '@playwright/test@1.57.0':
+    dependencies:
+      playwright: 1.57.0
+
   '@polka/url@1.0.0-next.21': {}
 
   '@rollup/rollup-android-arm-eabi@4.13.0':
@@ -14849,6 +14983,9 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -16777,6 +16914,14 @@ snapshots:
   pkg-up@3.1.0:
     dependencies:
       find-up: 3.0.0
+
+  playwright-core@1.57.0: {}
+
+  playwright@1.57.0:
+    dependencies:
+      playwright-core: 1.57.0
+    optionalDependencies:
+      fsevents: 2.3.2
 
   postcss-calc@8.2.4(postcss@8.4.21):
     dependencies:
