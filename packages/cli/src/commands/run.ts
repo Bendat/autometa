@@ -21,13 +21,23 @@ import { formatSummary } from "../utils/formatter";
 import type { SummaryFormatter } from "../runtime/types";
 import type { RuntimeReporter } from "../utils/reporter";
 import type { RuntimeSummary } from "../runtime/types";
+import { orchestrate, isNativeRunnerAvailable, type RunnerType } from "../orchestrator";
 
 export interface RunCommandOptions {
   readonly cwd?: string;
   readonly patterns?: readonly string[];
   readonly dryRun?: boolean;
+  readonly watch?: boolean;
+  readonly verbose?: boolean;
   readonly reporters?: readonly RuntimeReporter[];
   readonly summaryFormatter?: SummaryFormatter;
+  /**
+   * Force a specific runner mode.
+   * - "native": Use vitest/jest if configured (default behavior)
+   * - "standalone": Always use the built-in CLI runtime
+   * - "auto": Detect from config (same as "native")
+   */
+  readonly mode?: "native" | "standalone" | "auto";
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -44,12 +54,18 @@ export function registerRunCommand(program: Command): Command {
     .description("Execute Autometa feature files")
     .argument("[patterns...]", "Feature files or glob patterns")
     .option("--dry-run", "Collect scenarios without executing steps")
-    .action(async (patterns: string[], flags: { dryRun?: boolean }) => {
+    .option("--watch", "Run in watch mode (vitest/jest only)")
+    .option("--verbose", "Show detailed output including runner detection")
+    .option("--standalone", "Force standalone runtime instead of native runner")
+    .action(async (patterns: string[], flags: { dryRun?: boolean; watch?: boolean; verbose?: boolean; standalone?: boolean }) => {
       try {
         const summary = await runFeatures({
           cwd: process.cwd(),
           ...(patterns.length > 0 ? { patterns } : {}),
           ...(typeof flags?.dryRun === "boolean" ? { dryRun: flags.dryRun } : {}),
+          ...(typeof flags?.watch === "boolean" ? { watch: flags.watch } : {}),
+          ...(typeof flags?.verbose === "boolean" ? { verbose: flags.verbose } : {}),
+          ...(flags?.standalone ? { mode: "standalone" as const } : {}),
         });
 
         if (!summary.success) {
@@ -191,6 +207,45 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   const summaryFormatter = options.summaryFormatter ?? formatSummary;
   const { resolved } = await loadExecutorConfig(cwd, { cacheDir });
   const executorConfig = resolved.config;
+
+  // =========================================================================
+  // SMART ORCHESTRATOR: Try native runner first (vitest/jest)
+  // =========================================================================
+  const mode = options.mode ?? "native";
+  
+  if (mode !== "standalone") {
+    const orchestratorResult = await orchestrate({
+      cwd,
+      config: executorConfig,
+      ...(options.patterns ? { patterns: options.patterns } : {}),
+      ...(options.dryRun !== undefined ? { dryRun: options.dryRun } : {}),
+      ...(options.watch !== undefined ? { watch: options.watch } : {}),
+      ...(options.verbose !== undefined ? { verbose: options.verbose } : {}),
+    });
+
+    // If a native runner was used (vitest/jest), return its result
+    if (orchestratorResult.runner !== "default") {
+      return {
+        success: orchestratorResult.success,
+        total: 0, // Native runner handles its own reporting
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        pending: 0,
+        durationMs: 0,
+        scenarios: [],
+      };
+    }
+
+    // Native runner not available or not configured - fall through to standalone
+    if (options.verbose) {
+      console.log("[autometa] Using standalone runtime");
+    }
+  }
+
+  // =========================================================================
+  // STANDALONE RUNTIME: Built-in CLI execution
+  // =========================================================================
   const hierarchicalBufferOutput = executorConfig.reporting?.hierarchical?.bufferOutput;
   const reporterOptions: RuntimeOptions["reporter"] | undefined =
     hierarchicalBufferOutput !== undefined
