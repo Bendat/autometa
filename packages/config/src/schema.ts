@@ -15,7 +15,7 @@ export const TimeoutSchema = z
   ])
   .optional();
 
-export const RunnerSchema = z.union([z.literal("jest"), z.literal("vitest")]);
+export const RunnerSchema = z.union([z.literal("jest"), z.literal("vitest"), z.literal("playwright")]);
 
 export const TagFilterSchema = z
   .string()

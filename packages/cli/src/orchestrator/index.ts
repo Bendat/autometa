@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 
 import type { ExecutorConfig } from "@autometa/config";
 
-export type RunnerType = "vitest" | "jest" | "default";
+export type RunnerType = "vitest" | "jest" | "playwright" | "default";
 
 export interface OrchestratorOptions {
   readonly cwd: string;
@@ -32,6 +32,9 @@ export function detectRunner(config: ExecutorConfig, cwd: string): RunnerType {
   if (config.runner === "jest") {
     return "jest";
   }
+  if (config.runner === "playwright") {
+    return "playwright";
+  }
 
   // Auto-detect based on config files in project
   if (existsSync(join(cwd, "vitest.config.ts")) || existsSync(join(cwd, "vitest.config.js"))) {
@@ -39,6 +42,9 @@ export function detectRunner(config: ExecutorConfig, cwd: string): RunnerType {
   }
   if (existsSync(join(cwd, "jest.config.js")) || existsSync(join(cwd, "jest.config.cjs")) || existsSync(join(cwd, "jest.config.ts"))) {
     return "jest";
+  }
+  if (existsSync(join(cwd, "playwright.config.ts")) || existsSync(join(cwd, "playwright.config.js"))) {
+    return "playwright";
   }
 
   // Fallback to default standalone runtime
@@ -64,6 +70,8 @@ export async function orchestrate(options: OrchestratorOptions): Promise<Orchest
       return spawnVitest({ cwd, patterns, dryRun, watch, verbose });
     case "jest":
       return spawnJest({ cwd, patterns, dryRun, watch, verbose });
+    case "playwright":
+      return spawnPlaywright({ cwd, patterns, dryRun, watch, verbose });
     case "default":
       // Return indicator that we should use the standalone runtime
       return { success: true, exitCode: 0, runner: "default" };
@@ -139,6 +147,43 @@ async function spawnJest(options: SpawnRunnerOptions): Promise<OrchestratorResul
 
   const result = await spawnRunner("jest", args, { cwd });
   return { ...result, runner: "jest" };
+}
+
+/**
+ * Spawns Playwright with the autometa loader.
+ * 
+ * Playwright requires Node.js module hooks to transform .feature files.
+ * We use `npx playwright test` with appropriate flags.
+ */
+async function spawnPlaywright(options: SpawnRunnerOptions): Promise<OrchestratorResult> {
+  const { cwd, patterns, dryRun, watch, verbose } = options;
+
+  const args: string[] = ["test"];
+
+  // Add pattern filters if provided (Playwright uses grep or file patterns)
+  if (patterns.length > 0) {
+    // Playwright accepts file patterns directly after 'test'
+    args.push(...patterns);
+  }
+
+  // Dry run mode - Playwright uses --list to list tests
+  if (dryRun) {
+    args.push("--list");
+  }
+
+  // Watch mode - Playwright uses --ui for interactive mode
+  // Note: --ui opens a browser UI, which may not be ideal for all use cases
+  // For headless watch-like behavior, we'd need a different approach
+  if (watch) {
+    args.push("--ui");
+  }
+
+  if (verbose) {
+    console.log(`[autometa] Running: playwright ${args.join(" ")}`);
+  }
+
+  const result = await spawnRunner("playwright", args, { cwd });
+  return { ...result, runner: "playwright" };
 }
 
 /**

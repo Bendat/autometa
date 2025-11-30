@@ -18,23 +18,38 @@ At the heart of this architecture is the **Bridge Pattern**. Instead of replacin
 
 ## 2. The Smart Orchestrator (`autometa run`)
 
-The `autometa run` command will evolve from a standalone runtime into a **Smart Orchestrator**.
+**Status:** ✅ Implemented in `packages/cli/src/orchestrator/`
+
+The `autometa run` command has evolved from a standalone runtime into a **Smart Orchestrator**.
 
 **Workflow:**
 1.  **Read Config:** Load `autometa.config.ts` to identify the target runner (`vitest`, `jest`, `playwright`, or `default`).
-2.  **Construct Command:** Build the native command string, injecting necessary plugins/loaders automatically.
-3.  **Delegate:** Spawn the runner process.
+2.  **Auto-Detect:** If no runner specified, detect from config files (`vitest.config.ts`, `jest.config.js`, `playwright.config.ts`).
+3.  **Construct Command:** Build the native command string with appropriate flags.
+4.  **Delegate:** Spawn the runner process, inheriting stdio for seamless output.
 
-**Example Logic:**
+**CLI Flags:**
+- `--watch` - Run in watch mode (vitest watch, jest --watch, playwright --ui)
+- `--verbose` - Show runner detection info
+- `--standalone` - Force standalone runtime instead of native runner
+- `--dry-run` - List tests without executing
+
+**Implementation:**
 ```typescript
-// Conceptual implementation in packages/cli
-if (config.runner === 'vitest') {
-  // Spawns: vitest run --config <generated-config-with-plugin>
-  return spawnVitest(args);
-}
-if (config.runner === 'playwright') {
-  // Spawns: node --import @autometa/playwright-loader/register ...
-  return spawnPlaywright(args);
+// packages/cli/src/orchestrator/index.ts
+export async function orchestrate(options: OrchestratorOptions): Promise<OrchestratorResult> {
+  const runner = detectRunner(config, cwd);
+  
+  switch (runner) {
+    case "vitest":
+      return spawnVitest({ cwd, patterns, dryRun, watch, verbose });
+    case "jest":
+      return spawnJest({ cwd, patterns, dryRun, watch, verbose });
+    case "playwright":
+      return spawnPlaywright({ cwd, patterns, dryRun, watch, verbose });
+    case "default":
+      return { success: true, exitCode: 0, runner: "default" };
+  }
 }
 ```
 
@@ -86,7 +101,15 @@ module.exports = {
 
 ### Priority 3: Playwright Integration (`@autometa/playwright-loader`)
 
+**Status:** ✅ Orchestrator Support Added | ⏳ Loader Not Yet Implemented
+
 Playwright relies on Node.js native execution and does not have a plugin system for file types. We must use Node.js Loaders.
+
+**Current Implementation:**
+- ✅ `runner: "playwright"` option added to `autometa.config.ts`
+- ✅ Auto-detection of `playwright.config.ts` / `playwright.config.js`
+- ✅ Orchestrator spawns `playwright test` with pattern and dry-run support
+- ⏳ `@autometa/playwright-loader` package not yet created
 
 **Technical Approach:**
 - **Package:** `packages/playwright-loader`
@@ -98,9 +121,18 @@ Playwright relies on Node.js native execution and does not have a plugin system 
 
 **User Experience:**
 ```typescript
+// autometa.config.ts
+export default defineConfig({
+  runner: "playwright",
+  roots: {
+    features: ["features"],
+    steps: ["steps"],
+  },
+});
+
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
-import '@autometa/playwright-loader'; // Registers the loader
+import '@autometa/playwright-loader'; // Registers the loader (when implemented)
 
 export default defineConfig({
   testMatch: '**/*.feature'
