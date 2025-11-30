@@ -1,0 +1,61 @@
+{
+  "name": "@autometa/playwright-loader",
+  "version": "0.0.0",
+  "description": "Node.js loader for Autometa - transforms .feature files for Playwright",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "tsc --build --force tsconfig.types.json",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests",
+    "test:ui": "vitest --ui --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./register": {
+      "import": "./dist/register.js",
+      "require": "./dist/register.cjs",
+      "default": "./dist/register.js"
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "@autometa/gherkin": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "rimraf": "^4.1.2",
+    "tsconfig": "workspace:*",
+    "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
+    "typescript": "^4.9.5",
+    "vitest": "1.4.0"
+  },
+  "peerDependencies": {
+    "@autometa/runner": "workspace:*",
+    "@playwright/test": "^1.40.0"
+  }
+}
