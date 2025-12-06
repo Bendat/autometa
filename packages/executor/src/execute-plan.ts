@@ -303,14 +303,16 @@ function scheduleScenario<World>(
   tagFilter: ReturnType<typeof createTagFilter>,
   lifecycle: ScopeLifecycle<World>
 ): void {
+  const title = buildScenarioTitle(execution);
+
   if (!tagFilter.evaluate(execution.tags)) {
-    runtime.test.skip(execution.name, () => undefined);
+    runtime.test.skip(title, () => undefined);
     return;
   }
 
   if (execution.pending) {
     execution.markPending(execution.pendingReason);
-    registerPendingScenarioTest(execution, runtime);
+    registerPendingScenarioTest(execution, runtime, title);
     return;
   }
 
@@ -318,7 +320,7 @@ function scheduleScenario<World>(
   const testFn = selectTestByMode(runtime.test, effectiveMode);
   const scenarioTimeout = resolveTimeout(execution.timeout, config);
 
-  testFn(execution.name, async () => {
+  testFn(title, async () => {
     const hooks = lifecycle.collectScenarioHooks(execution);
     await lifecycle.runScenario(execution, hooks, async (_world, context) => {
       await runScenarioExecution(execution, context);
@@ -328,25 +330,75 @@ function scheduleScenario<World>(
 
 function registerPendingScenarioTest<World>(
   execution: ScenarioExecution<World>,
-  runtime: ExecutorRuntime
+  runtime: ExecutorRuntime,
+  title: string
 ): void {
   const reason = execution.pendingReason;
   const { test } = runtime;
 
   if (typeof test.todo === "function") {
-    test.todo(execution.name, reason);
+    test.todo(title, reason);
     return;
   }
 
   if (typeof test.pending === "function") {
-    test.pending(execution.name, reason);
+    test.pending(title, reason);
     return;
   }
 
   if (typeof test.skip === "function") {
-    test.skip(execution.name, () => undefined);
+    test.skip(title, () => undefined);
     return;
   }
 
-  test(execution.name, () => undefined);
+  test(title, () => undefined);
+}
+
+function buildScenarioTitle<World>(execution: ScenarioExecution<World>): string {
+  if (!isScenarioOutlineExample(execution)) {
+    return execution.name;
+  }
+  const descriptor = formatExampleDescriptor(execution);
+  if (!descriptor) {
+    return `${execution.name} [Example ${execution.exampleIndex + 1}]`;
+  }
+  return `${execution.name} [${descriptor}]`;
+}
+
+function formatExampleDescriptor<World>(
+  example: ScenarioOutlineExample<World>
+): string | undefined {
+  const segments: string[] = [];
+  segments.push(`Example ${example.exampleIndex + 1}`);
+  const groupName = example.exampleGroup.name?.trim();
+  if (groupName) {
+    segments.push(groupName);
+  }
+  const valueSummary = formatExampleValues(example.exampleGroup, example.exampleIndex);
+  if (valueSummary) {
+    segments.push(valueSummary);
+  }
+  return segments.length > 0 ? segments.join(" · ") : undefined;
+}
+
+function formatExampleValues(
+  group: ScenarioOutlineExample<unknown>["exampleGroup"],
+  index: number
+): string | undefined {
+  const headers = group.tableHeader ?? [];
+  const rows = group.tableBody ?? [];
+  const row = rows[index];
+  if (!row || headers.length === 0) {
+    return undefined;
+  }
+  const pairs: string[] = [];
+  headers.forEach((header, headerIndex) => {
+    const key = header?.trim();
+    if (!key) {
+      return;
+    }
+    const value = row[headerIndex] ?? "";
+    pairs.push(`${key}=${String(value).trim()}`);
+  });
+  return pairs.length > 0 ? pairs.join(", ") : undefined;
 }
