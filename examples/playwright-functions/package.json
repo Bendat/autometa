@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test",
-    "test:ui": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test --ui",
-    "test:list": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test --list",
-    "features": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test",
-    "features:ui": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test --ui",
+    "test": "autometa run",
+    "test:ui": "autometa run --watch",
+    "test:list": "autometa run --dry-run",
+    "features": "autometa run",
+    "features:ui": "autometa run --watch",
     "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {

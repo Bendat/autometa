@@ -182,7 +182,19 @@ async function spawnPlaywright(options: SpawnRunnerOptions): Promise<Orchestrato
     console.log(`[autometa] Running: playwright ${args.join(" ")}`);
   }
 
-  const result = await spawnRunner("playwright", args, { cwd });
+  const loaderImportFlag = "--import @autometa/playwright-loader/register";
+  const existingNodeOptions = process.env.NODE_OPTIONS ?? "";
+  const hasLoaderFlag = existingNodeOptions.includes(loaderImportFlag);
+  const nodeOptions = hasLoaderFlag
+    ? existingNodeOptions
+    : [existingNodeOptions, loaderImportFlag].filter(Boolean).join(" ").trim();
+
+  const result = await spawnRunner("playwright", args, {
+    cwd,
+    env: {
+      NODE_OPTIONS: nodeOptions,
+    },
+  });
   return { ...result, runner: "playwright" };
 }
 
@@ -192,7 +204,7 @@ async function spawnPlaywright(options: SpawnRunnerOptions): Promise<Orchestrato
 function spawnRunner(
   command: string,
   args: string[],
-  options: { cwd: string }
+  options: { cwd: string; env?: NodeJS.ProcessEnv }
 ): Promise<{ success: boolean; exitCode: number }> {
   return new Promise((resolve) => {
     const spawnOptions: SpawnOptions = {
@@ -201,8 +213,8 @@ function spawnRunner(
       shell: true,
       env: {
         ...process.env,
-        // Ensure colors are preserved
-        FORCE_COLOR: "1",
+        FORCE_COLOR: process.env.FORCE_COLOR ?? "1",
+        ...(options.env ?? {}),
       },
     };
 
