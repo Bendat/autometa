@@ -26,6 +26,9 @@
       "path": "packages/playwright-loader/tsconfig.types.json"
     },
     {
+      "path": "packages/playwright-executor/tsconfig.types.json"
+    },
+    {
       "path": "packages/phrases/tsconfig.types.json"
     },
     {

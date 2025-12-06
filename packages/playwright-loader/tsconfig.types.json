@@ -35,6 +35,9 @@
       "path": "../gherkin/tsconfig.types.json"
     },
     {
+      "path": "../playwright-executor/tsconfig.types.json"
+    },
+    {
       "path": "../runner/tsconfig.types.json"
     }
   ]

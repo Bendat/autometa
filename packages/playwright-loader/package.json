@@ -41,7 +41,9 @@
   "license": "MIT",
   "dependencies": {
     "@autometa/config": "workspace:*",
-    "@autometa/gherkin": "workspace:*"
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/playwright-executor": "workspace:*",
+    "@autometa/runner": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
@@ -55,7 +57,6 @@
     "vitest": "1.4.0"
   },
   "peerDependencies": {
-    "@autometa/runner": "workspace:*",
     "@playwright/test": "^1.40.0"
   }
 }

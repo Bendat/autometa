@@ -1,10 +1,24 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../../configuration/tsconfig/package.config.json",
   "compilerOptions": {
-    "types": ["node"],
+    "target": "ES2020",
+    "module": "ESNext",
     "moduleResolution": "node",
-    "module": "ESNext"
+    "lib": ["ES2020"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "removeComments": false,
+    "importHelpers": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "autometa.config.ts", "playwright.config.ts"],
   "exclude": ["dist", "node_modules"]

@@ -7,8 +7,9 @@
  * @see https://nodejs.org/api/module.html#customization-hooks
  */
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { readFileSync, existsSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolve as resolvePath, dirname } from "node:path";
 
 import { generateBridgeCode } from "./bridge-generator.js";
 
@@ -46,8 +47,8 @@ type NextLoad = (url: string, context: LoadContext) => Promise<LoadResult>;
 /**
  * Resolve hook - intercepts .feature file specifiers.
  *
- * When a .feature file is imported, we mark it with a custom format
- * so the load hook knows to transform it.
+ * When a .feature file is imported, we resolve it ourselves since
+ * Node.js doesn't know how to handle .feature files.
  */
 export async function resolve(
   specifier: string,
@@ -56,13 +57,38 @@ export async function resolve(
 ): Promise<ResolveResult> {
   // Check if this is a .feature file import
   if (specifier.endsWith(".feature")) {
-    // Resolve the full URL using the default resolver
-    const resolved = await nextResolve(specifier, context);
+    // Resolve the path ourselves since Node.js doesn't handle .feature files
+    let resolvedPath: string;
+
+    if (specifier.startsWith("file://")) {
+      // Already a file URL
+      resolvedPath = fileURLToPath(specifier);
+    } else if (specifier.startsWith("/")) {
+      // Absolute path
+      resolvedPath = specifier;
+    } else if (specifier.startsWith(".")) {
+      // Relative path - resolve from parent
+      if (context.parentURL) {
+        const parentPath = fileURLToPath(context.parentURL);
+        const parentDir = dirname(parentPath);
+        resolvedPath = resolvePath(parentDir, specifier);
+      } else {
+        resolvedPath = resolvePath(process.cwd(), specifier);
+      }
+    } else {
+      // Bare specifier - try from cwd
+      resolvedPath = resolvePath(process.cwd(), specifier);
+    }
+
+    // Verify the file exists
+    if (!existsSync(resolvedPath)) {
+      throw new Error(`Cannot find .feature file: ${resolvedPath}`);
+    }
 
     return {
-      ...resolved,
-      // Mark with our custom format so load() knows to transform it
+      url: pathToFileURL(resolvedPath).href,
       format: "autometa-feature",
+      shortCircuit: true,
     };
   }
 
@@ -88,8 +114,13 @@ export async function load(
     const filePath = fileURLToPath(url);
     const featureContent = readFileSync(filePath, "utf-8");
 
+    // Use process.cwd() as the project root for package resolution.
+    // This should be the directory where Playwright is running from,
+    // which has the necessary dependencies installed.
+    const projectRoot = process.cwd();
+
     // Generate Playwright bridge code
-    const bridgeCode = generateBridgeCode(filePath, featureContent);
+    const bridgeCode = generateBridgeCode(filePath, featureContent, projectRoot);
 
     return {
       format: "module",

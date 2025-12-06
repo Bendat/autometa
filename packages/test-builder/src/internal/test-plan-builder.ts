@@ -90,7 +90,7 @@ export class TestPlanBuilder<World> {
       name: feature.name,
       suffix: buildScopeSuffix(featureScope.id),
     };
-    this.parameterRegistry = resolveParameterRegistry(adapter.getParameterRegistry());
+    this.parameterRegistry = resolveParameterRegistry(adapter.getParameterRegistry?.());
     createDefaultParameterTypes<unknown>()(this.parameterRegistry);
   }
 
@@ -583,7 +583,7 @@ export class TestPlanBuilder<World> {
         this.parameterRegistry
       );
       return (text: string) => cucumberExpression.match(text) !== null;
-    } catch (error) {
+    } catch {
       const literal = expression;
       return (text: string) => text === literal;
     }
@@ -670,14 +670,28 @@ function resolveParameterRegistry(
   if (!parameterRegistry) {
     return new ParameterTypeRegistry();
   }
-  if (parameterRegistry instanceof ParameterTypeRegistry) {
+  if (isParameterTypeRegistry(parameterRegistry)) {
     return parameterRegistry;
   }
   const candidate = (parameterRegistry as { registry?: ParameterTypeRegistry }).registry;
-  if (candidate instanceof ParameterTypeRegistry) {
+  if (isParameterTypeRegistry(candidate)) {
     return candidate;
   }
   return new ParameterTypeRegistry();
+}
+
+function isParameterTypeRegistry(value: unknown): value is ParameterTypeRegistry {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  if (value instanceof ParameterTypeRegistry) {
+    return true;
+  }
+  const registry = value as ParameterTypeRegistry;
+  return (
+    typeof registry.lookupByTypeName === "function" &&
+    typeof registry.defineParameterType === "function"
+  );
 }
 
 function normalizeGherkinStepKeyword(keyword: string): StepKeyword {

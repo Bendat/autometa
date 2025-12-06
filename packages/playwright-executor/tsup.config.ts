@@ -1,8 +1,8 @@
 import { createTsupConfig } from "tsup-config";
 
 export default createTsupConfig({
-  entry: ["src/index.ts", "src/register.ts", "src/loader.ts"],
   tsconfig: "./tsconfig.bundle.json",
   dts: false, // Emit declarations with tsc after bundling for consistent outputs.
-  external: ["@playwright/test"],
+  // Package-specific overrides can go here
+  // external: ["some-package-specific-external"]
 });

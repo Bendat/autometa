@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:list": "playwright test --list",
-    "features": "playwright test",
-    "features:ui": "playwright test --ui",
+    "test": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test",
+    "test:ui": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test --ui",
+    "test:list": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test --list",
+    "features": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test",
+    "features:ui": "NODE_OPTIONS=\"--import @autometa/playwright-loader/register\" npx playwright test --ui",
     "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",
     "@autometa/injection": "workspace:*",
+    "@autometa/playwright-executor": "workspace:*",
     "@autometa/playwright-loader": "workspace:*",
     "@autometa/runner": "workspace:*",
     "@autometa/scopes": "workspace:*",
@@ -32,8 +33,10 @@
   },
   "devDependencies": {
     "@autometa/cli": "workspace:*",
+    "@babel/preset-typescript": "^7.28.5",
     "@playwright/test": "^1.40.0",
     "@types/node": "18.19.24",
+    "tsx": "^4.20.6",
     "typescript": "5.4.5"
   }
 }

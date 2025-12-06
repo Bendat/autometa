@@ -2,7 +2,7 @@ import type { BrewBuddyWorldBase } from "../world";
 import type { SseSession } from "../utils/sse";
 
 export class BrewBuddyStreamManager {
-  declare readonly world: BrewBuddyWorldBase;
+  readonly world!: BrewBuddyWorldBase;
   private _session: SseSession | undefined;
   private _warnings: string[] = [];
   private _errors: string[] = [];

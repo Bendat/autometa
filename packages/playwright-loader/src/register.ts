@@ -14,7 +14,8 @@
  */
 
 import { register } from "node:module";
-import { pathToFileURL } from "node:url";
 
 // Register the loader hooks
-register("./loader.js", pathToFileURL(import.meta.url));
+// The second parameter should be the parent URL, and the first should be
+// the specifier to resolve from that parent
+register("./loader.js", import.meta.url);

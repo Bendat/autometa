@@ -7,8 +7,8 @@ import { defineConfig } from "@playwright/test";
  * into executable Playwright test suites.
  */
 export default defineConfig({
-  testDir: "../.features",
-  testMatch: "**/*.feature",
+  testDir: "./src",
+  testMatch: "**/*.spec.ts",
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -39,7 +39,7 @@ export default defineConfig({
     {
       name: "api",
       use: {},
-      testMatch: "**/*.feature",
+      testMatch: "**/*.spec.ts",
     },
   ],
 
