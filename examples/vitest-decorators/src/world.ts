@@ -6,7 +6,7 @@ import type {
   LoyaltyAccount,
   MenuItem,
   Order,
-} from "../../.api/src/types/domain.js";
+} from "../../.api/src/types/domain";
 import type { MenuRegion } from "./utils/regions";
 import type { BrewBuddyClient } from "./utils/http";
 

@@ -115,8 +115,25 @@ import { execute } from ${JSON.stringify(executorPath)};
 import { coordinateRunnerFeature, CucumberRunner } from ${JSON.stringify(runnerPath)};
 import { parseGherkin } from ${JSON.stringify(gherkinPath)};
 
+const debugFlagValue = typeof process !== 'undefined'
+  ? (process.env.AUTOMETA_BRIDGE_DEBUG ?? process.env.AUTOMETA_DEBUG ?? '')
+  : '';
+const debugEnabled = (() => {
+  if (!debugFlagValue) {
+    return false;
+  }
+  const normalized = String(debugFlagValue).trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+})();
+const debugLog = (...args) => {
+  if (!debugEnabled) {
+    return;
+  }
+  console.log(...args);
+};
+
 // Debug: Step discovery configuration
-console.log("[Autometa Bridge] Step discovery info:", ${JSON.stringify(debugInfo)});
+debugLog("[Autometa Bridge] Step discovery info:", ${JSON.stringify(debugInfo)});
 
 // Dynamic imports for step definition modules
 ${stepImports}
@@ -337,7 +354,7 @@ if (!steps) {
 }
 
 // Debug: Check the steps environment
-console.log("[Autometa Bridge] Steps environment found:", {
+debugLog("[Autometa Bridge] Steps environment found:", {
   hasGiven: typeof steps.Given === 'function',
   hasWhen: typeof steps.When === 'function', 
   hasThen: typeof steps.Then === 'function',
@@ -359,7 +376,7 @@ const actualRegistry = paramRegistry?.registry ?? paramRegistry;
 const paramTypeNames = actualRegistry?.parameterTypes 
   ? Array.from(actualRegistry.parameterTypes).map(pt => pt.name)
   : [];
-console.log("[Autometa Bridge] Base plan:", {
+debugLog("[Autometa Bridge] Base plan:", {
   stepsCount: basePlan.stepsById?.size ?? 0,
   hooksCount: basePlan.hooksById?.size ?? 0,
   hasParameterRegistry: Boolean(paramRegistry),
@@ -369,11 +386,11 @@ console.log("[Autometa Bridge] Base plan:", {
 });
 
 // Debug: Check step module contents
-console.log("[Autometa Bridge] Step modules keys:", Object.keys(stepModules));
+debugLog("[Autometa Bridge] Step modules keys:", Object.keys(stepModules));
 const firstModKey = Object.keys(stepModules)[0];
 if (firstModKey) {
   const firstMod = stepModules[firstModKey];
-  console.log("[Autometa Bridge] First module exports:", Object.keys(firstMod ?? {}));
+  debugLog("[Autometa Bridge] First module exports:", Object.keys(firstMod ?? {}));
 }
 
 test.describe(feature.name, () => {
@@ -381,7 +398,7 @@ test.describe(feature.name, () => {
   
   // Debug: Check the scoped plan
   const scopedRegistry = scopedPlan.parameterRegistry?.registry ?? scopedPlan.parameterRegistry;
-  console.log("[Autometa Bridge] Scoped plan:", {
+  debugLog("[Autometa Bridge] Scoped plan:", {
     hasParameterRegistry: Boolean(scopedPlan.parameterRegistry),
     hasHttpMethod: scopedRegistry?.lookupByTypeName?.('httpMethod') !== undefined,
     rootChildren: scopedPlan.root?.children?.length ?? 0,
@@ -389,7 +406,7 @@ test.describe(feature.name, () => {
   });
 
   // Debug: Feature name matching
-  console.log("[Autometa Bridge] Feature matching:", {
+  debugLog("[Autometa Bridge] Feature matching:", {
     gherkinName: feature.name,
     featureScopeNames: scopedPlan.root?.children?.filter(c => c.kind === 'feature').map(c => c.name) ?? [],
   });
@@ -404,7 +421,7 @@ test.describe(feature.name, () => {
   // Debug: Check what adapter sees
   const adapterRegistry = adapter.getParameterRegistry?.();
   const actualAdapterReg = adapterRegistry?.registry ?? adapterRegistry;
-  console.log("[Autometa Bridge] Adapter:", {
+  debugLog("[Autometa Bridge] Adapter:", {
     hasParameterRegistry: Boolean(adapterRegistry),
     hasHttpMethod: actualAdapterReg?.lookupByTypeName?.('httpMethod') !== undefined,
   });

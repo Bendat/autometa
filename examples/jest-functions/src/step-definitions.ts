@@ -20,6 +20,19 @@ interface BrewBuddyExpressionTypes extends Record<string, unknown> {
   readonly menuSeasonal: boolean;
 }
 
+const lifecycleLoggingEnabled = (() => {
+  const rawValue =
+    process.env.AUTOMETA_LIFECYCLE_DEBUG ??
+    process.env.AUTOMETA_LIFECYCLE_LOGS ??
+    process.env.AUTOMETA_DEBUG ??
+    "";
+  const normalized = rawValue.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  return !["0", "false", "no", "off"].includes(normalized);
+})();
+
 const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
   .withWorld<BrewBuddyWorldBase>(brewBuddyWorldDefaults)
@@ -60,6 +73,9 @@ function writeLifecycleLog(
   logger: ((message: string) => void) | undefined,
   message: string
 ): void {
+  if (!lifecycleLoggingEnabled) {
+    return;
+  }
   if (logger) {
     logger(message);
     return;
