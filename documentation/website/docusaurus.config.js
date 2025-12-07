@@ -39,17 +39,23 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: "https://github.com/Bendat/autometa/tree/main/documentation/website",
+          versions: {
+            current: {
+              label: "v1.0.0-rc1",
+              path: "v1.0.0-rc1",
+              banner: "unreleased",
+            },
+            legacy: {
+              label: "Legacy (v0)",
+              path: "legacy",
+              banner: "unmaintained",
+            },
+          },
         },
         blog: {
           showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: "https://github.com/Bendat/autometa/tree/main/documentation/website",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
@@ -71,42 +77,26 @@ const config = {
         },
         items: [
           {
+            to: "/docs/v1.0.0-rc1/intro",
             position: "left",
-            label: "Cucumber",
-            items: [
-              {
-                type: "doc",
-                docId: "cucumber/test_runner/intro",
-                label: "Test Runner",
-              },
-              {
-                type: "doc",
-                docId: "cucumber/test_runner_legacy/intro",
-                label: "Test Runner (Legacy)",
-              },
-              {
-                type: "doc",
-                docId: "cucumber/cucumber_markdown/intro",
-                label: "Cucumber Markdown",
-              },
-            ],
+            label: "Overview",
           },
           {
+            to: "/docs/v1.0.0-rc1/getting-started/intro",
             position: "left",
-            label: "Libraries",
-            items: [
-              {
-                type: "doc",
-                docId: "libraries/dto-builder/intro",
-                label: "DTO and Builder Pattern",
-              },
-              {
-                type: "doc",
-                docId: "libraries/overloaded/intro",
-                label: "Overloaded",
-              },
-            ],
+            label: "Getting started",
           },
+          {
+            to: "/docs/v1.0.0-rc1/architecture/runtime",
+            position: "left",
+            label: "Architecture",
+          },
+          {
+            to: "/docs/v1.0.0-rc1/reference/configuration",
+            position: "left",
+            label: "Reference",
+          },
+          { type: "docsVersionDropdown", position: "right" },
           { to: "/blog", label: "Blog", position: "right" },
           {
             href: "https://github.com/bendat/autometa",
@@ -122,8 +112,8 @@ const config = {
             title: "Docs",
             items: [
               {
-                label: "Tutorial",
-                to: "/docs/intro",
+                label: "Overview",
+                to: "/docs/v1.0.0-rc1/intro",
               },
             ],
           },
@@ -153,7 +143,7 @@ const config = {
               },
               {
                 label: "GitHub",
-                href: "https://github.com/facebook/docusaurus",
+                href: "https://github.com/bendat/autometa",
               },
             ],
           },
