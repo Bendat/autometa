@@ -17,8 +17,20 @@ export class ParameterRegistryAdapter implements ParameterRegistryLike {
 		return this.#registry;
 	}
 
+	get parameterTypes(): Iterable<ParameterType<unknown>> {
+		return this.#registry.parameterTypes;
+	}
+
 	lookupByTypeName(name: string): ParameterType<unknown> | undefined {
 		return this.#registry.lookupByTypeName(name);
+	}
+
+	lookupByRegexp(
+		parameterTypeRegexp: string,
+		expressionRegexp: RegExp,
+		text: string
+	): ParameterType<unknown> | undefined {
+		return this.#registry.lookupByRegexp(parameterTypeRegexp, expressionRegexp, text);
 	}
 
 	defineParameterType(definition: unknown): ParameterType<unknown> {
