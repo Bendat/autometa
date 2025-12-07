@@ -62,8 +62,18 @@ ensure(value).not.toBe(expected);
 ensure(array).not.toHaveLength(0);
 ```
 
-:::note Plugin Negation
-The `.not` property is **not** automatically available on plugin facets (e.g., `ensure(world).custom.not.isAwesome()`). If you need negation in your plugins, you must implement it explicitly in your plugin logic or expose separate negative methods (e.g., `isNotAwesome()`).
+### Plugin Negation
+
+Plugins also support negation via the `.not` property. When you access `.not` on a plugin, the framework automatically re-initializes your plugin with a negated `ensure` function.
+
+```ts
+// ensure(world).custom.not.isAwesome()
+// Inside the plugin, ensure(value).toBe(...) becomes ensure(value).not.toBe(...)
+ensure(world).custom.not.isAwesome();
+```
+
+:::info Requirement
+For plugin negation to work automatically, your plugin must use the `ensure` function passed in the context for all its assertions. If you perform manual checks (e.g., throwing errors directly), they will not be negated.
 :::
 
 ## Custom Messages (Labels)

@@ -6,7 +6,7 @@ export type EnsureInvoker = typeof baseEnsure;
 export type EnsureInvoke = <T>(value: T, options?: EnsureOptions) => EnsureChain<T>;
 
 export type EnsureFacade<World, Facets extends Record<string, unknown>> = EnsureInvoke &
-  Facets & { readonly world: World };
+  Facets & { readonly world: World; readonly not: Facets };
 
 export type EnsureFactory<World, Facets extends Record<string, unknown>> = (
   world: World
@@ -54,6 +54,19 @@ export function createEnsureFactory<
     return [key, factory] as const;
   });
 
+  const negatedEnsureFn: EnsureInvoke = <T>(value: T, options?: EnsureOptions) => {
+    return ensureFn(value, options).not as unknown as EnsureChain<T>;
+  };
+
+  const negativePluginEntries = (Object.keys(plugins) as Array<keyof Plugins>).map((key) => {
+    const plugin = plugins[key];
+    if (!plugin) {
+      throw new Error(`Assertion plugin "${String(key)}" is not defined.`);
+    }
+    const factory = plugin({ ensure: negatedEnsureFn });
+    return [key, factory] as const;
+  });
+
   return (world) => {
     const facade = ((value: unknown, options?: EnsureOptions) => ensureFn(value, options)) as EnsureFacade<
       World,
@@ -76,6 +89,24 @@ export function createEnsureFactory<
         writable: false,
       });
     }
+
+    const notFacade = {};
+    for (const [key, buildFacet] of negativePluginEntries) {
+      const facet = buildFacet(world);
+      Object.defineProperty(notFacade, key, {
+        value: facet,
+        enumerable: true,
+        configurable: false,
+        writable: false,
+      });
+    }
+
+    Object.defineProperty(facade, "not", {
+      value: notFacade,
+      enumerable: true,
+      configurable: false,
+      writable: false,
+    });
 
     return facade;
   };
