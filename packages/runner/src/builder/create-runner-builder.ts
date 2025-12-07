@@ -83,6 +83,7 @@ export type RunnerEnsureFactory<
 	(world: World): EnsureFacade<World, Facets>;
 	<T>(value: T, options?: EnsureOptions): EnsureChain<T>;
 	readonly world: World;
+	readonly not: Facets;
 };
 
 export type AssertionSetup<

@@ -29,6 +29,13 @@ Then(
 );
 
 Then(
+  "the response status should not be {int}",
+  (status: number, _world: BrewBuddyWorld) => {
+    ensure.not.response.hasStatus(status);
+  }
+);
+
+Then(
   "the response header {string} should start with {string}",
   (header: string, prefix: string, _world: BrewBuddyWorld) => {
     ensure.response.hasHeader(header, (value) => value.startsWith(prefix));

@@ -8,6 +8,7 @@ Feature: Interact with the Brew Buddy API
   Scenario: Fetch menu catalog via GET
     When I send a GET request to "/menu"
     Then the response status should be 200
+    And the response status should not be 404
     And the response json should match the default menu snapshot
 
   @http

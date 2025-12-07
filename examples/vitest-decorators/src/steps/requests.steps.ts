@@ -34,6 +34,11 @@ export class RequestSteps {
     ensure.response.hasStatus(status);
   }
 
+  @Then("the response status should not be {int}")
+  responseStatusIsNot(status: number): void {
+    ensure.not.response.hasStatus(status);
+  }
+
   @Then("the response header {string} should start with {string}")
   responseHeaderStartsWith(header: string, prefix: string): void {
     ensure.response.hasHeader(header, (value) => value.startsWith(prefix));
