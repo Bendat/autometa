@@ -21,6 +21,7 @@ export default defineConfig({
 		},
 		test?: {
 			timeout?: [number, "ms" | "s" | "m"];
+			tagFilter?: string;
 		};
 		logging?: { http?: boolean };
 		reporting?: {
@@ -49,6 +50,7 @@ Use additional keys (e.g. `playwright`, `vitest`) when you need runner-specific 
 | `roots.steps` | Paths to TypeScript or JavaScript modules that register phrases/steps. Accepts individual files or directories. |
 | `roots.parameterTypes` | Optional modules that call `defineParameterType`. Useful when reusing phrase vocabularies across runners. |
 | `test.timeout` | `[value, unit]` tuple that controls scenario timeout. Executors convert this to the host runner’s timeout format. |
+| `test.tagFilter` | A tag expression (e.g., `@smoke and not @slow`) to filter scenarios. |
 | `logging.http` | Enables structured HTTP logging from `@autometa/http`. |
 | `reporting.hierarchical.bufferOutput` | When `false`, streaming reporters flush immediately (handy during watch mode). |
 | `hooks` | Arrays of module paths that export lifecycle hooks. Each module should export the corresponding hook function (e.g., `export const beforeAll = () => { ... }`). |

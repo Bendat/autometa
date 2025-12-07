@@ -55,12 +55,16 @@ ensure(response).toHaveCorrelationId(); // Checks for common correlation ID head
 
 ## Negation
 
-All assertions can be negated using the `.not` property.
+All standard assertions can be negated using the `.not` property.
 
 ```ts
 ensure(value).not.toBe(expected);
 ensure(array).not.toHaveLength(0);
 ```
+
+:::note Plugin Negation
+The `.not` property is **not** automatically available on plugin facets (e.g., `ensure(world).custom.not.isAwesome()`). If you need negation in your plugins, you must implement it explicitly in your plugin logic or expose separate negative methods (e.g., `isNotAwesome()`).
+:::
 
 ## Custom Messages (Labels)
 
