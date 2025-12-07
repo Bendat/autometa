@@ -4,12 +4,20 @@ sidebar_position: 1
 
 # Autometa v1 Docs
 
-Welcome to the brand-new Autometa v1 documentation set. The v1 refactor introduces a unified automation toolkit with consistent APIs across runners and adapters. These docs are a fresh start: everything here is authored specifically for v1 and will grow as the rewrite lands.
+Autometa v1 is now live. The refactor that unified our runners, DTO builders, and assertion tooling has shipped, and this site documents the release you can install from the public registry today.
 
-## What to expect
+## What you can expect
 
-- **Clear getting started paths** for each supported runner.
-- **Deep dives** on the new scope-aware architecture, lifecycle hooks, and decorator APIs.
-- **End-to-end guides** that show how the packages inside `/packages` fit together for real projects.
+- **Task-focused guides** that mirror the source in `/examples`, so every instruction maps to a working project.
+- **Architecture notes** describing how the coordinator, executors, scopes, builders, and plugins cooperate at runtime.
+- **Reference docs** you can trust during delivery—callouts highlight when a feature still varies by runner or package version.
 
-If you are looking for the previous documentation, use the version dropdown in the navigation bar and pick *Legacy (v0)*.
+## Where to start
+
+1. Head to [Getting Started → Installation](getting-started/installation.md) for the runner-specific setup tabs.
+2. Clone or browse the projects in `/examples` to compare each supported runner implementation side by side.
+3. Explore the architecture and reference sections for deeper dives into decorators, the `DtoBuilder`, and the `ensure(...)` plugin system.
+
+:::tip Looking for Autometa v0?
+Use the version dropdown in the navigation bar and pick **Legacy (v0)** to view the previous documentation set.
+:::

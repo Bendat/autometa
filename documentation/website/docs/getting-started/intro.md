@@ -2,18 +2,33 @@
 sidebar_position: 1
 ---
 
+<!-- cSpell:disable -->
 # Getting Started
 
-This section will walk you through installing Autometa v1, wiring the coordinator packages, and running your first specification. The steps are intentionally high level for now; expect detailed walkthroughs as the refactor stabilizes.
+Autometa v1 ships today with a unified runtime that behaves the same way across Jest, the VITE-powered test runner, and Playwright. This section gives you the top-level concepts, then points you to the per-runner instructions and advanced tooling such as the DTO builder and the `ensure(...)` assertion plugins.
 
 ## Prerequisites
 
 - `Node.js` 18+
-- `pnpm` 8+
-- A test runner target (`Vitest`, `Playwright`, or `Jest`)
+- `PNPM` 8+ (the repo and examples use PNPM workspaces)
+- TypeScript 5+ in your project
+- One of the supported runners: Jest, VITEST, or Playwright Test
 
-## Next steps
+## Choose your path
 
-1. Read through the installation notes below.
-2. Bootstrap an example project using the commands in the repository root.
-3. Explore the package READMEs inside `/packages` for deeper context until the dedicated guides land.
+1. Start with [Installation](installation.md) and expand the runner tab that matches your stack.
+2. Walk through [Authoring executors & steps](authoring.md) to configure the `CucumberRunner`, Autometa CLI, and your preferred step style (functions or decorators).
+3. Mirror the structure shown in `/examples/<runner>-functions` or `/examples/<runner>-decorators`—those folders are kept up to date with the release packages.
+4. When you need a data factory or ergonomic assertions, jump ahead to the DTO builder and `@autometa/assertions` sections at the bottom of the installation doc.
+
+:::info Example parity
+Each example project shares the same `.feature` files and world shape. Once you are comfortable in one runner, you can inspect the others to see the minimal deltas Autometa requires.
+:::
+
+## After installation
+
+- Register hooks, scopes, and shared state in `autometa.config.ts` using the patterns described in [Reference → Configuration](../reference/configuration.md).
+- Explore the architecture diagrams to understand how the coordinator drives executors and runners during a scenario lifecycle.
+- Keep an eye on the package READMEs inside `/packages/**`—they highlight APIs that may not be fully spelled out in the docs yet.
+
+<!-- cSpell:enable -->
