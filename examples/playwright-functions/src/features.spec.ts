@@ -6,7 +6,6 @@
  */
 
 // Import feature files - the loader will transform these into test.describe blocks
-// @ts-expect-error - .feature files are transformed by the loader
 import "../../.features/http/http-client.feature";
 // // @ts-expect-error - .feature files are transformed by the loader
 // import "../../.features/http/lifecycle-hooks.feature";
