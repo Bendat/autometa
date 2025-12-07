@@ -45,6 +45,39 @@ interface ScopeState<World> {
 
 export type StepStatus = "passed" | "failed" | "skipped";
 
+export interface HookLifecycleTargetScopeMetadata {
+  readonly id: string;
+  readonly kind: ScopeKind;
+  readonly name?: string;
+}
+
+type ScenarioLifecycleType = ScenarioExecution<unknown>["type"];
+
+export interface HookLifecycleScenarioMetadata {
+  readonly id: string;
+  readonly name: string;
+  readonly type: ScenarioLifecycleType;
+  readonly tags: readonly string[];
+  readonly qualifiedName: string;
+}
+
+export interface HookLifecycleStepMetadata {
+  readonly index: number;
+  readonly keyword?: string;
+  readonly text?: string;
+  readonly status?: StepStatus;
+}
+
+export interface HookLifecycleMetadata {
+  readonly targetScope: HookLifecycleTargetScopeMetadata;
+  readonly scenario?: HookLifecycleScenarioMetadata;
+  readonly step?: HookLifecycleStepMetadata;
+  readonly hook?: unknown;
+  readonly [key: string]: unknown;
+}
+
+type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
 export interface StepHookDetails<World> {
   readonly index: number;
   readonly definition?: StepDefinition<World>;
@@ -400,8 +433,8 @@ export class ScopeLifecycle<World> {
   private buildHookMetadata(
     entry: ResolvedHook<World>,
     params: HookInvocationParams<World>
-  ): Record<string, unknown> | undefined {
-    const metadata: Record<string, unknown> = {};
+  ): HookLifecycleMetadata | undefined {
+    const metadata: Partial<Mutable<HookLifecycleMetadata>> & Record<string, unknown> = {};
 
     if (params.metadata) {
       Object.assign(metadata, params.metadata);
@@ -415,7 +448,7 @@ export class ScopeLifecycle<World> {
       id: params.scope.id,
       kind: params.scope.kind,
       name: params.scope.name,
-    };
+    } as HookLifecycleTargetScopeMetadata;
 
     if (params.scenario) {
       metadata.scenario = {
@@ -424,7 +457,7 @@ export class ScopeLifecycle<World> {
         type: params.scenario.type,
         tags: params.scenario.tags,
         qualifiedName: params.scenario.qualifiedName,
-      };
+      } as HookLifecycleScenarioMetadata;
     }
 
     if (params.step) {
@@ -434,10 +467,10 @@ export class ScopeLifecycle<World> {
         status: step.status,
         keyword: step.gherkin?.keyword ?? step.definition?.keyword,
         text: step.gherkin?.text,
-      };
+      } as HookLifecycleStepMetadata;
     }
 
-    return Object.keys(metadata).length > 0 ? metadata : undefined;
+    return Object.keys(metadata).length > 0 ? (metadata as HookLifecycleMetadata) : undefined;
   }
 
   private collectHooksForScope(

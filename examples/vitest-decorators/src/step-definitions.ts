@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { CucumberRunner, WORLD_TOKEN } from "@autometa/runner";
+import type { HookLifecycleMetadata } from "@autometa/runner";
 import {
   brewBuddyWorldDefaults,
   type BrewBuddyWorldBase,
@@ -78,16 +79,6 @@ export { WORLD_TOKEN };
 // LIFECYCLE HOOKS
 // ============================================================================
 
-interface HookMetadata {
-  readonly scenario?: { readonly name?: string };
-  readonly step?: {
-    readonly index?: number;
-    readonly keyword?: string;
-    readonly text?: string;
-    readonly status?: StepLifecycleStatus;
-  };
-}
-
 function writeLifecycleLog(
   logger: ((message: string) => void) | undefined,
   message: string
@@ -114,7 +105,7 @@ AfterFeature(({ world, log }) => {
 });
 
 BeforeScenario(({ world, scope, metadata, log }) => {
-  const details = (metadata ?? {}) as HookMetadata;
+  const details = (metadata ?? {}) as HookLifecycleMetadata;
   const scenarioName = details.scenario?.name ?? scope.name;
   if (!world.lifecycle.scenarioOrder.includes(scenarioName)) {
     world.lifecycle.scenarioOrder.push(scenarioName);
@@ -123,7 +114,7 @@ BeforeScenario(({ world, scope, metadata, log }) => {
 });
 
 AfterStep(({ world, scope, metadata, log }) => {
-  const details = (metadata ?? {}) as HookMetadata;
+  const details = (metadata ?? {}) as HookLifecycleMetadata;
   const scenarioName = details.scenario?.name ?? scope.name;
   const step = details.step;
   if (!step) {

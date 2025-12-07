@@ -76,6 +76,13 @@ export {
  	markScenarioPending,
 } from "@autometa/executor";
 
+export type {
+	HookLifecycleMetadata,
+	HookLifecycleScenarioMetadata,
+	HookLifecycleStepMetadata,
+	HookLifecycleTargetScopeMetadata,
+} from "@autometa/executor";
+
 export {
 	getGlobalRunner,
 	configureGlobalRunner,

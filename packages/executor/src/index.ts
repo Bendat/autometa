@@ -10,6 +10,10 @@ export {
 	type HookLogScenarioDetails,
 	type HookLogStepDetails,
 	type HookLogPhase,
+	type HookLifecycleMetadata,
+	type HookLifecycleScenarioMetadata,
+	type HookLifecycleStepMetadata,
+	type HookLifecycleTargetScopeMetadata,
 } from "./scope-lifecycle";
 export { selectSuiteByMode, selectTestByMode, resolveModeFromTags } from "./modes";
 export { createTagFilter, type TagFilter } from "./tag-filter";
