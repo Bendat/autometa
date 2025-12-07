@@ -131,3 +131,25 @@ const adminBuilder = userBuilder.extend({
   },
 });
 ```
+
+## How it Works
+
+The `DtoBuilder` uses a concept called **Blueprints** to manage defaults and overrides.
+
+### Blueprints
+
+A blueprint is a collection of default factories and validators. When you create a builder, you are essentially creating a blueprint.
+
+When you call `.extend()`, the new builder inherits the blueprint from the parent and merges it with any new defaults you provide.
+
+### Resolution Order
+
+When `.build()` is called, the builder resolves the final object in the following order:
+
+1.  **Instantiation**: A new instance of the target class or object is created.
+2.  **Defaults**: Properties are populated using the defaults defined in the blueprint (and any parent blueprints).
+3.  **Overrides**: Values set explicitly via `.set()`, `.assign()`, or nested builders are applied, overwriting any defaults.
+4.  **Validation**: The validator function is executed against the final object (unless `skipValidation` is true).
+
+This ensures that your specific test setup always takes precedence over general defaults.
+
