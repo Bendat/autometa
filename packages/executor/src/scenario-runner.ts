@@ -204,14 +204,39 @@ function collectArguments<World>(
 function resolveParameterRegistry(
   source: ParameterRegistryLike | undefined
 ): ParameterTypeRegistry {
-  if (source instanceof ParameterTypeRegistry) {
+  if (isParameterTypeRegistry(source)) {
     return source;
   }
+
   const carrier = source as ParameterRegistryCarrier | undefined;
-  if (carrier?.registry instanceof ParameterTypeRegistry) {
-    return carrier.registry;
+  const registry = carrier?.registry;
+  if (isParameterTypeRegistry(registry)) {
+    return registry;
   }
+
   return new ParameterTypeRegistry();
+}
+
+function isParameterTypeRegistry(
+  value: unknown
+): value is ParameterTypeRegistry {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  if (value instanceof ParameterTypeRegistry) {
+    return true;
+  }
+
+  const registry = value as ParameterTypeRegistry & {
+    lookupByRegexp?: unknown;
+  };
+
+  return (
+    typeof registry.lookupByTypeName === "function" &&
+    typeof registry.defineParameterType === "function" &&
+    typeof registry.lookupByRegexp === "function"
+  );
 }
 
 function buildStepMetadata<World>(

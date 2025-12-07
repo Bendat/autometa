@@ -15,10 +15,23 @@ import type { SourceRef, StepExpression, StepKeyword } from "@autometa/scopes";
 
 export type RawTable = readonly (readonly string[])[];
 
-const DATA_TABLE_SYMBOL: unique symbol = Symbol("autometa:runner:step:data-table");
-const DOCSTRING_SYMBOL: unique symbol = Symbol("autometa:runner:step:docstring");
-const STEP_RUNTIME_SYMBOL: unique symbol = Symbol("autometa:runner:step:runtime");
-const STEP_METADATA_SYMBOL: unique symbol = Symbol("autometa:runner:step:metadata");
+declare const DATA_TABLE_SYMBOL_KEY: unique symbol;
+declare const DOCSTRING_SYMBOL_KEY: unique symbol;
+declare const STEP_RUNTIME_SYMBOL_KEY: unique symbol;
+declare const STEP_METADATA_SYMBOL_KEY: unique symbol;
+
+const DATA_TABLE_SYMBOL: typeof DATA_TABLE_SYMBOL_KEY = Symbol.for(
+  "autometa:runner:step:data-table"
+) as typeof DATA_TABLE_SYMBOL_KEY;
+const DOCSTRING_SYMBOL: typeof DOCSTRING_SYMBOL_KEY = Symbol.for(
+  "autometa:runner:step:docstring"
+) as typeof DOCSTRING_SYMBOL_KEY;
+const STEP_RUNTIME_SYMBOL: typeof STEP_RUNTIME_SYMBOL_KEY = Symbol.for(
+  "autometa:runner:step:runtime"
+) as typeof STEP_RUNTIME_SYMBOL_KEY;
+const STEP_METADATA_SYMBOL: typeof STEP_METADATA_SYMBOL_KEY = Symbol.for(
+  "autometa:runner:step:metadata"
+) as typeof STEP_METADATA_SYMBOL_KEY;
 
 type TableCarrier = Record<never, never> & {
   [DATA_TABLE_SYMBOL]?: RawTable;
