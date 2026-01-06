@@ -70,6 +70,10 @@ Plugins also support negation via the `.not` property. When you access `.not` on
 // ensure(world).custom.not.isAwesome()
 // Inside the plugin, ensure(value).toBe(...) becomes ensure(value).not.toBe(...)
 ensure(world).custom.not.isAwesome();
+
+// With built-in HTTP plugin facets
+ensure(world).response.not.toHaveStatus(500);
+ensure(world).response.not.toHaveHeader("content-type", "text/plain");
 ```
 
 :::info Requirement

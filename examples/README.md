@@ -14,6 +14,17 @@ examples/
   vitest-decorators/  # Vitest step definitions using decorator APIs
 ```
 
+  ### Quick tip: `.not` everywhere
+
+  Assertion plugins now support negation out of the box. In any example you can write:
+
+  ```
+  Then the response status should not be 404
+  And the response header "content-type" should not equal "text/plain"
+  ```
+
+  Behind the scenes, the plugin is re-instantiated with a negated `ensure`, so your existing matchers work unchanged.
+
 ## Development Flow
 
 1. Capture behaviour in `.features` using Gherkin. Treat these as business-facing documentation and acceptance criteria.

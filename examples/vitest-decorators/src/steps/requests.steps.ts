@@ -44,6 +44,11 @@ export class RequestSteps {
     ensure.response.hasHeader(header, (value) => value.startsWith(prefix));
   }
 
+  @Then(/^the response header "([^"]+)" should not equal "([^"]+)"$/)
+  responseHeaderNotEquals(header: string, unexpected: string): void {
+    ensure.response.hasHeaderNot(header, (value) => value === unexpected);
+  }
+
   @Then(/^the response header "([^"]+)" should equal "([^"]+)"$/)
   responseHeaderEquals(header: string, expected: string): void {
     ensure.response.hasHeader(header, (value) => value === expected);

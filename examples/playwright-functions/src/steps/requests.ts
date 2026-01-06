@@ -43,6 +43,15 @@ Then(
 );
 
 Then(
+  /^the response header "([^"]+)" should not equal "([^"]+)"$/,
+  (...args: unknown[]) => {
+    const _world = args.pop() as BrewBuddyWorld;
+    const [header, unexpected] = args as [string, string];
+    ensure.response.hasHeaderNot(header, (value) => value === unexpected);
+  }
+);
+
+Then(
   /^the response header "([^"]+)" should equal "([^"]+)"$/,
   (...args: unknown[]) => {
     const _world = args.pop() as BrewBuddyWorld;

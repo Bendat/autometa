@@ -36,7 +36,9 @@ export function requireResponse(world: BrewBuddyWorld): HTTPResponse<unknown> {
 interface ResponseAssertions {
   readonly ensure: () => EnsureChain<HttpResponseLike>;
   hasStatus(expectation: StatusExpectation): void;
+  hasStatusNot(expectation: StatusExpectation): void;
   hasHeader(name: string, expectation?: HeaderExpectation): void;
+  hasHeaderNot(name: string, expectation?: HeaderExpectation): void;
   isCacheable(expectation?: CacheControlExpectation): void;
   hasCorrelationId(headerName?: string): void;
 }
@@ -57,8 +59,14 @@ const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ e
       hasStatus(expectation: StatusExpectation) {
         chain().toHaveStatus(expectation);
       },
+      hasStatusNot(expectation: StatusExpectation) {
+        chain().not.toHaveStatus(expectation);
+      },
       hasHeader(name: string, expectation?: HeaderExpectation) {
         chain().toHaveHeader(name, expectation);
+      },
+      hasHeaderNot(name: string, expectation?: HeaderExpectation) {
+        chain().not.toHaveHeader(name, expectation);
       },
       isCacheable(expectation?: CacheControlExpectation) {
         chain().toBeCacheable(expectation);
