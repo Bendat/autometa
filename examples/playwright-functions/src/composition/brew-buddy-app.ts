@@ -34,10 +34,7 @@ export function registerBrewBuddyServices(
     });
 }
 
-export const CompositionRoot = App.compositionRoot<
-  BrewBuddyWorldBase,
-  BrewBuddyClient
->(BrewBuddyClient, {
+export const CompositionRoot = App.compositionRoot(BrewBuddyClient, {
   deps: [HTTP_CLIENT, BrewBuddyMemoryService],
   setup: registerBrewBuddyServices,
   inject: {

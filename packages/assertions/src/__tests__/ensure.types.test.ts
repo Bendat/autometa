@@ -1,5 +1,13 @@
 import type { EnsureChain, EnsureNegatedChain } from "../ensure";
 
+import { describe, expect, it } from "vitest";
+
+describe("EnsureChain type assertions", () => {
+  it("compiles", () => {
+    expect(true).toBe(true);
+  });
+});
+
 type ExpectTrue<T extends true> = T;
 type DoesExtend<Actual, Expected> = [Actual] extends [Expected] ? true : false;
 type ExpectExtends<Actual, Expected> = ExpectTrue<

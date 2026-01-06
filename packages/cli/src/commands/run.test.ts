@@ -120,7 +120,7 @@ describe("runFeatures", () => {
     loadExecutorConfigMock.mockResolvedValue(loadedConfig);
     expandFilePatternsMock.mockResolvedValue([]);
 
-    await expect(runFeatures({ cwd })).rejects.toThrowError(
+    await expect(runFeatures({ cwd, mode: "standalone" })).rejects.toThrowError(
       'No feature files found for patterns: "features"'
     );
 
@@ -155,7 +155,7 @@ describe("runFeatures", () => {
     loadExecutorConfigMock.mockResolvedValue(loadedConfig);
     expandFilePatternsMock.mockResolvedValue([]);
 
-    await expect(runFeatures({ cwd })).rejects.toThrowError(
+    await expect(runFeatures({ cwd, mode: "standalone" })).rejects.toThrowError(
       'No feature files found for patterns: "features"'
     );
 
@@ -258,7 +258,7 @@ describe("runFeatures", () => {
 
     const readFileSpy = vi.spyOn(fs, "readFile").mockResolvedValue("Feature: Example");
 
-    await runFeatures({ cwd });
+    await runFeatures({ cwd, mode: "standalone" });
 
     expect(createLoggingPluginMock).toHaveBeenCalledTimes(1);
     expect(registerSharedPluginMock).toHaveBeenCalledTimes(1);
@@ -392,7 +392,7 @@ describe("runFeatures", () => {
 
     const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
 
-    const result = await runFeatures({ cwd });
+    const result = await runFeatures({ cwd, mode: "standalone" });
 
     expect(result).toEqual(summary);
     expect(cucumberRunnerBuilderMock).toHaveBeenCalledTimes(1);

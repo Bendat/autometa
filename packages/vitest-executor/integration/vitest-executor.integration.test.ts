@@ -54,7 +54,11 @@ function createCalculatorPlan(options: {
   const scopes = createScopes<CalculatorWorld>({
     worldFactory: (_context) => {
       const world: CalculatorWorld = { numbers: [] };
-      worlds.push(world);
+      // Only track scenario worlds for these assertions. The executor may
+      // materialize additional persistent-scope worlds (e.g., feature/rule).
+      if (_context.scope.kind === "scenario") {
+        worlds.push(world);
+      }
       return world;
     },
   });

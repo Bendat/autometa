@@ -43,7 +43,6 @@ describe("Property Injection with Token-based Dependency", () => {
     }
 
     container.registerToken(LOGGER_TOKEN, ConsoleLoggerImpl);
-    container.registerClass(ServiceWithLoggerImpl);
 
     ConsoleLogger = ConsoleLoggerImpl;
     ServiceWithLogger = ServiceWithLoggerImpl;
@@ -68,8 +67,6 @@ describe("Property Injection with Token-based Dependency", () => {
       @LazyInject(LOGGER_TOKEN)
       public logger!: ILogger;
     }
-
-    container.registerClass(LazyService);
 
     const service = container.resolve(LazyService);
 

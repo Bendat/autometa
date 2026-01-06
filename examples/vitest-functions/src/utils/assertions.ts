@@ -51,28 +51,30 @@ interface JsonAssertions {
 const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ ensure }) =>
   (world) => {
     const label = "http response";
-    const chain = (): EnsureChain<HttpResponseLike> =>
-      ensure(fromHttpResponse(requireResponse(world)), { label });
+    const chain = (detail?: string): EnsureChain<HttpResponseLike> =>
+      ensure(fromHttpResponse(requireResponse(world)), {
+        label: detail ? `${label} (${detail})` : label,
+      });
 
     return {
       ensure: chain,
       hasStatus(expectation: StatusExpectation) {
-        chain().toHaveStatus(expectation);
+        chain(`status ${expectation}`).toHaveStatus(expectation);
       },
       hasStatusNot(expectation: StatusExpectation) {
-        chain().not.toHaveStatus(expectation);
+        chain(`status not ${expectation}`).not.toHaveStatus(expectation);
       },
       hasHeader(name: string, expectation?: HeaderExpectation) {
-        chain().toHaveHeader(name, expectation);
+        chain(`header ${name}`).toHaveHeader(name, expectation);
       },
       hasHeaderNot(name: string, expectation?: HeaderExpectation) {
-        chain().not.toHaveHeader(name, expectation);
+        chain(`header ${name} not`).not.toHaveHeader(name, expectation);
       },
       isCacheable(expectation?: CacheControlExpectation) {
-        chain().toBeCacheable(expectation);
+        chain("cacheability").toBeCacheable(expectation);
       },
       hasCorrelationId(headerName?: string) {
-        chain().toHaveCorrelationId(headerName);
+        chain(`correlation id${headerName ? ` (${headerName})` : ""}`).toHaveCorrelationId(headerName);
       },
     };
   };

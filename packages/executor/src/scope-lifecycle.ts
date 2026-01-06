@@ -186,6 +186,13 @@ export class ScopeLifecycle<World> {
       return;
     }
 
+    // Avoid creating feature/rule/outline worlds unless they are actually needed.
+    // This preserves the common "one world per scenario" model and prevents
+    // surprising extra world instantiations when no hooks exist for the scope.
+    if (!this.shouldMaterializePersistentScope(scope)) {
+      return;
+    }
+
     runtime.beforeAll(async () => {
       await this.ensureState(scope);
     });
@@ -317,12 +324,20 @@ export class ScopeLifecycle<World> {
       return;
     }
 
+    if (!this.shouldMaterializePersistentScope(parent)) {
+      return;
+    }
+
     await this.ensureState(parent);
   }
 
   private async resolveParentWorld(scope: ScopeNode<World>): Promise<World | undefined> {
     const parent = this.getParentScope(scope);
     if (!parent || !this.isPersistentScope(parent)) {
+      return undefined;
+    }
+
+    if (!this.shouldMaterializePersistentScope(parent)) {
       return undefined;
     }
 
@@ -345,6 +360,10 @@ export class ScopeLifecycle<World> {
       if (!candidate || !this.isPersistentScope(candidate)) {
         continue;
       }
+
+      if (!this.shouldMaterializePersistentScope(candidate)) {
+        continue;
+      }
       const state = this.states.get(candidate.id) ?? (await this.ensureState(candidate));
       if (state) {
         return state.world;
@@ -363,6 +382,27 @@ export class ScopeLifecycle<World> {
 
   private isPersistentScope(scope: ScopeNode<World>): boolean {
     return PERSISTENT_SCOPE_KINDS.has(scope.kind);
+  }
+
+  private shouldMaterializePersistentScope(scope: ScopeNode<World>): boolean {
+    const beforeType = BEFORE_HOOK_TYPES[scope.kind];
+    const afterType = AFTER_HOOK_TYPES[scope.kind];
+
+    if (beforeType) {
+      const hooks = this.collectHooksForScope(scope, beforeType);
+      if (hooks.length > 0) {
+        return true;
+      }
+    }
+
+    if (afterType) {
+      const hooks = this.collectHooksForScope(scope, afterType);
+      if (hooks.length > 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private async runScopeHooks(
