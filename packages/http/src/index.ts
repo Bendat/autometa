@@ -66,6 +66,11 @@ export {
 	type HeaderExpectation,
 	type CacheControlExpectation,
 } from "./assertions/http-ensure";
+
+export {
+	fromFetchResponse,
+	fromHttpResponse,
+} from "./assertions/http-adapters";
 export type {
 	HTTPAdditionalOptions,
 	HTTPMethod,

@@ -1,8 +1,21 @@
 import { EnsureError, type EnsureOptions } from "@autometa/assertions";
 
-import type { HTTPResponse } from "../http-response";
+type HeadersLike = {
+  get(name: string): string | null;
+  has?(name: string): boolean;
+  entries?: () => IterableIterator<[string, string]>;
+  [Symbol.iterator]?: () => IterableIterator<[string, string]>;
+};
 
-export type HttpResponseLike<T = unknown> = Pick<HTTPResponse<T>, "status" | "statusText" | "headers" | "data">;
+type HeaderSource = HeadersLike | Record<string, unknown>;
+
+export type HttpResponseLike = {
+  status: number;
+  statusText?: string;
+  headers: HeaderSource;
+  data?: unknown;
+  raw?: unknown;
+};
 
 export type StatusExpectation =
   | number
@@ -46,11 +59,13 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
   public readonly value: T;
   private readonly label: string | undefined;
   private readonly negated: boolean;
+  private readonly normalized: NormalizedResponse;
 
   constructor(value: T, state: { readonly label?: string; readonly negated: boolean }) {
     this.value = value;
     this.label = state.label;
     this.negated = state.negated;
+    this.normalized = normalizeResponse(value);
   }
 
   public get not(): HttpEnsureChain<T> {
@@ -61,7 +76,7 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
   }
 
   public toHaveStatus(expectation: StatusExpectation): HttpEnsureChain<T> {
-    const { pass, description } = matchesStatus(this.value.status, expectation);
+    const { pass, description } = matchesStatus(this.normalized.status, expectation);
     if (shouldFail(pass, this.negated)) {
       const baseMessage = this.negated
         ? `Expected response status not to be ${description}`
@@ -69,7 +84,7 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
       this.fail({
         matcher: "toHaveStatus",
         message: baseMessage,
-        actual: this.value.status,
+        actual: this.normalized.status,
         expected: description,
       });
     }
@@ -78,7 +93,7 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
 
   public toHaveHeader(name: string, expectation?: HeaderExpectation): HttpEnsureChain<T> {
     const key = name.toLowerCase();
-    const actual = this.value.headers[key];
+    const actual = this.normalized.headers[key];
 
     if (expectation === undefined) {
       const pass = actual !== undefined;
@@ -113,7 +128,7 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
   }
 
   public toBeCacheable(expectation: CacheControlExpectation = {}): HttpEnsureChain<T> {
-    const cacheControl = this.value.headers["cache-control"];
+    const cacheControl = this.normalized.headers["cache-control"];
 
     if (!cacheControl) {
       if (!this.negated) {
@@ -148,7 +163,7 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
 
   public toHaveCorrelationId(headerName = "x-correlation-id"): HttpEnsureChain<T> {
     const key = headerName.toLowerCase();
-    const value = this.value.headers[key];
+    const value = this.normalized.headers[key];
     const pass = typeof value === "string" && value.trim().length > 0;
 
     if (shouldFail(pass, this.negated)) {
@@ -177,6 +192,45 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
 
 function shouldFail(pass: boolean, negated: boolean): boolean {
   return negated ? pass : !pass;
+}
+
+interface NormalizedResponse {
+  readonly status: number;
+  readonly statusText: string;
+  readonly headers: Record<string, string>;
+  readonly original: unknown;
+}
+
+function normalizeResponse(response: HttpResponseLike): NormalizedResponse {
+  return {
+    status: response.status,
+    statusText: response.statusText ?? "",
+    headers: normalizeHeaders(response.headers),
+    original: response.raw ?? response,
+  };
+}
+
+function normalizeHeaders(source: HeaderSource): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  // Headers instance (or anything structurally compatible)
+  if (typeof (source as HeadersLike).get === "function") {
+    const entries = (source as HeadersLike).entries;
+    const iterator = entries ? entries.call(source) : (source as HeadersLike)[Symbol.iterator]?.call(source);
+    if (iterator) {
+      for (const [name, value] of iterator) {
+        result[String(name).toLowerCase()] = String(value);
+      }
+      return result;
+    }
+  }
+
+  // Plain record
+  for (const [key, value] of Object.entries(source as Record<string, unknown>)) {
+    result[String(key).toLowerCase()] = String(value);
+  }
+
+  return result;
 }
 
 function matchesStatus(status: number, expectation: StatusExpectation): {

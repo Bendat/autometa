@@ -14,9 +14,9 @@ import {
  * Also supports chain-level negation: `ensure.http(response).not...`.
  */
 export type HttpAssertionsFacet = <T = unknown>(
-  response: HttpResponseLike<T> | HTTPResponse<T>,
+  response: HttpResponseLike | HTTPResponse<T>,
   options?: EnsureOptions
-) => HttpEnsureChain<HttpResponseLike<T>>;
+) => HttpEnsureChain<HttpResponseLike>;
 
 /**
  * Assertion plugin that provides HTTP response matchers as a facet.
@@ -29,10 +29,10 @@ export const httpAssertionsPlugin = <World>(): AssertionPlugin<World, HttpAssert
     const isNegated = ensure !== ensure.always;
 
     const facet: HttpAssertionsFacet = <T = unknown>(
-      response: HttpResponseLike<T> | HTTPResponse<T>,
+      response: HttpResponseLike | HTTPResponse<T>,
       options?: EnsureOptions
     ) => {
-      return ensureHttp(response as HttpResponseLike<T>, {
+      return ensureHttp(response as HttpResponseLike, {
         ...(options?.label ? { label: options.label } : {}),
         negated: isNegated,
       });
