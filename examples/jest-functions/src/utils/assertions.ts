@@ -1,15 +1,17 @@
 import type { HTTPResponse } from "@autometa/http";
-import type { TableRecord } from "@autometa/gherkin";
-
 import {
-  fromHttpResponse,
-  type AssertionPlugin,
-  type EnsureChain,
-  type EnsurePluginFacets,
+  ensureHttp,
+  type HttpEnsureChain,
   type HttpResponseLike,
   type HeaderExpectation,
   type CacheControlExpectation,
   type StatusExpectation,
+} from "@autometa/http";
+import type { TableRecord } from "@autometa/gherkin";
+
+import {
+  type AssertionPlugin,
+  type EnsurePluginFacets,
 } from "@autometa/assertions";
 
 import { normalizeValue, resolveJsonPath } from "./json";
@@ -34,7 +36,7 @@ export function requireResponse(world: BrewBuddyWorld): HTTPResponse<unknown> {
 }
 
 interface ResponseAssertions {
-  readonly ensure: () => EnsureChain<HttpResponseLike>;
+  readonly ensure: () => HttpEnsureChain<HttpResponseLike>;
   hasStatus(expectation: StatusExpectation): void;
   hasStatusNot(expectation: StatusExpectation): void;
   hasHeader(name: string, expectation?: HeaderExpectation): void;
@@ -51,10 +53,14 @@ interface JsonAssertions {
 const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ ensure }) =>
   (world) => {
     const label = "http response";
-    const chain = (detail?: string): EnsureChain<HttpResponseLike> =>
-      ensure(fromHttpResponse(requireResponse(world)), {
+    const isNegated = ensure !== ensure.always;
+    const chain = (detail?: string): HttpEnsureChain<HttpResponseLike> => {
+      const response = requireResponse(world);
+      return ensureHttp(response, {
         label: detail ? `${label} (${detail})` : label,
+        negated: isNegated,
       });
+    };
 
     return {
       ensure: chain,

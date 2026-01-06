@@ -38,7 +38,7 @@ Then(
 Then(
   "the response header {string} should start with {string}",
   (header: string, prefix: string, _world: BrewBuddyWorld) => {
-    ensure.response.hasHeader(header, (value) => value.startsWith(prefix));
+    ensure.response.hasHeader(header, (value: string) => value.startsWith(prefix));
   }
 );
 
@@ -47,7 +47,7 @@ Then(
   (...args: unknown[]) => {
     const _world = args.pop() as BrewBuddyWorld;
     const [header, unexpected] = args as [string, string];
-    ensure.response.hasHeaderNot(header, (value) => value === unexpected);
+    ensure.response.hasHeaderNot(header, (value: string) => value === unexpected);
   }
 );
 
@@ -56,7 +56,7 @@ Then(
   (...args: unknown[]) => {
     const _world = args.pop() as BrewBuddyWorld;
     const [header, expected] = args as [string, string];
-    ensure.response.hasHeader(header, (value) => value === expected);
+    ensure.response.hasHeader(header, (value: string) => value === expected);
   }
 );
 
