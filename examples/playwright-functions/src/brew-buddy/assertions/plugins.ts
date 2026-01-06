@@ -14,8 +14,8 @@ import {
   type EnsurePluginFacets,
 } from "@autometa/assertions";
 
-import { normalizeValue, resolveJsonPath } from "./json";
-import type { BrewBuddyWorld } from "../world";
+import { normalizeValue, resolveJsonPath } from "../../utils/json";
+import type { BrewBuddyWorld } from "../../world";
 
 interface Placeholder {
   readonly __placeholder: "timestamp";

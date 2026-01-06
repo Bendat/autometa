@@ -1722,6 +1722,12 @@ importers:
       '@playwright/test':
         specifier: ^1.40.0
         version: 1.57.0
+      fast-glob:
+        specifier: ^3.3.2
+        version: 3.3.3
+      jiti:
+        specifier: ^1.21.0
+        version: 1.21.7
     devDependencies:
       '@types/node':
         specifier: ^18.11.18

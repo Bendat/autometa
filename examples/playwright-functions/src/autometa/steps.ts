@@ -10,7 +10,7 @@ import {
 
 import type { HttpMethod } from "../brew-buddy/api/client";
 import type { MenuExpectation, MenuRegion } from "../utils/regions";
-import { brewBuddyPlugins } from "../utils/assertions";
+import { brewBuddyPlugins } from "../brew-buddy/assertions/plugins";
 import { brewBuddyApp } from "./app";
 import { brewBuddyParameterTypes } from "./parameter-types";
 

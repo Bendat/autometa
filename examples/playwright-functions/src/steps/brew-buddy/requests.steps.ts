@@ -1,6 +1,6 @@
 import { ensure, Then, When } from "../../autometa/steps";
-import { extractErrorStatus, performRequest } from "../../brew-buddy/api/client";
-import { toPathExpectations } from "../../utils/assertions";
+import { HTTPError } from "@autometa/http";
+import { toPathExpectations } from "../../brew-buddy/assertions/plugins";
 import type { BrewBuddyWorld } from "../../world";
 import type { HttpMethodInput } from "../../brew-buddy/api/client";
 import type { MenuItem } from "../../../../.api/src/types/domain.js";
@@ -11,12 +11,16 @@ When(
     const payload = parseOptionalDocstring(world.runtime.consumeDocstring());
     const requestOptions = payload === undefined ? {} : { body: payload };
     try {
-      await performRequest(world, method, route, requestOptions);
+      await world.app.perform(method, route, requestOptions);
     } catch (error) {
-      const status = extractErrorStatus(world);
-      if (status === undefined) {
-        throw error;
+      // Swallow HTTP errors - status will be checked in Then steps.
+      // IMPORTANT: BrewBuddyClient.perform() clears lastResponse on error, so we
+      // restore it from the HTTPError response for downstream ensure plugins.
+      if (error instanceof HTTPError) {
+        world.app.extractErrorStatus();
+        return;
       }
+      throw error;
     }
   }
 );

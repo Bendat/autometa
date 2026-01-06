@@ -103,7 +103,7 @@ Given(
       size: string;
       season: string;
     };
-    await world.app.perform("post", "/menu", { body: payload });
+    await world.app.withHistory(world.app.menuClient.create(payload));
     ensure.response.hasStatus(201);
   }
 );

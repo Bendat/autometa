@@ -1,5 +1,4 @@
 import { AfterScenario, ensure, Given } from "../../autometa/steps";
-import { performRequest } from "../../brew-buddy/api/client";
 
 AfterScenario(({ world }) => {
   world.app.streamManager.dispose();
@@ -10,27 +9,23 @@ Given("the Brew Buddy API base URL is configured", async (world) => {
   world.scenario.apiBaseUrl = world.baseUrl;
 
   // Verify API is healthy
-  await performRequest(world, "get", "/health");
+  await world.app.withHistory(world.app.admin.healthCheck());
   ensure.response.hasStatus(200);
 });
 
 Given("the Brew Buddy menu is reset to the default offerings", async (world) => {
-  await performRequest(world, "post", "/admin/reset", {
-    body: { scopes: ["menu", "recipes", "inventory", "loyalty", "orders"] },
-  });
+  await world.app.withHistory(world.app.admin.reset({
+    scopes: ["menu", "recipes", "inventory", "loyalty", "orders"],
+  }));
   ensure.response.hasStatus(204);
 });
 
 Given("the recipe catalog is reset to the default recipes", async (world) => {
-  await performRequest(world, "post", "/admin/reset", {
-    body: { scopes: ["recipes"] },
-  });
+  await world.app.withHistory(world.app.admin.reset({ scopes: ["recipes"] }));
   ensure.response.hasStatus(204);
 });
 
 Given("the order queue is cleared", async (world) => {
-  await performRequest(world, "post", "/admin/reset", {
-    body: { scopes: ["orders"] },
-  });
+  await world.app.withHistory(world.app.admin.reset({ scopes: ["orders"] }));
   ensure.response.hasStatus(204);
 });

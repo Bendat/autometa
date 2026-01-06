@@ -5,6 +5,12 @@ import { BrewBuddyStreamManager } from "../services/stream-manager";
 import { TagRegistryService } from "../services/tag-registry.service";
 import { BrewBuddyMemoryService } from "../state/memory.service";
 import type { MenuService } from "../capabilities/menu/menu.service";
+import { MenuClient } from "./menu-client";
+import { RecipeClient } from "./recipe-client";
+import { OrderClient } from "./order-client";
+import { LoyaltyClient } from "./loyalty-client";
+import { InventoryClient } from "./inventory-client";
+import { AdminClient } from "./admin-client";
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 export type HttpMethodInput = HttpMethod | Lowercase<HttpMethod>;
@@ -17,12 +23,9 @@ export interface RequestOptions {
 }
 
 /**
- * Thin API facade used by steps.
+ * Brew Buddy API facade.
  *
- * It owns:
- * - the HTTP client
- * - last response state (used by `ensure.response.*` helpers)
- * - scenario-scoped services (memory, tag registry, streaming)
+ * Composes domain HTTP clients and manages shared response state.
  */
 export class BrewBuddyClient {
   readonly http: HTTP;
@@ -31,6 +34,14 @@ export class BrewBuddyClient {
   private _tags?: TagRegistryService;
   private _menu?: MenuService;
   private _world?: BrewBuddyWorldBase;
+
+  // Domain HTTP clients
+  readonly menuClient: MenuClient;
+  readonly recipes: RecipeClient;
+  readonly orders: OrderClient;
+  readonly loyalty: LoyaltyClient;
+  readonly inventory: InventoryClient;
+  readonly admin: AdminClient;
 
   lastResponse?: HTTPResponse<unknown>;
   lastResponseBody?: unknown;
@@ -42,6 +53,14 @@ export class BrewBuddyClient {
       .sharedHeader("accept", "application/json")
       .sharedAllowPlainText(true);
     this.memory = memory;
+
+    // Initialize domain clients with shared HTTP instance
+    this.menuClient = new MenuClient(this.http);
+    this.recipes = new RecipeClient(this.http);
+    this.orders = new OrderClient(this.http);
+    this.loyalty = new LoyaltyClient(this.http);
+    this.inventory = new InventoryClient(this.http);
+    this.admin = new AdminClient(this.http);
   }
 
   set world(world: BrewBuddyWorldBase) {
@@ -87,6 +106,47 @@ export class BrewBuddyClient {
       throw new Error("Menu service has not been configured");
     }
     return this._menu;
+  }
+
+  /**
+   * Execute an HTTP request and record response history.
+   * Used by domain clients to update lastResponse/lastResponseBody/lastError.
+   */
+  async withHistory<T>(request: Promise<HTTPResponse<T>>): Promise<HTTPResponse<T>> {
+    try {
+      const response = await request;
+      this.lastResponse = response;
+      this.lastResponseBody = response.data;
+      this.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
+      delete this.lastError;
+
+      if (response.status >= 400) {
+        const error = new HTTPError(
+          `Request failed with status ${response.status}`,
+          response.request,
+          response
+        );
+        throw error;
+      }
+
+      return response;
+    } catch (error) {
+      this.lastError = error;
+
+      // Preserve error responses for downstream assertions.
+      // This mirrors extractErrorStatus(), but keeps the full history hydrated.
+      if (error instanceof HTTPError && error.response) {
+        this.lastResponse = error.response;
+        this.lastResponseBody = error.response.data;
+        this.lastResponseHeaders = normalizeHeaders(error.response.headers ?? {});
+        throw error;
+      }
+
+      delete this.lastResponse;
+      delete this.lastResponseBody;
+      delete this.lastResponseHeaders;
+      throw error;
+    }
   }
 
   request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
@@ -139,19 +199,6 @@ export class BrewBuddyClient {
     }
     return undefined;
   }
-}
-
-export async function performRequest(
-  world: BrewBuddyWorld,
-  method: HttpMethodInput,
-  path: string,
-  options: RequestOptions = {}
-): Promise<void> {
-  await world.app.perform(method, path, options);
-}
-
-export function extractErrorStatus(world: BrewBuddyWorld): number | undefined {
-  return world.app.extractErrorStatus();
 }
 
 async function dispatch(client: HTTP, method: HttpMethodInput) {

@@ -5,7 +5,7 @@ export default defineConfig({
     runner: "playwright",
     roots: {
       features: ["../.features"],
-      steps: ["./src/steps", "./src/autometa/steps.ts"],
+      steps: ["./src/autometa/steps.ts", "./src/steps/**/*.steps.*"],
       parameterTypes: ["./src/autometa/parameter-types.ts"],
     },
     test: {

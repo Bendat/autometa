@@ -9,9 +9,11 @@
  */
 
 import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import type { Config } from "@autometa/config";
+import jiti from "jiti";
+import fg from "fast-glob";
 
 const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
 
@@ -463,19 +465,47 @@ function loadConfigSync(
     "autometa.config.cjs",
   ];
 
+  const _jiti = jiti(root, { interopDefault: true });
+
   for (const candidate of candidates) {
-    const path = resolve(root, candidate);
-    if (existsSync(path)) {
-      // We can't actually load the config synchronously with TypeScript
-      // So we'll use a convention-based approach: look for src/steps directory
-      const defaultStepRoots = findDefaultStepRoots(root);
-      return { configPath: path, stepRoots: defaultStepRoots };
+    const configPath = resolve(root, candidate);
+    if (!existsSync(configPath)) {
+      continue;
     }
+
+    const mod = _jiti(configPath);
+    const config = (mod as any).default || mod;
+
+    if (!isConfig(config)) {
+      throw new Error(
+        `Failed to load Autometa config from "${configPath}". ` +
+          'Ensure the module exports a Config instance (e.g. export default defineConfig({...})).'
+      );
+    }
+
+    const resolved = config.resolve();
+    const stepRoots = resolved.config?.roots?.steps ?? [];
+
+    return {
+      configPath,
+      stepRoots: Array.isArray(stepRoots) && stepRoots.length > 0
+        ? stepRoots
+        : findDefaultStepRoots(root),
+    };
   }
 
-  // No config found, use default step roots
-  const defaultStepRoots = findDefaultStepRoots(root);
-  return { configPath: undefined, stepRoots: defaultStepRoots };
+  return { configPath: undefined, stepRoots: findDefaultStepRoots(root) };
+}
+
+function isConfig(config: unknown): config is Config {
+  return (
+    typeof config === "object" &&
+    config !== null &&
+    "resolve" in config &&
+    typeof (config as Config).resolve === "function" &&
+    "current" in config &&
+    typeof (config as Config).current === "function"
+  );
 }
 
 /**
@@ -552,54 +582,26 @@ function buildStepPatterns(
  * Resolve a glob pattern to actual file paths.
  */
 function resolveGlobToFiles(pattern: string, projectRoot: string): string[] {
-  // For simplicity, we'll convert glob patterns to directory scanning
-  // Real implementation would use a glob library
-
-  // Check if it's a specific file (not a glob pattern)
+  // If it's a specific file (not a glob pattern), just return it if it exists.
   const isSpecificFile = hasFileExtension(pattern) && !hasGlobMagic(pattern);
   if (isSpecificFile) {
-    // It's a specific file, just return it if it exists
-    if (existsSync(pattern)) {
-      return [pattern];
-    }
-    return [];
+    return existsSync(pattern) ? [pattern] : [];
   }
 
-  // Extract the base directory from the pattern
-  const globIndex = pattern.search(/[*?{}[\]]/);
-  const baseDir =
-    globIndex === -1
-      ? pattern
-      : pattern.slice(0, pattern.lastIndexOf("/", globIndex) + 1);
+  const matches = fg.sync(pattern, {
+    cwd: projectRoot,
+    absolute: true,
+    onlyFiles: true,
+    unique: true,
+    followSymbolicLinks: true,
+    ignore: [
+      "**/node_modules/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+    ],
+  }) as string[];
 
-  if (!existsSync(baseDir)) {
-    return [];
-  }
-
-  const files: string[] = [];
-  const extensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"];
-
-  function scanDir(dir: string): void {
-    try {
-      const entries = readdirSync(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = resolve(dir, entry.name);
-        if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
-          scanDir(fullPath);
-        } else if (entry.isFile()) {
-          const ext = extname(entry.name);
-          if (extensions.includes(ext) && !entry.name.includes(".test.") && !entry.name.includes(".spec.")) {
-            files.push(fullPath);
-          }
-        }
-      }
-    } catch {
-      // Ignore errors
-    }
-  }
-
-  scanDir(baseDir.replace(/\/+$/, ""));
-  return files;
+  return matches.sort((a, b) => a.localeCompare(b));
 }
 
 function toPatterns(entry: string, fallbackGlob: string): string[] {

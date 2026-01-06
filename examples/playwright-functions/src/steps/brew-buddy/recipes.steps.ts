@@ -1,6 +1,6 @@
 import { Given, Then, ensure } from "../../autometa/steps";
-import { extractErrorStatus, performRequest } from "../../brew-buddy/api/client";
 import type { BrewBuddyWorld } from "../../world";
+import { HTTPError } from "@autometa/http";
 
 interface RecipeDefinition {
   readonly base: string;
@@ -38,25 +38,24 @@ Given("a recipe exists named {string}", async (name: string, world: BrewBuddyWor
   const slug = toRecipeSlug(name);
 
   try {
-    await performRequest(world, "get", `/recipes/${slug}`);
+    await world.app.withHistory(world.app.recipes.getBySlug(slug));
     ensure.response.hasStatus(200);
     world.app.memory.rememberRecipeSlug(name, slug);
     return;
   } catch (error) {
-    const status = extractErrorStatus(world);
-    if (status !== 404) {
+    if (error instanceof HTTPError && error.response?.status === 404) {
+      // Recipe doesn't exist, create it
+    } else {
       throw error;
     }
   }
 
-  await performRequest(world, "post", "/recipes", {
-    body: {
-      name,
-      base: definition.base,
-      additions: definition.additions,
-      season: definition.season,
-    },
-  });
+  await world.app.withHistory(world.app.recipes.create({
+    name,
+    base: definition.base,
+    additions: definition.additions,
+    season: definition.season,
+  }));
   ensure.response.hasStatus(201);
   world.app.memory.rememberRecipeSlug(name, slug);
 });
@@ -64,7 +63,7 @@ Given("a recipe exists named {string}", async (name: string, world: BrewBuddyWor
 Then(
   "the recipe {string} should not be present when I list recipes",
   async (name: string, world: BrewBuddyWorld) => {
-    await performRequest(world, "get", "/recipes");
+    await world.app.withHistory(world.app.recipes.list());
     ensure.response.hasStatus(200);
 
     const body = world.app.lastResponseBody as

@@ -4,6 +4,7 @@ import { WORLD_TOKEN } from "@autometa/runner";
 import type { MenuItem } from "../../../../../.api/src/types/domain.js";
 import type { BrewBuddyWorld } from "../../../world";
 import { normalizeRegion, type MenuRegion } from "../../../utils/regions";
+import type { CreateMenuItemInput } from "../../api/menu-client";
 
 export interface MenuFieldInput {
   readonly field: string;
@@ -33,7 +34,7 @@ export class MenuService {
     const query = region
       ? { region: normalizeRegion(region)?.toLowerCase() ?? region.toLowerCase() }
       : undefined;
-    await this.world.app.perform("get", "/menu", query ? { query } : {});
+    await this.world.app.withHistory(this.world.app.menuClient.get(query));
     const items = this.extractFromLastResponse();
     this.world.app.memory.rememberMenuSnapshot(items);
     return items;
@@ -50,7 +51,7 @@ export class MenuService {
 
   async createSeasonalDrink(name: string, fields: readonly MenuFieldInput[]): Promise<MenuItem> {
     const payload = this.buildMenuPayload(name, fields);
-    await this.world.app.perform("post", "/menu", { body: payload });
+    await this.world.app.withHistory(this.world.app.menuClient.create(payload));
     // The calling step typically asserts status via ensure.response.
     const created = this.parseLastMenuItem();
     this.world.app.memory.rememberLastMenuItem(created);
@@ -59,11 +60,11 @@ export class MenuService {
   }
 
   async retireDrink(name: string): Promise<void> {
-    await this.world.app.perform("delete", `/menu/${encodeURIComponent(name)}`);
+    await this.world.app.withHistory(this.world.app.menuClient.delete(name));
   }
 
   async applyBulkPriceUpdate(updates: readonly MenuPriceUpdate[]): Promise<MenuItem[]> {
-    await this.world.app.perform("patch", "/menu/prices", { body: { updates } });
+    await this.world.app.withHistory(this.world.app.menuClient.updatePrices(updates));
     const updated = this.extractFromLastResponse();
     this.world.app.memory.rememberMenuSnapshot(updated);
     return updated;
@@ -113,8 +114,18 @@ export class MenuService {
     } as MenuItem;
   }
 
-  private buildMenuPayload(name: string, fields: readonly MenuFieldInput[]): Partial<MenuItem> {
-    const payload: Partial<MenuItem> = { name };
+  private buildMenuPayload(
+    name: string,
+    fields: readonly MenuFieldInput[]
+  ): CreateMenuItemInput {
+    const payload: {
+      name: string;
+      price?: number;
+      size?: string;
+      description?: string;
+      season?: string;
+      seasonal?: boolean;
+    } = { name };
 
     for (const row of fields) {
       const field = String(row.field).toLowerCase();
@@ -146,6 +157,6 @@ export class MenuService {
     payload.size = payload.size ?? "12oz";
     payload.price = payload.price ?? 6;
 
-    return payload;
+    return payload as CreateMenuItemInput;
   }
 }
