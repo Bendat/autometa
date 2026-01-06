@@ -5,6 +5,19 @@ export type EnsureInvoker = typeof baseEnsure;
 
 export type EnsureInvoke = <T>(value: T, options?: EnsureOptions) => EnsureChain<T>;
 
+/**
+ * An ensure invoker that also exposes a stable, non-negated invoker.
+ *
+ * This exists to support plugin-level negation (`ensure.not.<plugin>.*`) without
+ * forcing plugin authors to manually import the base ensure.
+ *
+ * Use `ensure.always(...)` for required-value extraction/preconditions that must
+ * not be inverted by `.not`.
+ */
+export type EnsureInvokeWithAlways = EnsureInvoke & {
+  readonly always: EnsureInvoke;
+};
+
 export type EnsureFacade<World, Facets extends Record<string, unknown>> = EnsureInvoke &
   Facets & { readonly world: World; readonly not: Facets };
 
@@ -13,7 +26,7 @@ export type EnsureFactory<World, Facets extends Record<string, unknown>> = (
 ) => EnsureFacade<World, Facets>;
 
 export interface AssertionPluginContext {
-  readonly ensure: EnsureInvoke;
+  readonly ensure: EnsureInvokeWithAlways;
 }
 
 export type AssertionPlugin<World, Facet> = (
@@ -45,12 +58,26 @@ export function createEnsureFactory<
   ensureFn: EnsureInvoke,
   plugins: Plugins
 ): EnsureFactory<World, PluginFacets<World, Plugins>> {
+  const withAlways = (
+    invoker: EnsureInvoke,
+    always: EnsureInvoke
+  ): EnsureInvokeWithAlways => {
+    Object.defineProperty(invoker, "always", {
+      value: always,
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    return invoker as EnsureInvokeWithAlways;
+  };
+
+  const positiveEnsure = withAlways(ensureFn, ensureFn);
   const pluginEntries = (Object.keys(plugins) as Array<keyof Plugins>).map((key) => {
     const plugin = plugins[key];
     if (!plugin) {
       throw new Error(`Assertion plugin "${String(key)}" is not defined.`);
     }
-    const factory = plugin({ ensure: ensureFn });
+    const factory = plugin({ ensure: positiveEnsure });
     return [key, factory] as const;
   });
 
@@ -58,12 +85,14 @@ export function createEnsureFactory<
     return ensureFn(value, options).not as unknown as EnsureChain<T>;
   };
 
+  const negativeEnsure = withAlways(negatedEnsureFn, ensureFn);
+
   const negativePluginEntries = (Object.keys(plugins) as Array<keyof Plugins>).map((key) => {
     const plugin = plugins[key];
     if (!plugin) {
       throw new Error(`Assertion plugin "${String(key)}" is not defined.`);
     }
-    const factory = plugin({ ensure: negatedEnsureFn });
+    const factory = plugin({ ensure: negativeEnsure });
     return [key, factory] as const;
   });
 

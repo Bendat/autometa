@@ -17,5 +17,6 @@ export {
 	type EnsureFacade,
 	type EnsureFactory,
 	type EnsureInvoke,
+	type EnsureInvokeWithAlways,
 	type EnsureInvoker,
 } from "./plugins";

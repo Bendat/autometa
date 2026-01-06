@@ -83,7 +83,10 @@ const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure })
   (world) => {
     const bodyLabel = "response json";
     const ensureBody = () =>
-      ensure(world.app.lastResponseBody, { label: bodyLabel }).toBeDefined().value;
+      // IMPORTANT: Plugin-level negation (`ensure.not.json.*`) should invert the
+      // assertions, not the preconditions needed to evaluate them.
+      ensure.always(world.app.lastResponseBody, { label: bodyLabel }).toBeDefined()
+        .value;
 
     return {
       contains(expectations: Iterable<PathExpectation>) {
