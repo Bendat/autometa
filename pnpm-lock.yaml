@@ -1340,6 +1340,9 @@ importers:
 
   packages/http:
     dependencies:
+      '@autometa/assertions':
+        specifier: workspace:*
+        version: link:../assertions
       '@autometa/errors':
         specifier: workspace:*
         version: link:../errors

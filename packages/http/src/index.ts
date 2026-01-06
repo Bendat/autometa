@@ -52,6 +52,20 @@ export {
 	type HTTPTransport,
 	type HTTPTransportResponse,
 } from "./transport";
+
+export {
+	httpAssertionsPlugin,
+	type HttpAssertionsFacet,
+} from "./assertions/http-assertions-plugin";
+
+export {
+	ensureHttp,
+	type HttpEnsureChain,
+	type HttpResponseLike,
+	type StatusExpectation,
+	type HeaderExpectation,
+	type CacheControlExpectation,
+} from "./assertions/http-ensure";
 export type {
 	HTTPAdditionalOptions,
 	HTTPMethod,

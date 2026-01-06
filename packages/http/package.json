@@ -34,6 +34,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@autometa/assertions": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@autometa/status-codes": "workspace:*",
     "cli-highlight": "^2.1.11",
