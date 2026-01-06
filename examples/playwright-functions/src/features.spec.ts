@@ -12,4 +12,4 @@ import "../../.features/http/http-client.feature";
 // // @ts-expect-error - .feature files are transformed by the loader
 // import "../../.features/http/order-streaming.feature";
 // // @ts-expect-error - .feature files are transformed by the loader
-// import "../../.features/http/recipe-resource.feature";
+import "../../.features/http/recipe-resource.feature";

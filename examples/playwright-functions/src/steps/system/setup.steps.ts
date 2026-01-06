@@ -1,5 +1,5 @@
 import { AfterScenario, ensure, Given } from "../../autometa/steps";
-import { performRequest } from "../../utils/http";
+import { performRequest } from "../../brew-buddy/api/client";
 
 AfterScenario(({ world }) => {
   world.app.streamManager.dispose();

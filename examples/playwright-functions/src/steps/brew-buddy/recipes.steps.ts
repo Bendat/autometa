@@ -1,5 +1,5 @@
 import { Given, Then, ensure } from "../../autometa/steps";
-import { extractErrorStatus, performRequest } from "../../utils/http";
+import { extractErrorStatus, performRequest } from "../../brew-buddy/api/client";
 import type { BrewBuddyWorld } from "../../world";
 
 interface RecipeDefinition {

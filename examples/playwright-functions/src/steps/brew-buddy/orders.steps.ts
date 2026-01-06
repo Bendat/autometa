@@ -1,5 +1,5 @@
 import { Given, Then, When, ensure } from "../../autometa/steps";
-import { extractErrorStatus, performRequest } from "../../utils/http";
+import { extractErrorStatus, performRequest } from "../../brew-buddy/api/client";
 import { normalizeValue } from "../../utils/json";
 import type { BrewBuddyWorld, OrderErrorState } from "../../world";
 import type {

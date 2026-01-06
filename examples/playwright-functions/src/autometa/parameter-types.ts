@@ -4,7 +4,7 @@ import type {
 } from "@autometa/cucumber-expressions";
 
 import type { BrewBuddyWorld } from "../world";
-import type { HttpMethod } from "../utils/http";
+import type { HttpMethod } from "../brew-buddy/api/client";
 import {
   REGION_EXPECTATIONS,
   normalizeRegion,

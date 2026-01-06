@@ -8,7 +8,7 @@ import type {
   Order,
 } from "../../.api/src/types/domain.js";
 import type { MenuRegion } from "./utils/regions";
-import { BrewBuddyClient } from "./utils/http";
+import { BrewBuddyClient } from "./brew-buddy/api/client";
 
 const DEFAULT_API_BASE_URL = "http://localhost:4000";
 
