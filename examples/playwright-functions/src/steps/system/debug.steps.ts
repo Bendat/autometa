@@ -1,6 +1,6 @@
 import type { SourceRef } from "@autometa/scopes";
 
-import { Then } from "../step-definitions";
+import { Then } from "../../autometa/steps";
 
 Then("I log the current step metadata", (world) => {
   const metadata = world.runtime.currentStep;
@@ -62,7 +62,9 @@ Then("I log the current step metadata", (world) => {
   if (metadata.step) {
     const keyword = metadata.step.keyword ? `${metadata.step.keyword} ` : "";
     lines.push(
-      `Step: ${keyword}${metadata.step.text ?? "<unnamed>"}${formatSource(metadata.step.source)}`
+      `Step: ${keyword}${metadata.step.text ?? "<unnamed>"}${formatSource(
+        metadata.step.source
+      )}`
     );
   }
 
@@ -72,7 +74,9 @@ Then("I log the current step metadata", (world) => {
         ? metadata.definition.expression
         : metadata.definition.expression.toString();
     lines.push(
-      `Definition: ${metadata.definition.keyword} ${expression}${formatSource(metadata.definition.source)}`
+      `Definition: ${metadata.definition.keyword} ${expression}${formatSource(
+        metadata.definition.source
+      )}`
     );
   }
 
@@ -98,7 +102,9 @@ function formatSource(source?: SourceRef, fallbackFile?: string): string {
   const line = source?.line;
   const column = source?.column;
   if (file && line !== undefined) {
-    return column !== undefined ? ` (${file}:${line}:${column})` : ` (${file}:${line})`;
+    return column !== undefined
+      ? ` (${file}:${line}:${column})`
+      : ` (${file}:${line})`;
   }
   if (file) {
     return ` (${file})`;

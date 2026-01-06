@@ -70,4 +70,18 @@ describe("ensure type inference", () => {
 
     assertType<string | Set<number>>(chain.value);
   });
+
+  it("narrows to number after numeric matcher", () => {
+    const input: number | string = 123;
+    const chain = ensure(input).toBeGreaterThan(0);
+
+    assertType<number>(chain.value);
+  });
+
+  it("preserves union when numeric matcher is negated", () => {
+    const input: number | string = 123;
+    const chain = ensure(input).not.toBeGreaterThan(1000);
+
+    assertType<number | string>(chain.value);
+  });
 });

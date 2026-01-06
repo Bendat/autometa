@@ -11,17 +11,35 @@ This example uses the functional API (similar to `vitest-functions`) but configu
 ```
 playwright-functions/
 ├── src/
-│   ├── composition/         # DI composition root
-│   ├── services/           # Application services
-│   ├── steps/              # Step definitions
-│   ├── support/            # Parameter types
-│   ├── utils/              # Utilities (HTTP client, assertions, etc.)
-│   ├── step-definitions.ts # CucumberRunner builder
-│   └── world.ts            # World type definitions
+│   ├── autometa/            # Autometa wiring (composition root, runner surface, parameter types)
+│   │   ├── app.ts           # Composition root (DI registrations + world.app wiring)
+│   │   ├── steps.ts         # CucumberRunner builder + exported DSL (Given/When/Then/ensure)
+│   │   └── parameter-types.ts
+│   ├── brew-buddy/          # Domain harness (API facade + scenario-scoped services + capabilities)
+│   │   ├── api/             # BrewBuddyClient facade and HTTP helpers
+│   │   ├── capabilities/    # Intent-focused services (e.g. MenuService)
+│   │   ├── services/        # Scenario-scoped helpers (stream manager, tag registry)
+│   │   └── state/           # Scenario memory
+│   ├── steps/               # Step definitions (domain + system grouped)
+│   │   ├── brew-buddy/      # Domain steps (menu/orders/recipes/requests/tags)
+│   │   ├── system/          # Framework/system steps (setup/debug/lifecycle)
+│   │   └── index.ts         # Step entrypoint (imports the canonical step modules)
+│   ├── support/             # Back-compat parameter type entrypoint (re-export)
+│   ├── utils/               # Shared utilities (assertions, json helpers, regions, SSE)
+│   ├── step-definitions.ts  # Back-compat runner entrypoint (re-export)
+│   └── world.ts             # World type definitions
 ├── autometa.config.ts      # Autometa configuration
 ├── playwright.config.ts    # Playwright configuration
 └── package.json
 ```
+
+### Conventions used in this example
+
+- **All Autometa “wiring” lives under `src/autometa/*`** so test authors can ignore framework setup.
+- **Domain interactions live under `src/brew-buddy/*`** (API facade, scenario services, and capability services).
+- **Steps are grouped by intent** under `src/steps/{system,brew-buddy}/*`.
+
+> Backwards-compatibility note: some older paths (`src/composition/*`, `src/utils/http.ts`, `src/step-definitions.ts`, etc.) are kept as thin re-exports/shims so existing docs/imports still work.
 
 ## Running Tests
 
@@ -75,6 +93,7 @@ export default defineConfig({
     roots: {
       features: ["../.features"],
       steps: ["./src/steps", "./src/step-definitions.ts"],
+      parameterTypes: ["./src/support/parameter-types.ts"],
     },
   },
 });
@@ -94,6 +113,5 @@ export default defineConfig({
 
 ## Notes
 
-- This example uses the `@autometa/playwright-loader` package for .feature file transformation
-- The loader is currently scaffolded - full step execution integration is in progress
-- Feature files are shared with other examples via `../.features`
+- This example uses the `@autometa/playwright-loader` package for `.feature` file transformation.
+- Feature files are shared with other examples via `../.features`.

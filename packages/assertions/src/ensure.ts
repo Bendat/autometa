@@ -18,6 +18,13 @@ import {
   assertToBeNull,
   assertToBeUndefined,
 } from "./matchers/nullish";
+import {
+  assertToBeCloseTo,
+  assertToBeGreaterThan,
+  assertToBeGreaterThanOrEqual,
+  assertToBeLessThan,
+  assertToBeLessThanOrEqual,
+} from "./matchers/numeric";
 import { assertToBeFalsy, assertToBeTruthy } from "./matchers/truthiness";
 
 export interface EnsureOptions {
@@ -37,6 +44,26 @@ interface EnsureChainInternal<T, Negated extends boolean> {
   toBeNull(): EnsureChainInternal<Negated extends true ? T : null, Negated>;
   toBeTruthy(): EnsureChainInternal<T, Negated>;
   toBeFalsy(): EnsureChainInternal<T, Negated>;
+  toBeGreaterThan(expected: number): EnsureChainInternal<
+    Negated extends true ? T : Extract<T, number>,
+    Negated
+  >;
+  toBeGreaterThanOrEqual(expected: number): EnsureChainInternal<
+    Negated extends true ? T : Extract<T, number>,
+    Negated
+  >;
+  toBeLessThan(expected: number): EnsureChainInternal<
+    Negated extends true ? T : Extract<T, number>,
+    Negated
+  >;
+  toBeLessThanOrEqual(expected: number): EnsureChainInternal<
+    Negated extends true ? T : Extract<T, number>,
+    Negated
+  >;
+  toBeCloseTo(expected: number, precision?: number): EnsureChainInternal<
+    Negated extends true ? T : Extract<T, number>,
+    Negated
+  >;
   toBeInstanceOf<Ctor extends abstract new (...args: never[]) => unknown>(
     ctor: Ctor
   ): EnsureChainInternal<Negated extends true ? T : InstanceType<Ctor>, Negated>;
@@ -138,6 +165,62 @@ class EnsureChainImpl<T, Negated extends boolean>
   public toBeFalsy(): EnsureChainInternal<T, Negated> {
     assertToBeFalsy(this.createContext());
     return this;
+  }
+
+  public toBeGreaterThan(
+    expected: number
+  ): EnsureChainInternal<Negated extends true ? T : Extract<T, number>, Negated> {
+    const actual = assertToBeGreaterThan(this.createContext(), expected);
+    const next = this.state.negated ? this : this.rewrap(actual as Extract<T, number>);
+    return next as EnsureChainInternal<
+      Negated extends true ? T : Extract<T, number>,
+      Negated
+    >;
+  }
+
+  public toBeGreaterThanOrEqual(
+    expected: number
+  ): EnsureChainInternal<Negated extends true ? T : Extract<T, number>, Negated> {
+    const actual = assertToBeGreaterThanOrEqual(this.createContext(), expected);
+    const next = this.state.negated ? this : this.rewrap(actual as Extract<T, number>);
+    return next as EnsureChainInternal<
+      Negated extends true ? T : Extract<T, number>,
+      Negated
+    >;
+  }
+
+  public toBeLessThan(
+    expected: number
+  ): EnsureChainInternal<Negated extends true ? T : Extract<T, number>, Negated> {
+    const actual = assertToBeLessThan(this.createContext(), expected);
+    const next = this.state.negated ? this : this.rewrap(actual as Extract<T, number>);
+    return next as EnsureChainInternal<
+      Negated extends true ? T : Extract<T, number>,
+      Negated
+    >;
+  }
+
+  public toBeLessThanOrEqual(
+    expected: number
+  ): EnsureChainInternal<Negated extends true ? T : Extract<T, number>, Negated> {
+    const actual = assertToBeLessThanOrEqual(this.createContext(), expected);
+    const next = this.state.negated ? this : this.rewrap(actual as Extract<T, number>);
+    return next as EnsureChainInternal<
+      Negated extends true ? T : Extract<T, number>,
+      Negated
+    >;
+  }
+
+  public toBeCloseTo(
+    expected: number,
+    precision?: number
+  ): EnsureChainInternal<Negated extends true ? T : Extract<T, number>, Negated> {
+    const actual = assertToBeCloseTo(this.createContext(), expected, precision);
+    const next = this.state.negated ? this : this.rewrap(actual as Extract<T, number>);
+    return next as EnsureChainInternal<
+      Negated extends true ? T : Extract<T, number>,
+      Negated
+    >;
   }
 
   public toBeInstanceOf<Ctor extends abstract new (...args: never[]) => unknown>(

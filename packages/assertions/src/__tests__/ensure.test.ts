@@ -123,6 +123,31 @@ describe("ensure", () => {
     expect(() => ensure("abc").toHaveLength(2)).toThrowError(EnsureError);
   });
 
+  describe("numeric matchers", () => {
+    it("supports toBeGreaterThan", () => {
+      const chain = ensure(10).toBeGreaterThan(5);
+      expect(chain.value).toBe(10);
+      expect(() => ensure(5).toBeGreaterThan(10)).toThrowError(EnsureError);
+    });
+
+    it("supports toBeCloseTo with precision", () => {
+      ensure(1.005).toBeCloseTo(1.01, 2);
+      expect(() => ensure(1.0).toBeCloseTo(1.02, 2)).toThrowError(EnsureError);
+    });
+
+    it("narrows union to number when not negated", () => {
+      const value: number | string = 7;
+      const chain = ensure(value).toBeGreaterThan(1);
+      expectTypeOf(chain.value).toEqualTypeOf<number>();
+    });
+
+    it("does not narrow union when negated", () => {
+      const value: number | string = 7;
+      const chain = ensure(value).not.toBeGreaterThan(100);
+      expectTypeOf(chain.value).toEqualTypeOf<number | string>();
+    });
+  });
+
   describe("negated chains", () => {
     it("inverts matcher expectations with toBe", () => {
       const chain = ensure(10).not.toBe(11);

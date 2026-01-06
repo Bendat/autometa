@@ -1,6 +1,6 @@
-import { Given, Then, ensure } from "../step-definitions";
-import { extractErrorStatus, performRequest } from "../utils/http";
-import type { BrewBuddyWorld } from "../world";
+import { Given, Then, ensure } from "../../autometa/steps";
+import { extractErrorStatus, performRequest } from "../../utils/http";
+import type { BrewBuddyWorld } from "../../world";
 
 interface RecipeDefinition {
   readonly base: string;
@@ -67,7 +67,9 @@ Then(
     await performRequest(world, "get", "/recipes");
     ensure.response.hasStatus(200);
 
-    const body = world.app.lastResponseBody as { recipes?: Array<Record<string, unknown>> } | undefined;
+    const body = world.app.lastResponseBody as
+      | { recipes?: Array<Record<string, unknown>> }
+      | undefined;
     const recipes = body && Array.isArray(body.recipes) ? body.recipes : [];
     const expectedSlug = world.app.memory.resolveRecipeSlug(name);
 
@@ -76,7 +78,9 @@ Then(
         return false;
       }
       const recipeName = String((recipe as Record<string, unknown>).name ?? "");
-      const recipeSlug = String((recipe as Record<string, unknown>).slug ?? toRecipeSlug(recipeName));
+      const recipeSlug = String(
+        (recipe as Record<string, unknown>).slug ?? toRecipeSlug(recipeName)
+      );
       return (
         recipeName.trim().toLowerCase() === name.trim().toLowerCase() ||
         recipeSlug.trim().toLowerCase() === expectedSlug.trim().toLowerCase()

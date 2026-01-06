@@ -24,7 +24,11 @@ export type StatusExpectation =
   | { readonly min: number; readonly max: number }
   | ((status: number) => boolean);
 
-export type HeaderExpectation = string | RegExp | readonly string[] | ((value: string) => boolean);
+export type HeaderExpectation =
+  | string
+  | RegExp
+  | readonly string[]
+  | ((value: string) => boolean);
 
 export interface CacheControlExpectation {
   readonly cacheability?: "public" | "private";
@@ -34,11 +38,16 @@ export interface CacheControlExpectation {
   readonly immutable?: boolean;
 }
 
-export interface HttpEnsureChain<T extends HttpResponseLike = HttpResponseLike> {
+export interface HttpEnsureChain<
+  T extends HttpResponseLike = HttpResponseLike
+> {
   readonly value: T;
   readonly not: HttpEnsureChain<T>;
   toHaveStatus(expectation: StatusExpectation): HttpEnsureChain<T>;
-  toHaveHeader(name: string, expectation?: HeaderExpectation): HttpEnsureChain<T>;
+  toHaveHeader(
+    name: string,
+    expectation?: HeaderExpectation
+  ): HttpEnsureChain<T>;
   toBeCacheable(expectation?: CacheControlExpectation): HttpEnsureChain<T>;
   toHaveCorrelationId(headerName?: string): HttpEnsureChain<T>;
 }
@@ -55,13 +64,18 @@ export function ensureHttp<T extends HttpResponseLike>(
   });
 }
 
-class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain<T> {
+class HttpEnsureChainImpl<T extends HttpResponseLike>
+  implements HttpEnsureChain<T>
+{
   public readonly value: T;
   private readonly label: string | undefined;
   private readonly negated: boolean;
   private readonly normalized: NormalizedResponse;
 
-  constructor(value: T, state: { readonly label?: string; readonly negated: boolean }) {
+  constructor(
+    value: T,
+    state: { readonly label?: string; readonly negated: boolean }
+  ) {
     this.value = value;
     this.label = state.label;
     this.negated = state.negated;
@@ -76,7 +90,10 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
   }
 
   public toHaveStatus(expectation: StatusExpectation): HttpEnsureChain<T> {
-    const { pass, description } = matchesStatus(this.normalized.status, expectation);
+    const { pass, description } = matchesStatus(
+      this.normalized.status,
+      expectation
+    );
     if (shouldFail(pass, this.negated)) {
       const baseMessage = this.negated
         ? `Expected response status not to be ${description}`
@@ -91,7 +108,10 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
     return this;
   }
 
-  public toHaveHeader(name: string, expectation?: HeaderExpectation): HttpEnsureChain<T> {
+  public toHaveHeader(
+    name: string,
+    expectation?: HeaderExpectation
+  ): HttpEnsureChain<T> {
     const key = name.toLowerCase();
     const actual = this.normalized.headers[key];
 
@@ -127,7 +147,9 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
     return this;
   }
 
-  public toBeCacheable(expectation: CacheControlExpectation = {}): HttpEnsureChain<T> {
+  public toBeCacheable(
+    expectation: CacheControlExpectation = {}
+  ): HttpEnsureChain<T> {
     const cacheControl = this.normalized.headers["cache-control"];
 
     if (!cacheControl) {
@@ -142,7 +164,9 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
     }
 
     const directives = parseCacheControl(cacheControl);
-    const impliedCacheable = !("no-store" in directives || "no-cache" in directives);
+    const impliedCacheable = !(
+      "no-store" in directives || "no-cache" in directives
+    );
     const expectationPass = evaluateCacheExpectations(directives, expectation);
     const pass = impliedCacheable && expectationPass;
 
@@ -161,7 +185,9 @@ class HttpEnsureChainImpl<T extends HttpResponseLike> implements HttpEnsureChain
     return this;
   }
 
-  public toHaveCorrelationId(headerName = "x-correlation-id"): HttpEnsureChain<T> {
+  public toHaveCorrelationId(
+    headerName = "x-correlation-id"
+  ): HttpEnsureChain<T> {
     const key = headerName.toLowerCase();
     const value = this.normalized.headers[key];
     const pass = typeof value === "string" && value.trim().length > 0;
@@ -216,7 +242,9 @@ function normalizeHeaders(source: HeaderSource): Record<string, string> {
   // Headers instance (or anything structurally compatible)
   if (typeof (source as HeadersLike).get === "function") {
     const entries = (source as HeadersLike).entries;
-    const iterator = entries ? entries.call(source) : (source as HeadersLike)[Symbol.iterator]?.call(source);
+    const iterator = entries
+      ? entries.call(source)
+      : (source as HeadersLike)[Symbol.iterator]?.call(source);
     if (iterator) {
       for (const [name, value] of iterator) {
         result[String(name).toLowerCase()] = String(value);
@@ -226,19 +254,27 @@ function normalizeHeaders(source: HeaderSource): Record<string, string> {
   }
 
   // Plain record
-  for (const [key, value] of Object.entries(source as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(
+    source as Record<string, unknown>
+  )) {
     result[String(key).toLowerCase()] = String(value);
   }
 
   return result;
 }
 
-function matchesStatus(status: number, expectation: StatusExpectation): {
+function matchesStatus(
+  status: number,
+  expectation: StatusExpectation
+): {
   pass: boolean;
   description: string;
 } {
   if (typeof expectation === "number") {
-    return { pass: status === expectation, description: expectation.toString() };
+    return {
+      pass: status === expectation,
+      description: expectation.toString(),
+    };
   }
 
   if (typeof expectation === "string") {
@@ -250,7 +286,10 @@ function matchesStatus(status: number, expectation: StatusExpectation): {
         description: `${digit}xx`,
       };
     }
-    return { pass: status.toString() === expectation, description: expectation };
+    return {
+      pass: status.toString() === expectation,
+      description: expectation,
+    };
   }
 
   if (Array.isArray(expectation)) {
@@ -275,7 +314,10 @@ function matchesStatus(status: number, expectation: StatusExpectation): {
   };
 }
 
-function matchHeaderValue(actual: string | undefined, expected: HeaderExpectation): boolean {
+function matchHeaderValue(
+  actual: string | undefined,
+  expected: HeaderExpectation
+): boolean {
   if (actual === undefined) {
     return false;
   }
@@ -370,7 +412,9 @@ function evaluateCacheExpectations(
   }
 
   if (expectation.revalidate) {
-    if (!("must-revalidate" in directives || "proxy-revalidate" in directives)) {
+    if (
+      !("must-revalidate" in directives || "proxy-revalidate" in directives)
+    ) {
       return false;
     }
   }

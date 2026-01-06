@@ -1,5 +1,6 @@
-import { AfterScenario, ensure, Given } from "../step-definitions";
-import { performRequest } from "../utils/http";
+import { AfterScenario, ensure, Given } from "../../autometa/steps";
+import { performRequest } from "../../utils/http";
+
 AfterScenario(({ world }) => {
   world.app.streamManager.dispose();
 });
@@ -13,15 +14,12 @@ Given("the Brew Buddy API base URL is configured", async (world) => {
   ensure.response.hasStatus(200);
 });
 
-Given(
-  "the Brew Buddy menu is reset to the default offerings",
-  async (world) => {
-    await performRequest(world, "post", "/admin/reset", {
-      body: { scopes: ["menu", "recipes", "inventory", "loyalty", "orders"] },
-    });
-    ensure.response.hasStatus(204);
-  }
-);
+Given("the Brew Buddy menu is reset to the default offerings", async (world) => {
+  await performRequest(world, "post", "/admin/reset", {
+    body: { scopes: ["menu", "recipes", "inventory", "loyalty", "orders"] },
+  });
+  ensure.response.hasStatus(204);
+});
 
 Given("the recipe catalog is reset to the default recipes", async (world) => {
   await performRequest(world, "post", "/admin/reset", {

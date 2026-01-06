@@ -1,5 +1,5 @@
-import { Then, ensure } from "../step-definitions";
-import type { LifecycleStepRecord, StepLifecycleStatus } from "../world";
+import { Then, ensure } from "../../autometa/steps";
+import type { LifecycleStepRecord, StepLifecycleStatus } from "../../world";
 
 Then(
   "the lifecycle should have recorded {int} feature setup runs",
@@ -12,7 +12,9 @@ Then(
 
 Then("the lifecycle scenario order should equal:", (world) => {
   const table = world.runtime.requireTable("horizontal");
-  const expected = table.records<{ scenario: string }>().map((record) => String(record.scenario));
+  const expected = table
+    .records<{ scenario: string }>()
+    .map((record) => String(record.scenario));
 
   ensure(world.lifecycle.scenarioOrder.length, {
     label: `Expected ${expected.length} scenario entries but found ${world.lifecycle.scenarioOrder.length}.`,

@@ -1,7 +1,7 @@
-import { Given, Then, When, ensure } from "../step-definitions";
-import { extractErrorStatus, performRequest } from "../utils/http";
-import { normalizeValue } from "../utils/json";
-import type { BrewBuddyWorld, OrderErrorState } from "../world";
+import { Given, Then, When, ensure } from "../../autometa/steps";
+import { extractErrorStatus, performRequest } from "../../utils/http";
+import { normalizeValue } from "../../utils/json";
+import type { BrewBuddyWorld, OrderErrorState } from "../../world";
 import type {
   InventoryItem,
   LoyaltyAccount,
@@ -9,7 +9,7 @@ import type {
   OrderInput,
   OrderItem,
   PaymentDetails,
-} from "../../../.api/src/types/domain.js";
+} from "../../../../.api/src/types/domain.js";
 
 const ORDER_ITEM_FIELDS = ["size", "shots", "milk", "sweetener"] as const;
 
@@ -29,15 +29,20 @@ interface SubmitOrderOptions {
   readonly includeLoyalty?: boolean;
 }
 
-When("I place an order for {string}", async (drink: string, world: BrewBuddyWorld) => {
-  const overrides = world.runtime.hasTable ? readOrderOverrides(world) : {};
-  const itemOverrides = pickOrderItemOverrides(overrides);
-  await submitOrder(world, drink, itemOverrides, { includeLoyalty: false });
-});
+When(
+  "I place an order for {string}",
+  async (drink: string, world: BrewBuddyWorld) => {
+    const overrides = world.runtime.hasTable ? readOrderOverrides(world) : {};
+    const itemOverrides = pickOrderItemOverrides(overrides);
+    await submitOrder(world, drink, itemOverrides, { includeLoyalty: false });
+  }
+);
 
 When("I place and pay for an order", async (world: BrewBuddyWorld) => {
   if (!world.runtime.hasTable) {
-    throw new Error("Order details table is required when placing and paying for an order.");
+    throw new Error(
+      "Order details table is required when placing and paying for an order."
+    );
   }
 
   const overrides = readOrderOverrides(world);
@@ -46,7 +51,9 @@ When("I place and pay for an order", async (world: BrewBuddyWorld) => {
   const payment = buildPaymentDetails(overrides);
 
   if (!payment?.method) {
-    throw new Error("Payment method must be provided when placing and paying for an order.");
+    throw new Error(
+      "Payment method must be provided when placing and paying for an order."
+    );
   }
 
   await submitOrder(world, drink, itemOverrides, {
@@ -55,52 +62,76 @@ When("I place and pay for an order", async (world: BrewBuddyWorld) => {
   });
 });
 
-Then("the order response should include a preparation ticket", (world: BrewBuddyWorld) => {
-  if (world.scenario.lastOrderError) {
-    throw new Error("Expected the most recent order request to succeed but an error was recorded.");
-  }
+Then(
+  "the order response should include a preparation ticket",
+  (world: BrewBuddyWorld) => {
+    if (world.scenario.lastOrderError) {
+      throw new Error(
+        "Expected the most recent order request to succeed but an error was recorded."
+      );
+    }
 
-  const order = parseOrder(world.app.lastResponseBody);
-  if (!order.ticket || order.ticket.trim().length === 0) {
-    throw new Error("Order response did not include a preparation ticket.");
-  }
+    const order = parseOrder(world.app.lastResponseBody);
+    if (!order.ticket || order.ticket.trim().length === 0) {
+      throw new Error("Order response did not include a preparation ticket.");
+    }
 
-  recordOrder(world, order);
-});
-
-Then("the order status should be {string}", async (status: string, world: BrewBuddyWorld) => {
-  const current = requireRecordedOrder(world);
-  const order = await fetchOrder(world, current.ticket);
-  if (order.status !== status) {
-    throw new Error(`Expected order status to be "${status}" but was "${order.status}".`);
+    recordOrder(world, order);
   }
-});
+);
 
-Then("the order should record the milk as {string}", async (expected: string, world: BrewBuddyWorld) => {
-  const order = await fetchOrder(world, requireRecordedOrder(world).ticket);
-  const [item] = order.items;
-  if (!item) {
-    throw new Error("Order does not contain any items to verify milk preference.");
+Then(
+  "the order status should be {string}",
+  async (status: string, world: BrewBuddyWorld) => {
+    const current = requireRecordedOrder(world);
+    const order = await fetchOrder(world, current.ticket);
+    if (order.status !== status) {
+      throw new Error(
+        `Expected order status to be "${status}" but was "${order.status}".`
+      );
+    }
   }
+);
 
-  const actual = item.milk ?? "";
-  if (String(actual).toLowerCase() !== expected.toLowerCase()) {
-    throw new Error(`Expected milk preference to be "${expected}" but was "${actual ?? ""}".`);
-  }
-});
+Then(
+  "the order should record the milk as {string}",
+  async (expected: string, world: BrewBuddyWorld) => {
+    const order = await fetchOrder(world, requireRecordedOrder(world).ticket);
+    const [item] = order.items;
+    if (!item) {
+      throw new Error(
+        "Order does not contain any items to verify milk preference."
+      );
+    }
 
-Then("the order should record the sweetener as {string}", async (expected: string, world: BrewBuddyWorld) => {
-  const order = await fetchOrder(world, requireRecordedOrder(world).ticket);
-  const [item] = order.items;
-  if (!item) {
-    throw new Error("Order does not contain any items to verify sweetener preference.");
+    const actual = item.milk ?? "";
+    if (String(actual).toLowerCase() !== expected.toLowerCase()) {
+      throw new Error(
+        `Expected milk preference to be "${expected}" but was "${actual ?? ""}".`
+      );
+    }
   }
+);
 
-  const actual = item.sweetener ?? "";
-  if (String(actual).toLowerCase() !== expected.toLowerCase()) {
-    throw new Error(`Expected sweetener preference to be "${expected}" but was "${actual ?? ""}".`);
+Then(
+  "the order should record the sweetener as {string}",
+  async (expected: string, world: BrewBuddyWorld) => {
+    const order = await fetchOrder(world, requireRecordedOrder(world).ticket);
+    const [item] = order.items;
+    if (!item) {
+      throw new Error(
+        "Order does not contain any items to verify sweetener preference."
+      );
+    }
+
+    const actual = item.sweetener ?? "";
+    if (String(actual).toLowerCase() !== expected.toLowerCase()) {
+      throw new Error(
+        `Expected sweetener preference to be "${expected}" but was "${actual ?? ""}".`
+      );
+    }
   }
-});
+);
 
 Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) => {
   const loyalty = ensure(world.scenario.loyaltyAccount, {
@@ -115,62 +146,95 @@ Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) 
 
   const updated = parseLoyalty(world.app.lastResponseBody);
   if (updated.points !== baseline + 10) {
-    throw new Error(`Expected loyalty account to have ${baseline + 10} points but found ${updated.points}.`);
+    throw new Error(
+      `Expected loyalty account to have ${baseline + 10} points but found ${updated.points}.`
+    );
   }
 
   world.app.memory.rememberLoyalty(updated);
 });
 
-Then("the order should be rejected with status {int}", (status: number, world: BrewBuddyWorld) => {
-  const error = requireOrderError(world);
-  ensure.response.hasStatus(status);
-  if (error.status !== status) {
-    throw new Error(`Expected rejection status ${status} but received ${error.status ?? "unknown"}.`);
+Then(
+  "the order should be rejected with status {int}",
+  (status: number, world: BrewBuddyWorld) => {
+    const error = requireOrderError(world);
+    ensure.response.hasStatus(status);
+    if (error.status !== status) {
+      throw new Error(
+        `Expected rejection status ${status} but received ${error.status ?? "unknown"}.`
+      );
+    }
   }
-});
+);
 
-Then("the rejection reason should be {string}", (reason: string, world: BrewBuddyWorld) => {
-  const error = requireOrderError(world);
-  const body = (error.body ?? world.app.lastResponseBody) as Record<string, unknown> | undefined;
-  if (!body || typeof body !== "object") {
-    throw new Error("Order rejection reason is unavailable.");
+Then(
+  "the rejection reason should be {string}",
+  (reason: string, world: BrewBuddyWorld) => {
+    const error = requireOrderError(world);
+    const body = (error.body ?? world.app.lastResponseBody) as
+      | Record<string, unknown>
+      | undefined;
+    if (!body || typeof body !== "object") {
+      throw new Error("Order rejection reason is unavailable.");
+    }
+
+    const actualReason = String((body.reason ?? "")).trim();
+    const actualCode = String((body.code ?? "")).trim();
+
+    if (actualReason !== reason && actualCode !== reason) {
+      throw new Error(
+        `Expected rejection reason to be "${reason}" but found "${actualReason}" (code: "${actualCode}").`
+      );
+    }
   }
+);
 
-  const actualReason = String((body.reason ?? "")).trim();
-  const actualCode = String((body.code ?? "")).trim();
-  
-  if (actualReason !== reason && actualCode !== reason) {
-    throw new Error(`Expected rejection reason to be "${reason}" but found "${actualReason}" (code: "${actualCode}").`);
+Given(
+  "a loyalty account exists for {string}",
+  async (email: string, world: BrewBuddyWorld) => {
+    await performRequest(world, "patch", `/loyalty/${encodeURIComponent(email)}`, {
+      body: { points: 0 },
+    });
+    ensure.response.hasStatus(200);
+
+    const account = parseLoyalty(world.app.lastResponseBody);
+    world.app.memory.rememberLoyalty(account);
   }
-});
+);
 
-Given("a loyalty account exists for {string}", async (email: string, world: BrewBuddyWorld) => {
-  await performRequest(world, "patch", `/loyalty/${encodeURIComponent(email)}`, {
-    body: { points: 0 },
-  });
-  ensure.response.hasStatus(200);
+Given(
+  "the inventory for {string} is set to {int} drinks",
+  async (item: string, quantity: number, world: BrewBuddyWorld) => {
+    await performRequest(
+      world,
+      "patch",
+      `/inventory/${encodeURIComponent(item)}`,
+      {
+        body: { quantity },
+      }
+    );
+    ensure.response.hasStatus(200);
 
-  const account = parseLoyalty(world.app.lastResponseBody);
-  world.app.memory.rememberLoyalty(account);
-});
+    const inventory = parseInventory(world.app.lastResponseBody);
+    world.app.memory.rememberInventory(inventory);
+    world.scenario.expectOrderFailure = quantity <= 0;
+  }
+);
 
-Given("the inventory for {string} is set to {int} drinks", async (item: string, quantity: number, world: BrewBuddyWorld) => {
-  await performRequest(world, "patch", `/inventory/${encodeURIComponent(item)}`, {
-    body: { quantity },
-  });
-  ensure.response.hasStatus(200);
-
-  const inventory = parseInventory(world.app.lastResponseBody);
-  world.app.memory.rememberInventory(inventory);
-  world.scenario.expectOrderFailure = quantity <= 0;
-});
-
-Then("the inventory for {string} is restored to {int} drinks", async (item: string, quantity: number, world: BrewBuddyWorld) => {
-  await performRequest(world, "patch", `/inventory/${encodeURIComponent(item)}`, {
-    body: { quantity },
-  });
-  ensure.response.hasStatus(200);
-});
+Then(
+  "the inventory for {string} is restored to {int} drinks",
+  async (item: string, quantity: number, world: BrewBuddyWorld) => {
+    await performRequest(
+      world,
+      "patch",
+      `/inventory/${encodeURIComponent(item)}`,
+      {
+        body: { quantity },
+      }
+    );
+    ensure.response.hasStatus(200);
+  }
+);
 
 function readOrderOverrides(world: BrewBuddyWorld): Record<string, unknown> {
   const table = world.runtime.requireTable("vertical");
@@ -189,7 +253,9 @@ function normaliseKey(key: string): string {
   return key.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function pickOrderItemOverrides(source: Record<string, unknown>): Partial<Record<OrderItemField, unknown>> {
+function pickOrderItemOverrides(
+  source: Record<string, unknown>
+): Partial<Record<OrderItemField, unknown>> {
   const selected: Partial<Record<OrderItemField, unknown>> = {};
   for (const field of ORDER_ITEM_FIELDS) {
     if (field in source) {
@@ -226,7 +292,10 @@ async function submitOrder(
     ensure.response.hasStatus(201);
   } catch (error) {
     const status = extractErrorStatus(world);
-    world.scenario.lastOrderError = { status, body: world.app.lastResponseBody } satisfies OrderErrorState;
+    world.scenario.lastOrderError = {
+      status,
+      body: world.app.lastResponseBody,
+    } satisfies OrderErrorState;
     if (!world.scenario.expectOrderFailure || status === undefined) {
       throw error;
     }
@@ -239,7 +308,10 @@ async function submitOrder(
   world.scenario.expectOrderFailure = false;
 }
 
-function buildOrderItem(drink: string, overrides: Partial<Record<OrderItemField, unknown>>): OrderItem {
+function buildOrderItem(
+  drink: string,
+  overrides: Partial<Record<OrderItemField, unknown>>
+): OrderItem {
   const item: OrderItem = { name: drink };
 
   const size = overrides.size;
@@ -261,14 +333,20 @@ function buildOrderItem(drink: string, overrides: Partial<Record<OrderItemField,
   }
 
   const sweetener = overrides.sweetener;
-  if (sweetener !== undefined && sweetener !== null && String(sweetener).trim().length > 0) {
+  if (
+    sweetener !== undefined &&
+    sweetener !== null &&
+    String(sweetener).trim().length > 0
+  ) {
     item.sweetener = String(sweetener);
   }
 
   return item;
 }
 
-function buildPaymentDetails(overrides: Record<string, unknown>): PaymentDetails | undefined {
+function buildPaymentDetails(
+  overrides: Record<string, unknown>
+): PaymentDetails | undefined {
   const method = overrides.method;
   const amount = overrides.amount;
   const currency = overrides.currency;
@@ -314,7 +392,10 @@ function normalizePaymentMethod(method: unknown): PaymentMethod | undefined {
   return undefined;
 }
 
-function resolveDrink(explicit: string | undefined, overrides: Record<string, unknown>): string {
+function resolveDrink(
+  explicit: string | undefined,
+  overrides: Record<string, unknown>
+): string {
   if (explicit && explicit.trim().length > 0) {
     return explicit;
   }
@@ -331,7 +412,9 @@ function parseOrder(payload: unknown): Order {
   if (isOrder(payload)) {
     return payload;
   }
-  throw new Error("Expected the latest response body to contain an order payload.");
+  throw new Error(
+    "Expected the latest response body to contain an order payload."
+  );
 }
 
 function isOrder(payload: unknown): payload is Order {
@@ -348,7 +431,11 @@ function recordOrder(world: BrewBuddyWorld, order: Order): void {
 }
 
 function requireRecordedOrder(world: BrewBuddyWorld): Order {
-  const order = world.scenario.order ?? (isOrder(world.app.lastResponseBody) ? (world.app.lastResponseBody as Order) : undefined);
+  const order =
+    world.scenario.order ??
+    (isOrder(world.app.lastResponseBody)
+      ? (world.app.lastResponseBody as Order)
+      : undefined);
   if (!order) {
     throw new Error("No order has been recorded for the current scenario.");
   }
@@ -370,12 +457,17 @@ function parseLoyalty(payload: unknown): LoyaltyAccount {
       return { email: email.toLowerCase(), points };
     }
   }
-  throw new Error("Expected loyalty account details in the latest response body.");
+  throw new Error(
+    "Expected loyalty account details in the latest response body."
+  );
 }
 
 function parseInventory(payload: unknown): InventoryItem {
   if (payload && typeof payload === "object") {
-    const { item, quantity } = payload as { item?: unknown; quantity?: unknown };
+    const { item, quantity } = payload as {
+      item?: unknown;
+      quantity?: unknown;
+    };
     if (typeof item === "string" && typeof quantity === "number") {
       return { item, quantity };
     }

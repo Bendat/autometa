@@ -1,6 +1,6 @@
-import { Given, Then, When, ensure } from "../step-definitions";
-import type { BrewBuddyWorld } from "../world";
-import type { TagRegistryEntry } from "../services/tag-registry.service";
+import { Given, Then, When, ensure } from "../../autometa/steps";
+import type { BrewBuddyWorld } from "../../world";
+import type { TagRegistryEntry } from "../../brew-buddy/services/tag-registry.service";
 
 const TAG_REGISTRY: TagRegistryEntry[] = [
   { tag: "@smoke", description: "Core happy-path scenarios" },
@@ -59,7 +59,9 @@ Then("this scenario should not execute", (world: BrewBuddyWorld) => {
   const scenarioName = currentScenarioName(world);
   const selected = world.app.tags.selectedScenarios ?? [];
   if (selected.includes(scenarioName)) {
-    throw new Error(`Scenario "${scenarioName}" should be skipped by tag evaluation.`);
+    throw new Error(
+      `Scenario "${scenarioName}" should be skipped by tag evaluation.`
+    );
   }
 });
 
@@ -88,26 +90,35 @@ Then("only this scenario should execute", (world: BrewBuddyWorld) => {
   }).toStrictEqual(scenarioName);
 });
 
-When("I run the features with tag expression {string}", (expression: string, world: BrewBuddyWorld) => {
-  const normalized = typeof expression === "string" ? expression.trim() : String(expression ?? "").trim();
-  world.app.tags.setExpression(normalized);
-  if (normalized === "@http and not @skip") {
-    world.app.tags.setSelectedScenarios([...HTTP_TAG_SCENARIOS]);
-    return;
+When(
+  "I run the features with tag expression {string}",
+  (expression: string, world: BrewBuddyWorld) => {
+    const normalized =
+      typeof expression === "string"
+        ? expression.trim()
+        : String(expression ?? "").trim();
+    world.app.tags.setExpression(normalized);
+    if (normalized === "@http and not @skip") {
+      world.app.tags.setSelectedScenarios([...HTTP_TAG_SCENARIOS]);
+      return;
+    }
+    world.app.tags.setSelectedScenarios([]);
   }
-  world.app.tags.setSelectedScenarios([]);
-});
+);
 
-Then("the selected scenarios should include {string}", (scenarioName: string, world: BrewBuddyWorld) => {
-  const selected = ensure(world.app.tags.selectedScenarios, {
-    label: "No scenarios were recorded for the provided tag expression.",
-  })
-    .toBeDefined()
-    .value as string[];
-  ensure(selected.includes(scenarioName), {
-    label: `Expected scenario "${scenarioName}" to be included in the filtered results.`,
-  }).toBeTruthy();
-});
+Then(
+  "the selected scenarios should include {string}",
+  (scenarioName: string, world: BrewBuddyWorld) => {
+    const selected = ensure(world.app.tags.selectedScenarios, {
+      label: "No scenarios were recorded for the provided tag expression.",
+    })
+      .toBeDefined()
+      .value as string[];
+    ensure(selected.includes(scenarioName), {
+      label: `Expected scenario "${scenarioName}" to be included in the filtered results.`,
+    }).toBeTruthy();
+  }
+);
 
 function currentScenarioName(world: BrewBuddyWorld): string {
   const metadata = world.runtime.getStepMetadata();
