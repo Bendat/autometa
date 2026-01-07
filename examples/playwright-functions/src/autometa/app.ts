@@ -67,9 +67,4 @@ export const brewBuddyApp = App.compositionRoot<BrewBuddyWorldBase, BrewBuddyCli
   }
 );
 
-/**
- * Back-compat export for older examples/docs.
- */
-export const CompositionRoot = brewBuddyApp;
-
 export { HTTP_CLIENT };
