@@ -5,8 +5,13 @@ This example exists to exercise Autometa's **modules** feature:
 - multiple module **groups** (friendly ids, each with a filesystem root)
 - module-relative discovery for `features` and `steps`
 - CLI filtering via:
-  - `-g/--group <group...>`
-  - `-m/--module <module...>` (optionally scoped as `group/module` or `group:module`)
+  - `-g/--group <group>` (repeatable)
+  - `-m/--module <module>` (repeatable; optionally scoped as `group/module` or `group:module`)
+
+It also demonstrates how you can run **hoisted** features with either:
+
+- only hoisted steps (via `--environment hoisted`)
+- only grouped steps (via `-g/-m` filters)
 
 ## Layout
 
@@ -34,6 +39,16 @@ From the repo root:
 
 - Run Backoffice group:
   - `pnpm --filter @autometa/module-examples --silent exec autometa run --standalone -g backoffice`
+
+### Hoisted vs grouped demo
+
+Hoisted feature with **hoisted-only** steps (uses `autometa.config.ts` environment `hoisted`):
+
+- `pnpm --filter @autometa/module-examples --silent exec autometa run --standalone --environment hoisted src/features/hoisted-only.feature`
+
+Hoisted feature with **grouped-only** steps (default environment + module filters):
+
+- `pnpm --filter @autometa/module-examples --silent exec autometa run --standalone -g backoffice -m reports src/features/hoisted-with-grouped-steps.feature`
 
 ### Ambiguity demo
 
