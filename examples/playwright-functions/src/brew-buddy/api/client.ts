@@ -129,28 +129,14 @@ export class BrewBuddyClient {
       .params(options.query ?? {})
       .data(options.body);
 
-    return dispatch(client, method);
+    type SupportedVerb = Lowercase<HttpMethod>;
+    const verb = method.toLowerCase() as SupportedVerb;
+    const action = client[verb] as typeof client.get;
+    return action.call(client);
   }
 
   // Intentionally no `perform()` / `withHistory()` here anymore.
   // Use `world.app.history.track(world.app.client.action())`.
-}
-
-async function dispatch(client: HTTP, method: HttpMethodInput) {
-  switch (method.toLowerCase()) {
-    case "get":
-      return client.get();
-    case "post":
-      return client.post();
-    case "put":
-      return client.put();
-    case "patch":
-      return client.patch();
-    case "delete":
-      return client.delete();
-    default:
-      throw new Error(`Unsupported HTTP method: ${method}`);
-  }
 }
 
 function normalisePath(path: string): string[] {
