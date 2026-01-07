@@ -7,8 +7,21 @@ export interface CreateRecipeInput {
   readonly season: string;
 }
 
+export interface RecipeSummary {
+  readonly name: string;
+  readonly slug?: string;
+}
+
 export interface RecipeList {
-  readonly recipes: Array<Record<string, unknown>>;
+  readonly recipes: RecipeSummary[];
+}
+
+export function toRecipeSlug(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 /**

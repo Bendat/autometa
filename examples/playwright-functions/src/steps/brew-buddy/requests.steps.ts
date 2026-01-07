@@ -11,13 +11,10 @@ When(
     const payload = parseOptionalDocstring(world.runtime.consumeDocstring());
     const requestOptions = payload === undefined ? {} : { body: payload };
     try {
-      await world.app.perform(method, route, requestOptions);
+      await world.app.history.track(world.app.request(method, route, requestOptions));
     } catch (error) {
       // Swallow HTTP errors - status will be checked in Then steps.
-      // IMPORTANT: BrewBuddyClient.perform() clears lastResponse on error, so we
-      // restore it from the HTTPError response for downstream ensure plugins.
       if (error instanceof HTTPError) {
-        world.app.extractErrorStatus();
         return;
       }
       throw error;
@@ -78,7 +75,9 @@ Then(
   "the response json should match the default menu snapshot",
   (world: BrewBuddyWorld) => {
     ensure.response.hasStatus(200);
-    const body = world.app.lastResponseBody as { items?: unknown[] } | unknown[];
+    const body = world.app.history.lastResponseBody as
+      | { items?: unknown[] }
+      | unknown[];
 
     const items = Array.isArray(body) ? body : body?.items;
 
@@ -110,7 +109,7 @@ Then(/^each recipe should include fields (.+)$/, (...args: unknown[]) => {
     throw new Error(`Expected at least one quoted field name in: ${fieldsRaw}`);
   }
 
-  const body = world.app.lastResponseBody as { recipes?: unknown } | undefined;
+  const body = world.app.history.lastResponseBody as { recipes?: unknown } | undefined;
   if (!body || typeof body !== "object") {
     throw new Error("Expected response body to be an object containing recipes");
   }

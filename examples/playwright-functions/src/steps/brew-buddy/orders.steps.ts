@@ -71,7 +71,7 @@ Then(
       );
     }
 
-    const order = parseOrder(world.app.lastResponseBody);
+    const order = parseOrder(world.app.history.lastResponseBody);
     if (!order.ticket || order.ticket.trim().length === 0) {
       throw new Error("Order response did not include a preparation ticket.");
     }
@@ -141,10 +141,10 @@ Then("the loyalty account should earn 10 points", async (world: BrewBuddyWorld) 
     .value as LoyaltyAccount;
   const baseline = loyalty.points;
 
-  await world.app.withHistory(world.app.loyalty.get(loyalty.email));
+  await world.app.history.track(world.app.loyalty.get(loyalty.email));
   ensure.response.hasStatus(200);
 
-  const updated = parseLoyalty(world.app.lastResponseBody);
+  const updated = parseLoyalty(world.app.history.lastResponseBody);
   if (updated.points !== baseline + 10) {
     throw new Error(
       `Expected loyalty account to have ${baseline + 10} points but found ${updated.points}.`
@@ -171,7 +171,7 @@ Then(
   "the rejection reason should be {string}",
   (reason: string, world: BrewBuddyWorld) => {
     const error = requireOrderError(world);
-    const body = (error.body ?? world.app.lastResponseBody) as
+    const body = (error.body ?? world.app.history.lastResponseBody) as
       | Record<string, unknown>
       | undefined;
     if (!body || typeof body !== "object") {
@@ -192,10 +192,10 @@ Then(
 Given(
   "a loyalty account exists for {string}",
   async (email: string, world: BrewBuddyWorld) => {
-    await world.app.withHistory(world.app.loyalty.update(email, { points: 0 }));
+    await world.app.history.track(world.app.loyalty.update(email, { points: 0 }));
     ensure.response.hasStatus(200);
 
-    const account = parseLoyalty(world.app.lastResponseBody);
+    const account = parseLoyalty(world.app.history.lastResponseBody);
     world.app.memory.rememberLoyalty(account);
   }
 );
@@ -203,10 +203,10 @@ Given(
 Given(
   "the inventory for {string} is set to {int} drinks",
   async (item: string, quantity: number, world: BrewBuddyWorld) => {
-    await world.app.withHistory(world.app.inventory.update(item, { quantity }));
+    await world.app.history.track(world.app.inventory.update(item, { quantity }));
     ensure.response.hasStatus(200);
 
-    const inventory = parseInventory(world.app.lastResponseBody);
+    const inventory = parseInventory(world.app.history.lastResponseBody);
     world.app.memory.rememberInventory(inventory);
     world.scenario.expectOrderFailure = quantity <= 0;
   }
@@ -215,7 +215,7 @@ Given(
 Then(
   "the inventory for {string} is restored to {int} drinks",
   async (item: string, quantity: number, world: BrewBuddyWorld) => {
-    await world.app.withHistory(world.app.inventory.update(item, { quantity }));
+    await world.app.history.track(world.app.inventory.update(item, { quantity }));
     ensure.response.hasStatus(200);
   }
 );
@@ -272,13 +272,13 @@ async function submitOrder(
   world.scenario.lastOrderError = undefined;
 
   try {
-    await world.app.withHistory(world.app.orders.create(payload));
+    await world.app.history.track(world.app.orders.create(payload));
     ensure.response.hasStatus(201);
   } catch (error) {
     const status = error instanceof HTTPError ? error.response?.status : undefined;
     world.scenario.lastOrderError = {
       status,
-      body: world.app.lastResponseBody,
+      body: world.app.history.lastResponseBody,
     } satisfies OrderErrorState;
     if (!world.scenario.expectOrderFailure || status === undefined) {
       throw error;
@@ -287,7 +287,7 @@ async function submitOrder(
     return;
   }
 
-  const order = parseOrder(world.app.lastResponseBody);
+  const order = parseOrder(world.app.history.lastResponseBody);
   recordOrder(world, order);
   world.scenario.expectOrderFailure = false;
 }
@@ -417,8 +417,8 @@ function recordOrder(world: BrewBuddyWorld, order: Order): void {
 function requireRecordedOrder(world: BrewBuddyWorld): Order {
   const order =
     world.scenario.order ??
-    (isOrder(world.app.lastResponseBody)
-      ? (world.app.lastResponseBody as Order)
+    (isOrder(world.app.history.lastResponseBody)
+      ? (world.app.history.lastResponseBody as Order)
       : undefined);
   if (!order) {
     throw new Error("No order has been recorded for the current scenario.");
@@ -427,9 +427,9 @@ function requireRecordedOrder(world: BrewBuddyWorld): Order {
 }
 
 async function fetchOrder(world: BrewBuddyWorld, ticket: string): Promise<Order> {
-  await world.app.withHistory(world.app.orders.get(ticket));
+  await world.app.history.track(world.app.orders.get(ticket));
   ensure.response.hasStatus(200);
-  const order = parseOrder(world.app.lastResponseBody);
+  const order = parseOrder(world.app.history.lastResponseBody);
   recordOrder(world, order);
   return order;
 }

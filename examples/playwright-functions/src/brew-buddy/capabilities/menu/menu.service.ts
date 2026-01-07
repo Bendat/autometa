@@ -34,7 +34,7 @@ export class MenuService {
     const query = region
       ? { region: normalizeRegion(region)?.toLowerCase() ?? region.toLowerCase() }
       : undefined;
-    await this.world.app.withHistory(this.world.app.menuClient.get(query));
+    await this.world.app.history.track(this.world.app.menuClient.get(query));
     const items = this.extractFromLastResponse();
     this.world.app.memory.rememberMenuSnapshot(items);
     return items;
@@ -51,7 +51,7 @@ export class MenuService {
 
   async createSeasonalDrink(name: string, fields: readonly MenuFieldInput[]): Promise<MenuItem> {
     const payload = this.buildMenuPayload(name, fields);
-    await this.world.app.withHistory(this.world.app.menuClient.create(payload));
+    await this.world.app.history.track(this.world.app.menuClient.create(payload));
     // The calling step typically asserts status via ensure.response.
     const created = this.parseLastMenuItem();
     this.world.app.memory.rememberLastMenuItem(created);
@@ -60,11 +60,11 @@ export class MenuService {
   }
 
   async retireDrink(name: string): Promise<void> {
-    await this.world.app.withHistory(this.world.app.menuClient.delete(name));
+    await this.world.app.history.track(this.world.app.menuClient.delete(name));
   }
 
   async applyBulkPriceUpdate(updates: readonly MenuPriceUpdate[]): Promise<MenuItem[]> {
-    await this.world.app.withHistory(this.world.app.menuClient.updatePrices(updates));
+    await this.world.app.history.track(this.world.app.menuClient.updatePrices(updates));
     const updated = this.extractFromLastResponse();
     this.world.app.memory.rememberMenuSnapshot(updated);
     return updated;
@@ -86,7 +86,7 @@ export class MenuService {
   }
 
   private extractFromLastResponse(): MenuItem[] {
-    const body = this.world.app.lastResponseBody as
+    const body = this.world.app.history.lastResponseBody as
       | { items?: MenuItem[] }
       | MenuItem[]
       | undefined;
@@ -100,7 +100,7 @@ export class MenuService {
   }
 
   private parseLastMenuItem(): MenuItem {
-    const body = this.world.app.lastResponseBody as MenuItem | undefined;
+    const body = this.world.app.history.lastResponseBody as MenuItem | undefined;
     if (!body || typeof body !== "object") {
       throw new Error("Menu creation response is missing");
     }

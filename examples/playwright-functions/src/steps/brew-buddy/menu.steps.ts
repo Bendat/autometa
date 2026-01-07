@@ -103,7 +103,7 @@ Given(
       size: string;
       season: string;
     };
-    await world.app.withHistory(world.app.menuClient.create(payload));
+    await world.app.history.track(world.app.menuClient.create(payload));
     ensure.response.hasStatus(201);
   }
 );

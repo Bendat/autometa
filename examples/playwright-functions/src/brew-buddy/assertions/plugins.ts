@@ -16,6 +16,7 @@ import {
 
 import { normalizeValue, resolveJsonPath } from "../../utils/json";
 import type { BrewBuddyWorld } from "../../world";
+import { toRecipeSlug, type RecipeList, type RecipeSummary } from "../api/recipe-client";
 
 interface Placeholder {
   readonly __placeholder: "timestamp";
@@ -29,10 +30,10 @@ type PathExpectation = {
 };
 
 export function requireResponse(world: BrewBuddyWorld): HTTPResponse<unknown> {
-  if (!world.app.lastResponse) {
+  if (!world.app.history.lastResponse) {
     throw new Error("No HTTP response recorded for the current scenario.");
   }
-  return world.app.lastResponse;
+  return world.app.history.lastResponse;
 }
 
 interface ResponseAssertions {
@@ -91,7 +92,7 @@ const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure })
     const ensureBody = () =>
       // IMPORTANT: Plugin-level negation (`ensure.not.json.*`) should invert the
       // assertions, not the preconditions needed to evaluate them.
-      ensure.always(world.app.lastResponseBody, { label: bodyLabel }).toBeDefined()
+      ensure.always(world.app.history.lastResponseBody, { label: bodyLabel }).toBeDefined()
         .value;
 
     return {
@@ -120,9 +121,68 @@ const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure })
     };
   };
 
+interface RecipeAssertions {
+  isRecipeList(value: unknown): asserts value is RecipeList;
+  list(): RecipeSummary[];
+  doesNotContain(name: string): void;
+}
+
+const recipesPlugin: AssertionPlugin<BrewBuddyWorld, RecipeAssertions> = ({ ensure }) =>
+  (world) => {
+    const isRecipeList = (value: unknown): value is RecipeList => {
+      if (!value || typeof value !== "object") {
+        return false;
+      }
+      const dict = value as { recipes?: unknown };
+      if (!Array.isArray(dict.recipes)) {
+        return false;
+      }
+      return dict.recipes.every((item) => {
+        if (!item || typeof item !== "object") {
+          return false;
+        }
+        const recipe = item as Record<string, unknown>;
+        return typeof recipe.name === "string";
+      });
+    };
+
+    const requireList = (): RecipeSummary[] => {
+      const body = world.app.history.lastResponseBody;
+      ensure(isRecipeList(body), { label: "response body is recipe list" }).toBeTruthy();
+      return (body as RecipeList).recipes;
+    };
+
+    return {
+      isRecipeList(value: unknown): asserts value is RecipeList {
+        ensure(isRecipeList(value), { label: "response body is recipe list" }).toBeTruthy();
+      },
+      list() {
+        return requireList();
+      },
+      doesNotContain(name: string) {
+        const recipes = requireList();
+        const expectedSlug = world.app.memory.resolveRecipeSlug(name);
+        const normalizedName = name.trim().toLowerCase();
+        const normalizedSlug = expectedSlug.trim().toLowerCase();
+
+        const isPresent = recipes.some((recipe) => {
+          const recipeName = String(recipe.name ?? "");
+          const recipeSlug = String(recipe.slug ?? toRecipeSlug(recipeName));
+          return (
+            recipeName.trim().toLowerCase() === normalizedName ||
+            recipeSlug.trim().toLowerCase() === normalizedSlug
+          );
+        });
+
+        ensure(isPresent, { label: `recipe ${name} present in list` }).toBeFalsy();
+      },
+    };
+  };
+
 export const brewBuddyPlugins = {
   response: responsePlugin,
   json: jsonPlugin,
+  recipes: recipesPlugin,
 } as const;
 
 export type BrewBuddyEnsureFacets = EnsurePluginFacets<

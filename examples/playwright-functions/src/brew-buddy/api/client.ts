@@ -1,6 +1,6 @@
-import { HTTP, HTTPError, type HTTPResponse } from "@autometa/http";
+import { HTTP } from "@autometa/http";
 
-import type { BrewBuddyWorld, BrewBuddyWorldBase } from "../../world";
+import type { BrewBuddyWorldBase } from "../../world";
 import { BrewBuddyStreamManager } from "../services/stream-manager";
 import { TagRegistryService } from "../services/tag-registry.service";
 import { BrewBuddyMemoryService } from "../state/memory.service";
@@ -11,6 +11,8 @@ import { OrderClient } from "./order-client";
 import { LoyaltyClient } from "./loyalty-client";
 import { InventoryClient } from "./inventory-client";
 import { AdminClient } from "./admin-client";
+import { HttpHistoryService } from "../http/http-history.service";
+import { RecipeArrangerService } from "../recipes/recipe-arranger.service";
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 export type HttpMethodInput = HttpMethod | Lowercase<HttpMethod>;
@@ -30,6 +32,7 @@ export interface RequestOptions {
 export class BrewBuddyClient {
   readonly http: HTTP;
   readonly memory: BrewBuddyMemoryService;
+  readonly history: HttpHistoryService;
   private _streamManager?: BrewBuddyStreamManager;
   private _tags?: TagRegistryService;
   private _menu?: MenuService;
@@ -43,24 +46,34 @@ export class BrewBuddyClient {
   readonly inventory: InventoryClient;
   readonly admin: AdminClient;
 
-  lastResponse?: HTTPResponse<unknown>;
-  lastResponseBody?: unknown;
-  lastResponseHeaders?: Record<string, string>;
-  lastError?: unknown;
+  // Orchestrations (keep app methods reserved for these)
+  readonly arrangeRecipes: RecipeArrangerService;
 
-  constructor(http: HTTP, memory: BrewBuddyMemoryService) {
+  constructor(
+    http: HTTP,
+    memory: BrewBuddyMemoryService,
+    history: HttpHistoryService,
+    menuClient: MenuClient,
+    recipes: RecipeClient,
+    orders: OrderClient,
+    loyalty: LoyaltyClient,
+    inventory: InventoryClient,
+    admin: AdminClient,
+    arrangeRecipes: RecipeArrangerService
+  ) {
     this.http = http
       .sharedHeader("accept", "application/json")
       .sharedAllowPlainText(true);
     this.memory = memory;
+    this.history = history;
 
-    // Initialize domain clients with shared HTTP instance
-    this.menuClient = new MenuClient(this.http);
-    this.recipes = new RecipeClient(this.http);
-    this.orders = new OrderClient(this.http);
-    this.loyalty = new LoyaltyClient(this.http);
-    this.inventory = new InventoryClient(this.http);
-    this.admin = new AdminClient(this.http);
+    this.menuClient = menuClient;
+    this.recipes = recipes;
+    this.orders = orders;
+    this.loyalty = loyalty;
+    this.inventory = inventory;
+    this.admin = admin;
+    this.arrangeRecipes = arrangeRecipes;
   }
 
   set world(world: BrewBuddyWorldBase) {
@@ -108,47 +121,6 @@ export class BrewBuddyClient {
     return this._menu;
   }
 
-  /**
-   * Execute an HTTP request and record response history.
-   * Used by domain clients to update lastResponse/lastResponseBody/lastError.
-   */
-  async withHistory<T>(request: Promise<HTTPResponse<T>>): Promise<HTTPResponse<T>> {
-    try {
-      const response = await request;
-      this.lastResponse = response;
-      this.lastResponseBody = response.data;
-      this.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
-      delete this.lastError;
-
-      if (response.status >= 400) {
-        const error = new HTTPError(
-          `Request failed with status ${response.status}`,
-          response.request,
-          response
-        );
-        throw error;
-      }
-
-      return response;
-    } catch (error) {
-      this.lastError = error;
-
-      // Preserve error responses for downstream assertions.
-      // This mirrors extractErrorStatus(), but keeps the full history hydrated.
-      if (error instanceof HTTPError && error.response) {
-        this.lastResponse = error.response;
-        this.lastResponseBody = error.response.data;
-        this.lastResponseHeaders = normalizeHeaders(error.response.headers ?? {});
-        throw error;
-      }
-
-      delete this.lastResponse;
-      delete this.lastResponseBody;
-      delete this.lastResponseHeaders;
-      throw error;
-    }
-  }
-
   request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
     const segments = normalisePath(path);
     const client = this.http
@@ -160,45 +132,8 @@ export class BrewBuddyClient {
     return dispatch(client, method);
   }
 
-  async perform(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
-    try {
-      const response = await this.request(method, path, options);
-      if (options.updateHistory !== false) {
-        this.lastResponse = response;
-        this.lastResponseBody = response.data;
-        this.lastResponseHeaders = normalizeHeaders(response.headers ?? {});
-        delete this.lastError;
-      }
-      if (response.status >= 400) {
-        const error = new HTTPError(
-          `Request failed with status ${response.status}`,
-          response.request,
-          response
-        );
-        throw error;
-      }
-    } catch (error) {
-      if (options.updateHistory !== false) {
-        delete this.lastResponse;
-        delete this.lastResponseBody;
-        delete this.lastResponseHeaders;
-        this.lastError = error;
-      }
-      throw error;
-    }
-  }
-
-  extractErrorStatus(): number | undefined {
-    const error = this.lastError;
-    if (error instanceof HTTPError && error.response) {
-      const status = error.response.status;
-      this.lastResponse = error.response;
-      this.lastResponseBody = error.response.data;
-      this.lastResponseHeaders = normalizeHeaders(error.response.headers ?? {});
-      return status;
-    }
-    return undefined;
-  }
+  // Intentionally no `perform()` / `withHistory()` here anymore.
+  // Use `world.app.history.track(world.app.client.action())`.
 }
 
 async function dispatch(client: HTTP, method: HttpMethodInput) {
@@ -227,10 +162,3 @@ function normalisePath(path: string): string[] {
   return url.split("/").filter(Boolean);
 }
 
-function normalizeHeaders(headers: Record<string, string>): Record<string, string> {
-  const normalised: Record<string, string> = {};
-  for (const [key, value] of Object.entries(headers)) {
-    normalised[key.toLowerCase()] = String(value);
-  }
-  return normalised;
-}

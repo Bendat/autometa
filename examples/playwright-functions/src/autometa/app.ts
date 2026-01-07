@@ -8,6 +8,15 @@ import { BrewBuddyMemoryService } from "../brew-buddy/state/memory.service";
 import { BrewBuddyStreamManager } from "../brew-buddy/services/stream-manager";
 import { TagRegistryService } from "../brew-buddy/services/tag-registry.service";
 import { MenuService } from "../brew-buddy/capabilities/menu/menu.service";
+import { MenuClient } from "../brew-buddy/api/menu-client";
+import { RecipeClient } from "../brew-buddy/api/recipe-client";
+import { OrderClient } from "../brew-buddy/api/order-client";
+import { LoyaltyClient } from "../brew-buddy/api/loyalty-client";
+import { InventoryClient } from "../brew-buddy/api/inventory-client";
+import { AdminClient } from "../brew-buddy/api/admin-client";
+import { HttpHistoryService } from "../brew-buddy/http/http-history.service";
+import { RecipeCatalogService } from "../brew-buddy/recipes/recipe-catalog.service";
+import { RecipeArrangerService } from "../brew-buddy/recipes/recipe-arranger.service";
 
 const HTTP_CLIENT = createToken<HTTP>("brew-buddy.http-client");
 
@@ -20,6 +29,9 @@ export function registerBrewBuddyServices(
   compose: AppFactoryContext<BrewBuddyWorldBase>
 ): void {
   compose
+    .registerClass(HttpHistoryService, {
+      scope: Scope.SCENARIO,
+    })
     .registerClass(BrewBuddyMemoryService, {
       scope: Scope.SCENARIO,
       inject: {
@@ -41,6 +53,37 @@ export function registerBrewBuddyServices(
         world: { token: WORLD_TOKEN, lazy: true },
       },
     })
+    .registerClass(MenuClient, {
+      scope: Scope.SCENARIO,
+      deps: [HTTP_CLIENT],
+    })
+    .registerClass(RecipeClient, {
+      scope: Scope.SCENARIO,
+      deps: [HTTP_CLIENT],
+    })
+    .registerClass(OrderClient, {
+      scope: Scope.SCENARIO,
+      deps: [HTTP_CLIENT],
+    })
+    .registerClass(LoyaltyClient, {
+      scope: Scope.SCENARIO,
+      deps: [HTTP_CLIENT],
+    })
+    .registerClass(InventoryClient, {
+      scope: Scope.SCENARIO,
+      deps: [HTTP_CLIENT],
+    })
+    .registerClass(AdminClient, {
+      scope: Scope.SCENARIO,
+      deps: [HTTP_CLIENT],
+    })
+    .registerClass(RecipeCatalogService, {
+      scope: Scope.SCENARIO,
+    })
+    .registerClass(RecipeArrangerService, {
+      scope: Scope.SCENARIO,
+      deps: [HttpHistoryService, RecipeClient, BrewBuddyMemoryService, RecipeCatalogService],
+    })
     .registerFactory(HTTP_CLIENT, () => HTTP.create(), {
       scope: Scope.SCENARIO,
     });
@@ -56,7 +99,18 @@ export function registerBrewBuddyServices(
 export const brewBuddyApp = App.compositionRoot<BrewBuddyWorldBase, BrewBuddyClient>(
   BrewBuddyClient,
   {
-    deps: [HTTP_CLIENT, BrewBuddyMemoryService],
+    deps: [
+      HTTP_CLIENT,
+      BrewBuddyMemoryService,
+      HttpHistoryService,
+      MenuClient,
+      RecipeClient,
+      OrderClient,
+      LoyaltyClient,
+      InventoryClient,
+      AdminClient,
+      RecipeArrangerService,
+    ],
     setup: registerBrewBuddyServices,
     inject: {
       streamManager: BrewBuddyStreamManager,
