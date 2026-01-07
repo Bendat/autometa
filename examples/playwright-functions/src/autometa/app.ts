@@ -1,4 +1,4 @@
-import { Scope, createToken } from "@autometa/injection";
+import { createToken } from "@autometa/injection";
 import { HTTP } from "@autometa/http";
 import { App, WORLD_TOKEN, type AppFactoryContext } from "@autometa/runner";
 
@@ -30,70 +30,72 @@ export function registerBrewBuddyServices(
   compose: AppFactoryContext<BrewBuddyWorldBase>
 ): void {
   compose
-    .registerClass(HttpHistoryService, {
-      scope: Scope.SCENARIO,
-    })
+    .registerClass(HttpHistoryService)
     .registerClass(BrewBuddyMemoryService, {
-      scope: Scope.SCENARIO,
       inject: {
         world: { token: WORLD_TOKEN, lazy: true },
       },
     })
     .registerClass(BrewBuddyStreamManager, {
-      scope: Scope.SCENARIO,
       inject: {
         world: { token: WORLD_TOKEN, lazy: true },
       },
     })
-    .registerClass(TagRegistryService, {
-      scope: Scope.SCENARIO,
-    })
+    .registerClass(TagRegistryService)
     .registerClass(MenuService, {
-      scope: Scope.SCENARIO,
       inject: {
         world: { token: WORLD_TOKEN, lazy: true },
       },
     })
     .registerClass(OrdersService, {
-      scope: Scope.SCENARIO,
       deps: [HttpHistoryService, BrewBuddyMemoryService, OrderClient],
       inject: {
         world: { token: WORLD_TOKEN, lazy: true },
       },
     })
     .registerClass(MenuClient, {
-      scope: Scope.SCENARIO,
       deps: [HTTP_CLIENT],
     })
     .registerClass(RecipeClient, {
-      scope: Scope.SCENARIO,
       deps: [HTTP_CLIENT],
     })
     .registerClass(OrderClient, {
-      scope: Scope.SCENARIO,
       deps: [HTTP_CLIENT],
     })
     .registerClass(LoyaltyClient, {
-      scope: Scope.SCENARIO,
       deps: [HTTP_CLIENT],
     })
     .registerClass(InventoryClient, {
-      scope: Scope.SCENARIO,
       deps: [HTTP_CLIENT],
     })
     .registerClass(AdminClient, {
-      scope: Scope.SCENARIO,
       deps: [HTTP_CLIENT],
     })
-    .registerClass(RecipeCatalogService, {
-      scope: Scope.SCENARIO,
-    })
+    .registerClass(RecipeCatalogService)
     .registerClass(RecipeArrangerService, {
-      scope: Scope.SCENARIO,
       deps: [HttpHistoryService, RecipeClient, BrewBuddyMemoryService, RecipeCatalogService],
     })
-    .registerFactory(HTTP_CLIENT, () => HTTP.create(), {
-      scope: Scope.SCENARIO,
+    .registerFactory(HTTP_CLIENT, () => HTTP.create())
+    .registerClass(BrewBuddyClient, {
+      deps: [
+        HTTP_CLIENT,
+        BrewBuddyMemoryService,
+        HttpHistoryService,
+        MenuClient,
+        RecipeClient,
+        OrderClient,
+        LoyaltyClient,
+        InventoryClient,
+        AdminClient,
+        RecipeArrangerService,
+      ],
+      inject: {
+        streamManager: BrewBuddyStreamManager,
+        tags: TagRegistryService,
+        menu: MenuService,
+        ordering: OrdersService,
+        world: { token: WORLD_TOKEN },
+      },
     });
 }
 
@@ -104,30 +106,13 @@ export function registerBrewBuddyServices(
  * - this belongs in `src/autometa/*` so test authors can ignore the wiring.
  * - the `world.app` surface becomes the ergonomic API for step definitions.
  */
-export const brewBuddyApp = App.compositionRoot<BrewBuddyWorldBase, BrewBuddyClient>(
+export const brewBuddyApp = App.compositionRoot(
   BrewBuddyClient,
   {
-    deps: [
-      HTTP_CLIENT,
-      BrewBuddyMemoryService,
-      HttpHistoryService,
-      MenuClient,
-      RecipeClient,
-      OrderClient,
-      LoyaltyClient,
-      InventoryClient,
-      AdminClient,
-      RecipeArrangerService,
-    ],
     setup: registerBrewBuddyServices,
-    inject: {
-      streamManager: BrewBuddyStreamManager,
-      tags: TagRegistryService,
-      menu: MenuService,
-      ordering: OrdersService,
-      world: { token: WORLD_TOKEN },
-    },
   }
 );
+
+
 
 export { HTTP_CLIENT };

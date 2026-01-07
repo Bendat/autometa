@@ -158,22 +158,38 @@ export interface AppFactoryContext<World> {
 		target: Constructor<T>,
 		options?: AppRegistrationOptions<T, World>
 	): Promise<T>;
+	getRegisteredApp(): unknown;
 	resolve<T>(identifier: Identifier<T>): T;
 }
 
 export const App = {
-	compositionRoot<World, AppInstance>(
-		ctor: Constructor<AppInstance>,
-		options?: AppCompositionOptions<AppInstance, World>
-	): AppFactoryInput<World, AppInstance> {
+	compositionRoot<Ctor extends Constructor<unknown>, World = unknown>(
+		ctor: Ctor,
+		options?: AppCompositionOptions<InstanceType<Ctor>, World>
+	): AppFactoryInput<World, InstanceType<Ctor>> {
 		return async (context) => {
 			const { setup, ...registration } = options ?? {};
 			if (setup) {
 				await setup(context);
 			}
+			const registered =
+				(context as unknown as { getRegisteredApp?: () => unknown }).getRegisteredApp?.();
+			if (registered !== undefined) {
+				return registered as InstanceType<Ctor>;
+			}
+
+			// If setup registered the app class directly, don't overwrite the binding.
+			// Just resolve it.
+			const container = (context as unknown as { container?: unknown }).container as
+				| { isRegistered?: (id: unknown) => boolean }
+				| undefined;
+			if (container?.isRegistered?.(ctor)) {
+				return context.resolve(ctor as unknown as Identifier<InstanceType<Ctor>>);
+			}
+
 			return context.registerApp(
-				ctor,
-				registration as AppRegistrationOptions<AppInstance, World>
+				ctor as unknown as Constructor<InstanceType<Ctor>>,
+				registration as AppRegistrationOptions<InstanceType<Ctor>, World>
 			);
 		};
 	},
@@ -1156,9 +1172,23 @@ function createAppFactoryContext<World>(
 ): AppFactoryContext<World> & { getRegisteredApp(): unknown } {
 	let registeredApp: unknown;
 
+	function withScenarioScope(
+		options: RegistrationOptions | undefined
+	): RegistrationOptions {
+		return {
+			scope: options?.scope ?? Scope.SCENARIO,
+			...(options?.tags ? { tags: [...options.tags] } : {}),
+			...(options?.deps ? { deps: [...options.deps] } : {}),
+			...(options?.props ? { props: options.props } : {}),
+		};
+	}
+
 	const context: AppFactoryContext<World> = {
 		container,
 		world,
+		getRegisteredApp() {
+			return registeredApp;
+		},
 		registerClass(target, options) {
 			const { scope, tags, deps, inject } = options ?? {};
 			let propsMap: RegistrationOptions["props"] | undefined;
@@ -1189,7 +1219,7 @@ function createAppFactoryContext<World>(
 			}
 
 			const registration: RegistrationOptions = {
-				...(scope ? { scope } : {}),
+				scope: scope ?? Scope.SCENARIO,
 				...(tags ? { tags: [...tags] } : {}),
 				...(deps ? { deps: [...deps] } : {}),
 				...(propsMap ? { props: propsMap } : {}),
@@ -1199,15 +1229,15 @@ function createAppFactoryContext<World>(
 			return context;
 		},
 		registerValue(identifier, value, options) {
-			container.registerValue(identifier, value, options);
+			container.registerValue(identifier, value, withScenarioScope(options));
 			return context;
 		},
 		registerFactory(identifier, factory, options) {
-			container.registerFactory(identifier, factory, options);
+			container.registerFactory(identifier, factory, withScenarioScope(options));
 			return context;
 		},
 		registerToken(token, target, options) {
-			container.registerToken(token, target, options);
+			container.registerToken(token, target, withScenarioScope(options));
 			return context;
 		},
 		async registerApp(target, options) {
@@ -1224,9 +1254,7 @@ function createAppFactoryContext<World>(
 		},
 	};
 
-	return Object.assign(context, {
-		getRegisteredApp: () => registeredApp,
-	});
+	return context;
 }
 
 function attachRuntime(world: Record<string, unknown>): void {

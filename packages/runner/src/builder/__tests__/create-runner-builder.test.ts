@@ -356,7 +356,7 @@ describe("createRunnerBuilder", () => {
 		const builder = createRunnerBuilder<BaseWorld>()
 			.withWorld(() => ({ value: 3 }))
 			.app(
-				App.compositionRoot<BaseWorld, TestApp>(TestApp, {
+				App.compositionRoot(TestApp, {
 					deps: [Dependency],
 					setup: (compose) => {
 						compose.registerClass(Dependency, { scope: Scope.SCENARIO });
