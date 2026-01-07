@@ -321,6 +321,40 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
+  examples/runner-composition:
+    dependencies:
+      '@autometa/assertions':
+        specifier: workspace:*
+        version: link:../../packages/assertions
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@autometa/executor':
+        specifier: workspace:*
+        version: link:../../packages/executor
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../../packages/gherkin
+      '@autometa/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@autometa/injection':
+        specifier: workspace:*
+        version: link:../../packages/injection
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../../packages/runner
+    devDependencies:
+      '@autometa/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@types/node':
+        specifier: 18.19.24
+        version: 18.19.24
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+
   examples/vitest-decorators:
     dependencies:
       '@autometa/app':

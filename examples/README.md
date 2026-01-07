@@ -10,6 +10,7 @@ examples/
   .features/          # Authoritative feature files shared by all examples
   jest-functions/     # Jest-based step definitions using functional style
   jest-decorators/    # Jest-based step definitions using decorator APIs
+  runner-composition/ # Runner + DI composition patterns (no test framework glue)
   vitest-functions/   # Vitest step definitions using functional style
   vitest-decorators/  # Vitest step definitions using decorator APIs
 ```

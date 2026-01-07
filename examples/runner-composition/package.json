@@ -1,0 +1,26 @@
+{
+  "name": "@autometa/examples-runner-composition",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "autometa run --standalone",
+    "test:watch": "autometa run --standalone --watch",
+    "test:list": "autometa run --standalone --dry-run",
+    "type-check": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@autometa/assertions": "workspace:*",
+    "@autometa/config": "workspace:*",
+    "@autometa/executor": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/http": "workspace:*",
+    "@autometa/injection": "workspace:*",
+    "@autometa/runner": "workspace:*"
+  },
+  "devDependencies": {
+    "@autometa/cli": "workspace:*",
+    "@types/node": "18.19.24",
+    "typescript": "5.4.5"
+  }
+}

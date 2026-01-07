@@ -179,11 +179,11 @@ export const App = {
 			}
 
 			// If setup registered the app class directly, don't overwrite the binding.
-			// Just resolve it.
-			const container = (context as unknown as { container?: unknown }).container as
-				| { isRegistered?: (id: unknown) => boolean }
-				| undefined;
-			if (container?.isRegistered?.(ctor)) {
+			// Resolve it (and allow resolution errors to surface) instead of falling back.
+			const container = context.container as unknown as {
+				isRegistered?: (id: unknown) => boolean;
+			};
+			if (typeof container.isRegistered === "function" && container.isRegistered(ctor)) {
 				return context.resolve(ctor as unknown as Identifier<InstanceType<Ctor>>);
 			}
 
