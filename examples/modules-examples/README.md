@@ -13,6 +13,24 @@ It also demonstrates how you can run **hoisted** features with either:
 - only hoisted steps (via `--environment hoisted`)
 - only grouped steps (via `-g/-m` filters)
 
+## Step scoping (important)
+
+This example enables **scoped step visibility** via:
+
+- `modules.stepScoping: "scoped"`
+
+With step scoping enabled:
+
+- hoisted features can only use **root** steps by default
+- module-relative features can use **root + group + ancestral module** steps
+- sibling module steps are **not** visible (e.g. `menu` cannot see `reports`)
+
+### Escape hatch for hoisted features
+
+If you intentionally want a hoisted feature file to behave as-if it belongs to a module, add a tag:
+
+- `@scope(backoffice:reports)`
+
 ## Layout
 
 - Shared step environment: `src/autometa/steps.ts`

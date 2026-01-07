@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { extname, join, relative } from "node:path";
+import { extname, join, relative, resolve as resolvePath } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { Command } from "commander";
@@ -50,6 +50,213 @@ const STEP_FILE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cj
 const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
 const FEATURE_FALLBACK_GLOB = "**/*.feature";
 const ROOT_LOAD_ORDER = ["parameterTypes", "support", "hooks", "app"];
+
+type ModuleDeclaration =
+  | string
+  | { readonly name: string; readonly submodules?: readonly ModuleDeclaration[] | undefined };
+
+interface GroupIndexEntry {
+  readonly group: string;
+  readonly rootAbs: string;
+  readonly modulePaths: readonly (readonly string[])[];
+}
+
+type FileScope =
+  | { readonly kind: "root" }
+  | { readonly kind: "group"; readonly group: string }
+  | { readonly kind: "module"; readonly group: string; readonly modulePath: readonly string[] };
+
+function flattenModuleDeclarations(
+  declarations: readonly ModuleDeclaration[] | undefined,
+  prefix: readonly string[] = []
+): readonly (readonly string[])[] {
+  if (!declarations || declarations.length === 0) {
+    return [];
+  }
+
+  const results: string[][] = [];
+
+  for (const entry of declarations) {
+    if (typeof entry === "string") {
+      const next = [...prefix, entry];
+      results.push(next);
+      continue;
+    }
+
+    const next = [...prefix, entry.name];
+    results.push(next);
+
+    const nested = flattenModuleDeclarations(entry.submodules ?? undefined, next);
+    for (const path of nested) {
+      results.push([...path]);
+    }
+  }
+
+  // Dedupe + sort by deepest first for fast "deepest prefix" matching
+  const unique = new Map<string, readonly string[]>();
+  for (const path of results) {
+    unique.set(path.join("/"), path);
+  }
+
+  return Array.from(unique.values()).sort((a, b) => b.length - a.length);
+}
+
+function buildGroupIndex(config: ExecutorConfig, cwd: string): readonly GroupIndexEntry[] {
+  const groups = config.modules?.groups;
+  if (!groups) {
+    return [];
+  }
+
+  return Object.entries(groups).map(([group, groupConfig]) => {
+    const rootAbs = resolvePath(cwd, groupConfig.root);
+    const modulePaths = flattenModuleDeclarations(groupConfig.modules as unknown as ModuleDeclaration[]);
+    return { group, rootAbs, modulePaths } satisfies GroupIndexEntry;
+  });
+}
+
+function normalizePathSegments(input: string): string[] {
+  const normalized = input.replace(/\\/g, "/");
+  return normalized.split("/").filter(Boolean);
+}
+
+function isPathUnderRoot(fileAbs: string, rootAbs: string): boolean {
+  const rel = relative(rootAbs, fileAbs);
+  if (rel === "") {
+    return true;
+  }
+  return !rel.startsWith("..") && !rel.startsWith("../") && !rel.startsWith("..\\");
+}
+
+function startsWithSegments(haystack: readonly string[], needle: readonly string[]): boolean {
+  if (needle.length > haystack.length) {
+    return false;
+  }
+  for (let i = 0; i < needle.length; i += 1) {
+    if (haystack[i] !== needle[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function resolveFileScope(fileAbs: string, groupIndex: readonly GroupIndexEntry[]): FileScope {
+  if (fileAbs.startsWith("node:")) {
+    return { kind: "root" };
+  }
+
+  for (const entry of groupIndex) {
+    if (!isPathUnderRoot(fileAbs, entry.rootAbs)) {
+      continue;
+    }
+
+    const rel = relative(entry.rootAbs, fileAbs);
+    const segments = normalizePathSegments(rel);
+
+    for (const modulePath of entry.modulePaths) {
+      if (startsWithSegments(segments, modulePath)) {
+        return {
+          kind: "module",
+          group: entry.group,
+          modulePath,
+        };
+      }
+    }
+
+    return {
+      kind: "group",
+      group: entry.group,
+    };
+  }
+
+  return { kind: "root" };
+}
+
+function parseScopeOverrideTag(tags: readonly string[] | undefined):
+  | { readonly group: string; readonly modulePath?: readonly string[] }
+  | undefined {
+  if (!tags || tags.length === 0) {
+    return undefined;
+  }
+
+  for (const tag of tags) {
+    const match = tag.match(/^@scope(?::|=|\()(.+?)(?:\))?$/u);
+    if (!match) {
+      continue;
+    }
+
+    const raw = (match[1] ?? "").trim();
+    if (!raw) {
+      continue;
+    }
+
+    const normalized = raw.replace(/\//g, ":");
+    const parts = normalized.split(":").filter(Boolean);
+    const [group, ...rest] = parts;
+    if (!group) {
+      continue;
+    }
+
+    return rest.length > 0
+      ? { group, modulePath: rest }
+      : { group };
+  }
+
+  return undefined;
+}
+
+function resolveFeatureScope(
+  featureAbsPath: string,
+  feature: SimpleFeature,
+  groupIndex: readonly GroupIndexEntry[]
+): FileScope {
+  const override = parseScopeOverrideTag(feature.tags);
+  if (override) {
+    if (override.modulePath && override.modulePath.length > 0) {
+      return { kind: "module", group: override.group, modulePath: override.modulePath };
+    }
+    return { kind: "group", group: override.group };
+  }
+
+  return resolveFileScope(featureAbsPath, groupIndex);
+}
+
+function isVisibleStepScope(stepScope: FileScope, featureScope: FileScope): boolean {
+  if (featureScope.kind === "root") {
+    return stepScope.kind === "root";
+  }
+
+  if (featureScope.kind === "group") {
+    if (stepScope.kind === "root") {
+      return true;
+    }
+    return stepScope.kind === "group" && stepScope.group === featureScope.group;
+  }
+
+  // featureScope.kind === "module"
+  if (stepScope.kind === "root") {
+    return true;
+  }
+  if (stepScope.kind === "group") {
+    return stepScope.group === featureScope.group;
+  }
+  if (stepScope.kind === "module") {
+    return stepScope.group === featureScope.group
+      && startsWithSegments(featureScope.modulePath, stepScope.modulePath);
+  }
+
+  return false;
+}
+
+function stepScopeRank(scope: FileScope): number {
+  switch (scope.kind) {
+    case "module":
+      return 200 + scope.modulePath.length;
+    case "group":
+      return 100;
+    default:
+      return 0;
+  }
+}
 
 function collectRepeatedString(value: string, previous: string[]): string[] {
   return [...previous, value];
@@ -131,10 +338,59 @@ function isRule(element: SimpleFeature["elements"][number]): element is SimpleRu
 
 function createFeatureScopePlan<World>(
   feature: SimpleFeature,
-  basePlan: ScopePlan<World>
+  basePlan: ScopePlan<World>,
+  options: {
+    readonly featureAbsPath: string;
+    readonly cwd: string;
+    readonly config: ExecutorConfig;
+    readonly groupIndex: readonly GroupIndexEntry[];
+  }
 ): ScopePlan<World> {
+  const scopingMode = options.config.modules?.stepScoping ?? "global";
+  const useScopedSteps = scopingMode === "scoped" && options.groupIndex.length > 0;
+
   // Get all steps from base plan as an array for convenience
   const allSteps = Array.from(basePlan.stepsById.values());
+  const featureFileScope = useScopedSteps
+    ? resolveFeatureScope(options.featureAbsPath, feature, options.groupIndex)
+    : ({ kind: "root" } as const);
+
+  const visibleSteps = useScopedSteps
+    ? allSteps
+        .filter((definition) => {
+          const file = definition.source?.file;
+          const stepScope = file
+            ? resolveFileScope(resolvePath(options.cwd, file), options.groupIndex)
+            : ({ kind: "root" } as const);
+          return isVisibleStepScope(stepScope, featureFileScope);
+        })
+        .sort((a, b) => {
+          const aFile = a.source?.file;
+          const bFile = b.source?.file;
+          const aScope = aFile
+            ? resolveFileScope(resolvePath(options.cwd, aFile), options.groupIndex)
+            : ({ kind: "root" } as const);
+          const bScope = bFile
+            ? resolveFileScope(resolvePath(options.cwd, bFile), options.groupIndex)
+            : ({ kind: "root" } as const);
+
+          const delta = stepScopeRank(bScope) - stepScopeRank(aScope);
+          return delta !== 0 ? delta : a.id.localeCompare(b.id);
+        })
+    : allSteps;
+
+  const scopedStepsById = useScopedSteps
+    ? (() => {
+        const allowed = new Set(visibleSteps.map((step) => step.id));
+        const next = new Map<string, (typeof visibleSteps)[number]>();
+        for (const [id, def] of basePlan.stepsById.entries()) {
+          if (allowed.has(id)) {
+            next.set(id, def);
+          }
+        }
+        return next;
+      })()
+    : basePlan.stepsById;
 
   // Create scenario and rule scope nodes
   const featureChildren: ScopeNode<World>[] = [];
@@ -149,7 +405,7 @@ function createFeatureScopePlan<World>(
         name: element.name,
         mode: "default",
         tags: element.tags ?? [],
-        steps: allSteps,
+        steps: visibleSteps,
         hooks: [],
         children: [],
         pending: false,
@@ -168,7 +424,7 @@ function createFeatureScopePlan<World>(
             name: ruleElement.name,
             mode: "default",
             tags: ruleElement.tags ?? [],
-            steps: allSteps,
+            steps: visibleSteps,
             hooks: [],
             children: [],
             pending: false,
@@ -184,7 +440,7 @@ function createFeatureScopePlan<World>(
         name: element.name,
         mode: "default",
         tags: element.tags ?? [],
-        steps: allSteps,
+        steps: visibleSteps,
         hooks: [],
         children: ruleChildren,
         pending: false,
@@ -201,7 +457,7 @@ function createFeatureScopePlan<World>(
     name: feature.name,
     mode: "default",
     tags: feature.tags ?? [],
-    steps: allSteps,
+    steps: visibleSteps,
     hooks: [],
     children: featureChildren,
     pending: false,
@@ -221,7 +477,7 @@ function createFeatureScopePlan<World>(
   // Return a new scope plan with the updated hierarchy
   const scopePlan: ScopePlan<World> = {
     root: updatedRoot,
-    stepsById: basePlan.stepsById,
+    stepsById: scopedStepsById,
     hooksById: basePlan.hooksById,
     scopesById,
   };
@@ -338,10 +594,16 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   CucumberRunner.setSteps(stepsEnvironment);
 
   const basePlan = stepsEnvironment.getPlan();
+  const groupIndex = buildGroupIndex(executorConfig, cwd);
 
   for (const featurePath of featureFiles) {
     const feature = await readFeatureFile(featurePath, cwd);
-    const scopePlan = createFeatureScopePlan(feature, basePlan);
+    const scopePlan = createFeatureScopePlan(feature, basePlan, {
+      featureAbsPath: resolvePath(cwd, featurePath),
+      cwd,
+      config: executorConfig,
+      groupIndex,
+    });
     const coordinated = stepsEnvironment.coordinateFeature({
       feature,
       plan: scopePlan,

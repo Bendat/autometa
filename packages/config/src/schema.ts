@@ -84,6 +84,7 @@ const ModuleDeclarationSchema: z.ZodType<ModuleDeclaration> = z.lazy(() =>
 );
 
 export const ModulesConfigSchema = z.object({
+  stepScoping: z.enum(["global", "scoped"]).optional(),
   relativeRoots: PartialRootSchema.optional(),
   groups: z
     .record(

@@ -8,6 +8,7 @@ export default defineConfig({
       steps: ["src/autometa/steps.ts"],
     },
     modules: {
+      stepScoping: "scoped",
       relativeRoots: {
         features: [".features/**/*.feature"],
         steps: ["steps/**/*.steps.ts"],

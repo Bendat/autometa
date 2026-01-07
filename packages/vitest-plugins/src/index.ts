@@ -6,6 +6,59 @@ import jiti from "jiti";
 
 const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
 
+type ModuleDeclaration =
+  | string
+  | { readonly name: string; readonly submodules?: readonly ModuleDeclaration[] | undefined };
+
+function flattenModuleDeclarations(
+  declarations: readonly ModuleDeclaration[] | undefined,
+  prefix: readonly string[] = []
+): readonly (readonly string[])[] {
+  if (!declarations || declarations.length === 0) {
+    return [];
+  }
+
+  const results: string[][] = [];
+
+  for (const entry of declarations) {
+    if (typeof entry === "string") {
+      const next = [...prefix, entry];
+      results.push(next);
+      continue;
+    }
+
+    const next = [...prefix, entry.name];
+    results.push(next);
+
+    const nested = flattenModuleDeclarations(entry.submodules ?? undefined, next);
+    for (const path of nested) {
+      results.push([...path]);
+    }
+  }
+
+  const unique = new Map<string, readonly string[]>();
+  for (const path of results) {
+    unique.set(path.join("/"), path);
+  }
+
+  return Array.from(unique.values()).sort((a, b) => b.length - a.length);
+}
+
+function buildStepScopingData(resolvedConfig: any, projectRoot: string): unknown {
+  const groups = resolvedConfig?.modules?.groups;
+  if (!groups || typeof groups !== "object") {
+    return null;
+  }
+
+  const entries = Object.entries(groups).map(([group, groupConfig]: any) => {
+    const rootAbs = resolve(projectRoot, String(groupConfig.root));
+    const modulePaths = flattenModuleDeclarations(groupConfig.modules as ModuleDeclaration[]);
+    return { group, rootAbs, modulePaths };
+  });
+
+  return { groups: entries };
+}
+
 export function autometa(): Plugin {
   let autometaConfig: Config | undefined;
   let configPath: string | undefined;
@@ -41,6 +94,13 @@ export function autometa(): Plugin {
         }
 
         const runtimeConfig = JSON.stringify(resolved.config);
+        const stepScopingMode = resolved.config.modules?.stepScoping ?? "global";
+        const stepScopingData =
+          stepScopingMode === "scoped"
+            ? buildStepScopingData(resolved.config, rootDir)
+            : null;
+
+        const featureFile = id;
 
         return {
           code: `
@@ -48,6 +108,11 @@ export function autometa(): Plugin {
             import { execute } from '@autometa/vitest-executor';
             import { coordinateRunnerFeature, CucumberRunner } from '@autometa/runner';
             import { parseGherkin } from '@autometa/gherkin';
+            import { relative as __pathRelative } from 'node:path';
+
+            const __AUTOMETA_STEP_SCOPING_MODE = ${JSON.stringify(stepScopingMode)};
+            const __AUTOMETA_STEP_SCOPING = ${JSON.stringify(stepScopingData)};
+            const __AUTOMETA_FEATURE_FILE = ${JSON.stringify(featureFile)};
 
             const stepModules = import.meta.glob(${JSON.stringify(stepGlobs)}, { eager: true });
 
@@ -158,6 +223,123 @@ export function autometa(): Plugin {
 
             function createFeatureScopePlan(feature, basePlan) {
               const allSteps = Array.from(basePlan.stepsById.values());
+
+              function normalizePathSegments(input) {
+                return String(input).replace(/\\\\/g, '/').split('/').filter(Boolean);
+              }
+
+              function startsWithSegments(haystack, needle) {
+                if (needle.length > haystack.length) return false;
+                for (let i = 0; i < needle.length; i += 1) {
+                  if (haystack[i] !== needle[i]) return false;
+                }
+                return true;
+              }
+
+              function resolveFileScope(fileAbs) {
+                if (!__AUTOMETA_STEP_SCOPING || !__AUTOMETA_STEP_SCOPING.groups) {
+                  return { kind: 'root' };
+                }
+                if (String(fileAbs).startsWith('node:')) {
+                  return { kind: 'root' };
+                }
+                for (const entry of __AUTOMETA_STEP_SCOPING.groups) {
+                  const rootAbs = entry.rootAbs;
+                  const rel = rootAbs && fileAbs ? __pathRelative(rootAbs, fileAbs) : '';
+                  if (rel === '' || (!rel.startsWith('..') && !rel.startsWith('../') && !rel.startsWith('..\\\\'))) {
+                    const segments = normalizePathSegments(rel);
+                    const modulePaths = entry.modulePaths || [];
+                    for (const modulePath of modulePaths) {
+                      if (startsWithSegments(segments, modulePath)) {
+                        return { kind: 'module', group: entry.group, modulePath };
+                      }
+                    }
+                    return { kind: 'group', group: entry.group };
+                  }
+                }
+                return { kind: 'root' };
+              }
+
+              function parseScopeOverrideTag(tags) {
+                if (!Array.isArray(tags)) return undefined;
+                for (const tag of tags) {
+                  const match = String(tag).match(/^@scope(?::|=|\()(.+?)(?:\))?$/u);
+                  if (!match) continue;
+                  const raw = String(match[1] ?? '').trim();
+                  if (!raw) continue;
+                  const normalized = raw.replace(/\//g, ':');
+                  const parts = normalized.split(':').filter(Boolean);
+                  const group = parts[0];
+                  const rest = parts.slice(1);
+                  if (!group) continue;
+                  return rest.length > 0 ? { group, modulePath: rest } : { group };
+                }
+                return undefined;
+              }
+
+              function resolveFeatureScope() {
+                const override = parseScopeOverrideTag(feature.tags);
+                if (override) {
+                  if (override.modulePath && override.modulePath.length > 0) {
+                    return { kind: 'module', group: override.group, modulePath: override.modulePath };
+                  }
+                  return { kind: 'group', group: override.group };
+                }
+                return resolveFileScope(__AUTOMETA_FEATURE_FILE);
+              }
+
+              function isVisibleStepScope(stepScope, featureScope) {
+                if (featureScope.kind === 'root') {
+                  return stepScope.kind === 'root';
+                }
+                if (featureScope.kind === 'group') {
+                  if (stepScope.kind === 'root') return true;
+                  return stepScope.kind === 'group' && stepScope.group === featureScope.group;
+                }
+                // module
+                if (stepScope.kind === 'root') return true;
+                if (stepScope.kind === 'group') return stepScope.group === featureScope.group;
+                if (stepScope.kind === 'module') {
+                  return stepScope.group === featureScope.group && startsWithSegments(featureScope.modulePath, stepScope.modulePath);
+                }
+                return false;
+              }
+
+              function stepScopeRank(scope) {
+                if (scope.kind === 'module') return 200 + (scope.modulePath ? scope.modulePath.length : 0);
+                if (scope.kind === 'group') return 100;
+                return 0;
+              }
+
+              const useScopedSteps = __AUTOMETA_STEP_SCOPING_MODE === 'scoped' && __AUTOMETA_STEP_SCOPING && __AUTOMETA_STEP_SCOPING.groups;
+              const featureScope = useScopedSteps ? resolveFeatureScope() : { kind: 'root' };
+              const visibleSteps = useScopedSteps
+                ? allSteps
+                    .filter((definition) => {
+                      const file = definition && definition.source ? definition.source.file : undefined;
+                      const scope = file ? resolveFileScope(file) : { kind: 'root' };
+                      return isVisibleStepScope(scope, featureScope);
+                    })
+                    .sort((a, b) => {
+                      const aFile = a && a.source ? a.source.file : undefined;
+                      const bFile = b && b.source ? b.source.file : undefined;
+                      const aScope = aFile ? resolveFileScope(aFile) : { kind: 'root' };
+                      const bScope = bFile ? resolveFileScope(bFile) : { kind: 'root' };
+                      const delta = stepScopeRank(bScope) - stepScopeRank(aScope);
+                      return delta !== 0 ? delta : String(a.id).localeCompare(String(b.id));
+                    })
+                : allSteps;
+
+              const scopedStepsById = useScopedSteps
+                ? (() => {
+                    const allowed = new Set(visibleSteps.map((s) => s.id));
+                    const next = new Map();
+                    for (const [id, def] of basePlan.stepsById.entries()) {
+                      if (allowed.has(id)) next.set(id, def);
+                    }
+                    return next;
+                  })()
+                : basePlan.stepsById;
               const featureChildren = [];
               const scopesById = new Map(basePlan.scopesById);
 
@@ -169,7 +351,7 @@ export function autometa(): Plugin {
                     name: element.name,
                     mode: 'default',
                     tags: element.tags ?? [],
-                    steps: allSteps,
+                    steps: visibleSteps,
                     hooks: [],
                     children: [],
                     pending: false,
@@ -189,7 +371,7 @@ export function autometa(): Plugin {
                         name: ruleElement.name,
                         mode: 'default',
                         tags: ruleElement.tags ?? [],
-                        steps: allSteps,
+                        steps: visibleSteps,
                         hooks: [],
                         children: [],
                         pending: false,
@@ -205,7 +387,7 @@ export function autometa(): Plugin {
                     name: element.name,
                     mode: 'default',
                     tags: element.tags ?? [],
-                    steps: allSteps,
+                    steps: visibleSteps,
                     hooks: [],
                     children: ruleChildren,
                     pending: false,
@@ -221,7 +403,7 @@ export function autometa(): Plugin {
                 name: feature.name,
                 mode: 'default',
                 tags: feature.tags ?? [],
-                steps: allSteps,
+                steps: visibleSteps,
                 hooks: [],
                 children: featureChildren,
                 pending: false,
@@ -238,7 +420,7 @@ export function autometa(): Plugin {
 
               const scopePlan = {
                 root: updatedRoot,
-                stepsById: basePlan.stepsById,
+                stepsById: scopedStepsById,
                 hooksById: basePlan.hooksById,
                 scopesById,
               };
