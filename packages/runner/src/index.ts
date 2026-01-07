@@ -8,19 +8,21 @@ export type {
 
 export type {
 	RunnerBuilder,
+	DerivableRunnerBuilder,
 	RunnerDecoratorsSurface,
 	RunnerStepsSurface,
 	WorldWithApp,
 	DefaultEnsureFacets,
 	RunnerEnsureFactory,
 	AssertionSetup,
+	StepsEnvironmentMeta,
  	AppFactoryContext,
  	AppClassRegistrationOptions,
  	AppRegistrationOptions,
 	AppCompositionOptions,
 } from "./builder/create-runner-builder";
 
-export { App, WORLD_INHERIT_KEYS } from "./builder/create-runner-builder";
+export { App, WORLD_INHERIT_KEYS, STEPS_ENVIRONMENT_META } from "./builder/create-runner-builder";
 
 export type { RunnerBindingsSurface } from "./bindings/create-bindings-ts";
 

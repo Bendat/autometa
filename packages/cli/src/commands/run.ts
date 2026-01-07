@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { Command } from "commander";
 import type { ExecutorConfig, LoggingConfig } from "@autometa/config";
 import { HTTP, createLoggingPlugin, type HTTPLogEvent } from "@autometa/http";
-import { CucumberRunner } from "@autometa/runner";
+import { CucumberRunner, STEPS_ENVIRONMENT_META } from "@autometa/runner";
 import type { GlobalWorld, RunnerStepsSurface } from "@autometa/runner";
 import { parseGherkin, type SimpleFeature, type SimpleRule } from "@autometa/gherkin";
 import type { ScopePlan, ScopeNode } from "@autometa/scopes";
@@ -50,6 +50,19 @@ const STEP_FILE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cj
 const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
 const FEATURE_FALLBACK_GLOB = "**/*.feature";
 const ROOT_LOAD_ORDER = ["parameterTypes", "support", "hooks", "app"];
+
+function normalizeGlobLikePath(input: string): string {
+  return input.replace(/\\/g, "/").replace(/^\.\//u, "");
+}
+
+function patternIsUnderRoot(pattern: string, root: string): boolean {
+  const p = normalizeGlobLikePath(pattern);
+  const r = normalizeGlobLikePath(root).replace(/\/+$/u, "");
+  if (!r) {
+    return false;
+  }
+  return p === r || p.startsWith(`${r}/`);
+}
 
 type ModuleDeclaration =
   | string
@@ -558,10 +571,40 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   const { runtime, hookLogger, execute } = createCliRuntime(runtimeOptions);
   configureHttpLogging(executorConfig.logging);
 
-  const patternSource =
-    options.patterns && options.patterns.length > 0
-      ? [...options.patterns]
-      : [...executorConfig.roots.features];
+  const hasModuleSelection = (options.groups?.length ?? 0) > 0 || (options.modules?.length ?? 0) > 0;
+  const hasExplicitPatterns = (options.patterns?.length ?? 0) > 0;
+
+  const patternSource = (() => {
+    if (hasExplicitPatterns) {
+      return [...(options.patterns ?? [])];
+    }
+
+    const roots = [...executorConfig.roots.features];
+
+    // When the user opts into module selection (-g/-m), the expectation is typically
+    // "run the selected modules" rather than "run everything including hoisted/root features".
+    // So we narrow default feature discovery to module group roots.
+    if (hasModuleSelection && executorConfig.modules?.groups) {
+      const allowedGroups = (options.groups?.length ?? 0) > 0
+        ? new Set(options.groups)
+        : new Set(Object.keys(executorConfig.modules.groups));
+
+      const allowedRoots = Object.entries(executorConfig.modules.groups)
+        .filter(([group]) => allowedGroups.has(group))
+        .map(([, groupConfig]) => groupConfig.root);
+
+      const filtered = roots.filter((pattern) =>
+        allowedRoots.some((root) => patternIsUnderRoot(pattern, root))
+      );
+
+      // If we couldn't confidently filter (e.g. unusual config), fall back to current behavior.
+      if (filtered.length > 0) {
+        return filtered;
+      }
+    }
+
+    return roots;
+  })();
 
   const featurePatterns = buildPatterns(patternSource, FEATURE_FALLBACK_GLOB);
   const featureFiles = (await expandFilePatterns(featurePatterns, cwd)).filter((file) =>
@@ -575,7 +618,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   }
 
   const builder = CucumberRunner.builder<GlobalWorld>();
-  let stepsEnvironment = builder.steps();
+  let stepsEnvironments: readonly RunnerStepsSurface<GlobalWorld>[] = [builder.steps()];
 
   const modulePlan = await createModulePlan(executorConfig, cwd);
   const compileOptions: Parameters<typeof compileModules>[1] = executorConfig.builder
@@ -585,26 +628,36 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
 
   if (modulePlan.orderedFiles.length > 0) {
     const imported = await import(pathToFileURL(compileResult.bundlePath).href);
-    const resolved = resolveStepsEnvironment(imported);
-    if (resolved) {
-      stepsEnvironment = resolved;
+    const resolved = collectStepsEnvironments(imported);
+    if (resolved.length > 0) {
+      stepsEnvironments = resolved;
     }
   }
 
-  CucumberRunner.setSteps(stepsEnvironment);
-
-  const basePlan = stepsEnvironment.getPlan();
   const groupIndex = buildGroupIndex(executorConfig, cwd);
+  const environmentIndex = indexStepsEnvironments(stepsEnvironments, cwd, groupIndex);
 
   for (const featurePath of featureFiles) {
     const feature = await readFeatureFile(featurePath, cwd);
+    const featureAbsPath = resolvePath(cwd, featurePath);
+    const selectedStepsEnvironment = resolveFeatureStepsEnvironment(
+      featureAbsPath,
+      feature,
+      environmentIndex,
+      groupIndex
+    );
+
+    // Keep legacy compatibility for any code that relies on CucumberRunner.steps().
+    CucumberRunner.setSteps(selectedStepsEnvironment);
+
+    const basePlan = selectedStepsEnvironment.getPlan();
     const scopePlan = createFeatureScopePlan(feature, basePlan, {
-      featureAbsPath: resolvePath(cwd, featurePath),
+      featureAbsPath,
       cwd,
       config: executorConfig,
       groupIndex,
     });
-    const coordinated = stepsEnvironment.coordinateFeature({
+    const coordinated = selectedStepsEnvironment.coordinateFeature({
       feature,
       plan: scopePlan,
       config: executorConfig,
@@ -622,15 +675,16 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
 
 type ModuleLike = Record<string, unknown>;
 
-function resolveStepsEnvironment(imported: unknown): RunnerStepsSurface<GlobalWorld> | undefined {
+function collectStepsEnvironments(imported: unknown): readonly RunnerStepsSurface<GlobalWorld>[] {
   const candidates = collectCandidateModules(imported);
+  const environments = new Set<RunnerStepsSurface<GlobalWorld>>();
   for (const candidate of candidates) {
-    const environment = extractStepsEnvironment(candidate);
-    if (environment) {
-      return environment;
+    const extracted = extractStepsEnvironments(candidate);
+    for (const env of extracted) {
+      environments.add(env);
     }
   }
-  return undefined;
+  return Array.from(environments);
 }
 
 function collectCandidateModules(imported: unknown): readonly ModuleLike[] {
@@ -665,22 +719,112 @@ function collectCandidateModules(imported: unknown): readonly ModuleLike[] {
   return Array.from(modules);
 }
 
-function extractStepsEnvironment(candidate: ModuleLike): RunnerStepsSurface<GlobalWorld> | undefined {
+function extractStepsEnvironments(candidate: ModuleLike): readonly RunnerStepsSurface<GlobalWorld>[] {
+  const environments: RunnerStepsSurface<GlobalWorld>[] = [];
+
   if (isStepsEnvironment(candidate)) {
-    return candidate;
+    environments.push(candidate);
   }
 
   const steps = candidate.stepsEnvironment;
   if (isStepsEnvironment(steps)) {
-    return steps;
+    environments.push(steps);
   }
 
   const defaultExport = candidate.default;
   if (isStepsEnvironment(defaultExport)) {
-    return defaultExport;
+    environments.push(defaultExport);
   }
 
-  return undefined;
+  return environments;
+}
+
+type StepsEnvironmentIndexEntry =
+  | { readonly kind: "root"; readonly environment: RunnerStepsSurface<GlobalWorld> }
+  | { readonly kind: "group"; readonly group: string; readonly environment: RunnerStepsSurface<GlobalWorld> };
+
+function inferEnvironmentGroup(
+  environment: RunnerStepsSurface<GlobalWorld>,
+  cwd: string,
+  groupIndex: readonly GroupIndexEntry[]
+): { readonly kind: "root" } | { readonly kind: "group"; readonly group: string } | { readonly kind: "ambiguous" } {
+  const meta = (environment as unknown as Record<PropertyKey, unknown>)[STEPS_ENVIRONMENT_META] as
+    | { readonly kind?: unknown; readonly group?: unknown }
+    | undefined;
+  if (meta?.kind === "group" && typeof meta.group === "string" && meta.group.trim().length > 0) {
+    return { kind: "group", group: meta.group };
+  }
+  if (meta?.kind === "root") {
+    return { kind: "root" };
+  }
+
+  const plan = environment.getPlan();
+  const groups = new Set<string>();
+
+  for (const step of plan.stepsById.values()) {
+    const file = step.source?.file;
+    if (!file) {
+      continue;
+    }
+    const scope = resolveFileScope(resolvePath(cwd, file), groupIndex);
+    if (scope.kind === "group" || scope.kind === "module") {
+      groups.add(scope.group);
+    }
+    if (groups.size > 1) {
+      return { kind: "ambiguous" };
+    }
+  }
+
+  const only = Array.from(groups.values())[0];
+  return only ? { kind: "group", group: only } : { kind: "root" };
+}
+
+function indexStepsEnvironments(
+  environments: readonly RunnerStepsSurface<GlobalWorld>[],
+  cwd: string,
+  groupIndex: readonly GroupIndexEntry[]
+): readonly StepsEnvironmentIndexEntry[] {
+  const entries: StepsEnvironmentIndexEntry[] = [];
+  for (const env of environments) {
+    const inferred = inferEnvironmentGroup(env, cwd, groupIndex);
+    if (inferred.kind === "ambiguous") {
+      continue;
+    }
+    entries.push(
+      inferred.kind === "group"
+        ? { kind: "group", group: inferred.group, environment: env }
+        : { kind: "root", environment: env }
+    );
+  }
+  return entries;
+}
+
+function resolveFeatureStepsEnvironment(
+  featureAbsPath: string,
+  feature: SimpleFeature,
+  environments: readonly StepsEnvironmentIndexEntry[],
+  groupIndex: readonly GroupIndexEntry[]
+): RunnerStepsSurface<GlobalWorld> {
+  const featureScope = resolveFeatureScope(featureAbsPath, feature, groupIndex);
+  if (featureScope.kind === "root") {
+    const root = environments.find((entry) => entry.kind === "root");
+    return root?.environment ?? environments[0]?.environment ?? CucumberRunner.steps<GlobalWorld>();
+  }
+
+  const group = featureScope.group;
+  const match = environments.find((entry) => entry.kind === "group" && entry.group === group);
+  if (match) {
+    return match.environment;
+  }
+
+  const available = environments
+    .filter((entry) => entry.kind === "group")
+    .map((entry) => (entry as { kind: "group"; group: string }).group)
+    .sort();
+
+  throw new Error(
+    `No steps environment found for group "${group}". Available groups: ${available.length > 0 ? available.join(", ") : "<none>"}`
+  );
 }
 
 function isStepsEnvironment(value: unknown): value is RunnerStepsSurface<GlobalWorld> {

@@ -93,6 +93,14 @@ export type AssertionSetup<
 
 export const WORLD_INHERIT_KEYS: unique symbol = Symbol("autometa.runner.world.inherit");
 
+export type StepsEnvironmentMeta =
+	| { readonly kind: "root" }
+	| { readonly kind: "group"; readonly group: string };
+
+export const STEPS_ENVIRONMENT_META: symbol = Symbol.for(
+	"autometa.runner.steps.environment.meta"
+);
+
 type WorldInheritanceMetadata = ReadonlySet<PropertyKey>;
 
 type WorldFactoryWithInheritance<World> = WorldFactory<World> & {
@@ -204,6 +212,51 @@ export interface RunnerBuilder<
 	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes,
 	Facets extends Record<string, unknown> = DefaultEnsureFacets
 > {
+	/**
+	 * Creates an isolated copy of this builder.
+	 *
+	 * This is the foundation for per-group/per-domain runner environments.
+	 *
+	 * Notes:
+	 * - Caches are cleared on the fork.
+	 * - Factories (world/app) are copied by reference.
+	 */
+	fork(): DerivableRunnerBuilder<World, ExpressionTypes, Facets>;
+
+	/**
+	 * Enables group-based derivation on this builder.
+	 *
+	 * This is primarily a typing affordance; it does not change runtime behavior.
+	 */
+	derivable(): DerivableRunnerBuilder<World, ExpressionTypes, Facets>;
+
+	/**
+	 * Returns (and caches) a derived builder for a given group/domain key.
+	 *
+	 * The derived builder is a fork taken at first access.
+	 */
+	group(key: string): DerivableRunnerBuilder<World, ExpressionTypes, Facets>;
+
+	/**
+	 * Composes a world factory on top of the current world.
+	 *
+	 * The resulting world is a shallow merge of (baseWorld, extensionWorld), with
+	 * extension keys taking precedence.
+	 */
+	extendWorld<ExtensionWorld = Record<string, unknown>>(
+		value?: Partial<ExtensionWorld> | WorldFactory<ExtensionWorld>
+	): RunnerBuilder<World & ExtensionWorld, ExpressionTypes, DefaultEnsureFacets>;
+
+	/**
+	 * Extends application configuration while preserving the existing app factory.
+	 *
+	 * App factories are executed in sequence; later factories may override the
+	 * application instance by returning/registering a different app.
+	 */
+	extendApp<App>(
+		app: AppFactoryInput<World, App>
+	): RunnerBuilder<WorldWithApp<World, App>, ExpressionTypes, DefaultEnsureFacets>;
+
 	configure(
 		update:
 			| Partial<RunnerContextOptions<World>>
@@ -271,6 +324,12 @@ export interface RunnerBuilder<
 	bindingsTS(): RunnerBindingsSurface<World>;
 }
 
+export type DerivableRunnerBuilder<
+	World,
+	ExpressionTypes extends CucumberExpressionTypeMap = DefaultCucumberExpressionTypes,
+	Facets extends Record<string, unknown> = DefaultEnsureFacets
+> = RunnerBuilder<World, ExpressionTypes, Facets>;
+
 export type RunnerCoordinateFeatureOptions<World> = Omit<
 	CoordinateRunnerFeatureOptions<World>,
 	"environment"
@@ -281,10 +340,12 @@ interface BuilderState {
 	worldFactory?: WorldFactory<unknown>;
 	appFactory?: AppFactory<unknown, unknown>;
 	ensureFactory?: RunnerEnsureFactory<unknown, Record<string, unknown>>;
+	stepsEnvironmentMeta?: StepsEnvironmentMeta;
 	stepsCache?: StepsCache;
 	decoratorsCache?: DecoratorsCache;
 	bindingsTSCache?: BindingsTSCache;
 	featureRegistry?: FeatureRegistry;
+	derivedBuilders?: Map<string, BuilderState>;
 }
 
 interface StepsCache {
@@ -328,6 +389,153 @@ class RunnerBuilderImpl<
 	Facets extends Record<string, unknown>
 > implements RunnerBuilder<World, ExpressionTypes, Facets> {
 	constructor(private readonly state: BuilderState) {}
+
+	fork(): DerivableRunnerBuilder<World, ExpressionTypes, Facets> {
+		const next = cloneBuilderState(this.state);
+		return new RunnerBuilderImpl<World, ExpressionTypes, Facets>(next);
+	}
+
+	derivable(): DerivableRunnerBuilder<World, ExpressionTypes, Facets> {
+		if (!this.state.derivedBuilders) {
+			this.state.derivedBuilders = new Map();
+		}
+		return this as unknown as DerivableRunnerBuilder<World, ExpressionTypes, Facets>;
+	}
+
+	group(key: string): DerivableRunnerBuilder<World, ExpressionTypes, Facets> {
+		const trimmed = key.trim();
+		if (!trimmed) {
+			throw new Error("group key must be a non-empty string");
+		}
+		if (!this.state.derivedBuilders) {
+			this.state.derivedBuilders = new Map();
+		}
+		const existing = this.state.derivedBuilders.get(trimmed);
+		if (existing) {
+			return new RunnerBuilderImpl<World, ExpressionTypes, Facets>(existing);
+		}
+		const derived = cloneBuilderState(this.state);
+		derived.stepsEnvironmentMeta = { kind: "group", group: trimmed };
+		this.state.derivedBuilders.set(trimmed, derived);
+		return new RunnerBuilderImpl<World, ExpressionTypes, Facets>(derived);
+	}
+
+	extendWorld<ExtensionWorld = Record<string, unknown>>(
+		value?: Partial<ExtensionWorld> | WorldFactory<ExtensionWorld>
+	): RunnerBuilder<World & ExtensionWorld, ExpressionTypes, DefaultEnsureFacets> {
+		const baseFactory = this.state.worldFactory as WorldFactory<World> | undefined;
+		const extensionFactory: WorldFactory<ExtensionWorld> =
+			typeof value === "function"
+				? (normalizeWorldFactory<ExtensionWorld>(
+					value as
+						| WorldFactory<ExtensionWorld>
+						| (() => ExtensionWorld | Promise<ExtensionWorld>)
+				) as WorldFactory<ExtensionWorld>)
+				: value
+					? (createDefaultsWorldFactory(ensureWorldDefaults(value)) as unknown as WorldFactory<ExtensionWorld>)
+					: (async () => ({} as ExtensionWorld));
+
+		const baseInheritance = getWorldInheritance(baseFactory as WorldFactory<unknown> | undefined);
+		const extensionInheritance = getWorldInheritance(extensionFactory as WorldFactory<unknown> | undefined);
+		const inheritance =
+			baseInheritance || extensionInheritance
+				? new Set<PropertyKey>([
+					...(baseInheritance ? Array.from(baseInheritance) : []),
+					...(extensionInheritance ? Array.from(extensionInheritance) : []),
+				])
+				: undefined;
+
+		const merged: WorldFactoryWithInheritance<World & ExtensionWorld> = async (
+			context: WorldFactoryContext<World & ExtensionWorld>
+		) => {
+			const base = baseFactory
+				? await (baseFactory as WorldFactory<unknown>)(context as unknown as WorldFactoryContext<unknown>)
+				: ({} as unknown);
+			const extension = await (extensionFactory as WorldFactory<unknown>)(
+				context as unknown as WorldFactoryContext<unknown>
+			);
+			const baseObj = ensureWorldObject(base);
+			const extObj = ensureWorldObject(extension);
+			return { ...baseObj, ...extObj } as World & ExtensionWorld;
+		};
+		if (inheritance && inheritance.size > 0) {
+			Object.defineProperty(merged, WORLD_INHERIT_KEYS, {
+				value: inheritance,
+				writable: false,
+				enumerable: false,
+				configurable: false,
+			});
+		}
+
+		this.state.worldFactory = merged as unknown as WorldFactory<unknown>;
+		delete this.state.ensureFactory;
+		invalidateCaches(this.state);
+		return new RunnerBuilderImpl<
+			World & ExtensionWorld,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>(this.state) as unknown as RunnerBuilder<
+			World & ExtensionWorld,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>;
+	}
+
+	extendApp<App>(
+		app: AppFactoryInput<World, App>
+	): RunnerBuilder<WorldWithApp<World, App>, ExpressionTypes, DefaultEnsureFacets> {
+		const next = normalizeAppFactory<World, App>(app) as AppFactory<unknown, unknown>;
+		const previous = this.state.appFactory;
+
+		const chained: AppFactory<unknown, unknown> = async (context) => {
+			let currentApp: unknown;
+
+			const readRegisteredApp = (): unknown => {
+				const anyContext = context as unknown as { getRegisteredApp?: () => unknown };
+				return typeof anyContext.getRegisteredApp === "function"
+					? anyContext.getRegisteredApp()
+					: undefined;
+			};
+
+			const updateWorldApp = (value: unknown): void => {
+				if (!value) {
+					return;
+				}
+				const world = (context as unknown as { world?: unknown }).world;
+				if (world && typeof world === "object") {
+					(world as Record<string, unknown>).app = value;
+				}
+			};
+
+			if (previous) {
+				const result = await previous(context as unknown as AppFactoryContext<unknown>);
+				currentApp = result ?? readRegisteredApp();
+				updateWorldApp(currentApp);
+			}
+
+			const nextResult = await next(context as unknown as AppFactoryContext<unknown>);
+			const nextApp = nextResult ?? readRegisteredApp();
+			if (nextApp !== undefined) {
+				currentApp = nextApp;
+				updateWorldApp(currentApp);
+			}
+
+			return currentApp as unknown;
+		};
+
+		this.state.appFactory = chained;
+		delete this.state.ensureFactory;
+		invalidateCaches(this.state);
+		return new RunnerBuilderImpl<
+			WorldWithApp<World, App>,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>(this.state) as unknown as RunnerBuilder<
+			WorldWithApp<World, App>,
+			ExpressionTypes,
+			DefaultEnsureFacets
+		>;
+	}
 
 	configure(
 		update:
@@ -473,12 +681,16 @@ function initializeState<World>(
 	initial?: Partial<RunnerContextOptions<World>>
 ): BuilderState {
 	if (!initial) {
-		return { options: {} as MutableRunnerContextOptions<unknown> };
+		return {
+			options: {} as MutableRunnerContextOptions<unknown>,
+			stepsEnvironmentMeta: { kind: "root" },
+		};
 	}
 
 	const { worldFactory, ...rest } = initial;
 	const state: BuilderState = {
 		options: { ...rest } as MutableRunnerContextOptions<unknown>,
+		stepsEnvironmentMeta: { kind: "root" },
 	};
 
 	if (worldFactory) {
@@ -489,6 +701,27 @@ function initializeState<World>(
 		);
 	}
 	return state;
+}
+
+function cloneBuilderState(source: BuilderState): BuilderState {
+	const next: BuilderState = {
+		options: cloneWithFallback(source.options),
+	};
+	if (source.stepsEnvironmentMeta) {
+		next.stepsEnvironmentMeta = source.stepsEnvironmentMeta;
+	}
+	if (source.worldFactory) {
+		next.worldFactory = source.worldFactory;
+	}
+	if (source.appFactory) {
+		next.appFactory = source.appFactory;
+	}
+	if (source.ensureFactory) {
+		next.ensureFactory = source.ensureFactory;
+	}
+	// caches intentionally dropped
+	// derived builders are intentionally not shared across forks
+	return next;
 }
 
 function collectCurrentOptions<World>(
@@ -658,6 +891,16 @@ function ensureSteps<
 			globals,
 			ensureFactory
 		);
+		try {
+			Object.defineProperty(surface as object, STEPS_ENVIRONMENT_META, {
+				value: state.stepsEnvironmentMeta ?? { kind: "root" },
+				writable: false,
+				enumerable: false,
+				configurable: false,
+			});
+		} catch {
+			// Best-effort only. This metadata is purely for environment selection.
+		}
 		cache = {
 			environment: environment as RunnerEnvironment<
 				unknown,

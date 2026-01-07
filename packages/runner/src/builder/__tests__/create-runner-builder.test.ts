@@ -17,6 +17,7 @@ import { WORLD_TOKEN } from "../../tokens";
 import {
 	App,
 	createRunnerBuilder,
+	STEPS_ENVIRONMENT_META,
 	WORLD_INHERIT_KEYS,
 	type RunnerStepsSurface,
 	type RunnerCoordinateFeatureOptions,
@@ -250,6 +251,97 @@ describe("createRunnerBuilder", () => {
 		const world = worldFactory ? await worldFactory({ scope }) : undefined;
 		expect(world?.app).toBeInstanceOf(App);
 		expect(world?.app.memory.getWorldValue()).toBe(7);
+	});
+
+	it("fork creates an isolated builder state", () => {
+		const base = createRunnerBuilder<BaseWorld>().withWorld({ value: 1 });
+		const forked = base.fork().withWorld({ value: 2 });
+
+		const baseSteps = base.steps();
+		const forkSteps = forked.steps();
+
+		// Step registries should be isolated.
+		baseSteps.given("base step", (world: BaseWorld) => {
+			world.value += 1;
+		});
+		forkSteps.given("fork step", (world: BaseWorld) => {
+			world.value += 1;
+		});
+		const basePlanAfter = baseSteps.getPlan();
+		const forkPlanAfter = forkSteps.getPlan();
+		expect(basePlanAfter.stepsById.size).toBe(1);
+		expect(forkPlanAfter.stepsById.size).toBe(1);
+
+		// World defaults differ.
+		expectTypeOf(basePlanAfter.worldFactory).toEqualTypeOf<WorldFactory<BaseWorld> | undefined>();
+		expectTypeOf(forkPlanAfter.worldFactory).toEqualTypeOf<WorldFactory<BaseWorld> | undefined>();
+	});
+
+	it("derivable/group caches derived builders", () => {
+		const root = createRunnerBuilder<BaseWorld>().derivable();
+		const a1 = root.group("backoffice");
+		const a2 = root.group("backoffice");
+
+		expect(a1.steps()).toBe(a2.steps());
+		expect(
+			(a1.steps() as unknown as Record<PropertyKey, unknown>)[STEPS_ENVIRONMENT_META]
+		).toMatchObject({ kind: "group", group: "backoffice" });
+
+		// Changing the derived builder should persist across group() calls.
+		const steps = a1.steps();
+		steps.given("group step", (world: BaseWorld) => {
+			world.value += 1;
+		});
+		expect(a2.steps().getPlan().stepsById.size).toBe(1);
+	});
+
+	it("extendWorld composes base + extension (extension wins)", async () => {
+		interface Base extends BaseWorld {
+			readonly baseOnly: string;
+		}
+		interface Local {
+			readonly localOnly: number;
+			readonly baseOnly: string;
+		}
+
+		const builder = createRunnerBuilder<Base>()
+			.withWorld<Base>({ value: 1, baseOnly: "base" })
+			.extendWorld<Local>({ localOnly: 123, baseOnly: "local" });
+
+		const plan = builder.steps().getPlan();
+		const worldFactory = plan.worldFactory;
+		expect(worldFactory).toBeDefined();
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = worldFactory ? await worldFactory({ scope }) : undefined;
+		expect(world).toMatchObject({ value: 1, baseOnly: "local", localOnly: 123 });
+	});
+
+	it("extendApp chains factories and allows override", async () => {
+		interface World extends BaseWorld {
+			readonly app: { readonly name: string };
+		}
+
+		let sawBaseApp = false;
+
+		const builder = createRunnerBuilder<World>({
+			worldFactory: async () => ({ value: 1 } as World),
+		})
+			.app(() => ({ name: "base" }))
+			.extendApp((context) => {
+				const current = (context.world as unknown as { app?: { name: string } }).app;
+				if (current?.name === "base") {
+					sawBaseApp = true;
+				}
+				return { name: "derived" };
+			});
+
+		const plan = builder.steps().getPlan();
+		const worldFactory = plan.worldFactory;
+		expect(worldFactory).toBeDefined();
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = worldFactory ? await worldFactory({ scope }) : undefined;
+		expect(sawBaseApp).toBe(true);
+		expect(world).toMatchObject({ value: 1, app: { name: "derived" } });
 	});
 
 	it("provides composition helper for quick app wiring", async () => {

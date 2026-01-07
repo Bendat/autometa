@@ -33,7 +33,14 @@ If you intentionally want a hoisted feature file to behave as-if it belongs to a
 
 ## Layout
 
-- Shared step environment: `src/autometa/steps.ts`
+- Root step environment: `src/autometa/root.steps.ts`
+- Group step environments:
+  - `src/groups/brew-buddy/autometa.steps.ts`
+  - `src/groups/backoffice/autometa.steps.ts`
+
+Common steps are registered via an installer:
+
+- `src/autometa/common.steps.ts` (installed into each environment)
 - Group roots:
   - `src/groups/brew-buddy/*`
   - `src/groups/backoffice/*`

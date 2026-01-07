@@ -1,20 +1,8 @@
-import { CucumberRunner } from "@autometa/runner";
-
-export interface ModuleTestWorld {
-  readonly state: Record<string, unknown>;
-}
-
-export const worldDefaults: ModuleTestWorld = {
-  state: {},
-};
-
-const runner = CucumberRunner.builder().withWorld<ModuleTestWorld>(worldDefaults);
-
 /**
- * Exported surface for Autometa to discover.
+ * @deprecated
+ * This example now uses per-group step environments.
  *
- * Convention: keep this export name stable.
+ * - Root steps: `src/autometa/root.steps.ts`
+ * - Group steps: `src/groups/<group>/autometa.steps.ts`
  */
-export const stepsEnvironment = runner.steps();
-
-export const { Given, When, Then, And, But, ensure } = stepsEnvironment;
+export * from "./root.steps";

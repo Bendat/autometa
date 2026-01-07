@@ -95,10 +95,11 @@ export function autometa(): Plugin {
 
         const runtimeConfig = JSON.stringify(resolved.config);
         const stepScopingMode = resolved.config.modules?.stepScoping ?? "global";
-        const stepScopingData =
-          stepScopingMode === "scoped"
-            ? buildStepScopingData(resolved.config, rootDir)
-            : null;
+
+        // Group/module index data is useful even when step scoping is disabled,
+        // since we may need it to select the correct steps environment.
+        const groupIndexData = buildStepScopingData(resolved.config, rootDir);
+        const stepScopingData = stepScopingMode === "scoped" ? groupIndexData : null;
 
         const featureFile = id;
 
@@ -106,11 +107,12 @@ export function autometa(): Plugin {
           code: `
             import { describe } from 'vitest';
             import { execute } from '@autometa/vitest-executor';
-            import { coordinateRunnerFeature, CucumberRunner } from '@autometa/runner';
+            import { coordinateRunnerFeature, CucumberRunner, STEPS_ENVIRONMENT_META } from '@autometa/runner';
             import { parseGherkin } from '@autometa/gherkin';
-            import { relative as __pathRelative } from 'node:path';
+            import { relative as __pathRelative, resolve as __pathResolve, isAbsolute as __pathIsAbsolute } from 'node:path';
 
             const __AUTOMETA_STEP_SCOPING_MODE = ${JSON.stringify(stepScopingMode)};
+            const __AUTOMETA_GROUP_INDEX = ${JSON.stringify(groupIndexData)};
             const __AUTOMETA_STEP_SCOPING = ${JSON.stringify(stepScopingData)};
             const __AUTOMETA_FEATURE_FILE = ${JSON.stringify(featureFile)};
 
@@ -159,38 +161,159 @@ export function autometa(): Plugin {
               );
             }
 
-            function extractStepsEnvironment(candidate) {
+            function extractStepsEnvironments(candidate) {
+              const environments = [];
+
               if (!candidate || typeof candidate !== 'object') {
-                return undefined;
+                return environments;
               }
 
               if (isStepsEnvironment(candidate)) {
-                return candidate;
+                environments.push(candidate);
               }
 
               const stepsEnv = candidate.stepsEnvironment;
               if (isStepsEnvironment(stepsEnv)) {
-                return stepsEnv;
+                environments.push(stepsEnv);
               }
 
               const defaultExport = candidate.default;
               if (isStepsEnvironment(defaultExport)) {
-                return defaultExport;
+                environments.push(defaultExport);
               }
 
-              return undefined;
+              return environments;
             }
 
-            function resolveStepsEnvironment(modules) {
+            function collectStepsEnvironments(modules) {
+              const environments = new Set();
               for (const moduleExports of Object.values(modules)) {
                 for (const candidate of collectCandidateModules(moduleExports)) {
-                  const environment = extractStepsEnvironment(candidate);
-                  if (environment) {
-                    return environment;
+                  for (const env of extractStepsEnvironments(candidate)) {
+                    environments.add(env);
                   }
                 }
               }
+              return Array.from(environments);
+            }
+
+            function __normalizePathSegments(input) {
+              return String(input).replace(/\\/g, '/').split('/').filter(Boolean);
+            }
+
+            function __startsWithSegments(haystack, needle) {
+              if (needle.length > haystack.length) return false;
+              for (let i = 0; i < needle.length; i += 1) {
+                if (haystack[i] !== needle[i]) return false;
+              }
+              return true;
+            }
+
+            function __resolveFileScope(fileAbs) {
+              if (!__AUTOMETA_GROUP_INDEX || !__AUTOMETA_GROUP_INDEX.groups) {
+                return { kind: 'root' };
+              }
+              if (String(fileAbs).startsWith('node:')) {
+                return { kind: 'root' };
+              }
+
+              const absoluteFile = __pathIsAbsolute(String(fileAbs))
+                ? String(fileAbs)
+                : __pathResolve(process.cwd(), String(fileAbs));
+
+              for (const entry of __AUTOMETA_GROUP_INDEX.groups) {
+                const rootAbs = entry.rootAbs;
+                const rel = rootAbs ? __pathRelative(rootAbs, absoluteFile) : '';
+                if (rel === '' || (!rel.startsWith('..') && !rel.startsWith('../') && !rel.startsWith('..\\'))) {
+                  const segments = __normalizePathSegments(rel);
+                  const modulePaths = entry.modulePaths || [];
+                  for (const modulePath of modulePaths) {
+                    if (__startsWithSegments(segments, modulePath)) {
+                      return { kind: 'module', group: entry.group, modulePath };
+                    }
+                  }
+                  return { kind: 'group', group: entry.group };
+                }
+              }
+              return { kind: 'root' };
+            }
+
+            function __parseScopeOverrideTag(tags) {
+              if (!Array.isArray(tags)) return undefined;
+              for (const tag of tags) {
+                const match = String(tag).match(/^@scope(?::|=|\()(.+?)(?:\))?$/u);
+                if (!match) continue;
+                const raw = String(match[1] ?? '').trim();
+                if (!raw) continue;
+                const normalized = raw.replace(/\//g, ':');
+                const parts = normalized.split(':').filter(Boolean);
+                const group = parts[0];
+                const rest = parts.slice(1);
+                if (!group) continue;
+                return rest.length > 0 ? { group, modulePath: rest } : { group };
+              }
               return undefined;
+            }
+
+            function __resolveFeatureScope(feature) {
+              const override = __parseScopeOverrideTag(feature.tags);
+              if (override) {
+                if (override.modulePath && override.modulePath.length > 0) {
+                  return { kind: 'module', group: override.group, modulePath: override.modulePath };
+                }
+                return { kind: 'group', group: override.group };
+              }
+              return __resolveFileScope(__AUTOMETA_FEATURE_FILE);
+            }
+
+            function __inferEnvironmentGroup(environment) {
+              const meta = environment && typeof environment === 'object'
+                ? environment[STEPS_ENVIRONMENT_META]
+                : undefined;
+              if (meta && typeof meta === 'object') {
+                if (meta.kind === 'group' && typeof meta.group === 'string' && meta.group.trim().length > 0) {
+                  return { kind: 'group', group: meta.group };
+                }
+                if (meta.kind === 'root') {
+                  return { kind: 'root' };
+                }
+              }
+
+              const plan = environment.getPlan();
+              const groups = new Set();
+              for (const def of plan.stepsById.values()) {
+                const file = def && def.source ? def.source.file : undefined;
+                if (!file) continue;
+                const scope = __resolveFileScope(file);
+                if (scope.kind === 'group' || scope.kind === 'module') {
+                  groups.add(scope.group);
+                  if (groups.size > 1) return { kind: 'ambiguous' };
+                }
+              }
+              const only = Array.from(groups.values())[0];
+              return only ? { kind: 'group', group: only } : { kind: 'root' };
+            }
+
+            function selectStepsEnvironment(environments, feature) {
+              if (!Array.isArray(environments) || environments.length === 0) {
+                return undefined;
+              }
+              if (environments.length === 1) {
+                return environments[0];
+              }
+
+              const featureScope = __resolveFeatureScope(feature);
+              const indexed = environments
+                .map((env) => ({ env, inferred: __inferEnvironmentGroup(env) }))
+                .filter((entry) => entry.inferred.kind !== 'ambiguous');
+
+              if (featureScope.kind === 'root') {
+                const root = indexed.find((entry) => entry.inferred.kind === 'root');
+                return (root ? root.env : indexed[0]?.env) ?? environments[0];
+              }
+
+              const match = indexed.find((entry) => entry.inferred.kind === 'group' && entry.inferred.group === featureScope.group);
+              return match ? match.env : undefined;
             }
 
             function isScenario(element) {
@@ -243,9 +366,14 @@ export function autometa(): Plugin {
                 if (String(fileAbs).startsWith('node:')) {
                   return { kind: 'root' };
                 }
+
+                const absoluteFile = __pathIsAbsolute(String(fileAbs))
+                  ? String(fileAbs)
+                  : __pathResolve(process.cwd(), String(fileAbs));
+
                 for (const entry of __AUTOMETA_STEP_SCOPING.groups) {
                   const rootAbs = entry.rootAbs;
-                  const rel = rootAbs && fileAbs ? __pathRelative(rootAbs, fileAbs) : '';
+                  const rel = rootAbs ? __pathRelative(rootAbs, absoluteFile) : '';
                   if (rel === '' || (!rel.startsWith('..') && !rel.startsWith('../') && !rel.startsWith('..\\\\'))) {
                     const segments = normalizePathSegments(rel);
                     const modulePaths = entry.modulePaths || [];
@@ -438,10 +566,11 @@ export function autometa(): Plugin {
 
             const gherkin = ${JSON.stringify(code)};
             const feature = parseGherkin(gherkin);
-            const steps = resolveStepsEnvironment(stepModules);
+            const environments = collectStepsEnvironments(stepModules);
+            const steps = selectStepsEnvironment(environments, feature);
 
             if (!steps) {
-              throw new Error('Autometa could not find an exported steps environment for the configured step roots. Export your runner environment as "stepsEnvironment" or default.');
+              throw new Error('Autometa could not find a steps environment for this feature. If you are using per-group environments, ensure each group exports a steps environment ("stepsEnvironment" or default export) under the configured step roots.');
             }
 
             CucumberRunner.setSteps(steps);

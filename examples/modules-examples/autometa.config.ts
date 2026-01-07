@@ -5,7 +5,10 @@ export default defineConfig({
     runner: "vitest",
     roots: {
       features: ["src/features/**/*.feature"],
-      steps: ["src/autometa/steps.ts"],
+      steps: [
+        "src/autometa/root.steps.ts",
+        "src/groups/**/autometa.steps.ts",
+      ],
     },
     modules: {
       stepScoping: "scoped",

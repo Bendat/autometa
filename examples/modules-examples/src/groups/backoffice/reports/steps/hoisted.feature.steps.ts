@@ -1,9 +1,9 @@
-import { Given, Then, ensure, type ModuleTestWorld } from "../../../../autometa/steps";
+import { Given, Then, ensure, type BaseWorld } from "../../autometa.steps";
 
-Given("the grouped steps are loaded", (world: ModuleTestWorld) => {
+Given("the grouped steps are loaded", (world: BaseWorld) => {
   world.state["grouped:seen"] = true;
 });
 
-Then("the grouped step should run", (world: ModuleTestWorld) => {
+Then("the grouped step should run", (world: BaseWorld) => {
   ensure(world.state["grouped:seen"]).toStrictEqual(true);
 });
