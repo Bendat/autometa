@@ -129,6 +129,43 @@ describe("runFeatures", () => {
     expect(compileModulesMock).not.toHaveBeenCalled();
   });
 
+  it("passes module and group filters to the config loader", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["features"],
+        steps: ["steps"],
+      },
+    };
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+    expandFilePatternsMock.mockResolvedValue([]);
+
+    await expect(
+      runFeatures({
+        cwd,
+        mode: "standalone",
+        groups: ["backoffice"],
+        modules: ["orders:cancellations"],
+      })
+    ).rejects.toThrowError('No feature files found for patterns: "features"');
+
+    expect(loadExecutorConfigMock).toHaveBeenCalledWith(cwd, {
+      cacheDir,
+      groups: ["backoffice"],
+      modules: ["orders:cancellations"],
+    });
+  });
+
   it("configures reporter buffering from executor config", async () => {
     const executorConfig: ExecutorConfig = {
       runner: "vitest",

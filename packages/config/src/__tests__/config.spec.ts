@@ -387,6 +387,74 @@ describe("defineConfig", () => {
     );
   });
 
+  it("allows hoisted features while expanding only module-relative steps", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features/**/*.feature"],
+          steps: ["src/autometa/steps.ts"],
+        },
+        modules: {
+          relativeRoots: {
+            steps: ["steps/**/*.steps.ts"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["backoffice"], modules: ["reports"] });
+
+    // Features are hoisted (no module-relative features configured)
+    expect(resolved.config.roots.features).toEqual(["features/**/*.feature"]);
+
+    // Steps are module-expanded and then existing steps are preserved
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/backoffice/reports/steps/**/*.steps.ts",
+      "src/autometa/steps.ts",
+    ]);
+  });
+
+  it("combines hoisted and module-relative features when both are configured", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features/**/*.feature"],
+          steps: ["steps/**/*.steps.ts"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features/**/*.feature"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["backoffice"], modules: ["reports"] });
+
+    // Module-expanded features are prepended, hoisted features remain
+    expect(resolved.config.roots.features).toEqual([
+      "apps/backoffice/reports/.features/**/*.feature",
+      "features/**/*.feature",
+    ]);
+
+    // Steps remain hoisted
+    expect(resolved.config.roots.steps).toEqual(["steps/**/*.steps.ts"]);
+  });
+
   it("merges reporter buffering preferences", () => {
     const config = defineConfig({
       default: {
