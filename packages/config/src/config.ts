@@ -168,10 +168,22 @@ const expandModules = (
   }
 
   const relativeRoots = modulesConfig.relativeRoots;
-  if (!relativeRoots || Object.keys(relativeRoots).length === 0) {
-    throw new AutomationError(
-      'When "modules" is provided, "relativeRoots" must include at least one entry.'
-    );
+  const hasRelativeRoots = !!relativeRoots && Object.keys(relativeRoots).length > 0;
+  if (!hasRelativeRoots) {
+    const hasFilters =
+      (moduleFilters?.some((m) => m.trim().length > 0) ?? false) ||
+      (groupFilters?.some((g) => g.trim().length > 0) ?? false);
+
+    // Allow "modules" to act as a module registry even when everything is hoisted,
+    // but fail fast if the user provided filters expecting module expansion.
+    if (hasFilters) {
+      throw new AutomationError(
+        'Module filters were provided, but "modules.relativeRoots" is not configured. ' +
+          'Configure at least one relative root (e.g. { steps: ["steps/**/*.ts"] }) or remove -m/-g.'
+      );
+    }
+
+    return config;
   }
 
   const moduleEntries = collectModuleEntries(modulesConfig);
@@ -702,9 +714,11 @@ const cloneGroups = (
 };
 
 const cloneModules = (modules: ModulesConfig): ModulesConfig => {
-  const clone: ModulesConfig = {
-    relativeRoots: cloneRootRecord(modules.relativeRoots),
-  };
+  const clone: ModulesConfig = {};
+
+  if (modules.relativeRoots) {
+    clone.relativeRoots = cloneRootRecord(modules.relativeRoots);
+  }
 
   if (modules.groups) {
     clone.groups = cloneGroups(modules.groups);

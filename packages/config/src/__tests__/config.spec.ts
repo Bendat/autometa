@@ -339,6 +339,54 @@ describe("defineConfig", () => {
     ]);
   });
 
+  it("allows modules groups without relativeRoots (hoisted discovery)", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve();
+    expect(resolved.config.roots.features).toEqual(["features"]);
+    expect(resolved.config.roots.steps).toEqual(["steps"]);
+  });
+
+  it("throws when module filters are used without relativeRoots", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => config.resolve({ groups: ["backoffice"], modules: ["reports"] })).toThrowError(
+      AutomationError
+    );
+  });
+
   it("merges reporter buffering preferences", () => {
     const config = defineConfig({
       default: {
