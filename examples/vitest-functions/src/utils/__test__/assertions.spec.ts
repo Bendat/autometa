@@ -44,15 +44,26 @@ describe("assertions utils", () => {
   describe("brewBuddyPlugins", () => {
     describe("json", () => {
       it("validates json paths", () => {
-        const ensureMock = vi.fn().mockReturnValue({
-          toBeDefined: vi.fn().mockReturnThis(),
-          value: { a: 1, b: "test" },
-          toEqual: vi.fn(),
-        });
+        const ensureMock = Object.assign(
+          vi.fn().mockReturnValue({
+            toBeDefined: vi.fn().mockReturnThis(),
+            value: { a: 1, b: "test" },
+            toEqual: vi.fn(),
+            toStrictEqual: vi.fn(),
+            toBeTruthy: vi.fn(),
+            toBeInstanceOf: vi.fn().mockReturnThis(),
+          }),
+          {
+            always: vi.fn().mockReturnValue({
+              toBeDefined: vi.fn().mockReturnThis(),
+              value: { a: 1, b: "test" },
+            }),
+          }
+        );
         
         const world = { app: { lastResponseBody: { a: 1, b: "test" } } } as unknown as BrewBuddyWorld;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const plugin = brewBuddyPlugins.json({ ensure: ensureMock as any });
+        const plugin = brewBuddyPlugins.json({ ensure: ensureMock as any, isNot: false });
         const assertions = plugin(world);
 
         assertions.contains([{ path: "a", value: 1 }]);
@@ -61,16 +72,26 @@ describe("assertions utils", () => {
       });
 
       it("validates timestamp placeholder", () => {
-        const ensureMock = vi.fn().mockReturnValue({
-          toBeDefined: vi.fn().mockReturnThis(),
-          value: { created: "2023-01-01" },
-          toStrictEqual: vi.fn(),
-          toBeTruthy: vi.fn(),
-        });
+        const ensureMock = Object.assign(
+          vi.fn().mockReturnValue({
+            toBeDefined: vi.fn().mockReturnThis(),
+            value: { created: "2023-01-01" },
+            toStrictEqual: vi.fn(),
+            toBeTruthy: vi.fn(),
+            toEqual: vi.fn(),
+            toBeInstanceOf: vi.fn().mockReturnThis(),
+          }),
+          {
+            always: vi.fn().mockReturnValue({
+              toBeDefined: vi.fn().mockReturnThis(),
+              value: { created: "2023-01-01" },
+            }),
+          }
+        );
 
         const world = { app: { lastResponseBody: { created: "2023-01-01" } } } as unknown as BrewBuddyWorld;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const plugin = brewBuddyPlugins.json({ ensure: ensureMock as any });
+        const plugin = brewBuddyPlugins.json({ ensure: ensureMock as any, isNot: false });
         const assertions = plugin(world);
 
         assertions.contains([{ path: "created", value: { __placeholder: "timestamp" } }]);

@@ -14,7 +14,7 @@ const runner = baseRunner
   brewBuddy: { seen: [] },
   })
   .extendApp(
-    App.compositionRoot<BaseWorld & BrewBuddyWorld, BrewBuddyApp>(BrewBuddyApp, {
+    App.compositionRoot<typeof BrewBuddyApp, BaseWorld & BrewBuddyWorld>(BrewBuddyApp, {
       deps: [BrewBuddyService],
       setup: (compose) => {
         compose.registerClass(BrewBuddyService);

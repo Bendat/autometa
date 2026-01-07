@@ -35,8 +35,8 @@ export function registerBrewBuddyServices(
 }
 
 export const CompositionRoot = App.compositionRoot<
-  BrewBuddyWorldBase,
-  BrewBuddyClient
+  typeof BrewBuddyClient,
+  BrewBuddyWorldBase
 >(BrewBuddyClient, {
   deps: [HTTP_CLIENT, BrewBuddyMemoryService],
   setup: registerBrewBuddyServices,

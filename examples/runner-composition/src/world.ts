@@ -63,8 +63,13 @@ export const runnerCompositionWorldDefaults = {
   scenario: createScenarioState(),
   lifecycle: createLifecycleMetrics(),
   features: [] as SimpleFeature[],
-
-  // Share lifecycle metrics across nested scopes (feature -> scenario) so that
-  // feature hooks can record data that step definitions can later assert on.
-  [WORLD_INHERIT_KEYS]: ["lifecycle"],
 } satisfies Omit<RunnerCompositionWorldBase, "runtime">;
+
+// Share lifecycle metrics across nested scopes (feature -> scenario) so that
+// feature hooks can record data that step definitions can later assert on.
+Object.defineProperty(runnerCompositionWorldDefaults, WORLD_INHERIT_KEYS, {
+  value: ["lifecycle"] satisfies readonly (keyof RunnerCompositionWorldBase)[],
+  writable: false,
+  enumerable: false,
+  configurable: true,
+});
