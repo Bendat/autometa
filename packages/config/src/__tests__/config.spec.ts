@@ -263,6 +263,82 @@ describe("defineConfig", () => {
     expect(() => config.resolve({ modules: ["api"] })).toThrowError(AutomationError);
   });
 
+  it("supports nested module declarations and deep module selectors", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: [
+                "reports",
+                {
+                  name: "orders",
+                  submodules: ["cancellations"],
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["backoffice"], modules: ["orders:cancellations"] });
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/backoffice/orders/cancellations/.features",
+      "features",
+    ]);
+
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/backoffice/orders/cancellations/steps",
+      "steps",
+    ]);
+  });
+
+  it("supports exact deep selectors using group:module:submodule", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: [{ name: "orders", submodules: ["cancellations"] }],
+            },
+            backoffice: {
+              root: "apps/backoffice",
+              modules: [{ name: "orders", submodules: ["cancellations"] }],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ modules: ["backoffice:orders:cancellations"] });
+    expect(resolved.config.roots.features).toEqual([
+      "apps/backoffice/orders/cancellations/.features",
+      "features",
+    ]);
+  });
+
   it("merges reporter buffering preferences", () => {
     const config = defineConfig({
       default: {

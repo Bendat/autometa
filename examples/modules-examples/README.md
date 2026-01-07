@@ -20,6 +20,10 @@ Each module directory contains:
 - `.features/**/*.feature`
 - `steps/**/*.steps.ts`
 
+This example also includes a nested "submodule" under Backoffice:
+
+- `backoffice/orders/cancellations`
+
 ## Try it
 
 From the repo root:
@@ -38,3 +42,10 @@ Because both groups have an `orders` module, `-m orders` is ambiguous unless you
 - `autometa run --standalone -g brew-buddy -m orders`
 - `autometa run --standalone -m brew-buddy/orders`
 - `autometa run --standalone -m backoffice:orders`
+
+### Submodule demo
+
+Because "modules" can be nested by declaring a module path, you can select a submodule using `:` as a path separator:
+
+- `autometa run --standalone -g backoffice -m orders:cancellations`
+- `autometa run --standalone -m backoffice:orders:cancellations`

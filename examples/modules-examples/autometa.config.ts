@@ -19,7 +19,13 @@ export default defineConfig({
         },
         backoffice: {
           root: "src/groups/backoffice",
-          modules: ["reports", "orders"],
+          modules: [
+            "reports",
+            {
+              name: "orders",
+              submodules: ["cancellations"],
+            },
+          ],
         },
       },
     },

@@ -47,8 +47,10 @@ export interface ResolveOptions {
   environment?: string;
   /**
    * Module selectors. Accepted forms:
-   * - "<group>/<module>" or "<group>:<module>" (exact)
-   * - "<module>" (suffix match, must be unambiguous; can be combined with group filters)
+  * - "<group>/<modulePath>" (exact; supports deep paths)
+  * - "<group>:<modulePath>" (exact; supports deep paths via ":" segments)
+  * - "<modulePath>" (suffix/path match, must be unambiguous; can be combined with group filters)
+  *   - Examples: "orders", "orders/cancellations", "orders:cancellations"
    */
   modules?: readonly string[];
   /**

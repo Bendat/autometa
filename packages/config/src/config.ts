@@ -225,6 +225,46 @@ interface ModuleEntry {
   readonly dir: string;
 }
 
+type ModuleDeclaration = NonNullable<NonNullable<ModulesConfig["groups"]>[string]["modules"]>[number];
+
+const flattenModuleDeclarations = (
+  declarations: readonly ModuleDeclaration[],
+  prefix = ""
+): string[] => {
+  const flattened: string[] = [];
+
+  const walk = (items: readonly ModuleDeclaration[], currentPrefix: string): void => {
+    for (const item of items) {
+      if (typeof item === "string") {
+        const name = normalizeSlashes(item.trim()).replace(/^\/+|\/+$/gu, "");
+        if (!name) {
+          continue;
+        }
+        flattened.push(normalizeSlashes(pathPosix.join(currentPrefix, name)));
+        continue;
+      }
+
+      const name = normalizeSlashes(item.name.trim()).replace(/^\/+|\/+$/gu, "");
+      if (!name) {
+        continue;
+      }
+
+      const nextPrefix = normalizeSlashes(pathPosix.join(currentPrefix, name));
+      // Always include the parent module path itself.
+      flattened.push(nextPrefix);
+
+      if (item.submodules && item.submodules.length > 0) {
+        walk(item.submodules as readonly ModuleDeclaration[], nextPrefix);
+      }
+    }
+  };
+
+  const cleanedPrefix = normalizeSlashes(prefix.trim()).replace(/\/+$/u, "");
+  walk(declarations, cleanedPrefix);
+
+  return Array.from(new Set(flattened));
+};
+
 const collectModuleEntries = (modulesConfig: ModulesConfig): ModuleEntry[] => {
   const entries: ModuleEntry[] = [];
   const seen = new Set<string>();
@@ -240,13 +280,16 @@ const collectModuleEntries = (modulesConfig: ModulesConfig): ModuleEntry[] => {
       continue;
     }
 
-    for (const moduleNameRaw of group.modules) {
-      const moduleName = moduleNameRaw.trim();
-      if (!moduleName) {
+    const modulePaths = flattenModuleDeclarations(group.modules);
+
+    for (const modulePath of modulePaths) {
+      const cleaned = normalizeSlashes(modulePath.trim()).replace(/^\/+|\/+$/gu, "");
+      if (!cleaned) {
         continue;
       }
-      const dir = normalizeSlashes(pathPosix.join(root, moduleName));
-      const id = `${normalizedGroupId}/${moduleName}`;
+
+      const dir = normalizeSlashes(pathPosix.join(root, cleaned));
+      const id = `${normalizedGroupId}/${cleaned}`;
       const key = `${id}::${dir}`;
       if (seen.has(key)) {
         continue;
@@ -307,6 +350,8 @@ const selectModules = (
     return scopedOptions.map((o) => o.dir);
   }
 
+  const scopedGroups = new Set(scopedOptions.map((o) => o.group).filter(Boolean));
+
   const selected = new Set<string>();
 
   for (const rawFilter of moduleFilters) {
@@ -315,11 +360,11 @@ const selectModules = (
       continue;
     }
 
-    const parsed = parseModuleSelector(filter);
+    const parsed = parseModuleSelector(filter, scopedGroups);
 
-    // Exact selector: group/module or group:module
+    // Exact selector: group/module[/...] or group:module[:...]
     if (parsed) {
-      const wantedId = `${parsed.group}/${parsed.module}`;
+      const wantedId = `${parsed.group}/${parsed.modulePath}`;
       const exact = scopedOptions.filter((o) => o.id === wantedId);
       if (exact.length === 0) {
         throw new AutomationError(
@@ -330,8 +375,12 @@ const selectModules = (
       continue;
     }
 
-    // Suffix selector: module name (must be unambiguous)
-    const suffixMatches = scopedOptions.filter((o) => o.id.endsWith(`/${filter}`));
+    // Path/suffix selector: (must be unambiguous)
+    // - "orders" matches "<group>/orders"
+    // - "orders/cancellations" matches "<group>/orders/cancellations"
+    // - "orders:cancellations" is treated as a path selector (":" => "/")
+    const pathSelector = filter.includes(":") ? filter.split(":").join("/") : filter;
+    const suffixMatches = scopedOptions.filter((o) => o.id.endsWith(`/${pathSelector}`));
     if (suffixMatches.length === 0) {
       throw new AutomationError(
         `Module "${rawFilter}" not found. Available modules: ${scopedOptions.map((o) => o.id).join(", ")}`
@@ -340,7 +389,7 @@ const selectModules = (
     if (suffixMatches.length > 1) {
       throw new AutomationError(
         `Module filter "${rawFilter}" is ambiguous. Candidates: ${suffixMatches.map((m) => m.id).join(", ")}. ` +
-          `Use "<group>/<module>" to disambiguate.`
+          `Use "<group>/<module>" or "<group>:<module>" to disambiguate.`
       );
     }
     selected.add(suffixMatches[0]!.dir);
@@ -350,18 +399,42 @@ const selectModules = (
 };
 
 const parseModuleSelector = (
-  selector: string
-): { readonly group: string; readonly module: string } | undefined => {
-  const match = selector.match(/^([^/]+)[/:]([^/]+)$/u);
-  if (!match) {
+  selector: string,
+  knownGroups: ReadonlySet<string>
+): { readonly group: string; readonly modulePath: string } | undefined => {
+  if (!selector) {
     return undefined;
   }
-  const group = match[1]?.trim();
-  const module = match[2]?.trim();
-  if (!group || !module) {
-    return undefined;
+
+  // Prefer ':' for deep exact selectors: group:module[:submodule...]
+  if (selector.includes(":")) {
+    const parts = selector.split(":").map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const group = parts[0]!;
+      if (knownGroups.has(group)) {
+        const modulePath = normalizeSlashes(parts.slice(1).join("/")).replace(/^\/+|\/+$/gu, "");
+        if (modulePath) {
+          return { group, modulePath };
+        }
+      }
+    }
   }
-  return { group, module };
+
+  // Also allow '/' for deep exact selectors: group/module[/submodule...]
+  if (selector.includes("/")) {
+    const parts = selector.split("/").map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const group = parts[0]!;
+      if (knownGroups.has(group)) {
+        const modulePath = normalizeSlashes(parts.slice(1).join("/")).replace(/^\/+|\/+$/gu, "");
+        if (modulePath) {
+          return { group, modulePath };
+        }
+      }
+    }
+  }
+
+  return undefined;
 };
 
 const joinModuleEntry = (moduleDir: string, entry: string): string | undefined => {
@@ -600,11 +673,29 @@ const cloneRootRecord = (
 const cloneGroups = (
   groups: NonNullable<ModulesConfig["groups"]>
 ): NonNullable<ModulesConfig["groups"]> => {
-  const cloned: Record<string, { root: string; modules: [string, ...string[]] }> = {};
+  const cloneModuleDeclaration = (value: ModuleDeclaration): ModuleDeclaration => {
+    if (typeof value === "string") {
+      return value;
+    }
+    return {
+      name: value.name,
+      submodules: value.submodules
+        ? (value.submodules.map((child) => cloneModuleDeclaration(child as ModuleDeclaration)) as ModuleDeclaration[])
+        : undefined,
+    };
+  };
+
+  const cloned: Record<
+    string,
+    { root: string; modules: [ModuleDeclaration, ...ModuleDeclaration[]] }
+  > = {};
   for (const [key, group] of Object.entries(groups)) {
     cloned[key] = {
       root: group.root,
-      modules: cloneArray(group.modules) as [string, ...string[]],
+      modules: group.modules.map((m) => cloneModuleDeclaration(m as ModuleDeclaration)) as [
+        ModuleDeclaration,
+        ...ModuleDeclaration[]
+      ],
     };
   }
   return cloned as NonNullable<ModulesConfig["groups"]>;

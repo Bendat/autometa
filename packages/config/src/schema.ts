@@ -69,13 +69,27 @@ export const ModuleFormatSchema: z.ZodType<ModuleFormat> = z.enum(["cjs", "esm"]
 
 export const PartialRootSchema = RootSchema.partial();
 
+type ModuleDeclaration =
+  | string
+  | { readonly name: string; readonly submodules?: ModuleDeclaration[] | undefined };
+
+const ModuleDeclarationSchema: z.ZodType<ModuleDeclaration> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.object({
+      name: z.string().min(1),
+      submodules: z.array(ModuleDeclarationSchema).optional(),
+    }),
+  ])
+);
+
 export const ModulesConfigSchema = z.object({
   relativeRoots: PartialRootSchema,
   groups: z
     .record(
       z.object({
         root: z.string(),
-        modules: z.array(z.string()).nonempty(),
+        modules: z.array(ModuleDeclarationSchema).nonempty(),
       })
     )
     .optional(),
