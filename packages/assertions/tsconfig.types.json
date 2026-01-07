@@ -34,6 +34,9 @@
       "path": "../executor/tsconfig.types.json"
     },
     {
+      "path": "../gherkin/tsconfig.types.json"
+    },
+    {
       "path": "../injection/tsconfig.types.json"
     },
     {

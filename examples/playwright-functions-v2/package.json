@@ -1,0 +1,25 @@
+{
+  "name": "@autometa/examples-playwright-functions-v2",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "autometa run",
+    "test:list": "autometa run --dry-run",
+    "test:ui": "autometa run --watch",
+    "type-check": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "@autometa/playwright-executor": "workspace:*",
+    "@autometa/playwright-loader": "workspace:*",
+    "@autometa/runner": "workspace:*"
+  },
+  "devDependencies": {
+    "@autometa/cli": "workspace:*",
+    "@playwright/test": "^1.40.0",
+    "@types/node": "18.19.24",
+    "tsx": "^4.20.6",
+    "typescript": "5.4.5"
+  }
+}
