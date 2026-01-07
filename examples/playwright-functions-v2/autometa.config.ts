@@ -2,20 +2,24 @@ import { defineConfig } from "@autometa/config";
 
 export default defineConfig({
   default: {
-    runner: "playwright",
+    runner: "vitest",
     roots: {
       features: [],
-      steps: [],
+      steps: ["src/autometa/steps.ts"],
     },
     modules: {
       relativeRoots: {
-        features: [".features"],
-        steps: ["steps"],
+        features: [".features/**/*.feature"],
+        steps: ["steps/**/*.steps.ts"],
       },
       groups: {
         "brew-buddy": {
-          root: "src/apps/brew-buddy",
-          modules: ["api"],
+          root: "src/groups/brew-buddy",
+          modules: ["menu", "orders"],
+        },
+        backoffice: {
+          root: "src/groups/backoffice",
+          modules: ["reports", "orders"],
         },
       },
     },
