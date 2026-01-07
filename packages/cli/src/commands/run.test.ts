@@ -166,6 +166,41 @@ describe("runFeatures", () => {
     });
   });
 
+  it("passes environment selection to the config loader", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["features"],
+        steps: ["steps"],
+      },
+    };
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "hoisted",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+    expandFilePatternsMock.mockResolvedValue([]);
+
+    await expect(
+      runFeatures({
+        cwd,
+        mode: "standalone",
+        environment: "hoisted",
+      })
+    ).rejects.toThrowError('No feature files found for patterns: "features"');
+
+    expect(loadExecutorConfigMock).toHaveBeenCalledWith(cwd, {
+      cacheDir,
+      environment: "hoisted",
+    });
+  });
+
   it("configures reporter buffering from executor config", async () => {
     const executorConfig: ExecutorConfig = {
       runner: "vitest",

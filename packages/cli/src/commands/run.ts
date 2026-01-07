@@ -33,6 +33,7 @@ export interface RunCommandOptions {
   readonly summaryFormatter?: SummaryFormatter;
   readonly modules?: readonly string[];
   readonly groups?: readonly string[];
+  readonly environment?: string;
   /**
    * Force a specific runner mode.
    * - "native": Use vitest/jest if configured (default behavior)
@@ -50,6 +51,10 @@ const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
 const FEATURE_FALLBACK_GLOB = "**/*.feature";
 const ROOT_LOAD_ORDER = ["parameterTypes", "support", "hooks", "app"];
 
+function collectRepeatedString(value: string, previous: string[]): string[] {
+  return [...previous, value];
+}
+
 export function registerRunCommand(program: Command): Command {
   return program
     .command("run")
@@ -59,9 +64,31 @@ export function registerRunCommand(program: Command): Command {
     .option("--watch", "Run in watch mode (vitest/jest only)")
     .option("--verbose", "Show detailed output including runner detection")
     .option("--standalone", "Force standalone runtime instead of native runner")
-    .option("-g, --group <group...>", "Filter module groups to include")
-    .option("-m, --module <module...>", "Filter modules to include (by id or unambiguous suffix)")
-    .action(async (patterns: string[], flags: { dryRun?: boolean; watch?: boolean; verbose?: boolean; standalone?: boolean; module?: string[]; group?: string[] }) => {
+    .option("-e, --environment <environment>", "Select config environment")
+    .option(
+      "-g, --group <group>",
+      "Filter module groups to include",
+      collectRepeatedString,
+      [] as string[]
+    )
+    .option(
+      "-m, --module <module>",
+      "Filter modules to include (by id or unambiguous suffix)",
+      collectRepeatedString,
+      [] as string[]
+    )
+    .action(async (
+      patterns: string[],
+      flags: {
+        dryRun?: boolean;
+        watch?: boolean;
+        verbose?: boolean;
+        standalone?: boolean;
+        module?: string[];
+        group?: string[];
+        environment?: string;
+      }
+    ) => {
       try {
         const summary = await runFeatures({
           cwd: process.cwd(),
@@ -70,8 +97,11 @@ export function registerRunCommand(program: Command): Command {
           ...(typeof flags?.watch === "boolean" ? { watch: flags.watch } : {}),
           ...(typeof flags?.verbose === "boolean" ? { verbose: flags.verbose } : {}),
           ...(flags?.standalone ? { mode: "standalone" as const } : {}),
-          ...(Array.isArray(flags?.group) ? { groups: flags.group } : {}),
-          ...(Array.isArray(flags?.module) ? { modules: flags.module } : {}),
+          ...(typeof flags?.environment === "string" && flags.environment.trim().length > 0
+            ? { environment: flags.environment }
+            : {}),
+          ...(Array.isArray(flags?.group) && flags.group.length > 0 ? { groups: flags.group } : {}),
+          ...(Array.isArray(flags?.module) && flags.module.length > 0 ? { modules: flags.module } : {}),
         });
 
         if (!summary.success) {
@@ -213,6 +243,9 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   const summaryFormatter = options.summaryFormatter ?? formatSummary;
   const { resolved } = await loadExecutorConfig(cwd, {
     cacheDir,
+    ...(typeof options.environment === "string" && options.environment.trim().length > 0
+      ? { environment: options.environment }
+      : {}),
     ...(options.modules ? { modules: [...options.modules] } : {}),
     ...(options.groups ? { groups: [...options.groups] } : {}),
   });

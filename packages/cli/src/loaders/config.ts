@@ -19,6 +19,7 @@ export interface LoadExecutorConfigOptions {
   readonly external?: readonly string[];
   readonly modules?: readonly string[];
   readonly groups?: readonly string[];
+  readonly environment?: string;
 }
 
 const CONFIG_CANDIDATES = [
@@ -46,6 +47,9 @@ export async function loadExecutorConfig(
   }
 
   const resolveOptions = {
+    ...(options.environment && options.environment.trim().length > 0
+      ? { environment: options.environment }
+      : {}),
     ...(options.modules && options.modules.length > 0 ? { modules: options.modules } : {}),
     ...(options.groups && options.groups.length > 0 ? { groups: options.groups } : {}),
   };
