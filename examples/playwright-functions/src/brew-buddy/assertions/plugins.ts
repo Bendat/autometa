@@ -56,15 +56,14 @@ interface JsonAssertions {
 
 // `RuntimeAssertions` is provided by `@autometa/assertions`.
 
-const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ ensure }) =>
+const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ ensure, isNot }) =>
   (world) => {
     const label = "http response";
-    const isNegated = ensure !== ensure.always;
     const chain = (detail?: string): HttpEnsureChain<HttpResponseLike> => {
       const response = requireResponse(world);
       return ensureHttp(response, {
         label: detail ? `${label} (${detail})` : label,
-        negated: isNegated,
+        negated: isNot,
       });
     };
 

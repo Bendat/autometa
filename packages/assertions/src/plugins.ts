@@ -27,6 +27,14 @@ export type EnsureFactory<World, Facets extends Record<string, unknown>> = (
 
 export interface AssertionPluginContext {
   readonly ensure: EnsureInvokeWithAlways;
+
+  /**
+   * True when this plugin facet is being invoked via plugin-level negation
+   * (e.g. `ensure.not.<facet>.*`).
+   *
+   * Mirrors Jest's `this.isNot` matcher context flag.
+   */
+  readonly isNot: boolean;
 }
 
 export type AssertionPlugin<World, Facet> = (
@@ -77,7 +85,7 @@ export function createEnsureFactory<
     if (!plugin) {
       throw new Error(`Assertion plugin "${String(key)}" is not defined.`);
     }
-    const factory = plugin({ ensure: positiveEnsure });
+    const factory = plugin({ ensure: positiveEnsure, isNot: false });
     return [key, factory] as const;
   });
 
@@ -92,7 +100,7 @@ export function createEnsureFactory<
     if (!plugin) {
       throw new Error(`Assertion plugin "${String(key)}" is not defined.`);
     }
-    const factory = plugin({ ensure: negativeEnsure });
+    const factory = plugin({ ensure: negativeEnsure, isNot: true });
     return [key, factory] as const;
   });
 

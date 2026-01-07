@@ -7,10 +7,11 @@ import { httpAssertionsPlugin } from "../assertions/http-assertions-plugin";
 describe("httpAssertionsPlugin", () => {
   test("ensure.http(response).toHaveStatus works", () => {
     const ensureFactory = createEnsureFactory(baseEnsure, {
-      http: httpAssertionsPlugin<{}>(),
+      http: httpAssertionsPlugin<Record<string, never>>(),
     });
 
-    const ensure = ensureFactory({});
+    const world: Record<string, never> = {};
+    const ensure = ensureFactory(world);
     const response = {
       data: { ok: true },
       headers: { "x-correlation-id": "abc-123", "cache-control": "public, max-age=60" },
@@ -25,10 +26,11 @@ describe("httpAssertionsPlugin", () => {
 
   test("ensure.not.http(response).toHaveStatus negates as expected", () => {
     const ensureFactory = createEnsureFactory(baseEnsure, {
-      http: httpAssertionsPlugin<{}>(),
+      http: httpAssertionsPlugin<Record<string, never>>(),
     });
 
-    const ensure = ensureFactory({});
+    const world: Record<string, never> = {};
+    const ensure = ensureFactory(world);
     const response = {
       data: { ok: true },
       headers: {},
@@ -47,10 +49,11 @@ describe("httpAssertionsPlugin", () => {
 
   test("ensure.http(response).not.toHaveStatus also negates", () => {
     const ensureFactory = createEnsureFactory(baseEnsure, {
-      http: httpAssertionsPlugin<{}>(),
+      http: httpAssertionsPlugin<Record<string, never>>(),
     });
 
-    const ensure = ensureFactory({});
+    const world: Record<string, never> = {};
+    const ensure = ensureFactory(world);
     const response = {
       data: { ok: true },
       headers: {},

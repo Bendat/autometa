@@ -4,11 +4,11 @@ import { HTTPRequest, HTTPRequestBuilder } from "../http-request";
 import type { FetchLike } from "../fetch-transport";
 
 describe("createFetchTransport", () => {
-  let mockFetch: any;
+  let mockFetch: FetchLike;
   let transport: ReturnType<typeof createFetchTransport>;
 
   beforeEach(() => {
-    mockFetch = vi.fn().mockResolvedValue({
+    mockFetch = vi.fn<FetchLike>().mockResolvedValue({
       status: 200,
       statusText: "OK",
       headers: new Map(),

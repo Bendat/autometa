@@ -360,7 +360,7 @@ function parseCacheControl(value: string): CacheDirectives {
       directives[name.toLowerCase()] = true;
       continue;
     }
-    const parameter = rawParameter.trim().replace(/^\"|\"$/g, "");
+    const parameter = rawParameter.trim().replace(/^"|"$/g, "");
     directives[name.toLowerCase()] = parameter;
   }
   return directives;

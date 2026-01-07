@@ -10,15 +10,19 @@ interface World {
 interface TestFacet {
   requireBody(): string;
   assertBodyEquals(expected: string): void;
+  isNotFlag(): boolean;
 }
 
-const testPlugin: AssertionPlugin<World, TestFacet> = ({ ensure }) => (world) => ({
+const testPlugin: AssertionPlugin<World, TestFacet> = ({ ensure, isNot }) => (world) => ({
   requireBody() {
     return ensure.always(world.body, { label: "body" }).toBeDefined().value;
   },
   assertBodyEquals(expected: string) {
     const body = ensure.always(world.body, { label: "body" }).toBeDefined().value;
     ensure(body, { label: "body equality" }).toStrictEqual(expected);
+  },
+  isNotFlag() {
+    return isNot;
   },
 });
 
@@ -40,5 +44,13 @@ describe("createEnsureFactory plugin negation", () => {
 
     // Negated facet should invert the matcher and therefore fail.
     expect(() => ensure.not.test.assertBodyEquals("hello")).toThrow();
+  });
+
+  it("passes an explicit isNot flag to plugins", () => {
+    const factory = createEnsureFactory(baseEnsure, { test: testPlugin });
+    const ensure = factory({ body: "hello" });
+
+    expect(ensure.test.isNotFlag()).toBe(false);
+    expect(ensure.not.test.isNotFlag()).toBe(true);
   });
 });

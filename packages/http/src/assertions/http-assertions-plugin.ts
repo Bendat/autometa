@@ -24,17 +24,15 @@ export type HttpAssertionsFacet = <T = unknown>(
  * This keeps the base `ensure(value)` matcher chain domain-agnostic.
  */
 export const httpAssertionsPlugin = <World>(): AssertionPlugin<World, HttpAssertionsFacet> =>
-  ({ ensure }) =>
+  ({ isNot }) =>
   (_world) => {
-    const isNegated = ensure !== ensure.always;
-
     const facet: HttpAssertionsFacet = <T = unknown>(
       response: HttpResponseLike | HTTPResponse<T>,
       options?: EnsureOptions
     ) => {
       return ensureHttp(response as HttpResponseLike, {
         ...(options?.label ? { label: options.label } : {}),
-        negated: isNegated,
+        negated: isNot,
       });
     };
 
