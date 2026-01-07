@@ -25,11 +25,11 @@ Each module directory contains:
 From the repo root:
 
 - Run Brew Buddy group:
-  - `pnpm --filter @autometa/examples-modules-discovery test` (runs both groups)
-  - or `pnpm --filter @autometa/examples-modules-discovery --silent exec autometa run --standalone -g brew-buddy`
+  - `pnpm --filter @autometa/module-examples test` (runs both groups)
+  - or `pnpm --filter @autometa/module-examples --silent exec autometa run --standalone -g brew-buddy`
 
 - Run Backoffice group:
-  - `pnpm --filter @autometa/examples-modules-discovery --silent exec autometa run --standalone -g backoffice`
+  - `pnpm --filter @autometa/module-examples --silent exec autometa run --standalone -g backoffice`
 
 ### Ambiguity demo
 
