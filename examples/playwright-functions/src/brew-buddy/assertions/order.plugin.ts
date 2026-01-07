@@ -2,6 +2,12 @@ import type { AssertionPlugin } from "@autometa/assertions";
 
 import type { Order, OrderItem } from "../../../../.api/src/types/domain.js";
 
+import {
+	formatOrderItemPreferenceLabel,
+	getOrderItemPreference,
+	normalizeOrderPreference,
+} from "../capabilities/orders/order-preferences";
+
 export interface OrderAssertions {
 	current(): Order;
 	item(index?: number): OrderItem;
@@ -44,26 +50,6 @@ export const orderAssertionsPlugin = <World extends WorldWithOrder>(): Assertion
 				.value as OrderItem;
 		};
 
-		const normalise = (value: unknown): string => String(value ?? "").trim().toLowerCase();
-
-		const preferenceLabel = (args: {
-			readonly kind: "milk" | "sweetener";
-			readonly expected: string;
-			readonly actualRaw: string;
-			readonly actualNormalised: string;
-		}): string => {
-			const notText = isNot ? " not" : "";
-			const expectedNormalised = normalise(args.expected);
-
-			// We include both raw and normalised values because domain inputs often
-			// come from tables/docstrings and may include casing/whitespace.
-			return [
-				`order item ${args.kind} preference`,
-				`(expected${notText}: "${args.expected}" → "${expectedNormalised}")`,
-				`(actual: "${args.actualRaw}" → "${args.actualNormalised}")`,
-			].join(" ");
-		};
-
 		return {
 			current() {
 				return requireOrder();
@@ -73,29 +59,29 @@ export const orderAssertionsPlugin = <World extends WorldWithOrder>(): Assertion
 			},
 			milkIs(expected) {
 				const item = requireItem(0);
-				const actual = item.milk ?? "";
-				const actualNormalised = normalise(actual);
-				ensure(actualNormalised, {
-					label: preferenceLabel({
+				const preference = getOrderItemPreference(item, "milk");
+				ensure(preference.normalized, {
+					label: formatOrderItemPreferenceLabel({
 						kind: "milk",
 						expected,
-						actualRaw: actual,
-						actualNormalised,
+						actualRaw: preference.raw,
+						actualNormalized: preference.normalized,
+						isNot,
 					}),
-				}).toStrictEqual(normalise(expected));
+				}).toStrictEqual(normalizeOrderPreference(expected));
 			},
 			sweetenerIs(expected) {
 				const item = requireItem(0);
-				const actual = item.sweetener ?? "";
-				const actualNormalised = normalise(actual);
-				ensure(actualNormalised, {
-					label: preferenceLabel({
+				const preference = getOrderItemPreference(item, "sweetener");
+				ensure(preference.normalized, {
+					label: formatOrderItemPreferenceLabel({
 						kind: "sweetener",
 						expected,
-						actualRaw: actual,
-						actualNormalised,
+						actualRaw: preference.raw,
+						actualNormalized: preference.normalized,
+						isNot,
 					}),
-				}).toStrictEqual(normalise(expected));
+				}).toStrictEqual(normalizeOrderPreference(expected));
 			},
 		};
 	};
