@@ -13,7 +13,10 @@ export default defineConfig({
         steps: ["steps"],
       },
       groups: {
-        "src/apps/brew-buddy": ["api"],
+        "brew-buddy": {
+          root: "src/apps/brew-buddy",
+          modules: ["api"],
+        },
       },
     },
   },

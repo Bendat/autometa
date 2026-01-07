@@ -45,7 +45,17 @@ export interface ConfigDefinition {
 
 export interface ResolveOptions {
   environment?: string;
+  /**
+   * Module selectors. Accepted forms:
+   * - "<group>/<module>" or "<group>:<module>" (exact)
+   * - "<module>" (suffix match, must be unambiguous; can be combined with group filters)
+   */
   modules?: readonly string[];
+  /**
+   * Optional module-group filters.
+   * Groups are configured in config.modules.groups via their keys (friendly names).
+   */
+  groups?: readonly string[];
 }
 
 export interface ResolvedConfig {

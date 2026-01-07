@@ -32,6 +32,7 @@ export interface RunCommandOptions {
   readonly reporters?: readonly RuntimeReporter[];
   readonly summaryFormatter?: SummaryFormatter;
   readonly modules?: readonly string[];
+  readonly groups?: readonly string[];
   /**
    * Force a specific runner mode.
    * - "native": Use vitest/jest if configured (default behavior)
@@ -58,8 +59,9 @@ export function registerRunCommand(program: Command): Command {
     .option("--watch", "Run in watch mode (vitest/jest only)")
     .option("--verbose", "Show detailed output including runner detection")
     .option("--standalone", "Force standalone runtime instead of native runner")
+    .option("-g, --group <group...>", "Filter module groups to include")
     .option("-m, --module <module...>", "Filter modules to include (by id or unambiguous suffix)")
-    .action(async (patterns: string[], flags: { dryRun?: boolean; watch?: boolean; verbose?: boolean; standalone?: boolean; module?: string[] }) => {
+    .action(async (patterns: string[], flags: { dryRun?: boolean; watch?: boolean; verbose?: boolean; standalone?: boolean; module?: string[]; group?: string[] }) => {
       try {
         const summary = await runFeatures({
           cwd: process.cwd(),
@@ -68,6 +70,7 @@ export function registerRunCommand(program: Command): Command {
           ...(typeof flags?.watch === "boolean" ? { watch: flags.watch } : {}),
           ...(typeof flags?.verbose === "boolean" ? { verbose: flags.verbose } : {}),
           ...(flags?.standalone ? { mode: "standalone" as const } : {}),
+          ...(Array.isArray(flags?.group) ? { groups: flags.group } : {}),
           ...(Array.isArray(flags?.module) ? { modules: flags.module } : {}),
         });
 
@@ -211,6 +214,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   const { resolved } = await loadExecutorConfig(cwd, {
     cacheDir,
     ...(options.modules ? { modules: [...options.modules] } : {}),
+    ...(options.groups ? { groups: [...options.groups] } : {}),
   });
   const executorConfig = resolved.config;
 

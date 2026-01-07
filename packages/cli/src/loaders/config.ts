@@ -18,6 +18,7 @@ export interface LoadExecutorConfigOptions {
   readonly cacheDir?: string;
   readonly external?: readonly string[];
   readonly modules?: readonly string[];
+  readonly groups?: readonly string[];
 }
 
 const CONFIG_CANDIDATES = [
@@ -44,10 +45,13 @@ export async function loadExecutorConfig(
     );
   }
 
+  const resolveOptions = {
+    ...(options.modules && options.modules.length > 0 ? { modules: options.modules } : {}),
+    ...(options.groups && options.groups.length > 0 ? { groups: options.groups } : {}),
+  };
+
   const resolved = config.resolve(
-    options.modules && options.modules.length > 0
-      ? { modules: options.modules }
-      : undefined
+    Object.keys(resolveOptions).length > 0 ? resolveOptions : undefined
   );
 
   return {

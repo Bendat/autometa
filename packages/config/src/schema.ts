@@ -71,7 +71,14 @@ export const PartialRootSchema = RootSchema.partial();
 
 export const ModulesConfigSchema = z.object({
   relativeRoots: PartialRootSchema,
-  groups: z.record(z.array(z.string()).nonempty()).optional(),
+  groups: z
+    .record(
+      z.object({
+        root: z.string(),
+        modules: z.array(z.string()).nonempty(),
+      })
+    )
+    .optional(),
   explicit: z.array(z.string()).optional(),
 });
 

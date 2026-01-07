@@ -135,7 +135,10 @@ describe("defineConfig", () => {
             parameterTypes: ["src/parameter-types.ts"],
           },
           groups: {
-            "apps/brew-buddy": ["api"],
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["api"],
+            },
           },
         },
       },
@@ -173,7 +176,10 @@ describe("defineConfig", () => {
             steps: ["steps"],
           },
           groups: {
-            "apps/brew-buddy": ["menu", "order"],
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["menu", "order"],
+            },
           },
         },
       },
@@ -190,6 +196,71 @@ describe("defineConfig", () => {
       "apps/brew-buddy/order/steps",
       "steps",
     ]);
+  });
+
+  it("supports group filtering to disambiguate module names", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["api"],
+            },
+            "brew-buddy-auditing": {
+              root: "apps/brew-buddy-auditing",
+              modules: ["api"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["brew-buddy"], modules: ["api"] });
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/brew-buddy/api/.features",
+      "features",
+    ]);
+  });
+
+  it("throws when module suffix is ambiguous without a group", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["api"],
+            },
+            "brew-buddy-auditing": {
+              root: "apps/brew-buddy-auditing",
+              modules: ["api"],
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => config.resolve({ modules: ["api"] })).toThrowError(AutomationError);
   });
 
   it("merges reporter buffering preferences", () => {

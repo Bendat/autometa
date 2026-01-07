@@ -37,7 +37,7 @@ export class Config {
     const override = this.definition.environments[environment] ?? {};
     const merged = mergeExecutorConfig(this.definition.default, override);
     const validated = ExecutorConfigSchema.parse(merged);
-    const expanded = expandModules(validated, options.modules);
+    const expanded = expandModules(validated, options.modules, options.groups);
     return {
       environment,
       config: deepFreeze(expanded),
@@ -159,7 +159,8 @@ const mergeExecutorConfig = (
 };
 const expandModules = (
   config: ExecutorConfig,
-  moduleFilters: readonly string[] | undefined
+  moduleFilters: readonly string[] | undefined,
+  groupFilters: readonly string[] | undefined
 ): ExecutorConfig => {
   const modulesConfig = config.modules;
   if (!modulesConfig) {
@@ -173,14 +174,14 @@ const expandModules = (
     );
   }
 
-  const moduleDirs = collectModuleDirs(modulesConfig);
-  if (moduleDirs.length === 0) {
+  const moduleEntries = collectModuleEntries(modulesConfig);
+  if (moduleEntries.length === 0) {
     throw new AutomationError(
       'When "modules" is provided, at least one module must be declared via "groups" or "explicit".'
     );
   }
 
-  const selectedModules = selectModules(moduleDirs, moduleFilters);
+  const selectedModules = selectModules(moduleEntries, moduleFilters, groupFilters);
   const expandedByKey: Record<string, string[]> = {};
 
   for (const [key, entries] of Object.entries(relativeRoots)) {
@@ -219,72 +220,148 @@ const expandModules = (
   };
 };
 
-const collectModuleDirs = (modulesConfig: ModulesConfig): string[] => {
-  const dirs = new Set<string>();
+interface ModuleEntry {
+  readonly id: string;
+  readonly dir: string;
+}
 
-  for (const [base, entries] of Object.entries(modulesConfig.groups ?? {})) {
-    const baseNormalized = normalizeSlashes(base.trim());
-    if (!baseNormalized) {
+const collectModuleEntries = (modulesConfig: ModulesConfig): ModuleEntry[] => {
+  const entries: ModuleEntry[] = [];
+  const seen = new Set<string>();
+
+  for (const [groupId, group] of Object.entries(modulesConfig.groups ?? {})) {
+    const normalizedGroupId = groupId.trim();
+    if (!normalizedGroupId) {
       continue;
     }
-    for (const entry of entries) {
-      const entryTrimmed = entry.trim();
-      if (!entryTrimmed) {
+
+    const root = normalizeSlashes(group.root.trim()).replace(/\/+$/u, "");
+    if (!root) {
+      continue;
+    }
+
+    for (const moduleNameRaw of group.modules) {
+      const moduleName = moduleNameRaw.trim();
+      if (!moduleName) {
         continue;
       }
-      const joined = normalizeSlashes(pathPosix.join(baseNormalized, entryTrimmed));
-      dirs.add(joined);
+      const dir = normalizeSlashes(pathPosix.join(root, moduleName));
+      const id = `${normalizedGroupId}/${moduleName}`;
+      const key = `${id}::${dir}`;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      entries.push({ id, dir });
     }
   }
 
   for (const explicit of modulesConfig.explicit ?? []) {
     const normalized = normalizeSlashes(explicit.trim());
-    if (normalized) {
-      dirs.add(normalized);
+    if (!normalized) {
+      continue;
     }
+    const id = normalized;
+    const key = `${id}::${normalized}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    entries.push({ id, dir: normalized });
   }
 
-  return Array.from(dirs);
+  return entries;
 };
 
 const selectModules = (
-  moduleDirs: readonly string[],
-  filters: readonly string[] | undefined
+  moduleEntries: readonly ModuleEntry[],
+  moduleFilters: readonly string[] | undefined,
+  groupFilters: readonly string[] | undefined
 ): string[] => {
-  if (!filters || filters.length === 0) {
-    return Array.from(moduleDirs);
+  const options = moduleEntries.map((m) => ({
+    id: normalizeSlashes(m.id),
+    dir: normalizeSlashes(m.dir),
+    group: normalizeSlashes(m.id.split("/")[0] ?? ""),
+  }));
+
+  const groupFilterSet = new Set(
+    (groupFilters ?? []).map((g) => normalizeSlashes(g.trim())).filter(Boolean)
+  );
+
+  const inGroupScope = (candidate: (typeof options)[number]): boolean => {
+    if (groupFilterSet.size === 0) {
+      return true;
+    }
+    return groupFilterSet.has(candidate.group);
+  };
+
+  const scopedOptions = options.filter(inGroupScope);
+  if (groupFilterSet.size > 0 && scopedOptions.length === 0) {
+    throw new AutomationError(
+      `No modules found for group filter(s): ${Array.from(groupFilterSet).join(", ")}. ` +
+        `Available groups: ${Array.from(new Set(options.map((o) => o.group))).filter(Boolean).join(", ")}`
+    );
   }
 
-  const normalizedDirs = moduleDirs.map(normalizeSlashes);
+  if (!moduleFilters || moduleFilters.length === 0) {
+    return scopedOptions.map((o) => o.dir);
+  }
+
   const selected = new Set<string>();
 
-  for (const filterRaw of filters) {
-    const filter = normalizeSlashes(filterRaw.trim());
+  for (const rawFilter of moduleFilters) {
+    const filter = normalizeSlashes(rawFilter.trim());
     if (!filter) {
       continue;
     }
 
-    const exactMatches = normalizedDirs.filter((dir) => dir === filter);
-    const suffixMatches = exactMatches.length > 0
-      ? exactMatches
-      : normalizedDirs.filter((dir) => dir.endsWith(`/${filter}`));
+    const parsed = parseModuleSelector(filter);
 
+    // Exact selector: group/module or group:module
+    if (parsed) {
+      const wantedId = `${parsed.group}/${parsed.module}`;
+      const exact = scopedOptions.filter((o) => o.id === wantedId);
+      if (exact.length === 0) {
+        throw new AutomationError(
+          `Module "${rawFilter}" not found. Available modules: ${scopedOptions.map((o) => o.id).join(", ")}`
+        );
+      }
+      selected.add(exact[0]!.dir);
+      continue;
+    }
+
+    // Suffix selector: module name (must be unambiguous)
+    const suffixMatches = scopedOptions.filter((o) => o.id.endsWith(`/${filter}`));
     if (suffixMatches.length === 0) {
       throw new AutomationError(
-        `Module "${filterRaw}" not found. Available modules: ${normalizedDirs.join(", ")}`
+        `Module "${rawFilter}" not found. Available modules: ${scopedOptions.map((o) => o.id).join(", ")}`
       );
     }
-
     if (suffixMatches.length > 1) {
       throw new AutomationError(
-        `Module filter "${filterRaw}" is ambiguous. Candidates: ${suffixMatches.join(", ")}`
+        `Module filter "${rawFilter}" is ambiguous. Candidates: ${suffixMatches.map((m) => m.id).join(", ")}. ` +
+          `Use "<group>/<module>" to disambiguate.`
       );
     }
-
-    selected.add(suffixMatches[0]!);
+    selected.add(suffixMatches[0]!.dir);
   }
 
-  return normalizedDirs.filter((dir) => selected.has(dir));
+  return scopedOptions.map((o) => o.dir).filter((dir) => selected.has(dir));
+};
+
+const parseModuleSelector = (
+  selector: string
+): { readonly group: string; readonly module: string } | undefined => {
+  const match = selector.match(/^([^/]+)[/:]([^/]+)$/u);
+  if (!match) {
+    return undefined;
+  }
+  const group = match[1]?.trim();
+  const module = match[2]?.trim();
+  if (!group || !module) {
+    return undefined;
+  }
+  return { group, module };
 };
 
 const joinModuleEntry = (moduleDir: string, entry: string): string | undefined => {
@@ -523,10 +600,12 @@ const cloneRootRecord = (
 const cloneGroups = (
   groups: NonNullable<ModulesConfig["groups"]>
 ): NonNullable<ModulesConfig["groups"]> => {
-  const cloned: Record<string, string[]> = {};
-  for (const [key, entries] of Object.entries(groups)) {
-    const clonedEntries = cloneArray(entries) as [string, ...string[]];
-    cloned[key] = clonedEntries;
+  const cloned: Record<string, { root: string; modules: [string, ...string[]] }> = {};
+  for (const [key, group] of Object.entries(groups)) {
+    cloned[key] = {
+      root: group.root,
+      modules: cloneArray(group.modules) as [string, ...string[]],
+    };
   }
   return cloned as NonNullable<ModulesConfig["groups"]>;
 };
