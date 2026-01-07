@@ -604,6 +604,8 @@ const STACK_FRAME_IGNORE_PATTERNS: readonly RegExp[] = [
   /node_modules\/@autometa\//,
   /packages\/(?:runner|executor|errors|cli|assertions)\//,
   /\/\.autometa-cli\/cache\//,
+  /\/\.autometa\/cache\//,
+  /\/node_modules\/\.cache\/autometa\//,
 ];
 
 function extractErrorLocation(error: Error | undefined): SourceLocation | undefined {

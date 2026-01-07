@@ -5,6 +5,8 @@ import { dirname, extname, isAbsolute, join, resolve } from "path";
 import { pathToFileURL } from "url";
 import { build, type OutputFile } from "esbuild";
 
+import { resolveCliCacheDir } from "../utils/cache-dir";
+
 const TS_EXTENSIONS = new Set([".ts", ".tsx", ".cts", ".mts"]);
 const BUILTIN_EXTERNALS = new Set<string>([
   ...builtinModules,
@@ -69,7 +71,7 @@ async function loadTranspiledModule(
   filePath: string,
   options: ModuleLoadOptions
 ): Promise<Record<string, unknown>> {
-  const cacheDirectory = options.cacheDir ?? join(options.cwd, ".autometa-cli", "cache");
+  const cacheDirectory = options.cacheDir ?? await resolveCliCacheDir(options.cwd);
   await fs.mkdir(cacheDirectory, { recursive: true });
 
   const stats = await fs.stat(filePath);

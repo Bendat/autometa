@@ -326,6 +326,8 @@ const FRAME_SKIP_PATTERNS = [
   "/packages/scopes/",
   "/packages/runner/",
   "/.autometa-cli/cache/",
+  "/.autometa/cache/",
+  "/node_modules/.cache/autometa/",
 ];
 
 function isFrameworkFrame(candidate: string): boolean {

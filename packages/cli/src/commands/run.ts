@@ -22,9 +22,15 @@ import type { SummaryFormatter } from "../runtime/types";
 import type { RuntimeReporter } from "../utils/reporter";
 import type { RuntimeSummary } from "../runtime/types";
 import { orchestrate, isNativeRunnerAvailable, type RunnerType } from "../orchestrator";
+import { resolveCliCacheDir } from "../utils/cache-dir";
 
 export interface RunCommandOptions {
   readonly cwd?: string;
+  /**
+   * Directory used by the CLI to write transpiled/cached runtime artifacts.
+   * When omitted, the CLI will choose a sensible default (preferring node_modules/.cache).
+   */
+  readonly cacheDir?: string;
   readonly patterns?: readonly string[];
   readonly dryRun?: boolean;
   readonly watch?: boolean;
@@ -280,6 +286,10 @@ export function registerRunCommand(program: Command): Command {
     .command("run")
     .description("Execute Autometa feature files")
     .argument("[patterns...]", "Feature files or glob patterns")
+    .option(
+      "--cache-dir <dir>",
+      "Directory for Autometa CLI cache (defaults to node_modules/.cache/autometa when available)"
+    )
     .option("--dry-run", "Collect scenarios without executing steps")
     .option("--watch", "Run in watch mode (vitest/jest only)")
     .option("--verbose", "Show detailed output including runner detection")
@@ -300,6 +310,7 @@ export function registerRunCommand(program: Command): Command {
     .action(async (
       patterns: string[],
       flags: {
+        cacheDir?: string;
         dryRun?: boolean;
         watch?: boolean;
         verbose?: boolean;
@@ -312,6 +323,9 @@ export function registerRunCommand(program: Command): Command {
       try {
         const summary = await runFeatures({
           cwd: process.cwd(),
+          ...(typeof flags?.cacheDir === "string" && flags.cacheDir.trim().length > 0
+            ? { cacheDir: flags.cacheDir }
+            : {}),
           ...(patterns.length > 0 ? { patterns } : {}),
           ...(typeof flags?.dryRun === "boolean" ? { dryRun: flags.dryRun } : {}),
           ...(typeof flags?.watch === "boolean" ? { watch: flags.watch } : {}),
@@ -508,7 +522,7 @@ function createFeatureScopePlan<World>(
 
 export async function runFeatures(options: RunCommandOptions = {}): Promise<RunCommandResult> {
   const cwd = options.cwd ?? process.cwd();
-  const cacheDir = join(cwd, ".autometa-cli", "cache");
+  const cacheDir = options.cacheDir ?? await resolveCliCacheDir(cwd);
   const summaryFormatter = options.summaryFormatter ?? formatSummary;
   const { resolved } = await loadExecutorConfig(cwd, {
     cacheDir,

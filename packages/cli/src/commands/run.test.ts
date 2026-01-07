@@ -78,7 +78,8 @@ describe("runFeatures", () => {
   beforeEach(async () => {
     vi.resetAllMocks();
     cwd = await fs.mkdtemp(join(tmpdir(), "autometa-cli-test-"));
-    cacheDir = join(cwd, ".autometa-cli", "cache");
+    cacheDir = join(cwd, ".autometa", "cache");
+    process.env.AUTOMETA_CACHE_DIR = cacheDir;
     await fs.mkdir(cacheDir, { recursive: true });
     bundlePath = join(cacheDir, "__modules__.mjs");
     await fs.writeFile(bundlePath, "export const modules = [];\nexport default modules;\n", "utf8");
@@ -94,6 +95,7 @@ describe("runFeatures", () => {
 
   afterEach(async () => {
     vi.clearAllMocks();
+    delete process.env.AUTOMETA_CACHE_DIR;
     if (cwd) {
       await fs.rm(cwd, { recursive: true, force: true });
     }
