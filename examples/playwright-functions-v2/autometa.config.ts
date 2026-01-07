@@ -7,10 +7,14 @@ export default defineConfig({
       features: [],
       steps: [],
     },
-    modules: ["src/apps/brew-buddy/api"],
-    moduleRelativeRoots: {
-      features: [".features"],
-      steps: ["steps"],
+    modules: {
+      relativeRoots: {
+        features: [".features"],
+        steps: ["steps"],
+      },
+      groups: {
+        "src/apps/brew-buddy": ["api"],
+      },
     },
   },
 });

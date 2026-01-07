@@ -14,6 +14,7 @@ import {
   ExecutorConfig,
   PartialExecutorConfig,
   PartialRootsConfig,
+  ModulesConfig,
   ResolveOptions,
   ResolvedConfig,
   RootsConfig,
@@ -36,7 +37,7 @@ export class Config {
     const override = this.definition.environments[environment] ?? {};
     const merged = mergeExecutorConfig(this.definition.default, override);
     const validated = ExecutorConfigSchema.parse(merged);
-    const expanded = expandModuleRelativeRoots(validated);
+    const expanded = expandModules(validated, options.modules);
     return {
       environment,
       config: deepFreeze(expanded),
@@ -131,16 +132,7 @@ const mergeExecutorConfig = (
   }
 
   if (override.modules !== undefined) {
-    result.modules = cloneArray(override.modules);
-  }
-
-  if (override.moduleRelativeRoots !== undefined) {
-    const cloned = cloneRootRecord(override.moduleRelativeRoots);
-    result.moduleRelativeRoots = cloned;
-  }
-
-  if (override.moduleConfigFileName !== undefined) {
-    result.moduleConfigFileName = override.moduleConfigFileName;
+    result.modules = cloneModules(override.modules);
   }
 
   if (override.shim !== undefined) {
@@ -165,34 +157,47 @@ const mergeExecutorConfig = (
 
   return result;
 };
-
-const expandModuleRelativeRoots = (config: ExecutorConfig): ExecutorConfig => {
-  const modules = config.modules?.filter((m) => Boolean(m && m.trim())) ?? [];
-  if (modules.length === 0) {
+const expandModules = (
+  config: ExecutorConfig,
+  moduleFilters: readonly string[] | undefined
+): ExecutorConfig => {
+  const modulesConfig = config.modules;
+  if (!modulesConfig) {
     return config;
   }
 
-  const moduleRelativeRoots = config.moduleRelativeRoots;
-  if (!moduleRelativeRoots) {
+  const relativeRoots = modulesConfig.relativeRoots;
+  if (!relativeRoots || Object.keys(relativeRoots).length === 0) {
     throw new AutomationError(
-      'When "modules" is provided, "moduleRelativeRoots" must also be provided.'
+      'When "modules" is provided, "relativeRoots" must include at least one entry.'
     );
   }
 
+  const moduleDirs = collectModuleDirs(modulesConfig);
+  if (moduleDirs.length === 0) {
+    throw new AutomationError(
+      'When "modules" is provided, at least one module must be declared via "groups" or "explicit".'
+    );
+  }
+
+  const selectedModules = selectModules(moduleDirs, moduleFilters);
   const expandedByKey: Record<string, string[]> = {};
-  for (const [key, entries] of Object.entries(moduleRelativeRoots)) {
+
+  for (const [key, entries] of Object.entries(relativeRoots)) {
     if (!entries || entries.length === 0) {
       continue;
     }
+
     const expanded: string[] = [];
-    for (const mod of modules) {
+    for (const moduleDir of selectedModules) {
       for (const entry of entries) {
-        const joined = joinModuleEntry(mod, entry);
+        const joined = joinModuleEntry(moduleDir, entry);
         if (joined) {
           expanded.push(joined);
         }
       }
     }
+
     if (expanded.length > 0) {
       expandedByKey[key] = expanded;
     }
@@ -214,6 +219,74 @@ const expandModuleRelativeRoots = (config: ExecutorConfig): ExecutorConfig => {
   };
 };
 
+const collectModuleDirs = (modulesConfig: ModulesConfig): string[] => {
+  const dirs = new Set<string>();
+
+  for (const [base, entries] of Object.entries(modulesConfig.groups ?? {})) {
+    const baseNormalized = normalizeSlashes(base.trim());
+    if (!baseNormalized) {
+      continue;
+    }
+    for (const entry of entries) {
+      const entryTrimmed = entry.trim();
+      if (!entryTrimmed) {
+        continue;
+      }
+      const joined = normalizeSlashes(pathPosix.join(baseNormalized, entryTrimmed));
+      dirs.add(joined);
+    }
+  }
+
+  for (const explicit of modulesConfig.explicit ?? []) {
+    const normalized = normalizeSlashes(explicit.trim());
+    if (normalized) {
+      dirs.add(normalized);
+    }
+  }
+
+  return Array.from(dirs);
+};
+
+const selectModules = (
+  moduleDirs: readonly string[],
+  filters: readonly string[] | undefined
+): string[] => {
+  if (!filters || filters.length === 0) {
+    return Array.from(moduleDirs);
+  }
+
+  const normalizedDirs = moduleDirs.map(normalizeSlashes);
+  const selected = new Set<string>();
+
+  for (const filterRaw of filters) {
+    const filter = normalizeSlashes(filterRaw.trim());
+    if (!filter) {
+      continue;
+    }
+
+    const exactMatches = normalizedDirs.filter((dir) => dir === filter);
+    const suffixMatches = exactMatches.length > 0
+      ? exactMatches
+      : normalizedDirs.filter((dir) => dir.endsWith(`/${filter}`));
+
+    if (suffixMatches.length === 0) {
+      throw new AutomationError(
+        `Module "${filterRaw}" not found. Available modules: ${normalizedDirs.join(", ")}`
+      );
+    }
+
+    if (suffixMatches.length > 1) {
+      throw new AutomationError(
+        `Module filter "${filterRaw}" is ambiguous. Candidates: ${suffixMatches.join(", ")}`
+      );
+    }
+
+    selected.add(suffixMatches[0]!);
+  }
+
+  return normalizedDirs.filter((dir) => selected.has(dir));
+};
+
 const joinModuleEntry = (moduleDir: string, entry: string): string | undefined => {
   const moduleTrimmed = normalizeSlashes(moduleDir.trim()).replace(/\/+$/u, "");
   if (!moduleTrimmed) {
@@ -232,15 +305,11 @@ const joinModuleEntry = (moduleDir: string, entry: string): string | undefined =
     return negated ? `!${moduleTrimmed}` : moduleTrimmed;
   }
 
-  // If the entry is absolute, don't apply the module prefix.
   if (raw.startsWith("/") || /^[A-Za-z]:\//u.test(raw)) {
     return negated ? `!${raw}` : raw;
   }
 
-  const joined = normalizeSlashes(
-    pathPosix.join(moduleTrimmed, raw)
-  );
-
+  const joined = normalizeSlashes(pathPosix.join(moduleTrimmed, raw));
   return negated ? `!${joined}` : joined;
 };
 
@@ -419,11 +488,7 @@ const mergeBuilder = (
 const cloneConfig = (config: ExecutorConfig): ExecutorConfig => ({
   runner: config.runner,
   roots: cloneRoots(config.roots),
-  modules: config.modules ? cloneArray(config.modules) : undefined,
-  moduleRelativeRoots: config.moduleRelativeRoots
-    ? cloneRootRecord(config.moduleRelativeRoots)
-    : undefined,
-  moduleConfigFileName: config.moduleConfigFileName,
+  modules: config.modules ? cloneModules(config.modules) : undefined,
   test: config.test ? cloneTest(config.test) : undefined,
   shim: config.shim ? cloneShim(config.shim) : undefined,
   events: cloneOptionalArray(config.events),
@@ -453,6 +518,33 @@ const cloneRootRecord = (
     cloned[key] = cloneArray(value);
   }
   return cloned;
+};
+
+const cloneGroups = (
+  groups: NonNullable<ModulesConfig["groups"]>
+): NonNullable<ModulesConfig["groups"]> => {
+  const cloned: Record<string, string[]> = {};
+  for (const [key, entries] of Object.entries(groups)) {
+    const clonedEntries = cloneArray(entries) as [string, ...string[]];
+    cloned[key] = clonedEntries;
+  }
+  return cloned as NonNullable<ModulesConfig["groups"]>;
+};
+
+const cloneModules = (modules: ModulesConfig): ModulesConfig => {
+  const clone: ModulesConfig = {
+    relativeRoots: cloneRootRecord(modules.relativeRoots),
+  };
+
+  if (modules.groups) {
+    clone.groups = cloneGroups(modules.groups);
+  }
+
+  if (modules.explicit) {
+    clone.explicit = cloneArray(modules.explicit);
+  }
+
+  return clone;
 };
 
 const cloneTest = (test: TestConfig): TestConfig => {

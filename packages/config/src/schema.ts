@@ -67,6 +67,14 @@ export const ReporterSchema = z
 
 export const ModuleFormatSchema: z.ZodType<ModuleFormat> = z.enum(["cjs", "esm"]);
 
+export const PartialRootSchema = RootSchema.partial();
+
+export const ModulesConfigSchema = z.object({
+  relativeRoots: PartialRootSchema,
+  groups: z.record(z.array(z.string()).nonempty()).optional(),
+  explicit: z.array(z.string()).optional(),
+});
+
 const SourceMapSchema: z.ZodType<SourceMapSetting> = z.union([
   z.literal(true),
   z.literal(false),
@@ -96,15 +104,11 @@ export const BuilderConfigSchema: z.ZodType<BuilderConfig> = z
     hooks: BuilderHooksSchema.optional(),
   });
 
-export const PartialRootSchema = RootSchema.partial();
-
 export const ExecutorConfigSchema = z.object({
   runner: RunnerSchema,
   test: TestSchema.optional(),
   roots: RootSchema,
-  modules: z.array(z.string()).optional(),
-  moduleRelativeRoots: PartialRootSchema.optional(),
-  moduleConfigFileName: z.string().optional(),
+  modules: ModulesConfigSchema.optional(),
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
@@ -116,9 +120,7 @@ export const PartialExecutorConfigSchema = z.object({
   runner: RunnerSchema.optional(),
   test: TestSchema.optional(),
   roots: PartialRootSchema.optional(),
-  modules: z.array(z.string()).optional(),
-  moduleRelativeRoots: PartialRootSchema.optional(),
-  moduleConfigFileName: z.string().optional(),
+  modules: ModulesConfigSchema.optional(),
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),

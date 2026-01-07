@@ -17,6 +17,7 @@ export interface LoadExecutorConfigOptions {
   readonly configPath?: string;
   readonly cacheDir?: string;
   readonly external?: readonly string[];
+  readonly modules?: readonly string[];
 }
 
 const CONFIG_CANDIDATES = [
@@ -43,7 +44,11 @@ export async function loadExecutorConfig(
     );
   }
 
-  const resolved = config.resolve();
+  const resolved = config.resolve(
+    options.modules && options.modules.length > 0
+      ? { modules: options.modules }
+      : undefined
+  );
 
   return {
     filePath: configPath,

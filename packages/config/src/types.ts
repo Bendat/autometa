@@ -5,6 +5,7 @@ import {
   ExecutorConfigSchema,
   PartialExecutorConfigSchema,
   PartialRootSchema,
+  ModulesConfigSchema,
 } from "./schema";
 import type {
   BuilderConfig,
@@ -18,6 +19,7 @@ import type {
 export type ExecutorConfig = z.infer<typeof ExecutorConfigSchema>;
 export type PartialExecutorConfig = z.infer<typeof PartialExecutorConfigSchema>;
 export type PartialRootsConfig = z.infer<typeof PartialRootSchema>;
+export type ModulesConfig = z.infer<typeof ModulesConfigSchema>;
 export type TimeoutSetting = ExecutorConfig["test"] extends infer Test
   ? Test extends { timeout?: infer Timeout }
     ? NonNullable<Timeout>
@@ -43,6 +45,7 @@ export interface ConfigDefinition {
 
 export interface ResolveOptions {
   environment?: string;
+  modules?: readonly string[];
 }
 
 export interface ResolvedConfig {

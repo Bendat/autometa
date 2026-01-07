@@ -128,11 +128,15 @@ describe("defineConfig", () => {
           steps: ["steps"],
           parameterTypes: ["parameter-types"],
         },
-        modules: ["apps/brew-buddy/api"],
-        moduleRelativeRoots: {
-          features: [".features"],
-          steps: ["src/steps"],
-          parameterTypes: ["src/parameter-types.ts"],
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["src/steps"],
+            parameterTypes: ["src/parameter-types.ts"],
+          },
+          groups: {
+            "apps/brew-buddy": ["api"],
+          },
         },
       },
     });
@@ -152,6 +156,39 @@ describe("defineConfig", () => {
     expect(resolved.config.roots.parameterTypes).toEqual([
       "apps/brew-buddy/api/src/parameter-types.ts",
       "parameter-types",
+    ]);
+  });
+
+  it("filters modules when module selectors are provided", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "apps/brew-buddy": ["menu", "order"],
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ modules: ["order"] });
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/brew-buddy/order/.features",
+      "features",
+    ]);
+
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/brew-buddy/order/steps",
+      "steps",
     ]);
   });
 
