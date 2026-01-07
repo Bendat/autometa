@@ -33,6 +33,7 @@
   "dependencies": {
     "@autometa/cucumber-expressions": "workspace:*",
     "@autometa/executor": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
     "@autometa/injection": "workspace:*",
     "@autometa/scopes": "workspace:*",
     "@cucumber/cucumber-expressions": "^16.1.2",

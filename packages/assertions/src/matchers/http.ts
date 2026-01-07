@@ -280,7 +280,11 @@ function* getHeaderEntries(headers: HeadersLike): IterableIterator<[string, stri
   }
 
   if (typeof headers[Symbol.iterator] === "function") {
-    yield* headers[Symbol.iterator]!();
+    const iteratorFn = headers[Symbol.iterator];
+    if (typeof iteratorFn === "function") {
+      yield* iteratorFn.call(headers) as IterableIterator<[string, string]>;
+      return;
+    }
     return;
   }
 

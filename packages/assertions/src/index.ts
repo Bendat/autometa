@@ -12,3 +12,8 @@ export {
 	type EnsureInvokeWithAlways,
 	type EnsureInvoker,
 } from "./plugins";
+
+export {
+	runtimeAssertionsPlugin,
+	type RuntimeAssertions,
+} from "./plugins/runtime-assertions-plugin";

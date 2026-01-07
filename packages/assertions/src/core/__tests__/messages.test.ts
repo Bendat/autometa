@@ -35,7 +35,9 @@ describe("messages helpers", () => {
 
   it("formats missing list", () => {
     const formatted = formatMissingList("Missing", [1, 2]);
-    const stripped = formatted.replace(/\u001b\[[0-9;]*m/g, "");
+    const esc = String.fromCharCode(27);
+    const ansi = new RegExp(`${esc}\\[[0-9;]*m`, "g");
+    const stripped = formatted.replace(ansi, "");
     expect(stripped).toContain("Missing");
     expect(stripped).toContain("- 1");
     expect(stripped).toContain("- 2");
