@@ -74,37 +74,42 @@ export function autometa(): Plugin {
       configPath = loaded.path;
     },
     transform(code, id) {
-      if (id.endsWith(".feature")) {
-        if (!autometaConfig) {
-          throw new Error("Autometa config not found");
-        }
+      const cleanId = id.split("?", 1)[0] ?? id;
 
-        const resolved = autometaConfig.resolve();
-        const stepRoots = resolved.config.roots.steps;
-        const configDir = configPath ? dirname(configPath) : projectRoot ?? process.cwd();
-        const rootDir = projectRoot ?? process.cwd();
-        const stepGlobs = buildStepGlobs(stepRoots, {
-          configDir,
-          projectRoot: rootDir,
-        });
-        if (stepGlobs.length === 0) {
-          throw new Error(
-            "Autometa config did not resolve any step files within the current project root."
-          );
-        }
+      if (!cleanId.endsWith(".feature")) {
+        return;
+      }
 
-        const runtimeConfig = JSON.stringify(resolved.config);
-        const stepScopingMode = resolved.config.modules?.stepScoping ?? "global";
+      if (!autometaConfig) {
+        throw new Error("Autometa config not found");
+      }
 
-        // Group/module index data is useful even when step scoping is disabled,
-        // since we may need it to select the correct steps environment.
-        const groupIndexData = buildStepScopingData(resolved.config, rootDir);
-        const stepScopingData = stepScopingMode === "scoped" ? groupIndexData : null;
+      const resolved = autometaConfig.resolve();
+      const stepRoots = resolved.config.roots.steps;
+      const configDir = configPath ? dirname(configPath) : projectRoot ?? process.cwd();
+      const rootDir = projectRoot ?? process.cwd();
+      const stepGlobs = buildStepGlobs(stepRoots, {
+        configDir,
+        projectRoot: rootDir,
+      });
+      if (stepGlobs.length === 0) {
+        throw new Error(
+          "Autometa config did not resolve any step files within the current project root."
+        );
+      }
 
-        const featureFile = id;
+      const runtimeConfig = JSON.stringify(resolved.config);
+      const stepScopingMode = resolved.config.modules?.stepScoping ?? "global";
 
-        return {
-          code: `
+      // Group/module index data is useful even when step scoping is disabled,
+      // since we may need it to select the correct steps environment.
+      const groupIndexData = buildStepScopingData(resolved.config, rootDir);
+      const stepScopingData = stepScopingMode === "scoped" ? groupIndexData : null;
+
+      const featureFile = cleanId;
+
+      return {
+        code: String.raw`
             import { describe } from 'vitest';
             import { execute } from '@autometa/vitest-executor';
             import { coordinateRunnerFeature, CucumberRunner, STEPS_ENVIRONMENT_META } from '@autometa/runner';
@@ -348,7 +353,7 @@ export function autometa(): Plugin {
               const allSteps = Array.from(basePlan.stepsById.values());
 
               function normalizePathSegments(input) {
-                return String(input).replace(/\\\\/g, '/').split('/').filter(Boolean);
+                return String(input).replace(/\\/g, '/').split('/').filter(Boolean);
               }
 
               function startsWithSegments(haystack, needle) {
@@ -374,7 +379,7 @@ export function autometa(): Plugin {
                 for (const entry of __AUTOMETA_STEP_SCOPING.groups) {
                   const rootAbs = entry.rootAbs;
                   const rel = rootAbs ? __pathRelative(rootAbs, absoluteFile) : '';
-                  if (rel === '' || (!rel.startsWith('..') && !rel.startsWith('../') && !rel.startsWith('..\\\\'))) {
+                  if (rel === '' || (!rel.startsWith('..') && !rel.startsWith('../') && !rel.startsWith('..\\'))) {
                     const segments = normalizePathSegments(rel);
                     const modulePaths = entry.modulePaths || [];
                     for (const modulePath of modulePaths) {
@@ -440,13 +445,13 @@ export function autometa(): Plugin {
               }
 
               const useScopedSteps = __AUTOMETA_STEP_SCOPING_MODE === 'scoped' && __AUTOMETA_STEP_SCOPING && __AUTOMETA_STEP_SCOPING.groups;
-              const featureScope = useScopedSteps ? resolveFeatureScope() : { kind: 'root' };
+              const featureVisibilityScope = useScopedSteps ? resolveFeatureScope() : { kind: 'root' };
               const visibleSteps = useScopedSteps
                 ? allSteps
                     .filter((definition) => {
                       const file = definition && definition.source ? definition.source.file : undefined;
                       const scope = file ? resolveFileScope(file) : { kind: 'root' };
-                      return isVisibleStepScope(scope, featureScope);
+                      return isVisibleStepScope(scope, featureVisibilityScope);
                     })
                     .sort((a, b) => {
                       const aFile = a && a.source ? a.source.file : undefined;
@@ -588,9 +593,8 @@ export function autometa(): Plugin {
               execute({ plan, adapter, config: ${runtimeConfig} });
             });
           `,
-          map: null,
-        };
-      }
+        map: null,
+      };
     },
   };
 }
