@@ -17,6 +17,7 @@ import { AdminClient } from "../brew-buddy/api/admin-client";
 import { HttpHistoryService } from "../brew-buddy/http/http-history.service";
 import { RecipeCatalogService } from "../brew-buddy/recipes/recipe-catalog.service";
 import { RecipeArrangerService } from "../brew-buddy/recipes/recipe-arranger.service";
+import { OrdersService } from "../brew-buddy/capabilities/orders/orders.service";
 
 const HTTP_CLIENT = createToken<HTTP>("brew-buddy.http-client");
 
@@ -49,6 +50,13 @@ export function registerBrewBuddyServices(
     })
     .registerClass(MenuService, {
       scope: Scope.SCENARIO,
+      inject: {
+        world: { token: WORLD_TOKEN, lazy: true },
+      },
+    })
+    .registerClass(OrdersService, {
+      scope: Scope.SCENARIO,
+      deps: [HttpHistoryService, BrewBuddyMemoryService, OrderClient],
       inject: {
         world: { token: WORLD_TOKEN, lazy: true },
       },
@@ -116,6 +124,7 @@ export const brewBuddyApp = App.compositionRoot<BrewBuddyWorldBase, BrewBuddyCli
       streamManager: BrewBuddyStreamManager,
       tags: TagRegistryService,
       menu: MenuService,
+      ordering: OrdersService,
       world: { token: WORLD_TOKEN },
     },
   }

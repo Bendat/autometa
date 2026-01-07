@@ -13,6 +13,7 @@ import { InventoryClient } from "./inventory-client";
 import { AdminClient } from "./admin-client";
 import { HttpHistoryService } from "../http/http-history.service";
 import { RecipeArrangerService } from "../recipes/recipe-arranger.service";
+import { OrdersService } from "../capabilities/orders/orders.service";
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 export type HttpMethodInput = HttpMethod | Lowercase<HttpMethod>;
@@ -36,6 +37,7 @@ export class BrewBuddyClient {
   private _streamManager?: BrewBuddyStreamManager;
   private _tags?: TagRegistryService;
   private _menu?: MenuService;
+  private _ordering?: OrdersService;
   private _world?: BrewBuddyWorldBase;
 
   // Domain HTTP clients
@@ -119,6 +121,17 @@ export class BrewBuddyClient {
       throw new Error("Menu service has not been configured");
     }
     return this._menu;
+  }
+
+  set ordering(ordering: OrdersService) {
+    this._ordering = ordering;
+  }
+
+  get ordering(): OrdersService {
+    if (!this._ordering) {
+      throw new Error("Orders service has not been configured");
+    }
+    return this._ordering;
   }
 
   // Intentionally no generic request helper here.

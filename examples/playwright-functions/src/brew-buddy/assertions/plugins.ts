@@ -11,12 +11,15 @@ import type { TableRecord } from "@autometa/gherkin";
 
 import {
   type AssertionPlugin,
+  runtimeAssertionsPlugin,
+  type RuntimeAssertions,
   type EnsurePluginFacets,
 } from "@autometa/assertions";
 
 import { normalizeValue, resolveJsonPath } from "../../utils/json";
 import type { BrewBuddyWorld } from "../../world";
 import { toRecipeSlug, type RecipeList, type RecipeSummary } from "../api/recipe-client";
+import { orderAssertionsPlugin } from "./order.plugin";
 
 interface Placeholder {
   readonly __placeholder: "timestamp";
@@ -50,6 +53,8 @@ interface JsonAssertions {
   contains(expectations: Iterable<PathExpectation>): void;
   array(path: string): unknown[];
 }
+
+// `RuntimeAssertions` is provided by `@autometa/assertions`.
 
 const responsePlugin: AssertionPlugin<BrewBuddyWorld, ResponseAssertions> = ({ ensure }) =>
   (world) => {
@@ -121,6 +126,7 @@ const jsonPlugin: AssertionPlugin<BrewBuddyWorld, JsonAssertions> = ({ ensure })
     };
   };
 
+
 interface RecipeAssertions {
   isRecipeList(value: unknown): asserts value is RecipeList;
   list(): RecipeSummary[];
@@ -183,6 +189,8 @@ export const brewBuddyPlugins = {
   response: responsePlugin,
   json: jsonPlugin,
   recipes: recipesPlugin,
+  runtime: runtimeAssertionsPlugin<BrewBuddyWorld>(),
+  order: orderAssertionsPlugin<BrewBuddyWorld>(),
 } as const;
 
 export type BrewBuddyEnsureFacets = EnsurePluginFacets<
