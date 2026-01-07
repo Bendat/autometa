@@ -96,10 +96,15 @@ export const BuilderConfigSchema: z.ZodType<BuilderConfig> = z
     hooks: BuilderHooksSchema.optional(),
   });
 
+export const PartialRootSchema = RootSchema.partial();
+
 export const ExecutorConfigSchema = z.object({
   runner: RunnerSchema,
   test: TestSchema.optional(),
   roots: RootSchema,
+  modules: z.array(z.string()).optional(),
+  moduleRelativeRoots: PartialRootSchema.optional(),
+  moduleConfigFileName: z.string().optional(),
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
@@ -107,12 +112,13 @@ export const ExecutorConfigSchema = z.object({
   reporting: ReporterSchema.optional(),
 });
 
-export const PartialRootSchema = RootSchema.partial();
-
 export const PartialExecutorConfigSchema = z.object({
   runner: RunnerSchema.optional(),
   test: TestSchema.optional(),
   roots: PartialRootSchema.optional(),
+  modules: z.array(z.string()).optional(),
+  moduleRelativeRoots: PartialRootSchema.optional(),
+  moduleConfigFileName: z.string().optional(),
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),

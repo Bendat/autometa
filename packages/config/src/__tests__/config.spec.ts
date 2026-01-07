@@ -119,6 +119,42 @@ describe("defineConfig", () => {
     }).toThrow();
   });
 
+  it("expands module-relative roots into effective roots", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+          parameterTypes: ["parameter-types"],
+        },
+        modules: ["apps/brew-buddy/api"],
+        moduleRelativeRoots: {
+          features: [".features"],
+          steps: ["src/steps"],
+          parameterTypes: ["src/parameter-types.ts"],
+        },
+      },
+    });
+
+    const resolved = config.resolve();
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/brew-buddy/api/.features",
+      "features",
+    ]);
+
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/brew-buddy/api/src/steps",
+      "steps",
+    ]);
+
+    expect(resolved.config.roots.parameterTypes).toEqual([
+      "apps/brew-buddy/api/src/parameter-types.ts",
+      "parameter-types",
+    ]);
+  });
+
   it("merges reporter buffering preferences", () => {
     const config = defineConfig({
       default: {

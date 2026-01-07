@@ -1,5 +1,7 @@
 import { AutomationError } from "@autometa/errors";
 
+import { posix as pathPosix } from "node:path";
+
 import { EnvironmentSelector } from "./environment-selector";
 import {
   ExecutorConfigSchema,
@@ -34,9 +36,10 @@ export class Config {
     const override = this.definition.environments[environment] ?? {};
     const merged = mergeExecutorConfig(this.definition.default, override);
     const validated = ExecutorConfigSchema.parse(merged);
+    const expanded = expandModuleRelativeRoots(validated);
     return {
       environment,
-      config: deepFreeze(validated),
+      config: deepFreeze(expanded),
     };
   }
 
@@ -127,6 +130,19 @@ const mergeExecutorConfig = (
     result.roots = mergeRoots(result.roots, override.roots);
   }
 
+  if (override.modules !== undefined) {
+    result.modules = cloneArray(override.modules);
+  }
+
+  if (override.moduleRelativeRoots !== undefined) {
+    const cloned = cloneRootRecord(override.moduleRelativeRoots);
+    result.moduleRelativeRoots = cloned;
+  }
+
+  if (override.moduleConfigFileName !== undefined) {
+    result.moduleConfigFileName = override.moduleConfigFileName;
+  }
+
   if (override.shim !== undefined) {
     result.shim = mergeShim(result.shim, override.shim);
   }
@@ -149,6 +165,86 @@ const mergeExecutorConfig = (
 
   return result;
 };
+
+const expandModuleRelativeRoots = (config: ExecutorConfig): ExecutorConfig => {
+  const modules = config.modules?.filter((m) => Boolean(m && m.trim())) ?? [];
+  if (modules.length === 0) {
+    return config;
+  }
+
+  const moduleRelativeRoots = config.moduleRelativeRoots;
+  if (!moduleRelativeRoots) {
+    throw new AutomationError(
+      'When "modules" is provided, "moduleRelativeRoots" must also be provided.'
+    );
+  }
+
+  const expandedByKey: Record<string, string[]> = {};
+  for (const [key, entries] of Object.entries(moduleRelativeRoots)) {
+    if (!entries || entries.length === 0) {
+      continue;
+    }
+    const expanded: string[] = [];
+    for (const mod of modules) {
+      for (const entry of entries) {
+        const joined = joinModuleEntry(mod, entry);
+        if (joined) {
+          expanded.push(joined);
+        }
+      }
+    }
+    if (expanded.length > 0) {
+      expandedByKey[key] = expanded;
+    }
+  }
+
+  if (Object.keys(expandedByKey).length === 0) {
+    return config;
+  }
+
+  const roots = cloneRoots(config.roots);
+  for (const [key, expanded] of Object.entries(expandedByKey)) {
+    const existing = roots[key] ?? [];
+    roots[key] = [...expanded, ...existing];
+  }
+
+  return {
+    ...config,
+    roots,
+  };
+};
+
+const joinModuleEntry = (moduleDir: string, entry: string): string | undefined => {
+  const moduleTrimmed = normalizeSlashes(moduleDir.trim()).replace(/\/+$/u, "");
+  if (!moduleTrimmed) {
+    return undefined;
+  }
+
+  const entryTrimmed = normalizeSlashes(entry.trim());
+  if (!entryTrimmed) {
+    return undefined;
+  }
+
+  const negated = entryTrimmed.startsWith("!");
+  const raw = negated ? entryTrimmed.slice(1).trim() : entryTrimmed;
+
+  if (!raw || raw === ".") {
+    return negated ? `!${moduleTrimmed}` : moduleTrimmed;
+  }
+
+  // If the entry is absolute, don't apply the module prefix.
+  if (raw.startsWith("/") || /^[A-Za-z]:\//u.test(raw)) {
+    return negated ? `!${raw}` : raw;
+  }
+
+  const joined = normalizeSlashes(
+    pathPosix.join(moduleTrimmed, raw)
+  );
+
+  return negated ? `!${joined}` : joined;
+};
+
+const normalizeSlashes = (value: string): string => value.replace(/\\/gu, "/");
 
 type LoggingConfigValue = NonNullable<LoggingConfig>;
 type ReportingConfigValue = NonNullable<ReporterConfig>;
@@ -323,6 +419,11 @@ const mergeBuilder = (
 const cloneConfig = (config: ExecutorConfig): ExecutorConfig => ({
   runner: config.runner,
   roots: cloneRoots(config.roots),
+  modules: config.modules ? cloneArray(config.modules) : undefined,
+  moduleRelativeRoots: config.moduleRelativeRoots
+    ? cloneRootRecord(config.moduleRelativeRoots)
+    : undefined,
+  moduleConfigFileName: config.moduleConfigFileName,
   test: config.test ? cloneTest(config.test) : undefined,
   shim: config.shim ? cloneShim(config.shim) : undefined,
   events: cloneOptionalArray(config.events),
@@ -339,6 +440,19 @@ const cloneRoots = (roots: RootsConfig): RootsConfig => {
     }
   }
   return cloned as RootsConfig;
+};
+
+const cloneRootRecord = (
+  roots: Record<string, readonly string[] | undefined>
+): Record<string, string[]> => {
+  const cloned: Record<string, string[]> = {};
+  for (const [key, value] of Object.entries(roots)) {
+    if (!value) {
+      continue;
+    }
+    cloned[key] = cloneArray(value);
+  }
+  return cloned;
 };
 
 const cloneTest = (test: TestConfig): TestConfig => {
