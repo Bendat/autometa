@@ -6,7 +6,7 @@ import type { Order, OrderInput } from "../../../../../.api/src/types/domain.js"
 
 import { HttpHistoryService } from "../../http/http-history.service";
 import { BrewBuddyMemoryService } from "../../state/memory.service";
-import { OrderClient } from "../../api/order-client";
+import { OrderClient } from "../../domain/clients/order-client";
 
 import {
   buildOrderItem,
@@ -15,7 +15,7 @@ import {
 } from "./order-builders";
 import { pickOrderItemOverrides, readOrderOverrides } from "./order-overrides";
 import { parseOrder } from "./order-parsers";
-import { orderAssertionsPlugin } from "../../assertions/order.plugin";
+import { orderAssertionsPlugin } from "../../domain/ensure/order.plugin";
 
 const orderEnsurePlugins = {
   order: orderAssertionsPlugin<BrewBuddyWorldBase>(),

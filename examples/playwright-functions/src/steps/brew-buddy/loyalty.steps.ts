@@ -1,7 +1,7 @@
 import { Given, Then, ensure } from "../../autometa/steps";
 import type { BrewBuddyWorld } from "../../world";
 import type { LoyaltyAccount } from "../../../../.api/src/types/domain.js";
-import { parseLoyalty } from "../../brew-buddy/api/parsers";
+import { parseLoyalty } from "../../brew-buddy/domain/parsers";
 
 Given(
   "a loyalty account exists for {string}",

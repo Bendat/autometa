@@ -1,6 +1,6 @@
 import { Given, Then, ensure } from "../../autometa/steps";
 import type { BrewBuddyWorld } from "../../world";
-import { parseInventory } from "../../brew-buddy/api/parsers";
+import { parseInventory } from "../../brew-buddy/domain/parsers";
 
 Given(
   "the inventory for {string} is set to {int} drinks",

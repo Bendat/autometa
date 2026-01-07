@@ -8,9 +8,9 @@ import {
   type StepLifecycleStatus,
 } from "../world";
 
-import type { HttpMethod } from "../brew-buddy/api/client";
+import type { HttpMethod } from "../brew-buddy/domain/clients/client";
 import type { MenuExpectation, MenuRegion } from "../utils/regions";
-import { brewBuddyPlugins } from "../brew-buddy/assertions/plugins";
+import { brewBuddyPlugins } from "../brew-buddy/domain/ensure/plugins";
 import { brewBuddyApp } from "./app";
 import { brewBuddyParameterTypes } from "./parameter-types";
 
