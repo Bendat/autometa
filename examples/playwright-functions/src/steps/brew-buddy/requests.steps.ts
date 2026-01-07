@@ -9,9 +9,15 @@ When(
   "I send a {httpMethod} request to {string}",
   async (method: HttpMethodInput, route: string, world: BrewBuddyWorld) => {
     const payload = parseOptionalDocstring(world.runtime.consumeDocstring());
-    const requestOptions = payload === undefined ? {} : { body: payload };
     try {
-      await world.app.history.track(world.app.request(method, route, requestOptions));
+      const segments = normalisePath(route);
+      const responsePromise = world.app.http
+        .route(...segments)
+        .data(payload)
+        .method(method)
+        .run();
+
+      await world.app.history.track(responsePromise);
     } catch (error) {
       // Swallow HTTP errors - status will be checked in Then steps.
       if (error instanceof HTTPError) {
@@ -158,4 +164,13 @@ function parseOptionalDocstring(docstring: string | undefined): unknown {
     }
   }
   return trimmed;
+}
+
+function normalisePath(path: string): string[] {
+  const trimmed = path.trim();
+  if (!trimmed) {
+    return [];
+  }
+  const url = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
+  return url.split("/").filter(Boolean);
 }

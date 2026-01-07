@@ -121,30 +121,8 @@ export class BrewBuddyClient {
     return this._menu;
   }
 
-  request(method: HttpMethodInput, path: string, options: RequestOptions = {}) {
-    const segments = normalisePath(path);
-    const client = this.http
-      .route(...segments)
-      .headers(options.headers ?? {})
-      .params(options.query ?? {})
-      .data(options.body);
-
-    type SupportedVerb = Lowercase<HttpMethod>;
-    const verb = method.toLowerCase() as SupportedVerb;
-    const action = client[verb] as typeof client.get;
-    return action.call(client);
-  }
-
-  // Intentionally no `perform()` / `withHistory()` here anymore.
-  // Use `world.app.history.track(world.app.client.action())`.
-}
-
-function normalisePath(path: string): string[] {
-  const trimmed = path.trim();
-  if (!trimmed) {
-    return [];
-  }
-  const url = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
-  return url.split("/").filter(Boolean);
+  // Intentionally no generic request helper here.
+  // Steps should use domain clients; if a verb must be dynamic, prefer the HTTP
+  // fluent surface: http.method('POST').run().
 }
 
