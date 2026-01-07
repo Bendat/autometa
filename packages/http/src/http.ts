@@ -318,31 +318,15 @@ export class HTTP {
   }
 
   /**
-   * Sets the HTTP method for this request.
+   * Executes a request using the provided method.
    *
-   * This is primarily intended for cases where the verb is decided dynamically
-   * (e.g. step definitions parameterized by "GET"/"POST").
+   * Use this when the verb is dynamic (e.g. provided by a parameter). It
+   * behaves like calling {@link get}/{@link post}/{@link patch}, respecting any
+   * route/headers/body configured earlier in the chain.
    */
-  method(method: HTTPMethod | Lowercase<HTTPMethod>) {
+  fetchWith<TResponse>(method: HTTPMethod | Lowercase<HTTPMethod>, options?: HTTPAdditionalOptions<unknown>) {
     const normalized = String(method).trim().toUpperCase() as HTTPMethod;
-    return this.derive(({ builder }) => {
-      builder.method(normalized);
-    });
-  }
-
-  /**
-   * Executes the configured request using the previously selected method.
-   *
-   * Equivalent to calling one of the convenience helpers such as {@link get}
-   * or {@link post}, but supports dynamic verbs via {@link method}.
-   */
-  run<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
-    const configuredMethod = this.builder.request.method;
-    if (!configuredMethod) {
-      throw new Error(
-        "HTTP.run() requires a method to be configured. Use http.method('GET') (or call http.get()/post()/etc).")
-    }
-    return this.execute<TResponse>(configuredMethod, options);
+    return this.execute<TResponse>(normalized, options);
   }
 
   /**

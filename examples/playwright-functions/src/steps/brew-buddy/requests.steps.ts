@@ -14,8 +14,7 @@ When(
       const responsePromise = world.app.http
         .route(...segments)
         .data(payload)
-        .method(method)
-        .run();
+        .fetchWith(method);
 
       await world.app.history.track(responsePromise);
     } catch (error) {

@@ -123,6 +123,6 @@ export class BrewBuddyClient {
 
   // Intentionally no generic request helper here.
   // Steps should use domain clients; if a verb must be dynamic, prefer the HTTP
-  // fluent surface: http.method('POST').run().
+  // fluent surface: http.fetchWith('POST').
 }
 
