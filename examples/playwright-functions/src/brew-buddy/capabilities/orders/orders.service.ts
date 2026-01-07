@@ -98,8 +98,10 @@ export class OrdersService {
   }
 
   async assertOrderStatus(expectedStatus: string): Promise<void> {
-    await this.fetchOrder(this.requireRecordedOrder().ticket);
-    this.ensure().order.statusIs(expectedStatus);
+    const order = await this.fetchOrder(this.requireRecordedOrder().ticket);
+    // Status assertions can be expressed directly via base `ensure(...)` without
+    // a dedicated domain facet.
+    ensure(order.status, { label: "order status" }).toStrictEqual(expectedStatus);
   }
 
   async assertMilk(expected: string): Promise<void> {

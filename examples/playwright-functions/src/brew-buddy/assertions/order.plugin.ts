@@ -5,7 +5,6 @@ import type { Order, OrderItem } from "../../../../.api/src/types/domain.js";
 export interface OrderAssertions {
   current(): Order;
   item(index?: number): OrderItem;
-  statusIs(expected: string): void;
   milkIs(expected: string): void;
   sweetenerIs(expected: string): void;
 }
@@ -54,24 +53,20 @@ export const orderAssertionsPlugin = <World extends WorldWithOrder>(): Assertion
       item(index) {
         return requireItem(index);
       },
-      statusIs(expected) {
-        const order = requireOrder();
-        ensure(order.status, {
-          label: `Expected order status to be "${expected}" but was "${order.status}".`,
-        }).toStrictEqual(expected);
-      },
       milkIs(expected) {
         const item = requireItem(0);
         const actual = item.milk ?? "";
+        // Prefer matcher output (diffs, correct negation messaging) over a
+        // hand-written label that assumes non-negated assertions.
         ensure(normalise(actual), {
-          label: `Expected milk preference to be "${expected}" but was "${actual}".`,
+          label: "order item milk preference",
         }).toStrictEqual(normalise(expected));
       },
       sweetenerIs(expected) {
         const item = requireItem(0);
         const actual = item.sweetener ?? "";
         ensure(normalise(actual), {
-          label: `Expected sweetener preference to be "${expected}" but was "${actual}".`,
+          label: "order item sweetener preference",
         }).toStrictEqual(normalise(expected));
       },
     };
