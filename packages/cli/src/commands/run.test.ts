@@ -20,6 +20,7 @@ const getSharedPluginsMock = vi.fn();
 const createLoggingPluginMock = vi.fn();
 const compileModulesMock = vi.fn();
 const setStepsMock = vi.fn();
+const orchestrateMock = vi.fn();
 
 vi.mock("../loaders/config", () => ({
   loadExecutorConfig: (...args: unknown[]) => loadExecutorConfigMock(...args),
@@ -38,6 +39,7 @@ vi.mock("@autometa/runner", () => ({
     builder: (...args: unknown[]) => cucumberRunnerBuilderMock(...args),
     setSteps: (...args: unknown[]) => setStepsMock(...args),
   },
+  STEPS_ENVIRONMENT_META: Symbol.for("@autometa/runner:steps-environment-meta"),
 }));
 
 vi.mock("@autometa/gherkin", () => ({
@@ -58,6 +60,11 @@ vi.mock("@autometa/http", () => ({
 
 vi.mock("../compiler/module-compiler", () => ({
   compileModules: (...args: unknown[]) => compileModulesMock(...args),
+}));
+
+vi.mock("../orchestrator", () => ({
+  orchestrate: (...args: unknown[]) => orchestrateMock(...args),
+  isNativeRunnerAvailable: () => true,
 }));
 
 describe("runFeatures", () => {
@@ -91,6 +98,7 @@ describe("runFeatures", () => {
     getSharedPluginsMock.mockReturnValue([]);
     createLoggingPluginMock.mockImplementation(() => ({ name: "http-logging" }));
     compileModulesMock.mockResolvedValue({ bundlePath, format: "esm" });
+    orchestrateMock.mockResolvedValue({ success: true, exitCode: 0, runner: "default" });
   });
 
   afterEach(async () => {
@@ -201,6 +209,91 @@ describe("runFeatures", () => {
       cacheDir,
       environment: "hoisted",
     });
+  });
+
+  it("warns when explicit patterns are combined with module selection", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["src/features"],
+        steps: ["steps"],
+      },
+      modules: {
+        groups: {
+          "brew-buddy": {
+            root: "src/groups/brew-buddy",
+            modules: ["menu"],
+          },
+        },
+      },
+    } as ExecutorConfig;
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+    expandFilePatternsMock.mockResolvedValue([]);
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    await expect(
+      runFeatures({
+        cwd,
+        mode: "standalone",
+        patterns: ["src/features/example.feature"],
+        groups: ["brew-buddy"],
+      })
+    ).rejects.toThrowError();
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0]?.[0]).toContain("patterns");
+    expect(warnSpy.mock.calls[0]?.[0]).toContain("-g/-m");
+
+    warnSpy.mockRestore();
+  });
+
+  it("forwards runnerArgs to the native orchestrator", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "jest",
+      roots: {
+        features: ["features"],
+        steps: ["steps"],
+      },
+    };
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+    orchestrateMock.mockResolvedValue({ success: true, exitCode: 0, runner: "jest" });
+
+    const result = await runFeatures({
+      cwd,
+      patterns: ["features/example.feature"],
+      runnerArgs: ["-t", "my test"],
+    });
+
+    expect(result.success).toBe(true);
+    expect(orchestrateMock).toHaveBeenCalledTimes(1);
+    expect(orchestrateMock.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        cwd,
+        patterns: ["features/example.feature"],
+        runnerArgs: ["-t", "my test"],
+      })
+    );
   });
 
   it("configures reporter buffering from executor config", async () => {

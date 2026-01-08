@@ -18,6 +18,7 @@ import {
 import { expandFilePatterns } from "../utils/glob";
 import { loadExecutorConfig } from "../loaders/config";
 import { formatSummary } from "../utils/formatter";
+import { splitPatternsAndRunnerArgs } from "../utils/handover";
 import type { SummaryFormatter } from "../runtime/types";
 import type { RuntimeReporter } from "../utils/reporter";
 import type { RuntimeSummary } from "../runtime/types";
@@ -32,6 +33,11 @@ export interface RunCommandOptions {
    */
   readonly cacheDir?: string;
   readonly patterns?: readonly string[];
+  /**
+   * Extra args to pass directly to the detected native runner.
+   * Only used when mode is not "standalone".
+   */
+  readonly runnerArgs?: readonly string[];
   readonly dryRun?: boolean;
   readonly watch?: boolean;
   readonly verbose?: boolean;
@@ -287,6 +293,10 @@ export function registerRunCommand(program: Command): Command {
     .description("Execute Autometa feature files")
     .argument("[patterns...]", "Feature files or glob patterns")
     .option(
+      "--handover",
+      "Pass through runner args after '--' directly to the detected native runner (vitest/jest/playwright)"
+    )
+    .option(
       "--cache-dir <dir>",
       "Directory for Autometa CLI cache (defaults to node_modules/.cache/autometa when available)"
     )
@@ -297,19 +307,20 @@ export function registerRunCommand(program: Command): Command {
     .option("-e, --environment <environment>", "Select config environment")
     .option(
       "-g, --group <group>",
-      "Filter module groups to include",
+      "Filter module groups to include (affects module/step loading; patterns are not auto-scoped)",
       collectRepeatedString,
       [] as string[]
     )
     .option(
       "-m, --module <module>",
-      "Filter modules to include (by id or unambiguous suffix)",
+      "Filter modules to include (by id or unambiguous suffix; affects module/step loading; patterns are not auto-scoped)",
       collectRepeatedString,
       [] as string[]
     )
     .action(async (
       patterns: string[],
       flags: {
+        handover?: boolean;
         cacheDir?: string;
         dryRun?: boolean;
         watch?: boolean;
@@ -321,12 +332,17 @@ export function registerRunCommand(program: Command): Command {
       }
     ) => {
       try {
+        const split = flags?.handover === true
+          ? splitPatternsAndRunnerArgs({ patterns, rawArgv: process.argv, handover: true })
+          : splitPatternsAndRunnerArgs({ patterns, rawArgv: process.argv });
+
         const summary = await runFeatures({
           cwd: process.cwd(),
           ...(typeof flags?.cacheDir === "string" && flags.cacheDir.trim().length > 0
             ? { cacheDir: flags.cacheDir }
             : {}),
-          ...(patterns.length > 0 ? { patterns } : {}),
+          ...(split.patterns.length > 0 ? { patterns: split.patterns } : {}),
+          ...(split.runnerArgs.length > 0 ? { runnerArgs: split.runnerArgs } : {}),
           ...(typeof flags?.dryRun === "boolean" ? { dryRun: flags.dryRun } : {}),
           ...(typeof flags?.watch === "boolean" ? { watch: flags.watch } : {}),
           ...(typeof flags?.verbose === "boolean" ? { verbose: flags.verbose } : {}),
@@ -544,6 +560,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
       cwd,
       config: executorConfig,
       ...(options.patterns ? { patterns: options.patterns } : {}),
+      ...(options.runnerArgs ? { runnerArgs: options.runnerArgs } : {}),
       ...(options.dryRun !== undefined ? { dryRun: options.dryRun } : {}),
       ...(options.watch !== undefined ? { watch: options.watch } : {}),
       ...(options.verbose !== undefined ? { verbose: options.verbose } : {}),
@@ -587,6 +604,43 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
 
   const hasModuleSelection = (options.groups?.length ?? 0) > 0 || (options.modules?.length ?? 0) > 0;
   const hasExplicitPatterns = (options.patterns?.length ?? 0) > 0;
+
+  if (hasExplicitPatterns && hasModuleSelection) {
+    const patterns = [...(options.patterns ?? [])];
+
+    const shouldWarn = (() => {
+      const groups = executorConfig.modules?.groups;
+      if (!groups) {
+        return true;
+      }
+
+      // If groups were explicitly selected and we can determine group roots, only warn
+      // when the provided patterns clearly extend beyond the allowed group roots.
+      if ((options.groups?.length ?? 0) > 0) {
+        const allowedGroups = new Set(options.groups);
+        const allowedRoots = Object.entries(groups)
+          .filter(([group]) => allowedGroups.has(group))
+          .map(([, groupConfig]) => groupConfig.root);
+
+        if (allowedRoots.length > 0) {
+          return patterns.some((pattern) =>
+            !allowedRoots.some((root) => patternIsUnderRoot(pattern, root))
+          );
+        }
+      }
+
+      // If we can't confidently assess scope, warn to avoid surprising runs.
+      return true;
+    })();
+
+    if (shouldWarn) {
+      // eslint-disable-next-line no-console -- CLI warning
+      console.warn(
+        "[autometa] Note: when you pass explicit feature patterns, they are used as-is. " +
+          "Group/module filters (-g/-m) affect module/step loading, but do not automatically filter your feature patterns."
+      );
+    }
+  }
 
   const patternSource = (() => {
     if (hasExplicitPatterns) {

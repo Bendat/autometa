@@ -10,6 +10,11 @@ export interface OrchestratorOptions {
   readonly cwd: string;
   readonly config: ExecutorConfig;
   readonly patterns?: readonly string[];
+  /**
+   * Extra args to pass directly to the detected native runner.
+   * Intended for runner-specific flags like Jest `-t` or Vitest `--testNamePattern`.
+   */
+  readonly runnerArgs?: readonly string[];
   readonly dryRun?: boolean;
   readonly watch?: boolean;
   readonly verbose?: boolean;
@@ -58,7 +63,7 @@ export function detectRunner(config: ExecutorConfig, cwd: string): RunnerType {
  * and we intelligently delegate to Vitest, Jest, or our standalone runtime.
  */
 export async function orchestrate(options: OrchestratorOptions): Promise<OrchestratorResult> {
-  const { cwd, config, patterns = [], dryRun = false, watch = false, verbose = false } = options;
+  const { cwd, config, patterns = [], runnerArgs = [], dryRun = false, watch = false, verbose = false } = options;
   const runner = detectRunner(config, cwd);
 
   if (verbose) {
@@ -67,11 +72,11 @@ export async function orchestrate(options: OrchestratorOptions): Promise<Orchest
 
   switch (runner) {
     case "vitest":
-      return spawnVitest({ cwd, patterns, dryRun, watch, verbose });
+      return spawnVitest({ cwd, patterns, runnerArgs, dryRun, watch, verbose });
     case "jest":
-      return spawnJest({ cwd, patterns, dryRun, watch, verbose });
+      return spawnJest({ cwd, patterns, runnerArgs, dryRun, watch, verbose });
     case "playwright":
-      return spawnPlaywright({ cwd, patterns, dryRun, watch, verbose });
+      return spawnPlaywright({ cwd, patterns, runnerArgs, dryRun, watch, verbose });
     case "default":
       // Return indicator that we should use the standalone runtime
       return { success: true, exitCode: 0, runner: "default" };
@@ -81,6 +86,7 @@ export async function orchestrate(options: OrchestratorOptions): Promise<Orchest
 interface SpawnRunnerOptions {
   readonly cwd: string;
   readonly patterns: readonly string[];
+  readonly runnerArgs: readonly string[];
   readonly dryRun: boolean;
   readonly watch: boolean;
   readonly verbose: boolean;
@@ -90,7 +96,7 @@ interface SpawnRunnerOptions {
  * Spawns Vitest with the autometa plugin.
  */
 async function spawnVitest(options: SpawnRunnerOptions): Promise<OrchestratorResult> {
-  const { cwd, patterns, dryRun, watch, verbose } = options;
+  const { cwd, patterns, runnerArgs, dryRun, watch, verbose } = options;
 
   const args: string[] = [];
   
@@ -110,6 +116,10 @@ async function spawnVitest(options: SpawnRunnerOptions): Promise<OrchestratorRes
     args.push("--passWithNoTests");
   }
 
+  if (runnerArgs.length > 0) {
+    args.push(...runnerArgs);
+  }
+
   if (verbose) {
     console.log(`[autometa] Running: vitest ${args.join(" ")}`);
   }
@@ -122,7 +132,7 @@ async function spawnVitest(options: SpawnRunnerOptions): Promise<OrchestratorRes
  * Spawns Jest with the autometa transformer.
  */
 async function spawnJest(options: SpawnRunnerOptions): Promise<OrchestratorResult> {
-  const { cwd, patterns, dryRun, watch, verbose } = options;
+  const { cwd, patterns, runnerArgs, dryRun, watch, verbose } = options;
 
   const args: string[] = [];
 
@@ -141,6 +151,10 @@ async function spawnJest(options: SpawnRunnerOptions): Promise<OrchestratorResul
     args.push("--listTests");
   }
 
+  if (runnerArgs.length > 0) {
+    args.push(...runnerArgs);
+  }
+
   if (verbose) {
     console.log(`[autometa] Running: jest ${args.join(" ")}`);
   }
@@ -156,7 +170,7 @@ async function spawnJest(options: SpawnRunnerOptions): Promise<OrchestratorResul
  * We use `npx playwright test` with appropriate flags.
  */
 async function spawnPlaywright(options: SpawnRunnerOptions): Promise<OrchestratorResult> {
-  const { cwd, patterns, dryRun, watch, verbose } = options;
+  const { cwd, patterns, runnerArgs, dryRun, watch, verbose } = options;
 
   const args: string[] = ["test"];
 
@@ -176,6 +190,10 @@ async function spawnPlaywright(options: SpawnRunnerOptions): Promise<Orchestrato
   // For headless watch-like behavior, we'd need a different approach
   if (watch) {
     args.push("--ui");
+  }
+
+  if (runnerArgs.length > 0) {
+    args.push(...runnerArgs);
   }
 
   if (verbose) {
