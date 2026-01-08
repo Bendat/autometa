@@ -18,6 +18,7 @@ export interface MatchResult {
   readonly action: "use" | "create" | "skip" | "error";
   readonly caseId?: number;
   readonly message?: string;
+  readonly signature: string;
 }
 
 export interface MatchOptions {
@@ -47,7 +48,7 @@ export async function matchCase(options: MatchOptions): Promise<MatchResult> {
   const exactMatches = existingCases.filter((c) => c.signature === signature);
 
   if (exactMatches.length === 1) {
-    return { action: "use", caseId: exactMatches[0]!.id };
+    return { action: "use", caseId: exactMatches[0]!.id, signature };
   }
 
   if (exactMatches.length > 1) {
@@ -60,7 +61,7 @@ export async function matchCase(options: MatchOptions): Promise<MatchResult> {
       ...(forcePrompt !== undefined ? { forcePrompt } : {}),
       ...(maxPromptCandidates !== undefined ? { maxPromptCandidates } : {}),
     });
-    return normalizeResolution(resolution);
+    return normalizeResolution(resolution, signature);
   }
 
   // No signature match: fall back to title match within the same feature path (best-effort)
@@ -68,8 +69,8 @@ export async function matchCase(options: MatchOptions): Promise<MatchResult> {
 
   if (titleMatches.length <= 1) {
     return titleMatches.length === 1
-      ? { action: "use", caseId: titleMatches[0]!.id }
-      : { action: "create" };
+      ? { action: "use", caseId: titleMatches[0]!.id, signature }
+      : { action: "create", signature };
   }
 
   // Multiple title matches, resolve by policy
@@ -82,7 +83,7 @@ export async function matchCase(options: MatchOptions): Promise<MatchResult> {
     ...(forcePrompt !== undefined ? { forcePrompt } : {}),
     ...(maxPromptCandidates !== undefined ? { maxPromptCandidates } : {}),
   });
-  return normalizeResolution(resolution);
+  return normalizeResolution(resolution, signature);
 }
 
 function toCandidates(cases: readonly ExistingCase[]): CandidateCase[] {
@@ -96,15 +97,15 @@ function toCandidates(cases: readonly ExistingCase[]): CandidateCase[] {
   }));
 }
 
-function normalizeResolution(res: DuplicateResolution): MatchResult {
+function normalizeResolution(res: DuplicateResolution, signature: string): MatchResult {
   switch (res.action) {
     case "use":
-      return { action: "use", caseId: res.caseId };
+      return { action: "use", caseId: res.caseId, signature };
     case "create":
-      return { action: "create" };
+      return { action: "create", signature };
     case "skip":
-      return { action: "skip" };
+      return { action: "skip", signature };
     case "error":
-      return { action: "error", message: res.message };
+      return { action: "error", message: res.message, signature };
   }
 }
