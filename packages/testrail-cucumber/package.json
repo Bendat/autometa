@@ -1,0 +1,51 @@
+{
+  "name": "@autometa/testrail-cucumber",
+  "version": "0.0.0",
+  "description": "Upload Cucumber feature files to TestRail with separated steps and idempotent mapping",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "tsc --build --force tsconfig.types.json",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
+  },
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@cucumber/gherkin": "^26.0.3",
+    "@cucumber/messages": "^21.0.1",
+    "fast-glob": "^3.3.2",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "rimraf": "^4.1.2",
+    "tsconfig": "workspace:*",
+    "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
+    "typescript": "^4.9.5",
+    "vitest": "1.4.0"
+  }
+}

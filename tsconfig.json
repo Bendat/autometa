@@ -11,6 +11,9 @@
       "path": "packages/types/tsconfig.types.json"
     },
     {
+      "path": "packages/testrail-cucumber/tsconfig.types.json"
+    },
+    {
       "path": "packages/test-builder/tsconfig.types.json"
     },
     {
