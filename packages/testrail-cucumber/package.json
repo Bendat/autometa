@@ -31,6 +31,7 @@
   "dependencies": {
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
+    "enquirer": "^2.4.1",
     "fast-glob": "^3.3.2",
     "picocolors": "^1.1.1"
   },
