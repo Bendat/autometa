@@ -65,3 +65,22 @@ export function formatDryRun(plan: readonly PlanItem[]): string[] {
     }
   });
 }
+
+/**
+ * More explicit, human-friendly messages suitable for CLI output.
+ */
+export function formatPlanVerbose(plan: readonly PlanItem[]): string[] {
+  return plan.map((item) => {
+    const context = `"${item.nodeName}" in ${item.featurePath}`;
+    switch (item.action) {
+      case "use":
+        return `Reuse existing case #${item.caseId} for ${context} (signature ${item.signature})`;
+      case "create":
+        return `Create new case for ${context} (signature ${item.signature})`;
+      case "skip":
+        return `Skip ${context} (signature ${item.signature})`;
+      case "error":
+        return `Error for ${context}: ${item.message ?? "(unknown)"}`;
+    }
+  });
+}
