@@ -7,6 +7,8 @@ import type {
   StepDefinition,
   StepExpression,
   StepKeyword,
+  NormalizedStepOptions,
+  ExecutionMode,
   ParameterRegistryLike,
 } from "@autometa/scopes";
 import type {
@@ -62,6 +64,13 @@ const RULE_SEGMENT_KEY = "rule";
 const EXAMPLE_SEGMENT_KEY = "Example";
 
 export class TestPlanBuilder<World> {
+  private static readonly SUGGESTION_LIMIT_PER_GROUP = 3;
+  /**
+   * Similarity threshold in [0, 1].
+   * 1.0 = identical, 0.0 = completely different.
+   */
+  private static readonly SUGGESTION_MIN_SIMILARITY_SAME_TYPE = 0.6;
+  private static readonly SUGGESTION_MIN_SIMILARITY_DIFFERENT_TYPE = 0.85;
   private readonly executions: ScenarioExecution<World>[] = [];
   private readonly byId = new Map<string, ScenarioExecution<World>>();
   private readonly byQualifiedName = new Map<string, ScenarioExecution<World>>();
@@ -493,18 +502,16 @@ export class TestPlanBuilder<World> {
       if (gherkinSteps.length === 0) {
         return [];
       }
-      const missingStep = gherkinSteps[0];
-      if (missingStep) {
-        throw new Error(
-          this.buildMissingStepDefinitionMessage(context, missingStep)
-        );
-      }
-      return [];
+
+      return gherkinSteps.map((step, index) =>
+        this.createMissingStepDefinition(summary, context, step, index)
+      );
     }
 
     const remaining = new Set(summary.steps);
     const ordered: StepDefinition<World>[] = [];
     const matchers = new Map<StepDefinition<World>, StepMatcher>();
+    let encounteredMissing = false;
 
     for (const step of gherkinSteps) {
       const matched = this.findMatchingStepDefinition(
@@ -515,7 +522,16 @@ export class TestPlanBuilder<World> {
       );
 
       if (!matched) {
-        throw new Error(this.buildMissingStepDefinitionMessage(context, step));
+        ordered.push(
+          this.createMissingStepDefinition(
+            summary,
+            context,
+            step,
+            ordered.length
+          )
+        );
+        encounteredMissing = true;
+        continue;
       }
 
       ordered.push(matched);
@@ -524,6 +540,10 @@ export class TestPlanBuilder<World> {
 
     // Note: It's normal for some step definitions to remain unused in a scenario.
     // Each scenario only uses the steps it needs, so we don't throw an error for unused steps.
+
+    if (encounteredMissing) {
+      return ordered;
+    }
 
     return ordered;
   }
@@ -591,14 +611,45 @@ export class TestPlanBuilder<World> {
 
   private buildMissingStepDefinitionMessage(
     context: StepResolutionContext,
-    step: SimpleStep
+    step: SimpleStep,
+    definitions: readonly StepDefinition<World>[]
   ): string {
     const keyword = (step.keyword ?? "").trim();
     const display = keyword.length > 0 ? `${keyword} ${step.text}` : step.text;
-    const parts = [
-      `No step definition matched '${display}'`,
-      `in scenario '${context.scenario}'`,
+    const lines: string[] = [
+      "No step definition matched:",
+      "",
+      `'${display}'`,
+      "",
+      this.buildMissingStepContextLine(context),
     ];
+
+    const suggestions = this.resolveClosestStepDefinitionSuggestions(step, definitions);
+    if (suggestions.sameType.length === 0 && suggestions.differentType.length === 0) {
+      return lines.join("\n");
+    }
+
+    lines.push("", "Some close matches were found:");
+
+    if (suggestions.sameType.length > 0) {
+      lines.push("  Close matches with the same step type:");
+      for (const suggestion of suggestions.sameType) {
+        lines.push(`  - ${suggestion}`);
+      }
+    }
+
+    if (suggestions.differentType.length > 0) {
+      lines.push("  Close matches with different step type:");
+      for (const suggestion of suggestions.differentType) {
+        lines.push(`  - ${suggestion}`);
+      }
+    }
+
+    return lines.join("\n");
+  }
+
+  private buildMissingStepContextLine(context: StepResolutionContext): string {
+    const parts = [`in scenario '${context.scenario}'`];
     if (context.outline) {
       parts.push(`of outline '${context.outline}'`);
     }
@@ -628,6 +679,181 @@ export class TestPlanBuilder<World> {
 
   private describeStepDefinition(definition: StepDefinition<World>): string {
     return `${definition.keyword} ${formatExpression(definition.expression)}`;
+  }
+
+  private createMissingStepDefinition(
+    summary: ScenarioSummary<World>,
+    context: StepResolutionContext,
+    step: SimpleStep,
+    index: number
+  ): StepDefinition<World> {
+    const message = this.buildMissingStepDefinitionMessage(
+      context,
+      step,
+      summary.steps
+    );
+
+    return {
+      id: `${summary.id}:missing-step:${index}`,
+      keyword: this.resolveStepKeyword(step),
+      expression: step.text,
+      handler: () => {
+        throw new Error(message);
+      },
+      options: this.createFallbackStepOptions(summary.scenario.mode),
+    } satisfies StepDefinition<World>;
+  }
+
+  private resolveStepKeyword(step: SimpleStep): StepKeyword {
+    const raw = normalizeKeyword(step.keyword ?? "");
+    if (isFlexibleKeyword(raw)) {
+      return "And";
+    }
+
+    try {
+      return normalizeGherkinStepKeyword(raw);
+    } catch {
+      return "Given";
+    }
+  }
+
+  private createFallbackStepOptions(mode: ExecutionMode): NormalizedStepOptions {
+    return {
+      tags: [],
+      mode,
+    } satisfies NormalizedStepOptions;
+  }
+
+  private resolveClosestStepDefinitionSuggestions(
+    step: SimpleStep,
+    definitions: readonly StepDefinition<World>[]
+  ): { sameType: string[]; differentType: string[] } {
+    if (definitions.length === 0) {
+      return { sameType: [], differentType: [] };
+    }
+
+    const desiredKeyword = this.tryNormalizeKeyword(step.keyword);
+    const target = this.normalizeForDistance(step.text);
+
+    const candidates = definitions
+      .map((definition) => {
+        const candidateText = this.normalizeForDistance(
+          formatExpression(definition.expression)
+        );
+        const distance = this.computeEditDistance(target, candidateText);
+        const similarity = this.computeSimilarity(target, candidateText, distance);
+        return {
+          definition,
+          description: this.describeStepDefinition(definition),
+          distance,
+          similarity,
+        };
+      });
+
+    candidates.sort((a, b) => a.distance - b.distance);
+
+    const sameType: string[] = [];
+    const differentType: string[] = [];
+
+    for (const candidate of candidates) {
+      const isSameType =
+        !desiredKeyword || candidate.definition.keyword === desiredKeyword;
+
+      if (isSameType) {
+        if (
+          candidate.similarity <
+          TestPlanBuilder.SUGGESTION_MIN_SIMILARITY_SAME_TYPE
+        ) {
+          continue;
+        }
+        if (sameType.length < TestPlanBuilder.SUGGESTION_LIMIT_PER_GROUP) {
+          sameType.push(candidate.description);
+        }
+        continue;
+      }
+
+      if (
+        candidate.similarity <
+        TestPlanBuilder.SUGGESTION_MIN_SIMILARITY_DIFFERENT_TYPE
+      ) {
+        continue;
+      }
+      if (differentType.length < TestPlanBuilder.SUGGESTION_LIMIT_PER_GROUP) {
+        differentType.push(candidate.description);
+      }
+
+      if (
+        sameType.length >= TestPlanBuilder.SUGGESTION_LIMIT_PER_GROUP &&
+        differentType.length >= TestPlanBuilder.SUGGESTION_LIMIT_PER_GROUP
+      ) {
+        break;
+      }
+    }
+
+    return { sameType, differentType };
+  }
+
+  private normalizeForDistance(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  private computeSimilarity(a: string, b: string, distance: number): number {
+    const maxLen = Math.max(a.length, b.length);
+    if (maxLen === 0) {
+      return 1;
+    }
+    const normalized = 1 - distance / maxLen;
+    return Math.max(0, Math.min(1, normalized));
+  }
+
+  private computeEditDistance(a: string, b: string): number {
+    if (a === b) {
+      return 0;
+    }
+
+    const rows = a.length + 1;
+    const cols = b.length + 1;
+    const matrix: number[][] = [];
+
+    for (let i = 0; i < rows; i++) {
+      const row: number[] = (matrix[i] = [] as number[]);
+      row[0] = i;
+    }
+    for (let j = 0; j < cols; j++) {
+      matrix[0]![j] = j;
+    }
+
+    for (let i = 1; i < rows; i++) {
+      for (let j = 1; j < cols; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        const deletion = matrix[i - 1]![j]! + 1;
+        const insertion = matrix[i]![j - 1]! + 1;
+        const substitution = matrix[i - 1]![j - 1]! + cost;
+        matrix[i]![j] = Math.min(deletion, insertion, substitution);
+      }
+    }
+
+    return matrix[rows - 1]![cols - 1]!;
+  }
+
+  private tryNormalizeKeyword(keyword: string | undefined): StepKeyword | undefined {
+    if (!keyword) {
+      return undefined;
+    }
+
+    const raw = normalizeKeyword(keyword);
+    if (isFlexibleKeyword(raw)) {
+      return undefined;
+    }
+
+    try {
+      return normalizeGherkinStepKeyword(raw);
+    } catch {
+      return undefined;
+    }
   }
 }
 

@@ -146,6 +146,60 @@ describe("buildTestPlan", () => {
     expect(scenarioExecution.result.status).toBe("pending");
   });
 
+  it("provides closest-step suggestions when gherkin has a typo", () => {
+    const noop = vi.fn();
+    const scopes = createScopes<TestWorld>();
+    const { feature, scenario, given, then } = scopes;
+
+    feature("Login feature", () => {
+      scenario("user authenticates", () => {
+        given("user clicks login", noop);
+        given("user enters password", noop);
+        then("user is logged in", noop);
+      });
+    });
+
+    const plan = scopes.plan();
+    const adapter = createExecutionAdapter(plan);
+
+    const typoStep = createStep("typo-step", "Given", "user cliks login");
+
+    const typoScenario = createScenario("scenario-typo", "user authenticates", [typoStep]);
+
+    const featureNode: SimpleFeature = {
+      id: "feature-typo",
+      keyword: "Feature",
+      language: "en",
+      name: "Login feature",
+      description: "",
+      tags: [],
+      elements: [typoScenario],
+      comments: [],
+      location: { line: 1, column: 1 },
+    };
+
+    const testPlan = buildTestPlan({ feature: featureNode, adapter });
+
+    const [scenarioExecution] = testPlan.listExecutables();
+    expect(scenarioExecution.steps).toHaveLength(1);
+
+    const [missingStep] = scenarioExecution.steps;
+    expect(missingStep.expression).toBe("user cliks login");
+
+    try {
+      missingStep.handler({} as TestWorld);
+      throw new Error("Expected missing step to throw");
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message).toMatch(
+        /No step definition matched:\n\n'Given user cliks login'\n\nin scenario 'user authenticates' for feature 'Login feature'\.\n\nSome close matches were found:\n\s*Close matches with the same step type:\n\s*- Given user clicks login/
+      );
+
+      // Threshold should avoid spurious, distant suggestions.
+      expect(message).not.toMatch(/Close matches with different step type:/i);
+    }
+  });
+
   it("compiles rule contained scenarios and outlines", () => {
     const noop = vi.fn();
     const scopes = createScopes<TestWorld>();
