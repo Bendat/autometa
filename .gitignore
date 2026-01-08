@@ -52,5 +52,9 @@ tmp*/
 # temporarily ignore migratory cache files for packages
 .reference
 
+# Exception: we intentionally commit the legacy snapshot for inspection while rewriting
+!packages/testrail-cucumber/.reference/
+!packages/testrail-cucumber/.reference/**
+
 # autometa cli build cache
 .autometa-cli/
