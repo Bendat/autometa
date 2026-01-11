@@ -36,5 +36,6 @@ export function resetEventBus(): void {
   if (existing) {
     existing.dispatcher.clear();
   }
-  delete store[BUS_KEY];
+  // Avoid relying on `delete` semantics on globalThis in all runtimes/test environments.
+  store[BUS_KEY] = undefined;
 }

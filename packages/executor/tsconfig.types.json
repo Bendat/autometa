@@ -32,6 +32,9 @@
       "path": "../config/tsconfig.types.json"
     },
     {
+      "path": "../events/tsconfig.types.json"
+    },
+    {
       "path": "../errors/tsconfig.types.json"
     },
     {

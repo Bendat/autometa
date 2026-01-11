@@ -25,13 +25,13 @@ import type {
 import type { TestStatus } from "./status.js";
 
 const defaultIdFactory = (): string => {
-  const maybeRandom = (
+  const crypto = (
     globalThis as typeof globalThis & {
       crypto?: { randomUUID?: () => string };
     }
-  ).crypto?.randomUUID;
-  if (typeof maybeRandom === "function") {
-    return maybeRandom();
+  ).crypto;
+  if (crypto && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
   }
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 };
