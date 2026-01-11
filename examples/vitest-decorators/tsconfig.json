@@ -1,9 +1,9 @@
 {
-  "extends": "../../configuration/tsconfig/base.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../configuration/tsconfig/package.config.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
+    "types": ["node", "vitest"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ES2022",

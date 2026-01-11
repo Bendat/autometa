@@ -4,6 +4,8 @@ import type { BackofficeWorld } from "./world";
 
 export type { BaseWorld } from "../../autometa/base-runner";
 
+type BackofficeRunnerWorld = BaseWorld & BackofficeWorld;
+
 const runner = baseRunner.group("backoffice").extendWorld<BackofficeWorld>({
   backoffice: { seen: [] },
 });
@@ -13,6 +15,6 @@ installCommonSteps(stepsEnvironment);
 
 export const { Given, When, Then, And, But, ensure } = stepsEnvironment;
 
-Given("the backoffice steps are loaded", (world) => {
-  world.backoffice.seen.push("loaded");
+Given("the backoffice steps are loaded", function (this: BackofficeRunnerWorld) {
+  this.backoffice.seen.push("loaded");
 });

@@ -12,7 +12,7 @@ export function installCommonSteps<World extends BaseWorld>(
 ): void {
   const { Given } = env;
 
-  Given("the common steps are loaded", (world: World) => {
-    world.state["common:loaded"] = true;
+  Given("the common steps are loaded", function (this: World) {
+    this.state["common:loaded"] = true;
   });
 }

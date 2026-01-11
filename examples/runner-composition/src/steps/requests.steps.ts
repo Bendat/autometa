@@ -61,10 +61,10 @@ Then(
   }
 );
 
-Then("the response json should contain", (world: RunnerCompositionWorld) => {
-  const table = world.runtime.requireTable("horizontal");
+Then("the response json should contain", function (this: RunnerCompositionWorld) {
+  const table = this.runtime.requireTable("horizontal");
   const expectations = toPathExpectations(table.records());
-  const body = ensure(world.app.lastResponseBody, { label: "response json" }).toBeDefined().value;
+  const body = ensure(this.app.lastResponseBody, { label: "response json" }).toBeDefined().value;
 
   for (const { path, value } of expectations) {
     const actual = resolveJsonPath(body, path);
@@ -72,22 +72,27 @@ Then("the response json should contain", (world: RunnerCompositionWorld) => {
   }
 });
 
-Then("the response json should match the default menu snapshot", (world: RunnerCompositionWorld) => {
-  const response = world.app.lastResponse;
-  ensure(response, { label: "http response" }).toBeDefined();
-  ensureHttp(response!, { label: "response status" }).toHaveStatus(200);
+Then(
+  "the response json should match the default menu snapshot",
+  function (this: RunnerCompositionWorld) {
+    const response = this.app.lastResponse;
+    ensure(response, { label: "http response" }).toBeDefined();
+    ensureHttp(response!, { label: "response status" }).toHaveStatus(200);
 
-  const body = world.app.lastResponseBody as { items?: unknown[] } | unknown[];
-  const items = Array.isArray(body) ? body : body?.items;
+    const body = this.app.lastResponseBody as { items?: unknown[] } | unknown[];
+    const items = Array.isArray(body) ? body : body?.items;
 
-  if (!Array.isArray(items)) {
-    throw new Error("Expected response body to be an array or contain an items array");
+    if (!Array.isArray(items)) {
+      throw new Error(
+        "Expected response body to be an array or contain an items array"
+      );
+    }
+
+    if (items.length === 0) {
+      throw new Error("Expected menu to contain items");
+    }
   }
-
-  if (items.length === 0) {
-    throw new Error("Expected menu to contain items");
-  }
-});
+);
 
 function toPathExpectations(records: TableRecord[]): Array<{ readonly path: string; readonly value: unknown }> {
   return records.map((record) => {

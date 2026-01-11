@@ -16,6 +16,6 @@ installCommonSteps(stepsEnvironment);
 export const { Given, When, Then, And, But, ensure } = stepsEnvironment;
 
 // Example root step used by hoisted features.
-Given("the root steps are loaded", (world: BaseWorld) => {
-  world.state["root:loaded"] = true;
+Given("the root steps are loaded", function (this: BaseWorld) {
+  this.state["root:loaded"] = true;
 });
