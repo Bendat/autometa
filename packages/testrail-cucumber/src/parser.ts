@@ -3,6 +3,7 @@ import { IdGenerator } from "@cucumber/messages";
 import {
   FeatureChildNode,
   ParsedFeature,
+  RuleNode,
   ScenarioNode,
   ScenarioOutlineNode,
   StepNode,
@@ -44,9 +45,13 @@ export function parseFeature(text: string, featurePath: string): ParsedFeature {
     }
     if (child.rule) {
       const ruleBg = collectBackgroundSteps(child.rule.children ?? []);
+      const rule: RuleNode = {
+        name: child.rule.name,
+        ...(typeof child.rule.location?.line === "number" ? { line: child.rule.location.line } : {}),
+      };
       for (const ruleChild of child.rule.children ?? []) {
         if (ruleChild.scenario) {
-          const parsed = toScenario(ruleChild.scenario, [...backgroundSteps, ...ruleBg]);
+          const parsed = toScenario(ruleChild.scenario, [...backgroundSteps, ...ruleBg], rule);
           children.push(parsed);
         }
       }
@@ -76,7 +81,11 @@ function collectBackgroundSteps(children: readonly unknown[]): StepNode[] {
   return steps;
 }
 
-function toScenario(scenario: unknown, backgroundSteps: StepNode[]): ScenarioNode | ScenarioOutlineNode {
+function toScenario(
+  scenario: unknown,
+  backgroundSteps: StepNode[],
+  rule?: RuleNode
+): ScenarioNode | ScenarioOutlineNode {
   const record = asRecord(scenario);
 
   const tags = asArray(record.tags)
@@ -89,6 +98,7 @@ function toScenario(scenario: unknown, backgroundSteps: StepNode[]): ScenarioNod
       const line = asRecord(record.location).line;
       return typeof line === "number" ? line : undefined;
     })(),
+    ...(rule ? { rule } : {}),
     description: typeof record.description === "string" ? record.description : undefined,
     tags,
     steps: mapSteps(asArray(record.steps)),

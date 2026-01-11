@@ -59,7 +59,9 @@ function registerSyncCommand(program: Command): void {
     .option("--dry-run", "Do not mutate TestRail; print plan only", false)
     .option("--update-existing", "Update existing cases (title/description/steps)", false)
     .option("--write-tags", "Write @C<id> (and suite tag, if applicable) back into feature files", false)
+    .option("--write-tags-on-dry-run", "When --dry-run, still write tags back into feature files", false)
     .option("--case-tag-prefix <prefix>", "Case id tag prefix (default: @C)")
+    .option("--suite-tag-prefix <prefix>", "Suite id tag prefix (default: @S)")
     .option("--steps-field <field>", "Steps field name (default: custom_steps_separated)")
     .option("--description-field <field>", "Description field name (default: custom_test_case_description)")
     // TestRail credentials
@@ -76,6 +78,8 @@ function registerSyncCommand(program: Command): void {
       const maxPromptCandidates = Number(opts.maxPromptCandidates);
       const forcePrompt = Boolean(opts.forcePrompt);
       const dryRun = Boolean(opts.dryRun);
+      const writeTagsOnDryRun = Boolean(opts.writeTagsOnDryRun);
+      const suiteTagPrefix = String(opts.suiteTagPrefix ?? "@S");
 
       const { client, projectId } = requireClient(opts);
 
@@ -94,7 +98,7 @@ function registerSyncCommand(program: Command): void {
         console.log("");
       }
 
-      const filePaths = await fg(patterns, { onlyFiles: true, unique: true, dot: false });
+      const filePaths = await resolveFeatureFiles(patterns);
       if (filePaths.length === 0) {
         throw new Error(`No feature files matched: ${patterns.join(", ")}`);
       }
@@ -125,15 +129,29 @@ function registerSyncCommand(program: Command): void {
           }
 
           if (opts.writeTags) {
+            const suiteTag =
+              suite.context.mode === "multi" ? `${suiteTagPrefix}${suite.context.suiteId}` : undefined;
             const writeback = applyCaseTagsToFeatureText(text, feature, result.caseIdBySignature, {
               ...(opts.caseTagPrefix ? { caseTagPrefix: String(opts.caseTagPrefix) } : {}),
-              ...(suite.suiteTag ? { suiteTag: suite.suiteTag } : {}),
+              ...(suiteTag ? { suiteTag } : {}),
             });
             if (writeback.applied.length) {
-              console.log("  " + pc.dim("(dry-run) Would update tags:"));
+              console.log(
+                "  " +
+                  pc.dim(
+                    writeTagsOnDryRun
+                      ? "(dry-run) Writing tags back into files:"
+                      : "(dry-run) Would update tags:"
+                  )
+              );
               for (const a of writeback.applied) {
                 console.log("  " + pc.dim(`- ${a.nodeName}: +${a.addedTags.join(" ")}`));
               }
+            }
+
+            if (writeTagsOnDryRun && writeback.changed) {
+              await fs.writeFile(filePath, writeback.updatedText, "utf8");
+              console.log("  " + pc.green(`Wrote tags to ${featurePath}`));
             }
           }
           console.log("");
@@ -157,9 +175,11 @@ function registerSyncCommand(program: Command): void {
         }
 
         if (opts.writeTags) {
+          const suiteTag =
+            suite.context.mode === "multi" ? `${suiteTagPrefix}${suite.context.suiteId}` : undefined;
           const writeback = applyCaseTagsToFeatureText(text, feature, result.caseIdBySignature, {
             ...(opts.caseTagPrefix ? { caseTagPrefix: String(opts.caseTagPrefix) } : {}),
-            ...(suite.suiteTag ? { suiteTag: suite.suiteTag } : {}),
+            ...(suiteTag ? { suiteTag } : {}),
           });
           if (writeback.changed) {
             await fs.writeFile(filePath, writeback.updatedText, "utf8");
@@ -214,7 +234,7 @@ function registerPlanCommand(program: Command): void {
         console.log("");
       }
 
-      const filePaths = await fg(patterns, { onlyFiles: true, unique: true, dot: false });
+      const filePaths = await resolveFeatureFiles(patterns);
       if (filePaths.length === 0) {
         throw new Error(`No feature files matched: ${patterns.join(", ")}`);
       }
@@ -235,7 +255,7 @@ function registerPlanCommand(program: Command): void {
 
         const heading = pc.bold(`${featurePath}`);
         console.log(heading);
-        for (const line of formatPlanVerboseWithSuite(plan, undefined)) {
+        for (const line of formatPlanVerboseWithSuite(plan, suite)) {
           console.log("  " + line);
         }
         console.log("");
@@ -314,4 +334,34 @@ function toRepoRelative(filePath: string): string {
   const rel = path.relative(process.cwd(), filePath);
   // Use forward slashes for stable signatures across OSes.
   return rel.split(path.sep).join("/");
+}
+
+function toGlobPath(input: string): string {
+  return input.split(path.sep).join("/");
+}
+
+async function resolveFeatureFiles(inputs: readonly string[]): Promise<string[]> {
+  const patterns: string[] = [];
+
+  for (const input of inputs) {
+    const absolutePath = path.resolve(process.cwd(), input);
+    try {
+      const stats = await fs.stat(absolutePath);
+      if (stats.isDirectory()) {
+        patterns.push(toGlobPath(path.join(input, "**/*.feature")));
+        continue;
+      }
+      if (stats.isFile()) {
+        if (!input.endsWith(".feature")) {
+          throw new Error(`Expected a .feature file, got: ${input}`);
+        }
+        patterns.push(toGlobPath(input));
+        continue;
+      }
+    } catch {
+      patterns.push(toGlobPath(input));
+    }
+  }
+
+  return fg(patterns, { onlyFiles: true, unique: true, dot: false });
 }

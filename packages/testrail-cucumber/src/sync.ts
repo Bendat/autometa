@@ -57,20 +57,38 @@ export async function syncFeatureToTestRail(
 
   const suiteId = suite.context.mode === "multi" ? suite.context.suiteId : undefined;
 
-  const section = await ensureFeatureSection(client, projectId, feature, suiteId, { dryRun });
-  if (section.id === -1) {
+  const initialSections = await client.getSections(projectId, { ...(suiteId !== undefined ? { suiteId } : {}) });
+  const { section: featureSection, sections } = await ensureFeatureSection(
+    client,
+    initialSections,
+    projectId,
+    feature,
+    suiteId,
+    { dryRun }
+  );
+
+  if (featureSection.id === -1) {
     messages.push(`[testrail] No existing section found for feature ${feature.path}; would create a new section in non-dry-run mode.`);
   } else {
-    messages.push(`[testrail] Using section #${section.id} for feature ${feature.path} (${feature.name}).`);
+    messages.push(`[testrail] Using section #${featureSection.id} for feature ${feature.path} (${feature.name}).`);
   }
 
   const existingCases =
-    section.id === -1
+    featureSection.id === -1
       ? []
-      : await loadExistingCases(client, projectId, {
-          ...(suiteId !== undefined ? { suiteId } : {}),
-          sectionId: section.id,
-        });
+      : (
+          await Promise.all(
+            [
+              featureSection.id,
+              ...sections.filter((s) => s.parent_id === featureSection.id).map((s) => s.id),
+            ].map((sectionId) =>
+              loadExistingCases(client, projectId, {
+                ...(suiteId !== undefined ? { suiteId } : {}),
+                sectionId,
+              })
+            )
+          )
+        ).flat();
 
   const plan = await buildPlan({
     feature,
@@ -103,7 +121,7 @@ export async function syncFeatureToTestRail(
     const reuseMap = Object.fromEntries(reuseEntries);
     return {
       featurePath: feature.path,
-      sectionId: section.id,
+      sectionId: featureSection.id,
       suite,
       plan,
       caseIdBySignature: reuseMap,
@@ -116,6 +134,8 @@ export async function syncFeatureToTestRail(
   const createdCases: TestRailCase[] = [];
   const updatedCases: TestRailCase[] = [];
   const caseIdBySignature = new Map<string, number>();
+  let mutableSections = [...sections];
+  const ruleSectionsByName = new Map<string, TestRailSection>();
 
   for (const item of plan) {
     if (item.action === "error") {
@@ -133,7 +153,23 @@ export async function syncFeatureToTestRail(
     }
 
     if (item.action === "create") {
-      const created = await client.addCase(section.id, buildCasePayload(feature, node, item.signature, suite, options));
+      const targetSection = await resolveTargetSection(
+        client,
+        mutableSections,
+        ruleSectionsByName,
+        projectId,
+        feature,
+        featureSection,
+        suiteId,
+        node,
+        { dryRun }
+      );
+      mutableSections = targetSection.sections;
+
+      const created = await client.addCase(
+        targetSection.section.id,
+        buildCasePayload(feature, node, item.signature, suite, options)
+      );
       createdCases.push(created);
       caseIdBySignature.set(item.signature, created.id);
       messages.push(pc.green(`[testrail] Created case #${created.id} for ${item.nodeName}.`));
@@ -174,7 +210,7 @@ export async function syncFeatureToTestRail(
 
   return {
     featurePath: feature.path,
-    sectionId: section.id,
+    sectionId: featureSection.id,
     suite,
     plan,
     caseIdBySignature: Object.fromEntries(caseIdBySignature.entries()),
@@ -186,23 +222,22 @@ export async function syncFeatureToTestRail(
 
 async function ensureFeatureSection(
   client: TestRailClient,
+  sections: readonly TestRailSection[],
   projectId: number,
   feature: ParsedFeature,
   suiteId: number | undefined,
   opts: { readonly dryRun: boolean }
-): Promise<TestRailSection> {
-  const sections = await client.getSections(projectId, { ...(suiteId !== undefined ? { suiteId } : {}) });
-
+): Promise<{ section: TestRailSection; sections: TestRailSection[] }> {
   const pathMarker = `autometa:featurePath=${feature.path}`;
   const byPath = sections.filter((s) => (s.description ?? "").includes(pathMarker));
   if (byPath.length > 0) {
     const first = byPath[0];
     if (first) {
       if (byPath.length === 1) {
-        return first;
+        return { section: first, sections: [...sections] };
       }
       const named = byPath.find((s) => s.name.trim() === feature.name.trim());
-      return named ?? first;
+      return { section: named ?? first, sections: [...sections] };
     }
   }
 
@@ -211,25 +246,26 @@ async function ensureFeatureSection(
     const first = matches[0];
     if (first) {
       if (matches.length === 1) {
-        return first;
+        return { section: first, sections: [...sections] };
       }
 
       // Best effort: prefer one with description containing feature path.
       const withPath = matches.find((s) => (s.description ?? "").includes(feature.path));
-      return withPath ?? first;
+      return { section: withPath ?? first, sections: [...sections] };
     }
   }
 
   if (opts.dryRun) {
     // Fake section id for output only.
-    return { id: -1, name: feature.name, description: featureDescription(feature) };
+    return { section: { id: -1, name: feature.name, description: featureDescription(feature) }, sections: [...sections] };
   }
 
-  return client.addSection(projectId, {
+  const created = await client.addSection(projectId, {
     name: feature.name,
     description: featureDescription(feature),
     ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
   });
+  return { section: created, sections: [...sections, created] };
 }
 
 function featureDescription(feature: ParsedFeature): string {
@@ -238,6 +274,60 @@ function featureDescription(feature: ParsedFeature): string {
     `autometa:featurePath=${feature.path}`,
   ].filter(Boolean);
   return parts.join("\n\n");
+}
+
+async function resolveTargetSection(
+  client: TestRailClient,
+  sections: readonly TestRailSection[],
+  ruleSectionsByName: Map<string, TestRailSection>,
+  projectId: number,
+  feature: ParsedFeature,
+  featureSection: TestRailSection,
+  suiteId: number | undefined,
+  node: FeatureChildNode,
+  opts: { readonly dryRun: boolean }
+): Promise<{ section: TestRailSection; sections: TestRailSection[] }> {
+  const ruleName = node.rule?.name?.trim();
+  if (!ruleName || featureSection.id === -1) {
+    return { section: featureSection, sections: [...sections] };
+  }
+
+  const cached = ruleSectionsByName.get(ruleName);
+  if (cached) {
+    return { section: cached, sections: [...sections] };
+  }
+
+  const found = sections.find((s) => s.parent_id === featureSection.id && s.name.trim() === ruleName);
+  if (found) {
+    ruleSectionsByName.set(ruleName, found);
+    return { section: found, sections: [...sections] };
+  }
+
+  if (opts.dryRun) {
+    const fake: TestRailSection = {
+      id: -1,
+      name: ruleName,
+      ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
+      parent_id: featureSection.id,
+      description: ruleDescription(feature, ruleName),
+    };
+    ruleSectionsByName.set(ruleName, fake);
+    return { section: fake, sections: [...sections] };
+  }
+
+  const created = await client.addSection(projectId, {
+    name: ruleName,
+    description: ruleDescription(feature, ruleName),
+    ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
+    parent_id: featureSection.id,
+  });
+  ruleSectionsByName.set(ruleName, created);
+  return { section: created, sections: [...sections, created] };
+}
+
+function ruleDescription(feature: ParsedFeature, ruleName: string): string {
+  const parts = [`autometa:featurePath=${feature.path}`, `autometa:rule=${ruleName}`].filter(Boolean);
+  return parts.join("\n");
 }
 
 async function loadExistingCases(

@@ -4,6 +4,12 @@ export interface FeatureLocation {
   readonly featurePath: string; // repo-relative path
 }
 
+export interface RuleNode {
+  readonly name: string;
+  /** 1-based line number of the `Rule:` line in the source file (best-effort). */
+  readonly line?: number;
+}
+
 export interface StepNode {
   readonly keyword: StepKeyword;
   readonly text: string;
@@ -18,6 +24,7 @@ export interface ScenarioNode {
   readonly name: string;
   /** 1-based line number of the `Scenario:` line in the source file (best-effort). */
   readonly line?: number;
+  readonly rule?: RuleNode;
   readonly description?: string;
   readonly steps: readonly StepNode[];
   readonly tags: readonly string[];
@@ -34,6 +41,7 @@ export interface ScenarioOutlineNode {
   readonly name: string;
   /** 1-based line number of the `Scenario Outline:` line in the source file (best-effort). */
   readonly line?: number;
+  readonly rule?: RuleNode;
   readonly description?: string;
   readonly steps: readonly StepNode[];
   readonly tags: readonly string[];
