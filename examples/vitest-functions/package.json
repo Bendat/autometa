@@ -15,6 +15,7 @@
     "@autometa/assertions": "workspace:*",
     "@autometa/config": "workspace:*",
     "@autometa/cucumber-expressions": "workspace:*",
+    "@autometa/events": "workspace:*",
     "@autometa/errors": "workspace:*",
     "@autometa/executor": "workspace:*",
     "@autometa/gherkin": "workspace:*",

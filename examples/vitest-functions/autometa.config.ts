@@ -8,6 +8,7 @@ export default defineConfig({
       steps: ["./src/steps", "./src/step-definitions.ts"],
       parameterTypes: ["./src/support/parameter-types.ts"],
     },
+    events: ["./src/support/autometa.events.ts"],
     test: {
       timeout: [30, "s"],
     },
