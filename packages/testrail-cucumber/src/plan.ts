@@ -1,6 +1,7 @@
 import type { ParsedFeature, FeatureChildNode } from "./types";
 import type { ExistingCase, MatchResult } from "./matcher";
 import { matchCase } from "./matcher";
+import type { SuiteResolution } from "./suite-context";
 
 export interface PlanItem {
   readonly featurePath: string;
@@ -83,4 +84,13 @@ export function formatPlanVerbose(plan: readonly PlanItem[]): string[] {
         return `Error for ${context}: ${item.message ?? "(unknown)"}`;
     }
   });
+}
+
+/**
+ * Compose suite-context messages (if any) with the verbose plan lines.
+ * Useful for CLI dry-run output to show suite selection/creation and tag application notes.
+ */
+export function formatPlanVerboseWithSuite(plan: readonly PlanItem[], suite?: SuiteResolution): string[] {
+  const header = suite?.messages ?? [];
+  return [...header, ...formatPlanVerbose(plan)];
 }

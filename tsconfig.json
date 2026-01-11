@@ -44,10 +44,10 @@
       "path": "packages/jest-executor/tsconfig.types.json"
     },
     {
-      "path": "packages/http/tsconfig.types.json"
+      "path": "packages/injection/tsconfig.types.json"
     },
     {
-      "path": "packages/injection/tsconfig.types.json"
+      "path": "packages/http/tsconfig.types.json"
     },
     {
       "path": "packages/gherkin/tsconfig.types.json"
