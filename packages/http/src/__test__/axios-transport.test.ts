@@ -95,6 +95,22 @@ describe("AxiosTransport.send", () => {
     });
   });
 
+  it("does not pass params separately when fullUrl already contains query string", async () => {
+    const request = HTTPRequestBuilder.create()
+      .method("GET")
+      .url("https://example.com")
+      .route("items")
+      .param("tags", ["x", "y"] as ParamValue)
+      .build();
+
+    await transport.send(request, {});
+
+    const config = mockAxios.request.mock.calls[0]?.[0] as { url?: string; params?: unknown } | undefined;
+    expect(config?.url).toContain("tags=x");
+    expect(config?.url).toContain("tags=y");
+    expect(config?.params).toBeUndefined();
+  });
+
   it("uses default validateStatus that always returns true", async () => {
     const request = new HTTPRequest({ baseUrl: "https://example.com", method: "GET" });
     await transport.send(request, {});

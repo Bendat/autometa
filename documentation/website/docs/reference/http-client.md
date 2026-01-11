@@ -72,6 +72,33 @@ await http
 	.get();
 ```
 
+### Query Serialization (Arrays + Objects)
+
+Query params are serialized by Autometa (via `URLSearchParams`) before the request hits the transport, so the behaviour is consistent across Fetch and Axios.
+
+Use `sharedQueryFormat(...)` to set defaults for a client subtree, or `queryFormat(...)` for a derived one-off:
+
+```ts
+const api = HTTP.create()
+	.url("https://api.example.com")
+	.sharedQueryFormat({ arrayFormat: "brackets", objectFormat: "dot" });
+
+await api
+	.route("items")
+	.param("tags", ["a", "b"])
+	.param("filter", { owner: "me" })
+	.get();
+// => ?tags[]=a&tags[]=b&filter.owner=me
+```
+
+If you need a specific standard (e.g. a backend expecting `qs`-style output), provide a custom `serializer`:
+
+```ts
+api.sharedQueryFormat({
+  serializer: (params) => new URLSearchParams({ ...params } as never).toString(),
+});
+```
+
 ### Routes
 
 Build URLs by appending route segments. Each segment is URL-joined safely with the base URL set via `.url(...)`.

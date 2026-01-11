@@ -48,7 +48,6 @@ export function createAxiosTransport(
         url: request.fullUrl ?? "",
         method: request.method ?? "GET",
         headers: { ...request.headers },
-        params: request.params,
         data: request.data,
         validateStatus: () => true,
         ...restOptions,
