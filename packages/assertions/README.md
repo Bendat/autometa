@@ -17,5 +17,3 @@ ensure([1, 2, 3]).toBeArrayContaining([2]);
 ensure(new Set([1, 2, 3])).toBeIterableContaining([3]);
 ensure("text").toHaveLength(4);
 ```
-
-See `IMPLEMENTATION_CHECKLIST.md` for the roadmap and open work items while the API stabilises.
