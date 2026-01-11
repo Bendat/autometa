@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
 
 concurrency:
   group: publish-${{ github.event.workflow_run.head_branch || github.ref }}
@@ -48,13 +49,13 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
           registry-url: https://registry.npmjs.org
-      - name: Verify npm credentials
+      - name: Verify npm credentials (optional)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "NPM_TOKEN secret is not set; cannot publish."
-            exit 1
+            echo "No NPM_TOKEN provided; assuming npm trusted publishing (OIDC) is configured."
+            exit 0
           fi
           npm whoami
       - name: Install dependencies
@@ -66,4 +67,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm release
+          NPM_CONFIG_PROVENANCE: "true"
+        run: pnpm release:publish

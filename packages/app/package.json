@@ -1,6 +1,6 @@
 {
   "name": "@autometa/app",
-  "version": "0.0.0",
+  "version": "0.4.2",
   "description": "",
   "type": "module",
   "main": "dist/index.cjs",
@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit -p tsconfig.dev.json",
     "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
     "build": "tsup && pnpm run build:types",
-    "build:types": "tsc --build --force tsconfig.types.json",
+    "build:types": "tsc -p tsconfig.types.json",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",

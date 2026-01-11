@@ -28,7 +28,8 @@
     "turbo:gen": "turbo gen library && pnpm i && pnpm sync-ts-references",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "pnpm run build",
-    "release": "pnpm run build && changeset publish",
+    "release": "pnpm run build && pnpm run release:publish",
+    "release:publish": "node scripts/changeset-publish-ci.mjs",
     "release:prepare": "pnpm changeset version",
     "local:unpublish": "pnpm unpublish --registry http://localhost:4873/ --force",
     "local:publish": "pnpm publish --registry http://localhost:4873/ --force",
@@ -58,5 +59,10 @@
   },
   "dependencies": {
     "@vitest/coverage-istanbul": "^1.4.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "cytoscape": "3.23.0"
+    }
   }
 }
