@@ -74,6 +74,7 @@ export function process(
 
   // For Jest, we need to use require.context or manual requires
   // Since Jest doesn't have import.meta.glob, we generate explicit requires
+  const eventRequires = generateEventRequires(resolved.config.events, configDir);
   const stepRequires = generateStepRequires(stepRoots, configDir, projectRoot);
   const runtimeConfig = JSON.stringify(resolved.config);
   const gherkinContent = JSON.stringify(sourceText);
@@ -84,6 +85,7 @@ const { execute } = require('@autometa/jest-executor');
 const { coordinateRunnerFeature, CucumberRunner } = require('@autometa/runner');
 const { parseGherkin } = require('@autometa/gherkin');
 
+${eventRequires}
 ${stepRequires}
 
 function collectCandidateModules(imported) {
@@ -359,6 +361,41 @@ function generateStepRequires(
 
   const moduleList = Array.from({ length: moduleIndex }, (_, i) => `stepModule${i}`).join(", ");
   return `${requires.join("\n")}\nconst stepModules = [${moduleList}];`;
+}
+
+/**
+ * Generate require statements for event listener modules.
+ * These modules are imported for side effects (e.g. registering listeners).
+ */
+function generateEventRequires(
+  eventModules: readonly string[] | undefined,
+  configDir: string
+): string {
+  if (!eventModules || eventModules.length === 0) {
+    return "";
+  }
+
+  const requires: string[] = [];
+
+  for (const entry of eventModules) {
+    const normalized = entry.trim();
+    if (!normalized) {
+      continue;
+    }
+
+    const absolutePath = isAbsolute(normalized)
+      ? normalized
+      : resolve(configDir, normalized);
+
+    if (!existsSync(absolutePath)) {
+      continue;
+    }
+
+    const normalizedAbsolutePath = normalizeSlashes(absolutePath);
+    requires.push(`require('${normalizedAbsolutePath}');`);
+  }
+
+  return requires.length > 0 ? requires.join("\n") : "";
 }
 
 function buildStepGlobs(

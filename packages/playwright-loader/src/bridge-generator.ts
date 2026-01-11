@@ -84,7 +84,7 @@ export function generateBridgeCode(
   const projectRoot = runtimeProjectRoot ?? findProjectRoot(dirname(featurePath));
 
   // Find and load the autometa config to get step roots
-  const { configPath, stepRoots } = loadConfigSync(projectRoot);
+  const { configPath, stepRoots, events } = loadConfigSync(projectRoot);
   const configDir = configPath ? dirname(configPath) : projectRoot;
 
   // Build step file patterns for dynamic import
@@ -92,6 +92,13 @@ export function generateBridgeCode(
     configDir,
     projectRoot,
   });
+
+  const eventPatterns = buildStepPatterns(events, {
+    configDir,
+    projectRoot,
+  });
+
+  const eventImports = generateEventImports(eventPatterns);
 
   // Generate import statements for step modules
   const stepImports = generateStepImports(stepPatterns, projectRoot);
@@ -136,6 +143,9 @@ const debugLog = (...args) => {
 
 // Debug: Step discovery configuration
 debugLog("[Autometa Bridge] Step discovery info:", ${JSON.stringify(debugInfo)});
+
+// Dynamic imports for event listener modules (side effects)
+${eventImports}
 
 // Dynamic imports for step definition modules
 ${stepImports}
@@ -345,6 +355,7 @@ function createFeatureScopePlan(feature, basePlan) {
 
 const gherkin = ${JSON.stringify(featureContent)};
 const feature = parseGherkin(gherkin);
+await loadEventModules();
 const stepModules = await loadStepModules();
 const steps = resolveStepsEnvironment(stepModules);
 
@@ -455,7 +466,7 @@ function findProjectRoot(startDir: string): string {
  */
 function loadConfigSync(
   root: string
-): { configPath: string | undefined; stepRoots: string[] } {
+): { configPath: string | undefined; stepRoots: string[]; events: string[] } {
   const candidates = [
     "autometa.config.ts",
     "autometa.config.js",
@@ -485,16 +496,18 @@ function loadConfigSync(
 
     const resolved = config.resolve();
     const stepRoots = resolved.config?.roots?.steps ?? [];
+    const events = resolved.config?.events ?? [];
 
     return {
       configPath,
       stepRoots: Array.isArray(stepRoots) && stepRoots.length > 0
         ? stepRoots
         : findDefaultStepRoots(root),
+      events: Array.isArray(events) ? events : [],
     };
   }
 
-  return { configPath: undefined, stepRoots: findDefaultStepRoots(root) };
+  return { configPath: undefined, stepRoots: findDefaultStepRoots(root), events: [] };
 }
 
 function isConfig(config: unknown): config is Config {
@@ -699,6 +712,29 @@ ${imports}
   return {
 ${moduleMap}
   };
+}
+`;
+}
+
+function generateEventImports(eventPatterns: string[]): string {
+  if (eventPatterns.length === 0) {
+    return `
+async function loadEventModules() {
+  return;
+}
+`;
+  }
+
+  const imports = eventPatterns
+    .map((file) => {
+      const importPath = normalizeSlashes(file);
+      return `  await import(${JSON.stringify(importPath)});`;
+    })
+    .join("\n");
+
+  return `
+async function loadEventModules() {
+${imports}
 }
 `;
 }

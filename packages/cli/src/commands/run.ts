@@ -927,6 +927,11 @@ async function createModulePlan(config: ExecutorConfig, cwd: string): Promise<Mo
     }
   };
 
+  const eventFiles = await resolveRootFiles(config.events ?? [], cwd);
+  if (eventFiles.length > 0) {
+    pushFiles(eventFiles);
+  }
+
   for (const key of ROOT_LOAD_ORDER) {
     const entries = rootsRecord[key];
     if (!entries || entries.length === 0) {

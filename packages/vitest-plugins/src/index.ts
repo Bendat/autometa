@@ -98,6 +98,11 @@ export function autometa(): Plugin {
         );
       }
 
+      const eventGlobs = buildStepGlobs(resolved.config.events, {
+        configDir,
+        projectRoot: rootDir,
+      });
+
       const runtimeConfig = JSON.stringify(resolved.config);
       const stepScopingMode = resolved.config.modules?.stepScoping ?? "global";
 
@@ -121,6 +126,9 @@ export function autometa(): Plugin {
             const __AUTOMETA_STEP_SCOPING = ${JSON.stringify(stepScopingData)};
             const __AUTOMETA_FEATURE_FILE = ${JSON.stringify(featureFile)};
 
+            const __AUTOMETA_EVENT_MODULES = ${eventGlobs.length > 0
+              ? `import.meta.glob(${JSON.stringify(eventGlobs)}, { eager: true })`
+              : "{}"};
             const stepModules = import.meta.glob(${JSON.stringify(stepGlobs)}, { eager: true });
 
             function collectCandidateModules(imported) {
