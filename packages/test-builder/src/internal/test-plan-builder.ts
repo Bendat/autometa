@@ -816,26 +816,49 @@ export class TestPlanBuilder<World> {
 
     const rows = a.length + 1;
     const cols = b.length + 1;
-    const matrix = Array.from({ length: rows }, () => Array<number>(cols).fill(0));
+    const matrix: number[][] = Array.from({ length: rows }, () => Array<number>(cols).fill(0));
 
     for (let i = 0; i < rows; i++) {
-      matrix[i]![0] = i;
+      const row = matrix[i];
+      if (!row) {
+        throw new Error("Internal error: matrix row missing");
+      }
+      row[0] = i;
+    }
+
+    const row0 = matrix[0];
+    if (!row0) {
+      throw new Error("Internal error: matrix[0] missing");
     }
     for (let j = 0; j < cols; j++) {
-      matrix[0]![j] = j;
+      row0[j] = j;
     }
 
     for (let i = 1; i < rows; i++) {
+      const row = matrix[i];
+      const prevRow = matrix[i - 1];
+      if (!row || !prevRow) {
+        throw new Error("Internal error: matrix row missing");
+      }
+
       for (let j = 1; j < cols; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-        const deletion = matrix[i - 1]![j]! + 1;
-        const insertion = matrix[i]![j - 1]! + 1;
-        const substitution = matrix[i - 1]![j - 1]! + cost;
-        matrix[i]![j] = Math.min(deletion, insertion, substitution);
+        const deletion = (prevRow[j] ?? 0) + 1;
+        const insertion = (row[j - 1] ?? 0) + 1;
+        const substitution = (prevRow[j - 1] ?? 0) + cost;
+        row[j] = Math.min(deletion, insertion, substitution);
       }
     }
 
-    return matrix[rows - 1]![cols - 1]!;
+    const lastRow = matrix[rows - 1];
+    if (!lastRow) {
+      throw new Error("Internal error: last matrix row missing");
+    }
+    const result = lastRow[cols - 1];
+    if (result === undefined) {
+      throw new Error("Internal error: matrix result missing");
+    }
+    return result;
   }
 
   private tryNormalizeKeyword(keyword: string | undefined): StepKeyword | undefined {
