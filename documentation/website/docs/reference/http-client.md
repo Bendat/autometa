@@ -131,13 +131,72 @@ export default defineConfig({
 Extend the client with plugins to add custom behavior (e.g., authentication, logging).
 
 ```ts
-const authPlugin: HTTPPlugin = (client) => {
-  client.hook.onRequest((req) => {
-    req.headers.set("Authorization", "Bearer " + getToken());
-  });
+import { HTTP, type HTTPPlugin } from "@autometa/http";
+
+const authPlugin: HTTPPlugin = {
+	name: "auth",
+	onRequest({ request }) {
+		request.headers.authorization = `Bearer ${getToken()}`;
+	},
 };
 
 const http = HTTP.create({
-  plugins: [authPlugin],
+	plugins: [authPlugin],
+});
+```
+
+### Streaming Responses
+
+If you need the raw response body (stream) rather than parsed JSON/text, enable streaming:
+
+```ts
+const response = await http.asStream().get();
+// response.data is the raw stream (transport-dependent)
+```
+
+### Transports
+
+By default, `HTTP.create()` uses a Fetch-based transport. You can swap in an Axios transport when you need Node stream semantics or want to share an existing Axios instance:
+
+```ts
+import axios from "axios";
+import { HTTP, createAxiosTransport } from "@autometa/http";
+
+const http = HTTP.create({
+	transport: createAxiosTransport(axios),
+});
+```
+
+### HTTP Logs + Autometa Events
+
+You can pair HTTP logging with Autometa test events (see [Events](./events.md)) to create richer reporting.
+If your runner executes scenarios concurrently, prefer storing logs on the world/app instead of a single global `activeScenarioId`.
+
+```ts
+import { createLoggingPlugin, type HTTPLogEvent, HTTP } from "@autometa/http";
+import { registerTestListener } from "@autometa/events";
+
+let activeScenarioId: string | undefined;
+const logsByScenario = new Map<string, HTTPLogEvent[]>();
+
+HTTP.registerSharedPlugin(createLoggingPlugin((event) => {
+	if (!activeScenarioId) {
+		return;
+	}
+	const logs = logsByScenario.get(activeScenarioId) ?? [];
+	logs.push(event);
+	logsByScenario.set(activeScenarioId, logs);
+}));
+
+registerTestListener({
+	onScenarioStarted({ event }) {
+		activeScenarioId = event.scenario.id;
+		logsByScenario.set(activeScenarioId, []);
+	},
+	onScenarioCompleted({ event }) {
+		const logs = logsByScenario.get(event.scenario.id) ?? [];
+		console.log(`[http] ${event.scenario.name}`, logs);
+		activeScenarioId = undefined;
+	},
 });
 ```

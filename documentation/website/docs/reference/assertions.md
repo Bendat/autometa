@@ -43,14 +43,16 @@ ensure(object).toBeObjectContaining({ id: 1 });
 
 ## HTTP Assertions
 
-When asserting against an `HTTPResponse` or similar object, specialized matchers are available.
+`@autometa/assertions` keeps the base `ensure(value)` chain domain-agnostic. For HTTP assertions, use `@autometa/http`:
 
 ```ts
-ensure(response).toHaveStatus(200);
-ensure(response).toHaveStatus("OK"); // Matches status text
-ensure(response).toHaveHeader("Content-Type", "application/json");
-ensure(response).toBeCacheable(); // Checks Cache-Control headers
-ensure(response).toHaveCorrelationId(); // Checks for common correlation ID headers
+import { ensureHttp } from "@autometa/http";
+
+ensureHttp(response).toHaveStatus(200);
+ensureHttp(response).toHaveStatus("2xx");
+ensureHttp(response).toHaveHeader("content-type", /json/);
+ensureHttp(response).toBeCacheable();
+ensureHttp(response).toHaveCorrelationId();
 ```
 
 ## Negation
@@ -64,16 +66,21 @@ ensure(array).not.toHaveLength(0);
 
 ### Plugin Negation
 
-Plugins also support negation via the `.not` property. When you access `.not` on a plugin, the framework automatically re-initializes your plugin with a negated `ensure` function.
+Plugins also support negation via `ensure.not.<facet>`. Under the hood, plugin facets are instantiated with:
+
+- `context.isNot` set to `true`
+- an `ensure(...)` function that behaves like `ensure(value).not...`
 
 ```ts
-// ensure(world).custom.not.isAwesome()
+// ensure.not.custom.isAwesome()
 // Inside the plugin, ensure(value).toBe(...) becomes ensure(value).not.toBe(...)
-ensure(world).custom.not.isAwesome();
+ensure.not.custom.isAwesome();
 
-// With built-in HTTP plugin facets
-ensure(world).response.not.toHaveStatus(500);
-ensure(world).response.not.toHaveHeader("content-type", "text/plain");
+// With an HTTP facet (e.g. from @autometa/http's httpAssertionsPlugin)
+ensure.not.http(response).toHaveStatus(500);
+
+// Chain-level negation still works too:
+ensure.http(response).not.toHaveHeader("content-type", "text/plain");
 ```
 
 :::info Requirement
@@ -88,6 +95,18 @@ You can provide a custom label to make error messages more descriptive. This is 
 ensure(value, { label: "User ID" }).toBe(123);
 // Error: Expected User ID to be 123, but got 456
 ```
+
+## Turning Checks Into Rules
+
+Assertion plugins work best when they express domain rules instead of low-level plumbing:
+
+```ts
+// If you expose an HTTP chain as a facet:
+ensure.response.toHaveStatus("2xx").toHaveCorrelationId();
+ensure.not.response.toHaveStatus("5xx");
+```
+
+You can also use `ensure(...).toBeDefined().value` to avoid noisy casts when extracting required values.
 
 ## Deep Dive: How `ensure` Works
 
@@ -111,6 +130,8 @@ ensure(world).custom.isAwesome();
 ```
 
 This works because `ensure` is a Proxy. When it detects that the argument is the `World` object, it delegates to the plugin factory associated with that world.
+
+When you’re inside a step handler or hook, the runner supplies the current world implicitly, so `ensure.custom.*` works without passing `world` around.
 
 ### Why the "Intermediate Property"?
 

@@ -40,6 +40,12 @@ Every builder call is optional, but the combo above gives you the same ergonomic
 
 Once you export `stepsEnvironment`, runners can destructure `Given`, `When`, `Then`, hook helpers, and `ensure`. Decorator-based projects also call `runner.bindingsTS()` to grab the decorator-aware `@Binding`, `@Injectable`, `@Inject`, etc.
 
+```ts title="src/step-definitions.ts"
+export const stepsEnvironment = runner.steps();
+
+export const { Given, When, Then, ensure } = stepsEnvironment;
+```
+
 ## Run features with `autometa run`
 
 The CLI lives in `@autometa/cli` and automatically chooses the best execution mode:
@@ -83,6 +89,7 @@ Then("the menu should include the default drinks", (world) => {
 
 Key facts:
 
+- Function steps register immediately when the module is imported (that’s why `roots.steps` must point at your step bundle).
 - Arguments arrive in the order defined by your cucumber expression, followed by an optional `StepRuntimeHelpers` instance, and finally the `world`.
 - Use arrow functions when you prefer explicit parameters.
 - Use the `function` keyword if you want `this` bound to the world (see [function vs arrow](#choosing-function-vs-arrow-syntax)).
@@ -106,6 +113,8 @@ export class MenuSteps {
 ```
 
 `runner.bindingsTS()` exposes `@Binding`, `@Given`, `@When`, `@Then`, `@Injectable`, `@Inject`, and `@LazyInject`. Decorators are great when you want to co-locate helpers, share state through class fields, or lean on the decorator-friendly DI container.
+
+Decorator steps are collected via metadata, so the main difference is *where registration happens*: you decorate classes/methods, then the runner discovers those bindings when it builds the environment.
 
 ## Dependency injection: composition root vs decorators
 

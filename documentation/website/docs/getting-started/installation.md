@@ -32,6 +32,8 @@ pnpm add @autometa/app @autometa/config @autometa/executor @autometa/runner @aut
 
 Pick the tab that matches your stack. Each snippet mirrors the code in `/examples/<runner>-functions`, so you can copy it verbatim and adapt paths as needed.
 
+Runner integrations are installed separately (they are not bundled into `@autometa/cli`). For example, there is no `@autometa/playwright-runner` package — Playwright support comes from `@autometa/playwright-loader` and `@autometa/playwright-executor`.
+
 <Tabs groupId="runner" defaultValue="jest" values={[{label: 'Jest', value: 'jest'},{label: 'Vitest', value: 'vitest'},{label: 'Playwright', value: 'playwright'}]}>
 
 <TabItem value="jest">
@@ -244,21 +246,37 @@ Use the builder in world hooks or step definitions to keep fixtures deterministi
 ### Assertion plugins with `ensure(...)`
 
 ```ts
-import { ensure, createEnsureFactory } from "@autometa/assertions";
+import {
+	createEnsureFactory,
+	ensure as baseEnsure,
+	type AssertionPlugin,
+} from "@autometa/assertions";
+import {
+	ensureHttp,
+	type HttpEnsureChain,
+	type HttpResponseLike,
+} from "@autometa/http";
 
-type World = { api: ReturnType<typeof createClient> };
+type World = { lastResponse?: HttpResponseLike };
 
-const plugins = {
-	api: ({ ensure }) => (world: World) => (response: Response) =>
-		ensure(response)
-			.toHaveProperty("status")
-			.toSatisfy((res) => res.status < 500),
-};
+const responsePlugin: AssertionPlugin<World, HttpEnsureChain<HttpResponseLike>> =
+	({ ensure, isNot }) =>
+	(world) => {
+		const response = ensure
+			.always(world.lastResponse, { label: "last response" })
+			.toBeDefined().value;
 
-export const useEnsure = createEnsureFactory<World, typeof plugins>(ensure, plugins);
+		return ensureHttp(response, { label: "http response", negated: isNot });
+	};
 
-const expectApi = useEnsure(world).api;
-expectApi(await world.api.get("/status"));
+export const useEnsure = createEnsureFactory(baseEnsure, {
+	response: responsePlugin,
+});
+
+const ensure = useEnsure(world);
+
+ensure.response.toHaveStatus(200);
+ensure.not.response.toHaveStatus(500);
 ```
 
 Plugins let you attach domain helpers (API verifiers, database checks, schema matchers) directly to the assertion chain. Because the factory is world-aware, your facets transparently access shared context without leaking globals.

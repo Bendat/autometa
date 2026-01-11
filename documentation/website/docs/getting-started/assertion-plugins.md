@@ -8,7 +8,7 @@ Autometa's `ensure(...)` function can be extended with custom plugins. This allo
 
 ## Why Use Plugins?
 
-- **Readability**: `ensure(response).hasStatus(200)` is clearer than `expect(response.status).toBe(200)`.
+- **Readability**: `ensure.response.toHaveStatus(200)` is clearer than `expect(response.status).toBe(200)`.
 - **Reusability**: Encapsulate complex checks in a single method.
 - **Context Awareness**: Plugins have access to the `World` object, so they can assert against shared state.
 
@@ -59,26 +59,24 @@ Once registered, your plugins are available on the `ensure` object returned by t
 export const { ensure } = runner.steps();
 
 // In a step definition
-Then("it should be awesome", (world) => {
+Then("it should be awesome", () => {
   ensure.custom.isAwesome();
 });
 ```
+
+Inside step handlers and hooks, `ensure` is already bound to the current world. Outside of execution (e.g. module scope utilities), call `ensure(world).custom.*` or use `createEnsureFactory(...)`.
 
 ## Example: HTTP Response Plugin
 
 Here is a real-world example of a plugin for asserting against HTTP responses.
 
 ```ts
-const responsePlugin: AssertionPlugin<World, ResponseAssertions> = ({ ensure }) => (world) => {
-  return {
-    hasStatus(expected: number) {
-      const response = world.lastResponse;
-      ensure(response.status).toBe(expected);
-    },
-    hasHeader(name: string, value: string) {
-      const response = world.lastResponse;
-      ensure(response.headers[name.toLowerCase()]).toBe(value);
-    },
+import { ensureHttp, type HttpEnsureChain, type HttpResponseLike } from "@autometa/http";
+
+const responsePlugin: AssertionPlugin<World, HttpEnsureChain<HttpResponseLike>> =
+  ({ ensure, isNot }) =>
+  (world) => {
+    const response = ensure.always(world.lastResponse, { label: "last response" }).toBeDefined().value;
+    return ensureHttp(response, { label: "http response", negated: isNot });
   };
-};
 ```
