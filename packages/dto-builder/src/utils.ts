@@ -39,6 +39,10 @@ export function deepMerge<T extends PlainObject, S extends PlainObject>(target: 
   const targetRecord = target as PlainObject;
   const sourceRecord = source as PlainObject;
   for (const key of Object.keys(sourceRecord)) {
+    // Protect against prototype pollution
+    if (key === "__proto__" || key === "constructor" || key === "prototype") {
+      continue;
+    }
     const incoming = sourceRecord[key];
     if (Array.isArray(incoming)) {
       targetRecord[key] = incoming.map((item) => cloneValue(item)) as unknown;
