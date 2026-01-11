@@ -123,10 +123,10 @@ function createCalculatorPlan(options: {
   };
 }
 
-type AnyFn = (...args: any[]) => any;
+type AnyFn = (...args: readonly unknown[]) => unknown;
 
 async function withFakeJestGlobals<T>(handler: () => Promise<T>): Promise<T> {
-  const g = globalThis as any;
+  const g = globalThis as unknown as Record<string, unknown>;
 
   const original = {
     describe: g.describe,
@@ -139,7 +139,7 @@ async function withFakeJestGlobals<T>(handler: () => Promise<T>): Promise<T> {
     jest: g.jest,
   };
 
-  const tests: Array<{ name: string; fn: AnyFn } > = [];
+  const tests: Array<{ name: string; fn: AnyFn }> = [];
   const beforeAlls: AnyFn[] = [];
   const afterAlls: AnyFn[] = [];
   const beforeEaches: AnyFn[] = [];
@@ -151,9 +151,14 @@ async function withFakeJestGlobals<T>(handler: () => Promise<T>): Promise<T> {
     fn();
   };
 
-  const fakeIt = (name: string, fn: AnyFn) => {
-    tests.push({ name, fn });
+  type FakeIt = ((name: string, fn: AnyFn) => void) & {
+    skip: (_name: string, _fn?: AnyFn) => void;
+    todo: (_name: string, _reason?: string) => void;
   };
+
+  const fakeIt = ((name: string, fn: AnyFn) => {
+    tests.push({ name, fn });
+  }) as FakeIt;
   fakeIt.skip = (_name: string, _fn?: AnyFn) => {
     // Intentionally ignored for this harness.
   };

@@ -383,7 +383,10 @@ const selectModules = (
           `Module "${rawFilter}" not found. Available modules: ${scopedOptions.map((o) => o.id).join(", ")}`
         );
       }
-      selected.add(exact[0]!.dir);
+      const match = exact[0];
+      if (match) {
+        selected.add(match.dir);
+      }
       continue;
     }
 
@@ -404,7 +407,10 @@ const selectModules = (
           `Use "<group>/<module>" or "<group>:<module>" to disambiguate.`
       );
     }
-    selected.add(suffixMatches[0]!.dir);
+    const match = suffixMatches[0];
+    if (match) {
+      selected.add(match.dir);
+    }
   }
 
   return scopedOptions.map((o) => o.dir).filter((dir) => selected.has(dir));
@@ -422,7 +428,10 @@ const parseModuleSelector = (
   if (selector.includes(":")) {
     const parts = selector.split(":").map((p) => p.trim()).filter(Boolean);
     if (parts.length >= 2) {
-      const group = parts[0]!;
+      const group = parts[0];
+      if (!group) {
+        return undefined;
+      }
       if (knownGroups.has(group)) {
         const modulePath = normalizeSlashes(parts.slice(1).join("/")).replace(/^\/+|\/+$/gu, "");
         if (modulePath) {
@@ -436,7 +445,10 @@ const parseModuleSelector = (
   if (selector.includes("/")) {
     const parts = selector.split("/").map((p) => p.trim()).filter(Boolean);
     if (parts.length >= 2) {
-      const group = parts[0]!;
+      const group = parts[0];
+      if (!group) {
+        return undefined;
+      }
       if (knownGroups.has(group)) {
         const modulePath = normalizeSlashes(parts.slice(1).join("/")).replace(/^\/+|\/+$/gu, "");
         if (modulePath) {

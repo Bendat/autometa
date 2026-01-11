@@ -2,7 +2,6 @@ import type { ParsedFeature, ScenarioNode, ScenarioOutlineNode } from "./types";
 import { computeScenarioSignature } from "./signature";
 import type { CandidateCase, DuplicatePolicy, DuplicateResolution } from "./duplicate-policy";
 import { resolveDuplicate } from "./duplicate-policy";
-import type { TestRailClient } from "./client";
 import pc from "picocolors";
 
 export interface ExistingCase {
@@ -48,7 +47,10 @@ export async function matchCase(options: MatchOptions): Promise<MatchResult> {
   const exactMatches = existingCases.filter((c) => c.signature === signature);
 
   if (exactMatches.length === 1) {
-    return { action: "use", caseId: exactMatches[0]!.id, signature };
+    const only = exactMatches[0];
+    if (only) {
+      return { action: "use", caseId: only.id, signature };
+    }
   }
 
   if (exactMatches.length > 1) {
@@ -68,9 +70,8 @@ export async function matchCase(options: MatchOptions): Promise<MatchResult> {
   const titleMatches = existingCases.filter((c) => (c.title ?? "").trim() === node.name.trim());
 
   if (titleMatches.length <= 1) {
-    return titleMatches.length === 1
-      ? { action: "use", caseId: titleMatches[0]!.id, signature }
-      : { action: "create", signature };
+    const only = titleMatches[0];
+    return only ? { action: "use", caseId: only.id, signature } : { action: "create", signature };
   }
 
   // Multiple title matches, resolve by policy

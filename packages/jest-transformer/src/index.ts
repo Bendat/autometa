@@ -1,5 +1,5 @@
 import { resolve, isAbsolute, relative, dirname, extname } from "path";
-import { existsSync, readFileSync } from "fs";
+import { existsSync } from "fs";
 import type { Config } from "@autometa/config";
 import jiti from "jiti";
 

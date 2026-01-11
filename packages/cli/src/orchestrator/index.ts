@@ -1,5 +1,5 @@
-import { spawn, type ChildProcess, type SpawnOptions } from "node:child_process";
-import { join, resolve } from "node:path";
+import { spawn, type SpawnOptions } from "node:child_process";
+import { join } from "node:path";
 import { existsSync } from "node:fs";
 
 import type { ExecutorConfig } from "@autometa/config";

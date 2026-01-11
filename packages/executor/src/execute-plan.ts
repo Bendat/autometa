@@ -222,18 +222,19 @@ function registerScenarioOutlines<World>(
       { kind: "scenarioOutline", keyword: outline.keyword },
       outline.name,
       () => {
+        const firstRule = outline.examples[0]?.rule?.rule;
         runtime.beforeAll(async () => {
           await eventEmitter.scenarioOutlineStarted({
             feature: featureRef,
             scenarioOutline: outline.outline,
-            ...(outline.examples[0]?.rule?.rule ? { rule: createRuleRef(outline.examples[0].rule!.rule) } : {}),
+            ...(firstRule ? { rule: createRuleRef(firstRule) } : {}),
           });
         });
         runtime.afterAll(async () => {
           await eventEmitter.scenarioOutlineCompleted({
             feature: featureRef,
             scenarioOutline: outline.outline,
-            ...(outline.examples[0]?.rule?.rule ? { rule: createRuleRef(outline.examples[0].rule!.rule) } : {}),
+            ...(firstRule ? { rule: createRuleRef(firstRule) } : {}),
           });
         });
         lifecycle.configurePersistentScope(outline.scope, runtime);

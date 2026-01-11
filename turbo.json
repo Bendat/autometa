@@ -1,7 +1,20 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["env"],
-  "globalEnv": ["TEST_ENV", "BREW_BUDDY_BASE_URL"],
+  "globalEnv": [
+    "TEST_ENV",
+    "BREW_BUDDY_BASE_URL",
+    "TESTRAIL_URL",
+    "TESTRAIL_USERNAME",
+    "TESTRAIL_PASSWORD",
+    "TESTRAIL_PROJECT_ID",
+    "AUTOMETA_CACHE_DIR",
+    "AUTOMETA_HOME",
+    "XDG_CACHE_HOME",
+    "LOCALAPPDATA",
+    "NODE_OPTIONS",
+    "FORCE_COLOR"
+  ],
   "tasks": {
     "type-check": {
       "inputs": [

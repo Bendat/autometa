@@ -44,15 +44,20 @@ function flattenModuleDeclarations(
   return Array.from(unique.values()).sort((a, b) => b.length - a.length);
 }
 
-function buildStepScopingData(resolvedConfig: any, projectRoot: string): unknown {
-  const groups = resolvedConfig?.modules?.groups;
+function buildStepScopingData(resolvedConfig: unknown, projectRoot: string): unknown {
+  const groups = (resolvedConfig as { modules?: { groups?: unknown } } | null)?.modules?.groups;
   if (!groups || typeof groups !== "object") {
     return null;
   }
 
-  const entries = Object.entries(groups).map(([group, groupConfig]: any) => {
-    const rootAbs = resolve(projectRoot, String(groupConfig.root));
-    const modulePaths = flattenModuleDeclarations(groupConfig.modules as ModuleDeclaration[]);
+  const entries = Object.entries(groups as Record<string, unknown>).map(([group, groupConfig]) => {
+    const configRecord =
+      groupConfig && typeof groupConfig === "object" ? (groupConfig as Record<string, unknown>) : {};
+    const rootAbs = resolve(projectRoot, String(configRecord.root ?? ""));
+    const modules = configRecord.modules;
+    const modulePaths = Array.isArray(modules)
+      ? flattenModuleDeclarations(modules as ModuleDeclaration[])
+      : [];
     return { group, rootAbs, modulePaths };
   });
 

@@ -8,7 +8,7 @@
  * Playwright's test runner and Node.js module loader hooks.
  */
 
-import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
+import { dirname, extname, isAbsolute, resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import type { Config } from "@autometa/config";
@@ -478,19 +478,22 @@ function loadConfigSync(
 
   const _jiti = jiti(root, { interopDefault: true });
 
-  for (const candidate of candidates) {
-    const configPath = resolve(root, candidate);
-    if (!existsSync(configPath)) {
-      continue;
-    }
+	for (const candidate of candidates) {
+		const configPath = resolve(root, candidate);
+		if (!existsSync(configPath)) {
+			continue;
+		}
 
-    const mod = _jiti(configPath);
-    const config = (mod as any).default || mod;
+		const mod = _jiti(configPath) as unknown;
+		const config =
+			mod && typeof mod === "object" && "default" in mod
+				? (mod as { default?: unknown }).default ?? mod
+				: mod;
 
-    if (!isConfig(config)) {
-      throw new Error(
-        `Failed to load Autometa config from "${configPath}". ` +
-          'Ensure the module exports a Config instance (e.g. export default defineConfig({...})).'
+		if (!isConfig(config)) {
+			throw new Error(
+				`Failed to load Autometa config from "${configPath}". ` +
+					'Ensure the module exports a Config instance (e.g. export default defineConfig({...})).'
       );
     }
 

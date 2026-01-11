@@ -20,6 +20,17 @@ import { applyCaseTagsToFeatureText } from "./tag-writeback";
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version?: string };
 
+interface TestRailCliOptions {
+  readonly testrailUrl?: string;
+  readonly testrailUsername?: string;
+  readonly testrailPassword?: string;
+  readonly projectId?: number;
+  readonly suiteId?: number;
+  readonly suiteName?: string;
+  readonly defaultSuiteName?: string;
+  readonly createMissingSuite?: boolean;
+}
+
 export async function createCliProgram(): Promise<Command> {
   const program = new Command();
   program
@@ -69,9 +80,9 @@ function registerSyncCommand(program: Command): void {
       const { client, projectId } = requireClient(opts);
 
       const suite = await resolveSuiteContext(client, projectId, {
-        ...(opts.suiteId !== undefined ? { suiteId: opts.suiteId as number } : {}),
-        ...(opts.suiteName !== undefined ? { suiteName: opts.suiteName as string } : {}),
-        ...(opts.defaultSuiteName !== undefined ? { defaultSuiteName: opts.defaultSuiteName as string } : {}),
+        ...(opts.suiteId !== undefined ? { suiteId: opts.suiteId } : {}),
+        ...(opts.suiteName !== undefined ? { suiteName: opts.suiteName } : {}),
+        ...(opts.defaultSuiteName !== undefined ? { defaultSuiteName: opts.defaultSuiteName } : {}),
         createMissingSuite: !dryRun,
         strict: false,
       });
@@ -259,7 +270,7 @@ async function loadExistingCases(file?: string): Promise<ExistingCase[]> {
   return data as ExistingCase[];
 }
 
-async function maybeResolveSuite(opts: any): Promise<SuiteResolution | undefined> {
+async function maybeResolveSuite(opts: TestRailCliOptions): Promise<SuiteResolution | undefined> {
   const url = opts.testrailUrl ?? process.env.TESTRAIL_URL;
   const username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME;
   const password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD;
@@ -272,16 +283,16 @@ async function maybeResolveSuite(opts: any): Promise<SuiteResolution | undefined
   const client = new HttpTestRailClient({ url, username, password });
 
   return resolveSuiteContext(client, projectId, {
-    ...(opts.suiteId !== undefined ? { suiteId: opts.suiteId as number } : {}),
-    ...(opts.suiteName !== undefined ? { suiteName: opts.suiteName as string } : {}),
-    ...(opts.defaultSuiteName !== undefined ? { defaultSuiteName: opts.defaultSuiteName as string } : {}),
+    ...(opts.suiteId !== undefined ? { suiteId: opts.suiteId } : {}),
+    ...(opts.suiteName !== undefined ? { suiteName: opts.suiteName } : {}),
+    ...(opts.defaultSuiteName !== undefined ? { defaultSuiteName: opts.defaultSuiteName } : {}),
     createMissingSuite: Boolean(opts.createMissingSuite),
     // For the plan command, default to non-strict warnings.
     strict: false,
   });
 }
 
-function requireClient(opts: any): { client: HttpTestRailClient; projectId: number } {
+function requireClient(opts: TestRailCliOptions): { client: HttpTestRailClient; projectId: number } {
   const url = opts.testrailUrl ?? process.env.TESTRAIL_URL;
   const username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME;
   const password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD;

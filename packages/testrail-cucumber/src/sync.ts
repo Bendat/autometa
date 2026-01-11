@@ -97,11 +97,10 @@ export async function syncFeatureToTestRail(
   }
 
   if (dryRun) {
-    const reuseMap = Object.fromEntries(
-      plan
-        .filter((p) => p.action === "use" && p.caseId !== undefined)
-        .map((p) => [p.signature, p.caseId!] as const)
-    );
+    const reuseEntries = plan
+      .filter((p): p is PlanItem & { caseId: number } => p.action === "use" && typeof p.caseId === "number")
+      .map((p) => [p.signature, p.caseId] as const);
+    const reuseMap = Object.fromEntries(reuseEntries);
     return {
       featurePath: feature.path,
       sectionId: section.id,
@@ -196,24 +195,29 @@ async function ensureFeatureSection(
 
   const pathMarker = `autometa:featurePath=${feature.path}`;
   const byPath = sections.filter((s) => (s.description ?? "").includes(pathMarker));
-  if (byPath.length === 1) {
-    return byPath[0]!;
-  }
-  if (byPath.length > 1) {
-    const named = byPath.find((s) => s.name.trim() === feature.name.trim());
-    return named ?? byPath[0]!;
+  if (byPath.length > 0) {
+    const first = byPath[0];
+    if (first) {
+      if (byPath.length === 1) {
+        return first;
+      }
+      const named = byPath.find((s) => s.name.trim() === feature.name.trim());
+      return named ?? first;
+    }
   }
 
   const matches = sections.filter((s) => s.name.trim() === feature.name.trim());
-  if (matches.length === 1) {
-    return matches[0]!;
-  }
+  if (matches.length > 0) {
+    const first = matches[0];
+    if (first) {
+      if (matches.length === 1) {
+        return first;
+      }
 
-  if (matches.length > 1) {
-    // Best effort: prefer one with description containing feature path.
-    const withPath = matches.find((s) => (s.description ?? "").includes(feature.path));
-    if (withPath) return withPath;
-    return matches[0]!;
+      // Best effort: prefer one with description containing feature path.
+      const withPath = matches.find((s) => (s.description ?? "").includes(feature.path));
+      return withPath ?? first;
+    }
   }
 
   if (opts.dryRun) {

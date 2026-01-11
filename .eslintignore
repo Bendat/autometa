@@ -1,1 +1,10 @@
 **/*.pnpm-lock.yaml
+
+# build output
+**/dist/**
+**/build/**
+**/coverage/**
+**/.docusaurus/**
+
+# tooling
+**/.turbo/**

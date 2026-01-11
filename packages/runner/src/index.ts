@@ -13,14 +13,14 @@ export type {
 	RunnerStepsSurface,
 	WorldWithApp,
 	DefaultEnsureFacets,
-	RunnerEnsureFactory,
-	AssertionSetup,
-	StepsEnvironmentMeta,
- 	AppFactoryContext,
- 	AppClassRegistrationOptions,
- 	AppRegistrationOptions,
-	AppCompositionOptions,
-} from "./builder/create-runner-builder";
+		RunnerEnsureFactory,
+		AssertionSetup,
+		StepsEnvironmentMeta,
+		AppFactoryContext,
+		AppClassRegistrationOptions,
+		AppRegistrationOptions,
+		AppCompositionOptions,
+	} from "./builder/create-runner-builder";
 
 export { App, WORLD_INHERIT_KEYS, STEPS_ENVIRONMENT_META } from "./builder/create-runner-builder";
 
@@ -69,14 +69,14 @@ export {
 	getRawTable,
 	setStepDocstring,
 	clearStepDocstring,
-	getDocstring,
-	consumeDocstring,
- 	ScenarioPendingError,
- 	isScenarioPendingError,
- 	Pending,
- 	ToDo,
- 	markScenarioPending,
-} from "@autometa/executor";
+		getDocstring,
+		consumeDocstring,
+		ScenarioPendingError,
+		isScenarioPendingError,
+		Pending,
+		ToDo,
+		markScenarioPending,
+	} from "@autometa/executor";
 
 export type {
 	HookLifecycleMetadata,

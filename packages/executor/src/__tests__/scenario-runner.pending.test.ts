@@ -365,7 +365,9 @@ describe("runScenarioExecution status transitions", () => {
     expect(featureSegment?.location.start.line).toBe(1);
     const scenarioSegment = gherkinContext?.path?.[1];
     expect(scenarioSegment?.location.start.line).toBe(8);
-    const stepSegment = gherkinContext?.path?.[gherkinContext.path.length - 1]!;
-    expect(stepSegment.location.start.line).toBe(12);
+    const stepPath = gherkinContext?.path;
+    expect(stepPath).toBeDefined();
+    const stepSegment = stepPath ? stepPath[stepPath.length - 1] : undefined;
+    expect(stepSegment?.location.start.line).toBe(12);
   });
 });

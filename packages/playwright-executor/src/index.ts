@@ -10,7 +10,7 @@ import type { ScopeExecutionAdapter } from "@autometa/scopes";
 import type { TestPlan } from "@autometa/test-builder";
 import type { ExecutorRuntime, SuiteFn, TestFn } from "@autometa/executor";
 import { registerFeaturePlan } from "@autometa/executor";
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 // Re-export for convenience
 export { test, expect } from "@playwright/test";

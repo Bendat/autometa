@@ -1,5 +1,4 @@
 import type pcModule from "picocolors";
-import type { SignatureInput } from "./signature";
 
 export type DuplicatePolicy = "error" | "skip" | "create-new" | "prompt";
 
@@ -34,7 +33,8 @@ export async function resolveDuplicate(options: ResolveDuplicateOptions): Promis
   const { policy, candidates, signature, pc, interactive = true, maxPromptCandidates = 10, forcePrompt } = options;
 
   if (candidates.length <= 1 && policy !== "prompt") {
-    return candidates.length === 1 ? { action: "use", caseId: candidates[0]!.id } : { action: "create" };
+    const only = candidates[0];
+    return only ? { action: "use", caseId: only.id } : { action: "create" };
   }
 
   switch (policy) {

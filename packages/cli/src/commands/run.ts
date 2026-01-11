@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { extname, join, relative, resolve as resolvePath } from "node:path";
+import { extname, relative, resolve as resolvePath } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { Command } from "commander";
@@ -22,7 +22,7 @@ import { splitPatternsAndRunnerArgs } from "../utils/handover";
 import type { SummaryFormatter } from "../runtime/types";
 import type { RuntimeReporter } from "../utils/reporter";
 import type { RuntimeSummary } from "../runtime/types";
-import { orchestrate, isNativeRunnerAvailable, type RunnerType } from "../orchestrator";
+import { orchestrate } from "../orchestrator";
 import { resolveCliCacheDir } from "../utils/cache-dir";
 
 export interface RunCommandOptions {

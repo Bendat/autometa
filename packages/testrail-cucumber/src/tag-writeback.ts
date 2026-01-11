@@ -25,8 +25,13 @@ export function applyCaseTagsToFeatureText(
   const lines = originalText.split(/\r?\n/);
   const applied: { nodeName: string; addedTags: string[] }[] = [];
 
+  const nodeLine = (node: FeatureChildNode): number | undefined => {
+    const line = (node as unknown as { line?: unknown }).line;
+    return typeof line === "number" ? line : undefined;
+  };
+
   const nodesWithLine = feature.children
-    .map((n) => ({ node: n, line: (n as any).line as number | undefined }))
+    .map((n) => ({ node: n, line: nodeLine(n) }))
     .filter((x): x is { node: FeatureChildNode; line: number } => typeof x.line === "number" && x.line > 0)
     .sort((a, b) => b.line - a.line);
 
@@ -70,7 +75,11 @@ export function applyCaseTagsToFeatureText(
     if (existingTagLines.length > 0) {
       // Append to the last tag line for this scenario.
       const lastTagLineIndex = idx - 1;
-      const newLine = lines[lastTagLineIndex]!.trimEnd() + " " + missing.join(" ");
+      const lastTagLine = lines[lastTagLineIndex];
+      if (typeof lastTagLine !== "string") {
+        continue;
+      }
+      const newLine = lastTagLine.trimEnd() + " " + missing.join(" ");
       lines[lastTagLineIndex] = newLine;
     } else {
       lines.splice(idx, 0, indent + missing.join(" "));

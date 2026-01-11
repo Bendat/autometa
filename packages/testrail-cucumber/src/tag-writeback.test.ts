@@ -51,7 +51,10 @@ describe("applyCaseTagsToFeatureText", () => {
     ].join("\n");
 
     const feature = parseFeature(text, "features/login.feature");
-    const node = feature.children[0]!;
+    const node = feature.children[0];
+    if (!node) {
+      throw new Error("Expected at least one scenario in feature.");
+    }
     const sig = computeScenarioSignature({
       featurePath: feature.path,
       kind: node.kind,
