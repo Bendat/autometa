@@ -8,6 +8,9 @@ import type {
   ScenarioOutlineExample,
   TestPlan,
 } from "@autometa/test-builder";
+import { getEventEmitter, TestStatus } from "@autometa/events";
+import type { TestStatus as TestStatusValue } from "@autometa/events";
+import { isGherkinStepError } from "@autometa/errors";
 
 import { createTagFilter } from "./tag-filter";
 import { resolveModeFromTags, selectSuiteByMode, selectTestByMode } from "./modes";
@@ -15,6 +18,7 @@ import { resolveTimeout } from "./timeouts";
 import { runScenarioExecution } from "./scenario-runner";
 import { ScopeLifecycle, type HookLogListener } from "./scope-lifecycle";
 import type { ExecutorRuntime, SuiteFn } from "./types";
+import { createFeatureRef, createRuleRef, requirePickle } from "./events";
 
 export interface ExecuteFeatureOptions<World> {
   readonly plan: TestPlan<World>;
@@ -92,6 +96,8 @@ export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>
   const feature = plan.feature;
   const tagFilter = createTagFilter(config.test?.tagFilter);
   const scopeKeywords = collectScopeKeywords(feature);
+  const eventEmitter = getEventEmitter();
+  const featureRef = createFeatureRef(feature.feature);
   const lifecycle = new ScopeLifecycle(adapter, {
     ...(hookLogger ? { hookLogger } : {}),
     featureLanguage: feature.feature.language,
@@ -111,10 +117,16 @@ export function registerFeaturePlan<World>(options: ExecuteFeatureOptions<World>
     { kind: "feature", keyword: feature.keyword },
     feature.name,
     () => {
+      runtime.beforeAll(async () => {
+        await eventEmitter.featureStarted({ feature: featureRef });
+      });
+      runtime.afterAll(async () => {
+        await eventEmitter.featureCompleted({ feature: featureRef });
+      });
       lifecycle.configurePersistentScope(feature.scope, runtime);
-      registerScenarios(feature.scenarios, runtime, config, tagFilter, lifecycle);
-      registerScenarioOutlines(feature.scenarioOutlines, runtime, config, tagFilter, lifecycle);
-      registerRules(feature.rules, runtime, config, tagFilter, lifecycle);
+      registerScenarios(feature.scenarios, runtime, config, tagFilter, lifecycle, feature.feature);
+      registerScenarioOutlines(feature.scenarioOutlines, runtime, config, tagFilter, lifecycle, feature.feature, featureRef);
+      registerRules(feature.rules, runtime, config, tagFilter, lifecycle, feature.feature, featureRef);
     },
     featureTimeout.milliseconds
   );
@@ -157,9 +169,13 @@ function registerRules<World>(
   runtime: ExecutorRuntime,
   config: ExecutorConfig,
   tagFilter: ReturnType<typeof createTagFilter>,
-  lifecycle: ScopeLifecycle<World>
+  lifecycle: ScopeLifecycle<World>,
+  feature: TestPlan<World>["feature"]["feature"],
+  featureRef: ReturnType<typeof createFeatureRef>
 ): void {
+  const eventEmitter = getEventEmitter();
   for (const rule of rules) {
+    const ruleRef = createRuleRef(rule.rule);
     const ruleTags = [
       ...(rule.rule.tags ?? []),
       ...(rule.scope.tags ?? []),
@@ -167,17 +183,23 @@ function registerRules<World>(
     const ruleMode = resolveModeFromTags(rule.scope.mode, ruleTags);
     const suite = selectSuiteByMode(runtime.suite, ruleMode);
     const timeout = resolveTimeout(rule.scope.timeout, config);
-    runSuiteWithMetadata(
-      suite,
-      { kind: "rule", keyword: rule.keyword },
-      rule.name,
-      () => {
-        lifecycle.configurePersistentScope(rule.scope, runtime);
-        registerScenarios(rule.scenarios, runtime, config, tagFilter, lifecycle);
-        registerScenarioOutlines(rule.scenarioOutlines, runtime, config, tagFilter, lifecycle);
-      },
-      timeout.milliseconds
-    );
+      runSuiteWithMetadata(
+        suite,
+        { kind: "rule", keyword: rule.keyword },
+        rule.name,
+        () => {
+          runtime.beforeAll(async () => {
+            await eventEmitter.ruleStarted({ feature: featureRef, rule: ruleRef });
+          });
+          runtime.afterAll(async () => {
+            await eventEmitter.ruleCompleted({ feature: featureRef, rule: ruleRef });
+          });
+          lifecycle.configurePersistentScope(rule.scope, runtime);
+          registerScenarios(rule.scenarios, runtime, config, tagFilter, lifecycle, feature);
+          registerScenarioOutlines(rule.scenarioOutlines, runtime, config, tagFilter, lifecycle, feature, featureRef);
+        },
+        timeout.milliseconds
+      );
   }
 }
 
@@ -186,8 +208,11 @@ function registerScenarioOutlines<World>(
   runtime: ExecutorRuntime,
   config: ExecutorConfig,
   tagFilter: ReturnType<typeof createTagFilter>,
-  lifecycle: ScopeLifecycle<World>
+  lifecycle: ScopeLifecycle<World>,
+  feature: TestPlan<World>["feature"]["feature"],
+  featureRef: ReturnType<typeof createFeatureRef>
 ): void {
+  const eventEmitter = getEventEmitter();
   for (const outline of outlines) {
     const outlineMode = resolveModeFromTags(outline.mode, outline.tags);
     const suite = selectSuiteByMode(runtime.suite, outlineMode);
@@ -197,8 +222,22 @@ function registerScenarioOutlines<World>(
       { kind: "scenarioOutline", keyword: outline.keyword },
       outline.name,
       () => {
+        runtime.beforeAll(async () => {
+          await eventEmitter.scenarioOutlineStarted({
+            feature: featureRef,
+            scenarioOutline: outline.outline,
+            ...(outline.examples[0]?.rule?.rule ? { rule: createRuleRef(outline.examples[0].rule!.rule) } : {}),
+          });
+        });
+        runtime.afterAll(async () => {
+          await eventEmitter.scenarioOutlineCompleted({
+            feature: featureRef,
+            scenarioOutline: outline.outline,
+            ...(outline.examples[0]?.rule?.rule ? { rule: createRuleRef(outline.examples[0].rule!.rule) } : {}),
+          });
+        });
         lifecycle.configurePersistentScope(outline.scope, runtime);
-        registerScenarioExecutions(outline.examples, runtime, config, tagFilter, lifecycle);
+        registerScenarioExecutions(outline.examples, runtime, config, tagFilter, lifecycle, feature);
       },
       timeout.milliseconds
     );
@@ -210,9 +249,10 @@ function registerScenarios<World>(
   runtime: ExecutorRuntime,
   config: ExecutorConfig,
   tagFilter: ReturnType<typeof createTagFilter>,
-  lifecycle: ScopeLifecycle<World>
+  lifecycle: ScopeLifecycle<World>,
+  feature: TestPlan<World>["feature"]["feature"]
 ): void {
-  registerScenarioExecutions(scenarios, runtime, config, tagFilter, lifecycle);
+  registerScenarioExecutions(scenarios, runtime, config, tagFilter, lifecycle, feature);
 }
 
 function registerScenarioExecutions<World>(
@@ -220,7 +260,8 @@ function registerScenarioExecutions<World>(
   runtime: ExecutorRuntime,
   config: ExecutorConfig,
   tagFilter: ReturnType<typeof createTagFilter>,
-  lifecycle: ScopeLifecycle<World>
+  lifecycle: ScopeLifecycle<World>,
+  feature: TestPlan<World>["feature"]["feature"]
 ): void {
   const standaloneExecutions: ScenarioExecution<World>[] = [];
   const outlineExamples = new Map<string, OutlineExampleCollection<World>>();
@@ -257,7 +298,7 @@ function registerScenarioExecutions<World>(
   }
 
   for (const execution of standaloneExecutions) {
-    scheduleScenario(execution, runtime, config, tagFilter, lifecycle);
+    scheduleScenario(execution, runtime, config, tagFilter, lifecycle, feature);
   }
 
   for (const collection of outlineExamples.values()) {
@@ -273,7 +314,7 @@ function registerScenarioExecutions<World>(
         const [singleGroup] = orderedGroups;
         if (singleGroup && !shouldDisplayExamplesGroup(singleGroup.group, orderedGroups.length)) {
           for (const example of singleGroup.examples) {
-            scheduleScenario(example, runtime, config, tagFilter, lifecycle);
+            scheduleScenario(example, runtime, config, tagFilter, lifecycle, feature);
           }
           continue;
         }
@@ -286,13 +327,13 @@ function registerScenarioExecutions<World>(
         runtime.suite,
         { kind: "examples", keyword },
         title,
-        () => {
-          for (const example of info.examples) {
-            scheduleScenario(example, runtime, config, tagFilter, lifecycle);
+          () => {
+            for (const example of info.examples) {
+              scheduleScenario(example, runtime, config, tagFilter, lifecycle, feature);
+            }
           }
-        }
-      );
-    });
+        );
+      });
   }
 }
 
@@ -301,9 +342,11 @@ function scheduleScenario<World>(
   runtime: ExecutorRuntime,
   config: ExecutorConfig,
   tagFilter: ReturnType<typeof createTagFilter>,
-  lifecycle: ScopeLifecycle<World>
+  lifecycle: ScopeLifecycle<World>,
+  feature: TestPlan<World>["feature"]["feature"]
 ): void {
   const title = buildScenarioTitle(execution);
+  const eventEmitter = getEventEmitter();
 
   if (!tagFilter.evaluate(execution.tags)) {
     runtime.test.skip(title, () => undefined);
@@ -322,9 +365,90 @@ function scheduleScenario<World>(
 
   testFn(title, async () => {
     const hooks = lifecycle.collectScenarioHooks(execution);
-    await lifecycle.runScenario(execution, hooks, async (_world, context) => {
-      await runScenarioExecution(execution, context);
+    const pickle = requirePickle(feature, execution.gherkin.id);
+    const scenarioScope = pickle.scenario;
+    const isExample = isScenarioOutlineExample(execution);
+
+    if (isExample) {
+      await eventEmitter.exampleStarted({
+        feature: pickle.feature,
+        scenarioOutline: execution.outline.outline,
+        example: execution.exampleGroup,
+        pickle,
+        ...(pickle.rule ? { rule: pickle.rule } : {}),
+      });
+    }
+
+    await eventEmitter.scenarioStarted({
+      feature: pickle.feature,
+      scenario: scenarioScope,
+      pickle,
+      ...(pickle.rule ? { rule: pickle.rule } : {}),
     });
+
+    let status: TestStatusValue | undefined;
+    try {
+      await lifecycle.runScenario(
+        execution,
+        hooks,
+        async (_world, context) => {
+          await runScenarioExecution(execution, context);
+        },
+        { events: { pickle } }
+      );
+      status = execution.result.status === "passed"
+        ? TestStatus.PASSED
+        : execution.result.status === "failed"
+          ? TestStatus.FAILED
+          : execution.result.status === "skipped"
+            ? TestStatus.SKIPPED
+            : execution.result.status === "pending"
+              ? TestStatus.SKIPPED
+            : undefined;
+    } catch (error) {
+      status = TestStatus.FAILED;
+      if (!isGherkinStepError(error)) {
+        await eventEmitter.errorRaised({
+          error,
+          phase: "scenario",
+          feature: pickle.feature,
+          scenario: pickle.scenario,
+          ...(pickle.rule ? { rule: pickle.rule } : {}),
+          pickle,
+        });
+      }
+      throw error;
+    } finally {
+      if (status) {
+        await eventEmitter.statusChanged({
+          status,
+          feature: pickle.feature,
+          scenario: pickle.scenario,
+          ...(pickle.rule ? { rule: pickle.rule } : {}),
+          pickle,
+          metadata: { result: execution.result },
+        });
+      }
+
+      await eventEmitter.scenarioCompleted({
+        feature: pickle.feature,
+        scenario: scenarioScope,
+        pickle,
+        ...(pickle.rule ? { rule: pickle.rule } : {}),
+        metadata: { result: execution.result },
+      });
+
+      if (isExample) {
+        await eventEmitter.exampleCompleted({
+          feature: pickle.feature,
+          scenarioOutline: execution.outline.outline,
+          example: execution.exampleGroup,
+          pickle,
+          ...(pickle.rule ? { rule: pickle.rule } : {}),
+          metadata: { result: execution.result },
+        });
+      }
+    }
   }, scenarioTimeout.milliseconds);
 }
 

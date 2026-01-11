@@ -6,12 +6,16 @@ import type {
   ScopeNode,
   StepDefinition,
 } from "@autometa/scopes";
+import { getEventEmitter } from "@autometa/events";
+import type { HookDescriptor, HookKind } from "@autometa/events";
 import type { SimpleStep } from "@autometa/gherkin";
+import type { SimplePickle } from "@autometa/gherkin";
 import type { ScenarioExecution } from "@autometa/test-builder";
 
 import { collectScenarioHooks, type HookCollection, type ResolvedHook } from "./hooks";
 import type { ExecutorRuntime } from "./types";
 import { WorldContext } from "./async-context";
+import { findPickleStep } from "./events";
 
 const PERSISTENT_SCOPE_KINDS: ReadonlySet<ScopeKind> = new Set([
   "feature",
@@ -141,11 +145,16 @@ export interface ScopeLifecycleOptions {
   readonly scopeKeywords?: ReadonlyMap<string, string>;
 }
 
+export interface ScenarioEventContext {
+  readonly pickle: SimplePickle;
+}
+
 export interface ScenarioRunContext<World> {
   readonly world: World;
   readonly parameterRegistry: ParameterRegistryLike | undefined;
   readonly beforeStepHooks: readonly ResolvedHook<World>[];
   readonly afterStepHooks: readonly ResolvedHook<World>[];
+  readonly events?: ScenarioEventContext;
   invokeHooks: HookInvoker<World>;
 }
 
@@ -156,9 +165,23 @@ interface HookInvocationParams<World> {
   readonly step?: StepHookDetails<World>;
   readonly direction?: HookDirection;
   readonly metadata?: Record<string, unknown>;
+  readonly events?: ScenarioEventContext;
 }
 
 type HookDirection = "asc" | "desc";
+
+function formatSourceRef(source: { file?: string; line?: number; column?: number } | undefined): string | undefined {
+  if (!source?.file) {
+    return undefined;
+  }
+  const line = source.line ? `:${source.line}` : "";
+  const column = source.column ? `:${source.column}` : "";
+  return `${source.file}${line}${column}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
 
 export class ScopeLifecycle<World> {
   private readonly states = new Map<string, ScopeState<World>>();
@@ -209,18 +232,20 @@ export class ScopeLifecycle<World> {
   async runScenario(
     execution: ScenarioExecution<World>,
     hooks: HookCollection<World>,
-    runner: (world: World, context: ScenarioRunContext<World>) => Promise<void>
+    runner: (world: World, context: ScenarioRunContext<World>) => Promise<void>,
+    options: { readonly events?: ScenarioEventContext } = {}
   ): Promise<void> {
     const parentWorld = await this.resolveParentWorldForScenario(execution);
     const world = await this.adapter.createWorld(execution.scope, parentWorld);
     const disposeWorld = createWorldDisposer(world);
-    const invokeHooks = this.createHookInvoker(execution, world);
+    const invokeHooks = this.createHookInvoker(execution, world, options.events);
 
     const scenarioContext: ScenarioRunContext<World> = {
       world,
       parameterRegistry: this.adapter.getParameterRegistry(),
       beforeStepHooks: hooks.beforeStep,
       afterStepHooks: hooks.afterStep,
+      ...(options.events ? { events: options.events } : {}),
       invokeHooks,
     };
 
@@ -231,6 +256,7 @@ export class ScopeLifecycle<World> {
           world,
           scope: execution.scope,
           scenario: execution,
+          ...(options.events ? { events: options.events } : {}),
           direction: "asc",
         });
 
@@ -244,6 +270,7 @@ export class ScopeLifecycle<World> {
           world,
           scope: execution.scope,
           scenario: execution,
+          ...(options.events ? { events: options.events } : {}),
           direction: "desc",
           metadata: { result: execution.result },
         });
@@ -429,13 +456,15 @@ export class ScopeLifecycle<World> {
 
   private createHookInvoker(
     execution: ScenarioExecution<World>,
-    world: World
+    world: World,
+    events?: ScenarioEventContext
   ): HookInvoker<World> {
     return async (hooks, options) => {
       const params: HookInvocationParams<World> = {
         world,
         scope: execution.scope,
         scenario: execution,
+        ...(events ? { events } : {}),
         ...(options.direction ? { direction: options.direction } : {}),
         ...(options.step ? { step: options.step } : {}),
         ...(options.metadata ? { metadata: options.metadata } : {}),
@@ -454,8 +483,34 @@ export class ScopeLifecycle<World> {
     }
 
     const sorted = this.sortHooks(hooks, params.direction ?? "asc");
+    const eventEmitter = getEventEmitter();
+    const pickle = params.events?.pickle;
 
     for (const entry of sorted) {
+      const source = formatSourceRef(entry.hook.source ?? entry.scope.source);
+      const hookMetadata = isRecord(entry.hook.options.data)
+        ? entry.hook.options.data
+        : undefined;
+      const pickleStep = pickle && params.step?.gherkin?.id
+        ? findPickleStep(pickle, params.step.gherkin.id)
+        : undefined;
+      const hookDescriptor: HookDescriptor = {
+        kind: entry.hook.type as HookKind,
+        ...(entry.hook.description ? { name: entry.hook.description } : {}),
+        ...(source ? { source } : {}),
+        ...(pickle ? { feature: pickle.feature } : {}),
+        ...(pickle?.rule ? { rule: pickle.rule } : {}),
+        ...(pickle ? { scenario: pickle.scenario } : {}),
+        ...(pickleStep ? { step: pickleStep } : {}),
+        ...(pickle ? { pickle } : {}),
+        ...(hookMetadata ? { metadata: hookMetadata } : {}),
+      };
+
+      await eventEmitter.hookStarted({
+        hook: hookDescriptor,
+        metadata: { hookId: entry.hook.id },
+      });
+
       const metadata = this.buildHookMetadata(entry, params);
       const log = this.createContextLogger(entry, params);
       const context = {
@@ -465,8 +520,26 @@ export class ScopeLifecycle<World> {
         ...(log ? { log } : {}),
       } as const;
 
-      // eslint-disable-next-line no-await-in-loop
-      await entry.hook.handler(context);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await entry.hook.handler(context);
+      } catch (error) {
+        await eventEmitter.errorRaised({
+          error,
+          phase: "hook",
+          ...(pickle ? { feature: pickle.feature } : {}),
+          ...(pickle?.rule ? { rule: pickle.rule } : {}),
+          ...(pickle ? { scenario: pickle.scenario } : {}),
+          ...(pickle ? { pickle } : {}),
+          metadata: { hook: hookDescriptor, hookId: entry.hook.id },
+        });
+        throw error;
+      } finally {
+        await eventEmitter.hookCompleted({
+          hook: hookDescriptor,
+          metadata: { hookId: entry.hook.id },
+        });
+      }
     }
   }
 

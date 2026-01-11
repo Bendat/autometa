@@ -6,6 +6,7 @@ import {
   ParameterTypeRegistry,
   RegularExpression,
 } from "@cucumber/cucumber-expressions";
+import { getEventEmitter } from "@autometa/events";
 import type {
   ParameterRegistryLike,
   SourceRef,
@@ -43,6 +44,7 @@ import type {
   StepHookInvocationOptions,
   StepStatus,
 } from "./scope-lifecycle";
+import { findPickleStep } from "./events";
 
 export type { ScenarioRunContext } from "./scope-lifecycle";
 
@@ -62,6 +64,8 @@ export async function runScenarioExecution<World>(
   context: ScenarioRunContext<World>
 ): Promise<void> {
   execution.reset();
+  const eventEmitter = context.events ? getEventEmitter() : undefined;
+  const pickle = context.events?.pickle;
   const { world, beforeStepHooks, afterStepHooks, invokeHooks } = context;
   const parameterRegistry = resolveParameterRegistry(context.parameterRegistry);
   const stepSummaries: GherkinStepSummary[] = [];
@@ -85,6 +89,21 @@ export async function runScenarioExecution<World>(
         step: stepDetails,
       };
       await invokeHooks(beforeStepHooks, beforeOptions);
+
+      const pickleStep = pickle && gherkinStep?.id
+        ? findPickleStep(pickle, gherkinStep.id)
+        : undefined;
+      if (eventEmitter && pickle && pickleStep) {
+        await eventEmitter.stepStarted({
+          feature: pickle.feature,
+          scenario: pickle.scenario,
+          step: pickleStep,
+          pickle,
+          ...(pickle.rule ? { rule: pickle.rule } : {}),
+          metadata: { index },
+        });
+      }
+
       setStepMetadata(world, metadata);
       setStepTable(world, gherkinStep?.dataTable);
       setStepDocstring(world, gherkinStep?.docString?.content);
@@ -104,6 +123,17 @@ export async function runScenarioExecution<World>(
           throw error;
         }
         status = "failed";
+        if (eventEmitter && pickle && pickleStep) {
+          await eventEmitter.errorRaised({
+            error,
+            phase: "step",
+            feature: pickle.feature,
+            scenario: pickle.scenario,
+            ...(pickle.rule ? { rule: pickle.rule } : {}),
+            pickle,
+            metadata: { index, stepId: pickleStep.id },
+          });
+        }
         stepSummaries.push(createStepSummary(metadata, gherkinStep, "failed"));
         for (let remaining = index + 1; remaining < gherkinSteps.length; remaining++) {
           const remainingMetadata = buildStepMetadata(execution, remaining);
@@ -123,6 +153,18 @@ export async function runScenarioExecution<World>(
           step: afterStepDetails,
         };
         await invokeHooks(afterStepHooks, afterOptions);
+
+        if (eventEmitter && pickle && pickleStep) {
+          await eventEmitter.stepCompleted({
+            feature: pickle.feature,
+            scenario: pickle.scenario,
+            step: pickleStep,
+            pickle,
+            ...(pickle.rule ? { rule: pickle.rule } : {}),
+            metadata: { index, status },
+          });
+        }
+
         clearStepTable(world);
         clearStepDocstring(world);
         clearStepMetadata(world);
