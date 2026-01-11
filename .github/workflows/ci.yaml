@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, refactor/v1-rewrite]
   pull_request:
 
 concurrency:
