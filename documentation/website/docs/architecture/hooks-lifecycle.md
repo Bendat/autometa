@@ -8,19 +8,51 @@ Autometa provides a rich set of hooks to manage the lifecycle of your tests. The
 
 ## Execution Order
 
-The following diagram illustrates the order in which hooks are executed:
+This diagram shows the execution order of Autometa hooks during a single feature run:
 
-1.  **`BeforeAll`**: Runs once before any features are executed.
-2.  **`BeforeFeature`**: Runs before each feature file.
-3.  **`BeforeRule`**: Runs before each rule (if present).
-4.  **`BeforeScenario`**: Runs before each scenario.
-5.  **`BeforeStep`**: Runs before each step.
-6.  **`Step Definition`**: The actual step logic.
-7.  **`AfterStep`**: Runs after each step.
-8.  **`AfterScenario`**: Runs after each scenario.
-9.  **`AfterRule`**: Runs after each rule.
-10. **`AfterFeature`**: Runs after each feature file.
-11. **`AfterAll`**: Runs once after all features are executed.
+```mermaid
+sequenceDiagram
+  participant Feature
+  participant Rule
+  participant Outline as ScenarioOutline
+  participant Scenario
+  participant Step
+
+  Feature->>Feature: BeforeFeature
+  alt Feature has Rule blocks
+    loop each Rule
+      Rule->>Rule: BeforeRule
+      Note over Rule,Scenario: Scenarios may also be Scenario Outlines
+      loop each Scenario / Example
+        Outline->>Outline: BeforeScenarioOutline (optional)
+        Scenario->>Scenario: BeforeScenario
+        loop each Step
+          Step->>Step: BeforeStep
+          Step->>Step: Step definition
+          Step->>Step: AfterStep
+        end
+        Scenario->>Scenario: AfterScenario
+        Outline->>Outline: AfterScenarioOutline (optional)
+      end
+      Rule->>Rule: AfterRule
+    end
+  else No Rule blocks
+    loop each Scenario / Example
+      Outline->>Outline: BeforeScenarioOutline (optional)
+      Scenario->>Scenario: BeforeScenario
+      loop each Step
+        Step->>Step: BeforeStep
+        Step->>Step: Step definition
+        Step->>Step: AfterStep
+      end
+      Scenario->>Scenario: AfterScenario
+      Outline->>Outline: AfterScenarioOutline (optional)
+    end
+  end
+  Feature->>Feature: AfterFeature
+```
+
+Suite-level setup/teardown (run once per test process) is intentionally handled by your **host runner** (Vitest/Jest/Playwright) or by modules you load via `roots.support` / `roots.hooks` (see below).
 
 ## Hook Ordering
 
@@ -68,6 +100,16 @@ This means:
 
 If you never register feature/rule/outline hooks, those worlds are never created—so scenarios run with just the scenario world.
 
+```mermaid
+flowchart TD
+  FeatureWorld["Feature world (optional)"] --> RuleWorld["Rule world (optional)"]
+  RuleWorld --> OutlineWorld["Scenario outline world (optional)"]
+  OutlineWorld --> ScenarioWorld["Scenario world (always)"]
+  FeatureWorld -. context.parent .-> RuleWorld
+  RuleWorld -. context.parent .-> OutlineWorld
+  OutlineWorld -. context.parent .-> ScenarioWorld
+```
+
 ### Accessing parent worlds from a scenario
 
 Autometa does not automatically add typed `world.feature` / `world.rule` properties. Instead:
@@ -104,20 +146,24 @@ BeforeScenario(({ world, scope, metadata }) => {
 
 ## Registering Hooks
 
-Hooks are exported from your step definitions file.
+Hooks come from your exported `stepsEnvironment` (typically from `src/step-definitions.ts`):
 
 ```ts
 // src/step-definitions.ts
+export const stepsEnvironment = runner.steps();
+
 export const {
-  BeforeAll,
-  AfterAll,
   BeforeFeature,
   AfterFeature,
+  BeforeRule,
+  AfterRule,
+  BeforeScenarioOutline,
+  AfterScenarioOutline,
   BeforeScenario,
   AfterScenario,
   BeforeStep,
   AfterStep,
-} = runner.steps();
+} = stepsEnvironment;
 
 BeforeScenario(({ world }) => {
   world.db.connect();
@@ -142,22 +188,20 @@ Scenario selection is controlled via `test.tagFilter` in `autometa.config.ts`.
 
 ## Global Hooks
 
-Global hooks (`BeforeAll`, `AfterAll`) are typically defined in a separate file and registered in `autometa.config.ts`.
+Autometa does not provide a runner-agnostic `BeforeAll`/`AfterAll` hook surface from `stepsEnvironment`. For “run once” setup, use one of these patterns:
 
-```ts
-// autometa.config.ts
+- **Host runner setup**: use the runner’s native mechanism (Vitest setup files, Jest `globalSetup`, Playwright `globalSetup`) when you need true once-per-process semantics.
+- **Root modules**: for side-effect imports that must happen before steps, put them in `roots.support` (or `roots.hooks`) so the CLI/loader imports them before `roots.steps`.
+
+```ts title="autometa.config.ts (side-effect module)"
+import { defineConfig } from "@autometa/config";
+
 export default defineConfig({
   default: {
-    hooks: {
-      beforeAll: ["./src/support/global-hooks.ts"],
+    roots: {
+      support: ["./src/support/setup.ts"],
+      steps: ["./src/steps", "./src/step-definitions.ts"],
     },
   },
 });
-```
-
-```ts
-// src/support/global-hooks.ts
-export const beforeAll = async () => {
-  await startServer();
-};
 ```

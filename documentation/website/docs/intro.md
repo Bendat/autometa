@@ -14,7 +14,7 @@ Autometa v1 is now live. The refactor that unified our runners, DTO builders, an
 
 ## Where to start
 
-1. Head to [Getting Started → Installation](getting-started/installation.md) for the runner-specific setup tabs.
+1. Head to [Getting Started → Installation](getting-started/installation) for the runner-specific setup tabs.
 2. Clone or browse the projects in `/examples` to compare each supported runner implementation side by side.
 3. Explore the architecture and reference sections for deeper dives into decorators, the `DtoBuilder`, and the `ensure(...)` plugin system.
 

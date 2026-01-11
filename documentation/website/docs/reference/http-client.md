@@ -217,7 +217,7 @@ const http = HTTP.create({
 
 ### HTTP Logs + Autometa Events
 
-You can pair HTTP logging with Autometa test events (see [Events](./events.md)) to create richer reporting.
+You can pair HTTP logging with Autometa test events (see [Events](./events)) to create richer reporting.
 If your runner executes scenarios concurrently, prefer storing logs on the world/app instead of a single global `activeScenarioId`.
 
 ```ts

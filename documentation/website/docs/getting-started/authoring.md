@@ -2,9 +2,9 @@
 sidebar_position: 4
 ---
 
-<!-- cSpell:disable -->
 # Authoring executors & steps
 
+<!-- cSpell:disable -->
 Autometa scenarios run through a single executor surface that you shape inside your step bundle. The examples in `/examples/*-functions` and `/examples/*-decorators` all follow the same recipe:
 
 1. Build a `CucumberRunner` instance that knows about your world, app composition root, assertion plugins, and parameter types.
