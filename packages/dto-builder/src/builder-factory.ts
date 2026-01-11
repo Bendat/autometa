@@ -179,13 +179,14 @@ function createBuilderFactoryWithExtensions<T, Methods extends BuilderExtensionM
     extend<MoreMethods extends BuilderExtensionMap = EmptyMethods>(
       options: ExtendBuilderFactoryOptions<T, MoreMethods> = {}
     ): BuilderFactory<T, Methods & MoreMethods> {
+      const validator = composeValidator(config.validator, options.validator);
       const mergedConfig: BuilderConfig<T> = {
         createTarget: config.createTarget,
         defaults: {
           ...config.defaults,
           ...normalizeDefaultsInput<T>(options.defaults),
         },
-        validator: composeValidator(config.validator, options.validator),
+        ...(validator ? { validator } : {}),
       };
 
       const mergedMethods = {
