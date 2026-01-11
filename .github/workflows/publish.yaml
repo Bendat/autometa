@@ -49,13 +49,13 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
           registry-url: https://registry.npmjs.org
-      - name: Verify npm credentials (optional)
+      - name: Verify npm credentials
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "No NPM_TOKEN provided; assuming npm trusted publishing (OIDC) is configured."
-            exit 0
+            echo "Missing NPM_TOKEN; aborting before publish to avoid broken releases."
+            exit 1
           fi
           npm whoami
       - name: Install dependencies
