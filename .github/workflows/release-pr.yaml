@@ -26,8 +26,8 @@ jobs:
       - name: Determine tool versions
         id: versions
         run: |
-          echo "node-version=$(node -p \"(() => { const pkg = require('./package.json'); return (pkg?.volta?.node) ?? process.versions.node; })()\")" >> "$GITHUB_OUTPUT"
-          echo "pnpm-version=$(node -p \"(() => { const pkg = require('./package.json'); const manager = pkg?.packageManager || ''; const parts = manager.split('@'); return parts.length > 1 ? parts[1] : '9.0.0'; })()\")" >> "$GITHUB_OUTPUT"
+          echo "node-version=$(node -p "(() => { const pkg = require('./package.json'); return (pkg?.volta?.node) ?? process.versions.node; })()")" >> "$GITHUB_OUTPUT"
+          echo "pnpm-version=$(node -p "(() => { const pkg = require('./package.json'); const manager = pkg?.packageManager || ''; const parts = manager.split('@'); return parts.length > 1 ? parts[1] : '9.0.0'; })()")" >> "$GITHUB_OUTPUT"
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
