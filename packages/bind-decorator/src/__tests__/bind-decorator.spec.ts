@@ -40,6 +40,26 @@ describe("@Bind", () => {
 
     expect(fixture.count).toBe(5);
   });
+
+  it("throws when decorating a non-method property", () => {
+    expect(() => {
+      class Invalid {
+        @Bind
+        // @ts-expect-error - intentionally testing invalid usage
+        notAMethod = "string";
+      }
+      new Invalid();
+    }).toThrow(TypeError);
+  });
+
+  it("throws when assigning a non-function value", () => {
+    const fixture = new BindFixture();
+
+    expect(() => {
+      // @ts-expect-error - intentionally testing invalid usage
+      fixture.increment = "not a function" as any;
+    }).toThrow(TypeError);
+  });
 });
 
 describe("@Freeze", () => {
