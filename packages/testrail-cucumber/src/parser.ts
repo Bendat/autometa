@@ -1,4 +1,8 @@
-import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
+import {
+  AstBuilder,
+  GherkinClassicTokenMatcher,
+  Parser,
+} from "@cucumber/gherkin";
 import { IdGenerator } from "@cucumber/messages";
 import {
   FeatureChildNode,
@@ -17,7 +21,9 @@ const parser = new Parser(builder, matcher);
 parser.stopAtFirstError = true;
 
 function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 function asArray(value: unknown): readonly unknown[] {
@@ -47,11 +53,17 @@ export function parseFeature(text: string, featurePath: string): ParsedFeature {
       const ruleBg = collectBackgroundSteps(child.rule.children ?? []);
       const rule: RuleNode = {
         name: child.rule.name,
-        ...(typeof child.rule.location?.line === "number" ? { line: child.rule.location.line } : {}),
+        ...(typeof child.rule.location?.line === "number"
+          ? { line: child.rule.location.line }
+          : {}),
       };
       for (const ruleChild of child.rule.children ?? []) {
         if (ruleChild.scenario) {
-          const parsed = toScenario(ruleChild.scenario, [...backgroundSteps, ...ruleBg], rule);
+          const parsed = toScenario(
+            ruleChild.scenario,
+            [...backgroundSteps, ...ruleBg],
+            rule
+          );
           children.push(parsed);
         }
       }
@@ -94,12 +106,14 @@ function toScenario(
 
   const base = {
     name: String(record.name ?? ""),
-    line: (() => {
+    ...(() => {
       const line = asRecord(record.location).line;
-      return typeof line === "number" ? line : undefined;
+      return typeof line === "number" ? { line } : {};
     })(),
     ...(rule ? { rule } : {}),
-    description: typeof record.description === "string" ? record.description : undefined,
+    ...(typeof record.description === "string"
+      ? { description: record.description }
+      : {}),
     tags,
     steps: mapSteps(asArray(record.steps)),
     backgroundSteps,
@@ -117,9 +131,13 @@ function toScenario(
   const examples: OutlineExampleTable[] = asArray(record.examples).map((ex) => {
     const example = asRecord(ex);
     const tableHeader = asRecord(example.tableHeader);
-    const headers = asArray(tableHeader.cells).map((cell) => String(asRecord(cell).value ?? ""));
+    const headers = asArray(tableHeader.cells).map((cell) =>
+      String(asRecord(cell).value ?? "")
+    );
     const rows = asArray(example.tableBody).map((row) =>
-      asArray(asRecord(row).cells).map((cell) => String(asRecord(cell).value ?? ""))
+      asArray(asRecord(row).cells).map((cell) =>
+        String(asRecord(cell).value ?? "")
+      )
     );
     return { headers, rows };
   });
@@ -145,10 +163,16 @@ function mapSteps(steps: readonly unknown[]): StepNode[] {
     const tableRecord = asRecord(dataTable);
     const rows = asArray(tableRecord.rows);
     const headerRow = rows[0];
-    const headers = asArray(asRecord(headerRow).cells).map((cell) => String(asRecord(cell).value ?? ""));
+    const headers = asArray(asRecord(headerRow).cells).map((cell) =>
+      String(asRecord(cell).value ?? "")
+    );
     const bodyRows = rows
       .slice(1)
-      .map((row) => asArray(asRecord(row).cells).map((cell) => String(asRecord(cell).value ?? "")));
+      .map((row) =>
+        asArray(asRecord(row).cells).map((cell) =>
+          String(asRecord(cell).value ?? "")
+        )
+      );
 
     return {
       keyword: keyword.trimEnd(),
