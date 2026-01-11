@@ -207,6 +207,28 @@ describe("createRunnerBuilder", () => {
 		expect(world).toMatchObject({ value: 2, app: { name: "test-app" } });
 	});
 
+	it("does not throw when JSON stringifying a world with circular app references", async () => {
+		interface App {
+			readonly name: string;
+			readonly world?: BaseWorld & { app?: App };
+		}
+
+		const builder = createRunnerBuilder<BaseWorld>()
+			.app<App>((context) => {
+				const app: { name: string; world?: BaseWorld & { app?: App } } = { name: "circular-app" };
+				app.world = context.world as BaseWorld & { app?: App };
+				return app as App;
+			})
+			.withWorld(() => ({ value: 1 }));
+
+		const steps = builder.steps();
+		const plan = steps.getPlan();
+		const scope = plan.root.children[0] ?? plan.root;
+		const world = plan.worldFactory ? await plan.worldFactory({ scope }) : undefined;
+		expect(world).toBeDefined();
+		expect(() => JSON.stringify(world)).not.toThrow();
+	});
+
 	it("exposes composition helpers in app factory context", async () => {
 		interface World extends BaseWorld {
 			readonly http: { readonly baseUrl: string };

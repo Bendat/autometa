@@ -167,6 +167,8 @@ If you register feature/rule/scenario-outline hooks, Autometa can create worlds 
 - Use `WORLD_INHERIT_KEYS` to copy specific parent values into the child world.
 - A non-enumerable `world.ancestors` array is also attached (nearest parent first) for debugging or advanced use cases.
 
+For debugging, `JSON.stringify(world)` is safe: Autometa defines a `toJSON()` serializer that avoids circular references (for example, when `world.app` holds services that reference the world).
+
 ## Parameters & custom expressions
 
 Register advanced cucumber parameters by exporting a `ParameterTypeDefinition[]` next to your steps and passing it to `.parameterTypes(...)`:

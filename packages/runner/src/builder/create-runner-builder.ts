@@ -1048,6 +1048,7 @@ function composeWorldFactory<World>(
 		attachFeatureRegistry(mergedWorld, featureRegistry);
 		attachContainer(mergedWorld, container);
 		attachRuntime(mergedWorld);
+		attachWorldToJson(mergedWorld);
 		container.registerValue(WORLD_TOKEN, mergedWorld, {
 			scope: Scope.SCENARIO,
 		});
@@ -1268,6 +1269,133 @@ function attachRuntime(world: Record<string, unknown>): void {
 		enumerable: false,
 		configurable: true,
 	});
+}
+
+type JsonSafeValue =
+	| null
+	| boolean
+	| number
+	| string
+	| JsonSafeValue[]
+	| { [key: string]: JsonSafeValue };
+
+const WORLD_JSON_EXCLUDE_KEYS: ReadonlySet<string> = new Set([
+	"app",
+	"di",
+	"container",
+	"runtime",
+	"ancestors",
+]);
+
+function attachWorldToJson(world: Record<string, unknown>): void {
+	if (Reflect.has(world, "toJSON")) {
+		return;
+	}
+
+	Object.defineProperty(world, "toJSON", {
+		value: () => {
+			const stack = new WeakSet<object>();
+			return toJsonSafeValue(world, 8, stack);
+		},
+		enumerable: false,
+		configurable: true,
+		writable: true,
+	});
+}
+
+function toJsonSafeValue(value: unknown, depth: number, stack: WeakSet<object>): JsonSafeValue {
+	if (value === null) {
+		return null;
+	}
+
+	switch (typeof value) {
+		case "boolean":
+		case "number":
+		case "string":
+			return value;
+		case "bigint":
+			return value.toString();
+		case "undefined":
+			return "[undefined]";
+		case "symbol":
+			return value.toString();
+		case "function":
+			return "[Function]";
+		case "object":
+			break;
+		default:
+			return String(value);
+	}
+
+	if (depth <= 0) {
+		return "[MaxDepth]";
+	}
+
+	const obj = value as object;
+	if (stack.has(obj)) {
+		return "[Circular]";
+	}
+
+	if (Array.isArray(obj)) {
+		stack.add(obj);
+		try {
+			return obj.map((entry) => toJsonSafeValue(entry, depth - 1, stack));
+		} finally {
+			stack.delete(obj);
+		}
+	}
+
+	if (obj instanceof Date) {
+		return obj.toISOString();
+	}
+
+	if (obj instanceof Error) {
+		return {
+			name: obj.name,
+			message: obj.message,
+			stack: obj.stack ?? "",
+		};
+	}
+
+	if (obj instanceof Map) {
+		stack.add(obj);
+		try {
+			return {
+				"[Map]": Array.from(obj.entries()).map(([key, entry]) => ({
+					key: toJsonSafeValue(key, depth - 1, stack),
+					value: toJsonSafeValue(entry, depth - 1, stack),
+				})),
+			};
+		} finally {
+			stack.delete(obj);
+		}
+	}
+
+	if (obj instanceof Set) {
+		stack.add(obj);
+		try {
+			return { "[Set]": Array.from(obj.values()).map((entry) => toJsonSafeValue(entry, depth - 1, stack)) };
+		} finally {
+			stack.delete(obj);
+		}
+	}
+
+	stack.add(obj);
+	try {
+		const record = obj as Record<string, unknown>;
+		const result: Record<string, JsonSafeValue> = {};
+
+		for (const [key, entry] of Object.entries(record)) {
+			if (WORLD_JSON_EXCLUDE_KEYS.has(key)) {
+				continue;
+			}
+			result[key] = toJsonSafeValue(entry, depth - 1, stack);
+		}
+
+		return result;
+	} finally {
+		stack.delete(obj);
+	}
 }
 
 function attachFeatureRegistry(
