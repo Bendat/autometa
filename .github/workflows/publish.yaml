@@ -48,6 +48,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
           registry-url: https://registry.npmjs.org
+      - name: Verify npm credentials
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_TOKEN secret is not set; cannot publish."
+            exit 1
+          fi
+          npm whoami
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build packages
