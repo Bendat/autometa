@@ -17,10 +17,11 @@ Autometa v1 ships today with a unified runtime that behaves the same way across 
 ## Choose your path
 
 1. Start with [Installation](installation.md) and expand the runner tab that matches your stack.
-2. Walk through [Authoring executors & steps](authoring.md) to configure the `CucumberRunner`, Autometa CLI, and your preferred step style (functions or decorators).
-3. Mirror the structure shown in `/examples/<runner>-functions` or `/examples/<runner>-decorators`—those folders are kept up to date with the release packages.
-4. When you need a data factory or ergonomic assertions, jump ahead to the DTO builder and `@autometa/assertions` sections at the bottom of the installation doc.
-5. For monorepos (multiple apps/APIs, Nx/Nest workspaces), use [Monorepos: groups, modules, and isolated worlds](monorepos.md).
+2. Review [Runners & loaders](runners.md) to understand how each runner ingests `.feature` files.
+3. Walk through [Authoring executors & steps](authoring.md) to configure the `CucumberRunner`, Autometa CLI, and your preferred step style (functions or decorators).
+4. Mirror the structure shown in `/examples/<runner>-functions` or `/examples/<runner>-decorators`—those folders are kept up to date with the release packages.
+5. When you need a data factory or ergonomic assertions, jump ahead to the DTO builder and `@autometa/assertions` sections at the bottom of the installation doc.
+6. For monorepos (multiple apps/APIs, Nx/Nest workspaces), use [Monorepos: groups, modules, and isolated worlds](monorepos.md).
 
 :::info Example parity
 Each example project shares the same `.feature` files and world shape. Once you are comfortable in one runner, you can inspect the others to see the minimal deltas Autometa requires.
