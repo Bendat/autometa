@@ -14,7 +14,8 @@
       "@autometa/*": [
         "../*/dist/index.d.ts"
       ]
-    }
+    },
+    "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo"
   },
   "include": [
     "src/**/*"

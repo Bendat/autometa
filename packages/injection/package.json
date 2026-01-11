@@ -13,7 +13,7 @@
     "lint:fix": "eslint . --fix",
     "clean": "rimraf dist",
     "build": "tsup && pnpm run build:types",
-    "build:types": "tsc --build --force tsconfig.types.json",
+    "build:types": "rimraf tsconfig.types.tsbuildinfo && tsc --build tsconfig.types.json",
     "build:watch": "tsup --watch"
   },
   "exports": {

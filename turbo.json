@@ -23,7 +23,7 @@
         "package.json",
         "tsconfig.json"
       ],
-      "dependsOn": ["^build:types", "^type-check"]
+      "dependsOn": ["^type-check"]
     },
     "build": {
       "inputs": [
