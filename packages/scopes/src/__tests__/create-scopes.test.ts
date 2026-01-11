@@ -179,6 +179,15 @@ describe("createScopes DSL", () => {
     expect(skippedHook.options.tags).toEqual(["cleanup"]);
   });
 
+  it("supports hook ordering via fluent .order()", () => {
+    const scopes = createScopes<TestWorld>();
+
+    const registered = scopes.beforeScenario((_ctx: HookContext<TestWorld>) => undefined).order(0);
+
+    expectTypeOf(registered.order).toBeFunction();
+    expect(scopes.plan().root.hooks[0]?.options.order).toBe(0);
+  });
+
   it("applies configured default mode to scopes, steps, and hooks", () => {
     const scopes = createScopes<TestWorld>({ defaultMode: "skip" });
 

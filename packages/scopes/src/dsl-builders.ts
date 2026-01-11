@@ -8,6 +8,7 @@ import type {
   FeatureInput,
   HookDefinition,
   HookHandler,
+  HookRegistration,
   HookOptions,
   HookType,
   PendingState,
@@ -656,6 +657,23 @@ interface NormalizedHookArgs<World> {
   readonly options?: HookOptions;
 }
 
+function withHookOrder<World>(definition: HookDefinition<World>): HookRegistration<World> {
+  const registration = definition as HookRegistration<World>;
+  if (typeof registration.order === "function") {
+    return registration;
+  }
+
+  registration.order = (order: number) => {
+    if (!Number.isFinite(order)) {
+      throw new TypeError("Hook order must be a finite number");
+    }
+    (registration.options as unknown as { order?: number }).order = order;
+    return registration;
+  };
+
+  return registration;
+}
+
 function normalizeHookArgs<World>(
   mode: ExecutionMode,
   descriptionOrHandler: string | HookHandler<World>,
@@ -690,7 +708,7 @@ function normalizeHookArgs<World>(
 export function createHookBuilder<World>(
   composer: ScopeComposer<World>,
   type: HookType
-): ExecutableScopeFn<[unknown?, unknown?, unknown?], HookDefinition<World>> {
+): ExecutableScopeFn<[unknown?, unknown?, unknown?], HookRegistration<World>> {
   return withExecutionVariants((mode, args) => {
     const [descriptionOrHandler, handlerOrOptions, maybeOptions] = args;
     const { description, handler, options } = normalizeHookArgs(
@@ -700,6 +718,6 @@ export function createHookBuilder<World>(
       maybeOptions as HookOptions | undefined
     );
     const source = captureCallSite();
-    return composer.registerHook(type, handler, options, description, source);
+    return withHookOrder(composer.registerHook(type, handler, options, description, source));
   });
 }

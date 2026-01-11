@@ -1,6 +1,7 @@
 import type {
 	HookDsl,
 	HookHandler,
+	HookRegistration,
 	ScopePlan,
 	ScopesDsl,
 	StepArgumentsForExpression,
@@ -102,12 +103,12 @@ export interface RunnerStepDsl<
 }
 
 export interface RunnerHookDsl<World> {
-	(handler: HookHandler<World>, options?: HookOptions): HookDefinition<World>;
+	(handler: HookHandler<World>, options?: HookOptions): HookRegistration<World>;
 	(
 		description: string,
 		handler: HookHandler<World>,
 		options?: HookOptions
-	): HookDefinition<World>;
+	): HookRegistration<World>;
 	skip: RunnerHookDsl<World>;
 	only: RunnerHookDsl<World>;
 	failing: RunnerHookDsl<World>;

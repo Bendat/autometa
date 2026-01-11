@@ -22,6 +22,33 @@ The following diagram illustrates the order in which hooks are executed:
 10. **`AfterFeature`**: Runs after each feature file.
 11. **`AfterAll`**: Runs once after all features are executed.
 
+## Hook Ordering
+
+Hook ordering is determined by:
+
+1. `order` (lower runs first for `Before*`, higher runs first for `After*`)
+2. scope depth (more nested hooks run first for `Before*`, and last for `After*`)
+
+By default, hooks have an order of `5`.
+
+```ts
+BeforeScenario("start a stub server", ({ world }) => {
+  void world;
+}).order(1);
+```
+
+You can also set `order` via the options object:
+
+```ts
+BeforeScenario(
+  "start a stub server",
+  ({ world }) => {
+    void world;
+  },
+  { order: 1 }
+);
+```
+
 ## Hook Arguments
 
 All hooks receive an object containing the `World` and other context information.
@@ -62,16 +89,17 @@ AfterScenario(({ world }) => {
 });
 ```
 
-## Tagged Hooks
+## Hook Tags (Metadata)
 
-You can conditionally run hooks based on tags.
+Hooks can be tagged for metadata/debugging purposes.
 
 ```ts
-BeforeScenario("@database", ({ world }) => {
-  // Only runs for scenarios tagged with @database
+BeforeScenario(({ world }) => {
   world.db.seed();
-});
+}, { tags: ["@database"] });
 ```
+
+Scenario selection is controlled via `test.tagFilter` in `autometa.config.ts`.
 
 ## Global Hooks
 

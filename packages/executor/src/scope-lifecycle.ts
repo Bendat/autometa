@@ -826,8 +826,8 @@ export class ScopeLifecycle<World> {
     b: ResolvedHook<World>,
     direction: HookDirection
   ): number {
-    const orderA = a.hook.options.order ?? 0;
-    const orderB = b.hook.options.order ?? 0;
+    const orderA = a.hook.options.order ?? 5;
+    const orderB = b.hook.options.order ?? 5;
     if (orderA !== orderB) {
       return direction === "asc" ? orderA - orderB : orderB - orderA;
     }
@@ -835,7 +835,10 @@ export class ScopeLifecycle<World> {
     const depthA = this.depthMap.get(a.scope.id) ?? 0;
     const depthB = this.depthMap.get(b.scope.id) ?? 0;
     if (depthA !== depthB) {
-      return direction === "asc" ? depthA - depthB : depthB - depthA;
+      // Default ordering prefers the most nested hook:
+      // - "before" hooks run deepest → shallowest
+      // - "after" hooks run shallowest → deepest
+      return direction === "asc" ? depthB - depthA : depthA - depthB;
     }
 
     return a.hook.id.localeCompare(b.hook.id);

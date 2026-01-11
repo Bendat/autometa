@@ -162,6 +162,10 @@ export interface HookDefinition<World> {
   readonly source?: SourceRef;
 }
 
+export type HookRegistration<World> = HookDefinition<World> & {
+  order: (order: number) => HookRegistration<World>;
+};
+
 export interface StepOptions {
   readonly tags?: readonly string[];
   readonly timeout?: TimeoutSpec;
@@ -347,9 +351,9 @@ export interface StepDsl<
   ) => StepDsl<World, Types>;
 }
 
-export type HookDsl<World> = ExecutableScopeFn<[unknown?, unknown?, unknown?], HookDefinition<World>> &
-  ((handler: HookHandler<World>, options?: HookOptions) => HookDefinition<World>) &
-  ((description: string, handler: HookHandler<World>, options?: HookOptions) => HookDefinition<World>);
+export type HookDsl<World> = ExecutableScopeFn<[unknown?, unknown?, unknown?], HookRegistration<World>> &
+  ((handler: HookHandler<World>, options?: HookOptions) => HookRegistration<World>) &
+  ((description: string, handler: HookHandler<World>, options?: HookOptions) => HookRegistration<World>);
 
 export interface ScopesDsl<
   World,
