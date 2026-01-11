@@ -21,6 +21,14 @@ export interface SyncOptions {
   readonly dryRun?: boolean;
   /** If true, update existing cases (steps/description/title) when reusing a match. */
   readonly updateExisting?: boolean;
+  /**
+   * Migration helper: when a scenario belongs to a Rule section but the matched case lives elsewhere,
+   * create a new case in the rule section and tag the feature with the new id.
+   *
+   * Note: This intentionally avoids moving existing cases (TestRail move_cases endpoint is not available
+   * in all installations).
+   */
+  readonly migrateToRuleSections?: boolean;
 
   /**
    * Which field to use for storing separated steps.
@@ -89,6 +97,17 @@ export async function syncFeatureToTestRail(
             )
           )
         ).flat();
+
+  const caseById = new Map<number, ExistingCase>();
+  const casesBySignature = new Map<string, ExistingCase[]>();
+  for (const c of existingCases) {
+    caseById.set(c.id, c);
+    if (c.signature) {
+      const bucket = casesBySignature.get(c.signature) ?? [];
+      bucket.push(c);
+      casesBySignature.set(c.signature, bucket);
+    }
+  }
 
   const plan = await buildPlan({
     feature,
@@ -177,9 +196,59 @@ export async function syncFeatureToTestRail(
     }
 
     // use
-    const caseId = item.caseId;
+    let caseId = item.caseId;
     if (caseId === undefined) {
       throw new Error(`[testrail] Internal error: plan item missing caseId for use action (${item.nodeName}).`);
+    }
+
+    if (options.migrateToRuleSections === true && node.rule?.name && featureSection.id !== -1) {
+      const target = await resolveTargetSection(
+        client,
+        mutableSections,
+        ruleSectionsByName,
+        projectId,
+        feature,
+        featureSection,
+        suiteId,
+        node,
+        { dryRun }
+      );
+      mutableSections = target.sections;
+
+      if (target.section.id !== -1 && target.section.id !== featureSection.id) {
+        const existingInTarget = (casesBySignature.get(item.signature) ?? []).find(
+          (candidate) => candidate.sectionId === target.section.id
+        );
+        if (existingInTarget) {
+          caseId = existingInTarget.id;
+          messages.push(
+            pc.cyan(
+              `[testrail] Using existing case #${caseId} for ${item.nodeName} found in rule section "${target.section.name}".`
+            )
+          );
+        } else {
+          const currentSectionId =
+            caseById.get(caseId)?.sectionId ?? (await client.getCase(caseId)).section_id ?? undefined;
+          if (currentSectionId !== target.section.id) {
+            const payload = buildCasePayload(feature, node, item.signature, suite, options);
+            if (options.signatureToRefs !== false) {
+              payload.refs = ensureRefsContain(
+                typeof payload.refs === "string" ? payload.refs : item.signature,
+                `autometa:migrated-from-case:${caseId}`
+              );
+            }
+            const created = await client.addCase(target.section.id, payload);
+            createdCases.push(created);
+            caseIdBySignature.set(item.signature, created.id);
+            messages.push(
+              pc.green(
+                `[testrail] Migrated ${item.nodeName}: cloned case #${caseId} into rule section "${target.section.name}" as #${created.id}.`
+              )
+            );
+            continue;
+          }
+        }
+      }
     }
 
     caseIdBySignature.set(item.signature, caseId);

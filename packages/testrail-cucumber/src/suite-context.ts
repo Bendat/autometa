@@ -145,5 +145,5 @@ async function findOrCreateSuite(
 }
 
 function buildSuiteTag(suiteId: number): string {
-  return `@S${suiteId}`;
+  return `@testrail-suite-${suiteId}`;
 }

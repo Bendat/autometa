@@ -60,8 +60,13 @@ function registerSyncCommand(program: Command): void {
     .option("--update-existing", "Update existing cases (title/description/steps)", false)
     .option("--write-tags", "Write @C<id> (and suite tag, if applicable) back into feature files", false)
     .option("--write-tags-on-dry-run", "When --dry-run, still write tags back into feature files", false)
-    .option("--case-tag-prefix <prefix>", "Case id tag prefix (default: @C)")
-    .option("--suite-tag-prefix <prefix>", "Suite id tag prefix (default: @S)")
+    .option("--case-tag-prefix <prefix>", "Case id tag prefix (default: @testrail-case-)")
+    .option("--suite-tag-prefix <prefix>", "Suite id tag prefix (default: @testrail-suite-)")
+    .option(
+      "--migrate-to-rules",
+      "When reusing an existing case that is not in the expected rule section, create a new copy in the rule section and tag the feature with the new id",
+      false
+    )
     .option("--steps-field <field>", "Steps field name (default: custom_steps_separated)")
     .option("--description-field <field>", "Description field name (default: custom_test_case_description)")
     // TestRail credentials
@@ -79,7 +84,7 @@ function registerSyncCommand(program: Command): void {
       const forcePrompt = Boolean(opts.forcePrompt);
       const dryRun = Boolean(opts.dryRun);
       const writeTagsOnDryRun = Boolean(opts.writeTagsOnDryRun);
-      const suiteTagPrefix = String(opts.suiteTagPrefix ?? "@S");
+      const suiteTagPrefix = String(opts.suiteTagPrefix ?? "@testrail-suite-");
 
       const { client, projectId } = requireClient(opts);
 
@@ -165,6 +170,7 @@ function registerSyncCommand(program: Command): void {
           maxPromptCandidates,
           dryRun,
           updateExisting: Boolean(opts.updateExisting),
+          migrateToRuleSections: Boolean(opts.migrateToRules),
           ...(opts.stepsField ? { stepsField: String(opts.stepsField) } : {}),
           ...(opts.descriptionField ? { descriptionField: String(opts.descriptionField) } : {}),
         });

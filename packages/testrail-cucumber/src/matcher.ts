@@ -9,6 +9,8 @@ export interface ExistingCase {
   readonly title?: string;
   readonly suiteName?: string;
   readonly sectionPath?: string;
+  readonly sectionId?: number;
+  readonly suiteId?: number;
   readonly signature?: string;
   readonly firstStep?: string;
 }

@@ -2,9 +2,9 @@ import type { ParsedFeature, FeatureChildNode } from "./types";
 import { computeScenarioSignature } from "./signature";
 
 export interface TagWritebackOptions {
-  /** Tag prefix for case ids (default: "@C" so case 123 => @C123). */
+  /** Tag prefix for case ids (default: "@testrail-case-" so case 123 => @testrail-case-123). */
   readonly caseTagPrefix?: string;
-  /** Optional suite tag to apply (e.g. @testrail-suite-42). */
+  /** Optional suite tag to apply at the feature level (e.g. @testrail-suite-42). */
   readonly suiteTag?: string;
 }
 
@@ -20,7 +20,7 @@ export function applyCaseTagsToFeatureText(
   caseIdBySignature: Readonly<Record<string, number>>,
   options: TagWritebackOptions = {}
 ): TagWritebackResult {
-  const caseTagPrefix = options.caseTagPrefix ?? "@C";
+  const caseTagPrefix = options.caseTagPrefix ?? "@testrail-case-";
 
   const lines = originalText.split(/\r?\n/);
   const applied: { nodeName: string; addedTags: string[] }[] = [];
@@ -48,54 +48,74 @@ export function applyCaseTagsToFeatureText(
     });
 
     const resolvedId = caseIdBySignature[signature];
-    if (resolvedId === undefined && !options.suiteTag) {
+    if (resolvedId === undefined) {
       continue;
     }
 
-    const tagsToAdd: string[] = [];
-    if (resolvedId !== undefined) {
-      tagsToAdd.push(`${caseTagPrefix}${resolvedId}`);
-    }
-    if (options.suiteTag) {
-      tagsToAdd.push(options.suiteTag);
-    }
+    const tagsToAdd = [`${caseTagPrefix}${resolvedId}`];
 
     const idx = line - 1; // 1-based to 0-based
     if (idx < 0 || idx >= lines.length) continue;
 
-    const scenarioLine = lines[idx] ?? "";
-    const indent = (scenarioLine.match(/^\s*/) ?? [""])[0];
-
-    const existingTagLines = collectTagLinesAbove(lines, idx);
-    const existingTags = new Set(extractTags(existingTagLines));
-
-    const missing = tagsToAdd.filter((t) => !existingTags.has(t));
+    const missing = applyTagsAtLine(lines, idx, tagsToAdd);
     if (missing.length === 0) continue;
 
-    if (existingTagLines.length > 0) {
-      // Append to the last tag line for this scenario.
-      const lastTagLineIndex = idx - 1;
-      const lastTagLine = lines[lastTagLineIndex];
-      if (typeof lastTagLine !== "string") {
-        continue;
-      }
-      const newLine = lastTagLine.trimEnd() + " " + missing.join(" ");
-      lines[lastTagLineIndex] = newLine;
-    } else {
-      lines.splice(idx, 0, indent + missing.join(" "));
-    }
-
     applied.push({ nodeName: node.name, addedTags: missing });
+  }
+
+  if (options.suiteTag) {
+    const featureLineIndex = findFeatureLineIndex(lines);
+    if (featureLineIndex !== undefined) {
+      const missing = applyTagsAtLine(lines, featureLineIndex, [options.suiteTag]);
+      if (missing.length > 0) {
+        applied.push({ nodeName: `Feature: ${feature.name}`, addedTags: missing });
+      }
+    }
   }
 
   const updatedText = lines.join("\n");
   return { updatedText, changed: updatedText !== originalText, applied };
 }
 
-function collectTagLinesAbove(lines: string[], scenarioLineIndex: number): string[] {
+function findFeatureLineIndex(lines: readonly string[]): number | undefined {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (typeof line === "string" && line.trimStart().startsWith("Feature:")) {
+      return i;
+    }
+  }
+  return undefined;
+}
+
+function applyTagsAtLine(lines: string[], targetLineIndex: number, tags: readonly string[]): string[] {
+  const targetLine = lines[targetLineIndex] ?? "";
+  const indent = (targetLine.match(/^\s*/) ?? [""])[0];
+
+  const existingTagLines = collectTagLinesAbove(lines, targetLineIndex);
+  const existingTags = new Set(extractTags(existingTagLines));
+  const missing = tags.filter((t) => !existingTags.has(t));
+  if (missing.length === 0) {
+    return [];
+  }
+
+  if (existingTagLines.length > 0) {
+    const lastTagLineIndex = targetLineIndex - 1;
+    const lastTagLine = lines[lastTagLineIndex];
+    if (typeof lastTagLine !== "string") {
+      return [];
+    }
+    lines[lastTagLineIndex] = lastTagLine.trimEnd() + " " + missing.join(" ");
+    return [...missing];
+  }
+
+  lines.splice(targetLineIndex, 0, indent + missing.join(" "));
+  return [...missing];
+}
+
+function collectTagLinesAbove(lines: string[], targetLineIndex: number): string[] {
   const tagLines: string[] = [];
-  // Only consider contiguous tag lines immediately above the scenario.
-  for (let i = scenarioLineIndex - 1; i >= 0; i--) {
+  // Only consider contiguous tag lines immediately above the target line.
+  for (let i = targetLineIndex - 1; i >= 0; i--) {
     const line = lines[i] ?? "";
     if (line.trim().startsWith("@")) {
       tagLines.unshift(line);

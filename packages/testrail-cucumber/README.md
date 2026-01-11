@@ -1,18 +1,17 @@
-# testrail-cucumber (rewrite)
+# @autometa/testrail-cucumber
 
-This folder is the new home for the **Autometa** TestRail + Cucumber integration.
+Upload Cucumber `.feature` files to TestRail with idempotent matching via a stable signature.
 
-## Reference implementation
+## CLI
 
-For a safe baseline to compare against, the original library from `main` has been copied into:
+- Plan without touching TestRail:
+  - `testrail-cucumber plan <patterns...> --existing-cases existing.json`
+- Sync to TestRail:
+  - `testrail-cucumber sync <patterns...> --testrail-url ... --testrail-username ... --testrail-password ... --project-id ...`
 
-- `.reference/`
+## Tagging
 
-This folder is intentionally kept as a snapshot for inspection and migration planning.
-
-## Next steps (planned)
-
-- Define the new public API (CLI + programmatic)
-- Decide on supported Cucumber variants (message protocol vs JSON vs JUnit)
-- Implement a cleaner TestRail client layer (auth, retries, rate limits, idempotency)
-- Add strong typing + tests + fixtures
+- After sync, write tags back into feature files:
+  - `--write-tags` (defaults to `@testrail-case-<id>` and `@testrail-suite-<id>`).
+- Tag-only workflow:
+  - `sync --dry-run --write-tags --write-tags-on-dry-run` (writes tags without creating/updating cases).

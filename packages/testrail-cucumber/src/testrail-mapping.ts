@@ -29,6 +29,8 @@ export function toExistingCaseFromTestRail(c: TestRailCase): ExistingCase {
   return {
     id: c.id,
     title: c.title,
+    ...(typeof c.section_id === "number" ? { sectionId: c.section_id } : {}),
+    ...(typeof c.suite_id === "number" ? { suiteId: c.suite_id } : {}),
     ...(signature !== undefined ? { signature } : {}),
     ...(firstStep ? { firstStep } : {}),
   };

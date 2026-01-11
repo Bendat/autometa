@@ -37,8 +37,8 @@ describe("applyCaseTagsToFeatureText", () => {
     const res = applyCaseTagsToFeatureText(text, feature, Object.fromEntries(sigs.entries()));
 
     expect(res.changed).toBe(true);
-    expect(res.updatedText).toContain("@C101\n  Scenario: Happy path");
-    expect(res.updatedText).toContain("@C202\n  Scenario: Sad path");
+    expect(res.updatedText).toContain("@testrail-case-101\n  Scenario: Happy path");
+    expect(res.updatedText).toContain("@testrail-case-202\n  Scenario: Sad path");
   });
 
   it("appends missing tags to an existing tag line", () => {
@@ -65,6 +65,7 @@ describe("applyCaseTagsToFeatureText", () => {
 
     const res = applyCaseTagsToFeatureText(text, feature, { [sig]: 555 }, { suiteTag: "@testrail-suite-42" });
 
-    expect(res.updatedText).toContain("  @smoke @C555 @testrail-suite-42\n  Scenario: Happy path");
+    expect(res.updatedText).toContain("@testrail-suite-42\nFeature: Login");
+    expect(res.updatedText).toContain("  @smoke @testrail-case-555\n  Scenario: Happy path");
   });
 });
