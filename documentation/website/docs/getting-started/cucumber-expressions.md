@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 # Cucumber Expressions
@@ -22,22 +22,22 @@ The following types are available out of the box:
 
 You can define your own parameter types to match specific patterns and transform them into rich objects. This keeps your step definitions clean and type-safe.
 
-### Defining a Parameter Type
+### Defining Parameter Types
 
-A parameter type consists of:
-- **name**: The name used in the expression (e.g., `{color}`).
-- **regexp**: A regular expression to match the text.
-- **transformer**: A function that converts the matched string into the desired value.
+Create a `ParameterTypeDefinition[]` and export it.
 
 ```ts
 // src/support/parameter-types.ts
-import { defineParameterType } from "@autometa/cucumber-expressions";
+import type { ParameterTypeDefinition } from "@autometa/cucumber-expressions";
+import type { MyWorld } from "../world";
 
-defineParameterType({
-  name: "color",
-  regexp: /red|blue|green/,
-  transformer: (s) => s.toUpperCase(),
-});
+export const myParameterTypes: ParameterTypeDefinition<MyWorld>[] = [
+	{
+		name: "color",
+		pattern: /red|blue|green/,
+		transform: (value) => String(value).toUpperCase(),
+	},
+];
 ```
 
 ### Registering Parameter Types
@@ -72,17 +72,20 @@ Given("I have a {color} ball", (color, world) => {
 Transformers can access the `World` object, allowing you to perform validation or lookups based on the current scenario state.
 
 ```ts
-defineParameterType({
-  name: "product",
-  regexp: /[a-z]+/,
-  transformer: (name, context) => {
-    const product = context.world.db.findProduct(name);
-    if (!product) {
-      throw new Error(`Product ${name} not found`);
-    }
-    return product;
-  },
-});
+export const myParameterTypes: ParameterTypeDefinition<MyWorld>[] = [
+	{
+		name: "product",
+		pattern: /[a-z]+/,
+		transform: (value, context) => {
+			const name = String(value);
+			const product = context.world.db.findProduct(name);
+			if (!product) {
+				throw new Error(`Product ${name} not found`);
+			}
+			return product;
+		},
+	},
+];
 ```
 
 ### Strong Typing

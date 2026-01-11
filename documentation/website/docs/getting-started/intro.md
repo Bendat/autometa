@@ -5,7 +5,7 @@ sidebar_position: 1
 <!-- cSpell:disable -->
 # Getting Started
 
-Autometa v1 ships today with a unified runtime that behaves the same way across Jest, the VITE-powered test runner, and Playwright. This section gives you the top-level concepts, then points you to the per-runner instructions and advanced tooling such as the DTO builder and the `ensure(...)` assertion plugins.
+Autometa v1 ships today with a unified runtime that behaves the same way across Jest, Vitest, and Playwright. This section gives you the top-level concepts, then points you to the per-runner instructions and advanced tooling such as the DTO builder and the `ensure(...)` assertion plugins.
 
 ## Prerequisites
 
@@ -20,6 +20,7 @@ Autometa v1 ships today with a unified runtime that behaves the same way across 
 2. Walk through [Authoring executors & steps](authoring.md) to configure the `CucumberRunner`, Autometa CLI, and your preferred step style (functions or decorators).
 3. Mirror the structure shown in `/examples/<runner>-functions` or `/examples/<runner>-decorators`—those folders are kept up to date with the release packages.
 4. When you need a data factory or ergonomic assertions, jump ahead to the DTO builder and `@autometa/assertions` sections at the bottom of the installation doc.
+5. For monorepos (multiple apps/APIs, Nx/Nest workspaces), use [Monorepos: groups, modules, and isolated worlds](monorepos.md).
 
 :::info Example parity
 Each example project shares the same `.feature` files and world shape. Once you are comfortable in one runner, you can inspect the others to see the minimal deltas Autometa requires.

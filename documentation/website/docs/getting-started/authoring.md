@@ -9,7 +9,7 @@ Autometa scenarios run through a single executor surface that you shape inside y
 
 1. Build a `CucumberRunner` instance that knows about your world, app composition root, assertion plugins, and parameter types.
 2. Export the resulting `stepsEnvironment` so runners (and the CLI) can discover your Given/When/Then functions or decorator metadata.
-3. Run those steps either through Jest, the Vi-test runner, or Playwright—or call the `autometa run` command directly.
+3. Run those steps either through Jest, Vitest, or Playwright—or call the `autometa run` command directly.
 
 ## Configure the Autometa executor
 
@@ -44,7 +44,7 @@ Once you export `stepsEnvironment`, runners can destructure `Given`, `When`, `Th
 
 The CLI lives in `@autometa/cli` and automatically chooses the best execution mode:
 
-- If your project has the Vi-test runner or Jest configured, `autometa run` defers to that runner so you keep watch mode, snapshots, and familiar reporters.
+- If your project has Vitest or Jest configured, `autometa run` defers to that runner so you keep watch mode, snapshots, and familiar reporters.
 - If no native runner is detected, the CLI falls back to the standalone runtime. It still respects `autometa.config.ts`, parameter types, and your step bundle.
 
 Common commands:
@@ -53,7 +53,7 @@ Common commands:
 pnpm autometa run                     # run everything listed under roots.features
 pnpm autometa run "features/**/*.feature"   # limit to specific globs
 pnpm autometa run --dry-run           # compile steps without executing
-pnpm autometa run --watch             # watch mode (Vi-test/Jest only)
+pnpm autometa run --watch             # watch mode (Vitest/Jest only)
 pnpm autometa run --standalone        # force the built-in runtime
 ```
 

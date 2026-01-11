@@ -8,23 +8,24 @@ The `@autometa/http` package provides a fluent, type-safe HTTP client designed f
 
 ## Basic Usage
 
-The `HTTP` class is the entry point. You can configure a shared instance or create one-off requests.
+The `HTTP` class is the entry point. Configure a shared instance and then compose requests with `.route(...)`, `.param(...)`, `.header(...)`, etc.
 
 ```ts
 import { HTTP } from "@autometa/http";
 
 const http = HTTP.create()
-  .url("https://api.example.com")
-  .sharedOptions({
-    headers: { "Authorization": "Bearer token" }
-  });
+	.url("https://api.example.com")
+	.sharedOptions({
+		headers: { Authorization: "Bearer token" },
+	});
 
-const response = await http.get("/users/1")
-  .header("X-Custom", "value")
-  .execute();
+const response = await http
+	.route("users", 1)
+	.header("X-Custom", "value")
+	.get();
 
 console.log(response.status); // 200
-console.log(response.data);   // { id: 1, name: "Alice" }
+console.log(response.data); // { id: 1, name: "Alice" }
 ```
 
 ## Request Building
@@ -36,61 +37,58 @@ The fluent API allows you to build requests step-by-step.
 Supported methods: `get`, `post`, `put`, `patch`, `delete`, `head`, `options`.
 
 ```ts
-await http.post("/users")
-  .body({ name: "Bob" })
-  .execute();
+await http.route("users").data({ name: "Bob" }).post();
 ```
 
 ### Headers & Query Params
 
 ```ts
-await http.get("/search")
-  .param("q", "autometa")
-  .param("page", 1)
-  .header("Accept", "application/json")
-  .execute();
+await http
+	.route("search")
+	.param("q", "autometa")
+	.param("page", 1)
+	.header("Accept", "application/json")
+	.get();
 ```
 
-### Route Parameters
+### Routes
 
-You can use route parameters in your URL and fill them later.
+Build URLs by appending route segments. Each segment is URL-joined safely with the base URL set via `.url(...)`.
 
 ```ts
-await http.get("/users/:id/posts/:postId")
-  .routeParam("id", 123)
-  .routeParam("postId", 456)
-  .execute();
-// Request URL: /users/123/posts/456
+await http.route("users", 123, "posts", 456).get();
+// Full URL: https://api.example.com/users/123/posts/456
 ```
 
 ## Response Handling
 
-The `execute()` method returns an `HTTPResponse` object.
+Each method returns an `HTTPResponse` object.
 
 ```ts
-const response = await http.get("/users").execute();
+const response = await http.route("users").get();
 
 response.status;       // number
 response.statusText;   // string
-response.headers;      // Headers object
+response.headers;      // Record<string, string> (lowercased keys)
 response.data;         // Parsed body (JSON, text, etc.)
 ```
 
 ### Schema Validation
 
-You can validate the response body against a schema. If validation fails, it throws an `HTTPSchemaValidationError`.
+You can validate the response body against a schema for specific status codes (or ranges). If validation fails, it throws an `HTTPSchemaValidationError`.
 
 ```ts
 import { z } from "zod";
 
 const UserSchema = z.object({
-  id: z.number(),
-  name: z.string(),
+	id: z.number(),
+	name: z.string(),
 });
 
-const user = await http.get("/users/1")
-  .schema(UserSchema)
-  .execute();
+const user = await http
+	.route("users", 1)
+	.schema(UserSchema, 200)
+	.get();
 
 // user.data is typed as { id: number, name: string }
 ```
@@ -102,13 +100,15 @@ const user = await http.get("/users/1")
 Configure retry logic for flaky endpoints.
 
 ```ts
-await http.get("/flaky-endpoint")
-  .retry({
-    attempts: 3,
-    delay: 1000,
-    on: [500, 502, 503], // Retry on these status codes
-  })
-  .execute();
+await http
+	.route("flaky-endpoint")
+	.retry({
+		attempts: 3,
+		delay: 1000,
+		retryOn: ({ response }) =>
+			[500, 502, 503].includes(response?.status ?? 0),
+	})
+	.get();
 ```
 
 ### Logging

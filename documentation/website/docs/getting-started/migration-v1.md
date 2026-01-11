@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Migrating to v1
@@ -33,10 +33,10 @@ import { CucumberRunner } from "@autometa/runner";
 
 const runner = CucumberRunner.builder()
   .withWorld(worldFactory)
-  .app(CompositionRoot)
-  .steps();
+  .app(CompositionRoot);
 
-export const { Given, When, Then } = runner;
+export const stepsEnvironment = runner.steps();
+export const { Given, When, Then, ensure } = stepsEnvironment;
 ```
 
 ## 3. Assertions
@@ -57,7 +57,7 @@ Core functionality has been split into focused packages:
 - `@autometa/assertions`: Assertion library.
 - `@autometa/dto-builder`: Data builder.
 
-Ensure you have the correct dependencies installed.
+Ensure you have the correct dependencies installed for your runner (see Getting Started → Installation).
 
 ```bash
 pnpm add @autometa/runner @autometa/scopes @autometa/assertions

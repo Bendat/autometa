@@ -89,7 +89,7 @@ Add `"features": "jest --config jest.config.cjs"` to your `package.json` scripts
 
 ```bash
 pnpm add -D vitest
-pnpm add @autometa/vitest-plugins
+pnpm add @autometa/vitest-executor @autometa/vitest-plugins
 ```
 
 ### 2. Create `autometa.config.ts`
@@ -154,8 +154,8 @@ export default defineConfig({
 		runner: "playwright",
 		roots: {
 			features: ["../.features"],
-			steps: ["./src/steps", "./src/step-definitions.ts"],
-			parameterTypes: ["./src/support/parameter-types.ts"],
+			steps: ["./src/autometa/steps.ts", "./src/steps/**/*.steps.*"],
+			parameterTypes: ["./src/autometa/parameter-types.ts"],
 		},
 		test: {
 			timeout: [30, "s"],

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Best Practices
@@ -37,29 +37,28 @@ When("I calculate the total", (world) => {
 Avoid global variables. Store all scenario-specific state in the `World` object. This ensures that tests are isolated and can run in parallel.
 
 ```ts
-// autometa.config.ts
-export default defineConfig({
-  default: {
-    // ...
-    providers: {
-      user: "./src/providers/user-provider.ts"
-    }
-  }
-});
+// src/world.ts
+export interface World {
+  cart: Array<{ price: number }>;
+  total?: number;
+  lastResponse?: { status: number };
+}
 ```
 
 ## 3. Leverage Dependency Injection
 
-Use the `app` composition root to manage your services and clients. This makes it easier to mock dependencies and keep your tests modular.
+Use the `app` composition root to manage long-lived services and clients (HTTP clients, repositories, fakes). This keeps step definitions thin and makes mocking consistent.
 
 ```ts
-// src/composition/app.ts
-export class App {
-  constructor(
-    readonly apiClient: ApiClient,
-    readonly db: Database
-  ) {}
-}
+import { App } from "@autometa/runner";
+import { Scope } from "@autometa/injection";
+
+export const CompositionRoot = App.compositionRoot(ApiClient, {
+  deps: [Database],
+  setup: (compose) => {
+    compose.registerClass(Database, { scope: Scope.SCENARIO });
+  },
+});
 ```
 
 ## 4. Use DTO Builders for Test Data

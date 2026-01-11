@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 # Assertion Plugins
@@ -60,7 +60,7 @@ export const { ensure } = runner.steps();
 
 // In a step definition
 Then("it should be awesome", (world) => {
-  ensure(world).custom.isAwesome();
+  ensure.custom.isAwesome();
 });
 ```
 
@@ -77,7 +77,7 @@ const responsePlugin: AssertionPlugin<World, ResponseAssertions> = ({ ensure }) 
     },
     hasHeader(name: string, value: string) {
       const response = world.lastResponse;
-      ensure(response.headers.get(name)).toBe(value);
+      ensure(response.headers[name.toLowerCase()]).toBe(value);
     },
   };
 };
