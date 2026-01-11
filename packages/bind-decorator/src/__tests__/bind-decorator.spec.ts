@@ -42,22 +42,24 @@ describe("@Bind", () => {
   });
 
   it("throws when decorating a non-method property", () => {
-    expect(() => {
-      class Invalid {
-        @Bind
-        // @ts-expect-error - intentionally testing invalid usage
-        notAMethod = "string";
-      }
-      new Invalid();
-    }).toThrow(TypeError);
+    expect(() =>
+      Bind(
+        {},
+        "notAMethod",
+        {
+          configurable: true,
+          enumerable: true,
+          value: "string" as unknown as () => void,
+        }
+      )
+    ).toThrow(TypeError);
   });
 
   it("throws when assigning a non-function value", () => {
     const fixture = new BindFixture();
 
     expect(() => {
-      // @ts-expect-error - intentionally testing invalid usage
-      fixture.increment = "not a function" as any;
+      fixture.increment = "not a function" as unknown as typeof fixture.increment;
     }).toThrow(TypeError);
   });
 });

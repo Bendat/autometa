@@ -54,3 +54,5 @@ tmp*/
 
 # autometa cli build cache
 .autometa-cli/
+.ignore/
+.claude/

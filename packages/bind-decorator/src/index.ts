@@ -1,9 +1,9 @@
-type AnyMethod = (...args: any[]) => unknown; // eslint-disable-line @typescript-eslint/no-explicit-any
+type AnyMethod = (...args: unknown[]) => unknown;
 
-function ensureMethod<T extends AnyMethod>(
+function ensureMethod(
 	propertyKey: string | symbol,
-	descriptor: TypedPropertyDescriptor<T> | undefined
-): asserts descriptor is TypedPropertyDescriptor<T> & { value: T } {
+	descriptor: TypedPropertyDescriptor<AnyMethod> | undefined
+): asserts descriptor is TypedPropertyDescriptor<AnyMethod> & { value: AnyMethod } {
 	if (!descriptor || typeof descriptor.value !== "function") {
 		throw new TypeError(
 			`Only methods can be decorated with @Bind/@Freeze. <${String(
@@ -13,20 +13,20 @@ function ensureMethod<T extends AnyMethod>(
 	}
 }
 
-function createBoundDescriptor<T extends AnyMethod>(
+function createBoundDescriptor(
 	propertyKey: string | symbol,
-	descriptor: TypedPropertyDescriptor<T>,
-	method: T,
+	descriptor: TypedPropertyDescriptor<AnyMethod> & { value: AnyMethod },
 	options: { freeze: boolean }
-): TypedPropertyDescriptor<T> {
+): TypedPropertyDescriptor<AnyMethod> {
 	const { freeze } = options;
 	const enumerable = descriptor.enumerable ?? false;
+	const method = descriptor.value;
 
-	const boundDescriptor: TypedPropertyDescriptor<T> = {
+	const boundDescriptor: TypedPropertyDescriptor<AnyMethod> = {
 		configurable: !freeze,
 		enumerable,
-		get(this: unknown): T {
-			const bound = method.bind(this) as T;
+		get(this: unknown): AnyMethod {
+			const bound = method.bind(this);
 			Object.defineProperty(this, propertyKey, {
 				value: bound,
 				configurable: !freeze,
@@ -38,7 +38,7 @@ function createBoundDescriptor<T extends AnyMethod>(
 	};
 
 	if (!freeze) {
-		boundDescriptor.set = function setBoundMethod(this: unknown, value: T): void {
+		boundDescriptor.set = function setBoundMethod(this: unknown, value: AnyMethod): void {
 			if (typeof value !== "function") {
 				throw new TypeError(
 					`Cannot assign non-function value to bound method <${String(
@@ -47,7 +47,7 @@ function createBoundDescriptor<T extends AnyMethod>(
 				);
 			}
 
-			const bound = value.bind(this) as T;
+			const bound = value.bind(this);
 			Object.defineProperty(this, propertyKey, {
 				value: bound,
 				configurable: true,
@@ -60,24 +60,16 @@ function createBoundDescriptor<T extends AnyMethod>(
 	return boundDescriptor;
 }
 
-export function Bind<T extends AnyMethod>(
-	target: object,
-	propertyKey: string | symbol,
-							descriptor: TypedPropertyDescriptor<T> | undefined
-						): TypedPropertyDescriptor<T> | void {
-	ensureMethod(propertyKey, descriptor);
-	const method = descriptor.value;
-	return createBoundDescriptor(propertyKey, descriptor, method, { freeze: false });
-}
+export const Bind: MethodDecorator = (target, propertyKey, descriptor) => {
+	const typedDescriptor = descriptor as unknown as TypedPropertyDescriptor<AnyMethod> | undefined;
+	ensureMethod(propertyKey, typedDescriptor);
+	return createBoundDescriptor(propertyKey, typedDescriptor, { freeze: false }) as unknown as typeof descriptor;
+};
 
-export function Freeze<T extends AnyMethod>(
-	target: object,
-	propertyKey: string | symbol,
-							descriptor: TypedPropertyDescriptor<T> | undefined
-						): TypedPropertyDescriptor<T> | void {
-	ensureMethod(propertyKey, descriptor);
-	const method = descriptor.value;
-	return createBoundDescriptor(propertyKey, descriptor, method, { freeze: true });
-}
+export const Freeze: MethodDecorator = (target, propertyKey, descriptor) => {
+	const typedDescriptor = descriptor as unknown as TypedPropertyDescriptor<AnyMethod> | undefined;
+	ensureMethod(propertyKey, typedDescriptor);
+	return createBoundDescriptor(propertyKey, typedDescriptor, { freeze: true }) as unknown as typeof descriptor;
+};
 
 export { Bind as bindDecorator, Freeze as freezeDecorator };
