@@ -68,6 +68,7 @@ function collectBackgroundSteps(children: readonly any[]): StepNode[] {
 function toScenario(scenario: any, backgroundSteps: StepNode[]): ScenarioNode | ScenarioOutlineNode {
   const base = {
     name: scenario.name,
+    line: scenario.location?.line ?? undefined,
     description: scenario.description ?? undefined,
     tags: scenario.tags?.map((t: any) => t.name) ?? [],
     steps: mapSteps(scenario.steps ?? []),

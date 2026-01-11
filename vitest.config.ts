@@ -4,7 +4,14 @@ import { resolve } from 'path';
 export default defineConfig({
   test: {
     include: ['packages/**/*.{test,spec}.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/coverage/**', '**/legacy/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/legacy/**',
+      '**/.reference/**',
+    ],
   },
   resolve: {
     alias: {

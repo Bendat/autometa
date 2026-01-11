@@ -18,10 +18,50 @@ export interface TestRailSuite {
   readonly project_id: number;
 }
 
+export interface TestRailSection {
+  readonly id: number;
+  readonly name: string;
+  readonly description?: string;
+  readonly suite_id?: number;
+  readonly parent_id?: number;
+}
+
+export interface TestRailCase {
+  readonly id: number;
+  readonly title: string;
+  readonly section_id?: number;
+  readonly suite_id?: number;
+  readonly refs?: string;
+  readonly custom_steps_separated?: readonly { readonly content?: string; readonly expected?: string }[];
+  readonly custom_test_case_description?: string;
+  // TestRail installations vary heavily; keep it open.
+  readonly [key: string]: unknown;
+}
+
 export interface TestRailClient {
   getProject(projectId: number): Promise<TestRailProject>;
   getSuites(projectId: number): Promise<TestRailSuite[]>;
   addSuite(projectId: number, payload: { readonly name: string; readonly description?: string }): Promise<TestRailSuite>;
+
+  getCase(caseId: number): Promise<TestRailCase>;
+
+  getSections(projectId: number, options?: { readonly suiteId?: number }): Promise<TestRailSection[]>;
+  addSection(
+    projectId: number,
+    payload: {
+      readonly name: string;
+      readonly description?: string;
+      readonly suite_id?: number;
+      readonly parent_id?: number;
+    }
+  ): Promise<TestRailSection>;
+
+  getCases(
+    projectId: number,
+    options?: { readonly suiteId?: number; readonly sectionId?: number }
+  ): Promise<TestRailCase[]>;
+  addCase(sectionId: number, payload: Record<string, unknown>): Promise<TestRailCase>;
+  updateCase(caseId: number, payload: Record<string, unknown>): Promise<TestRailCase>;
 }
 
 export class HttpTestRailClient implements TestRailClient {
@@ -44,6 +84,50 @@ export class HttpTestRailClient implements TestRailClient {
 
   async addSuite(projectId: number, payload: { readonly name: string; readonly description?: string }): Promise<TestRailSuite> {
     return this.postJson(`/index.php?/api/v2/add_suite/${projectId}`, payload);
+  }
+
+  async getCase(caseId: number): Promise<TestRailCase> {
+    return this.getJson(`/index.php?/api/v2/get_case/${caseId}`);
+  }
+
+  async getSections(projectId: number, options: { readonly suiteId?: number } = {}): Promise<TestRailSection[]> {
+    const qs = options.suiteId !== undefined ? `&suite_id=${options.suiteId}` : "";
+    return this.getJson(`/index.php?/api/v2/get_sections/${projectId}${qs}`);
+  }
+
+  async addSection(
+    projectId: number,
+    payload: {
+      readonly name: string;
+      readonly description?: string;
+      readonly suite_id?: number;
+      readonly parent_id?: number;
+    }
+  ): Promise<TestRailSection> {
+    return this.postJson(`/index.php?/api/v2/add_section/${projectId}`, payload);
+  }
+
+  async getCases(
+    projectId: number,
+    options: { readonly suiteId?: number; readonly sectionId?: number } = {}
+  ): Promise<TestRailCase[]> {
+    const params: string[] = [];
+    if (options.suiteId !== undefined) {
+      params.push(`suite_id=${options.suiteId}`);
+    }
+    if (options.sectionId !== undefined) {
+      params.push(`section_id=${options.sectionId}`);
+    }
+    const qs = params.length ? `&${params.join("&")}` : "";
+    return this.getJson(`/index.php?/api/v2/get_cases/${projectId}${qs}`);
+  }
+
+  async addCase(sectionId: number, payload: Record<string, unknown>): Promise<TestRailCase> {
+    return this.postJson(`/index.php?/api/v2/add_case/${sectionId}`, payload);
+  }
+
+  async updateCase(caseId: number, payload: Record<string, unknown>): Promise<TestRailCase> {
+    return this.postJson(`/index.php?/api/v2/update_case/${caseId}`, payload);
   }
 
   // ---------------------------------------------------------------------------

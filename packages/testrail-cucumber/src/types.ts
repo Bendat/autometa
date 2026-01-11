@@ -16,6 +16,8 @@ export interface StepNode {
 export interface ScenarioNode {
   readonly kind: "scenario";
   readonly name: string;
+  /** 1-based line number of the `Scenario:` line in the source file (best-effort). */
+  readonly line?: number;
   readonly description?: string;
   readonly steps: readonly StepNode[];
   readonly tags: readonly string[];
@@ -30,6 +32,8 @@ export interface OutlineExampleTable {
 export interface ScenarioOutlineNode {
   readonly kind: "outline";
   readonly name: string;
+  /** 1-based line number of the `Scenario Outline:` line in the source file (best-effort). */
+  readonly line?: number;
   readonly description?: string;
   readonly steps: readonly StepNode[];
   readonly tags: readonly string[];

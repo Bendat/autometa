@@ -4,3 +4,7 @@ export * from "./signature";
 export * from "./duplicate-policy";
 export * from "./parser";
 export * from "./plan";
+export * from "./steps";
+export * from "./testrail-mapping";
+export * from "./sync";
+export * from "./tag-writeback";
