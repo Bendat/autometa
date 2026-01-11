@@ -4,7 +4,28 @@ sidebar_position: 8
 
 # HTTP Client
 
-The `@autometa/http` package provides a fluent, type-safe HTTP client designed for testing. It includes built-in support for retries, logging, and schema validation.
+The `@autometa/http` package provides a fluent, type-safe HTTP client designed for testing. It includes built-in support for retries, logging, and schema validation. Most fluent calls *derive a narrower client* (a new `HTTP` instance with additional scope), while `shared*` calls mutate the current instance.
+
+## Derivable (Recursive) Client Model
+
+Think of `HTTP` as a “recursive builder”: each call produces a more specific client that carries forward everything configured so far (base URL, route segments, headers, params, retry policy, hooks, schema rules, etc).
+
+- **Derived calls** (e.g. `route`, `header`, `param`, `retry`, `schema`) return a new client and do not affect the original.
+- **Shared calls** (e.g. `sharedRoute`, `sharedHeader`, `sharedParams`, `sharedRetry`) mutate the current instance and affect all future derived clients.
+
+This makes it natural to create a shared “API root” once, then derive “endpoint clients” per use case:
+
+```ts
+const api = HTTP.create()
+	.url("https://api.example.com")
+	.sharedHeaders({ Authorization: "Bearer token" })
+	.sharedRetry({ attempts: 3, delay: 250 });
+
+const users = api.route("users");        // derived
+const adminUsers = users.header("X-Role", "admin"); // derived
+
+await adminUsers.get();
+```
 
 ## Basic Usage
 
