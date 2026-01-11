@@ -183,6 +183,180 @@ describe("file proxies", () => {
     snapshots[0].value = 99;
     expect(proxy.value).toBe(20);
   });
+
+  it("loads existing JSON files and tolerates empty content", () => {
+    const { directory, filePath } = createTempFile("existing-json");
+    tempDirectories.push(directory);
+
+    writeFileSync(filePath, JSON.stringify({ count: 7 }, null, 2));
+    const existing = createJsonFileProxySync({
+      path: filePath,
+      defaults: { count: 0 },
+    });
+
+    expect(existing.count).toBe(7);
+
+    writeFileSync(filePath, "   ");
+    const empty = createJsonFileProxySync({
+      path: filePath,
+      defaults: { count: 1 },
+    });
+
+    expect(Object.keys(empty)).toEqual([]);
+  });
+
+  it("creates missing directories for sync and async writes", async () => {
+    const directory = mkdtempSync(path.join(tmpdir(), "nested-sync-"));
+    tempDirectories.push(directory);
+
+    const nestedSyncPath = path.join(directory, "sync", "data.json");
+    const syncProxy = createJsonFileProxySync({
+      path: nestedSyncPath,
+      defaults: { value: 1 },
+    });
+
+    expect(existsSync(nestedSyncPath)).toBe(true);
+    syncProxy.value = 2;
+    expect(JSON.parse(readFileSync(nestedSyncPath, "utf-8")).value).toBe(2);
+
+    const nestedAsyncPath = path.join(directory, "async", "data.json");
+    const asyncProxy = await createJsonFileProxy({
+      path: nestedAsyncPath,
+      defaults: { value: 1 },
+    });
+
+    asyncProxy.value = 3;
+    await (asyncProxy[FileProxyControlSymbol] as FileProxyControl<{ value: number }>).flush();
+    expect(JSON.parse(await fsp.readFile(nestedAsyncPath, "utf-8")).value).toBe(3);
+  });
+
+  it("defers async writes when autoPersist is false", async () => {
+    const { directory, filePath } = createTempFile("async-manual");
+    tempDirectories.push(directory);
+
+    const proxy = await createJsonFileProxy({
+      path: filePath,
+      defaults: { value: 1 },
+      autoPersist: false,
+    });
+
+    proxy.value = 2;
+    const stored = JSON.parse(await fsp.readFile(filePath, "utf-8")) as { value: number };
+    expect(stored.value).toBe(1);
+
+    const control = proxy[FileProxyControlSymbol] as FileProxyControl<{ value: number }>;
+    await control.flush();
+    const flushed = JSON.parse(await fsp.readFile(filePath, "utf-8")) as { value: number };
+    expect(flushed.value).toBe(2);
+  });
+
+  it("recreates missing async files on reload", async () => {
+    const { directory, filePath } = createTempFile("async-reload");
+    tempDirectories.push(directory);
+
+    const proxy = await createJsonFileProxy({
+      path: filePath,
+      defaults: { count: 4 },
+    });
+
+    const control = proxy[FileProxyControlSymbol] as FileProxyControl<{ count: number }>;
+    await control.flush();
+    rmSync(filePath, { force: true });
+    expect(existsSync(filePath)).toBe(false);
+
+    await control.reload();
+    expect(existsSync(filePath)).toBe(true);
+    expect(proxy.count).toBe(4);
+  });
+
+  it("supports array roots and proxy assignment", async () => {
+    const { directory, filePath } = createTempFile("array-root");
+    tempDirectories.push(directory);
+
+    const transformer: FileTransformer<string[], string> = {
+      parse(raw) {
+        const trimmed = raw.trim();
+        return trimmed.length === 0 ? [] : (JSON.parse(trimmed) as string[]);
+      },
+      format(data) {
+        return JSON.stringify(data);
+      },
+    };
+
+    const io: SyncFileIO<string> = {
+      exists: () => existsSync(filePath),
+      read: () => readFileSync(filePath, "utf-8"),
+      write(raw) {
+        ensureDirectory(filePath);
+        writeFileSync(filePath, raw, "utf-8");
+      },
+    };
+
+    const proxy = createFileProxySync<string[], string>({
+      path: filePath,
+      defaults: ["alpha"],
+      transformer,
+      io,
+    });
+
+    proxy.push("beta");
+    const control = proxy[FileProxyControlSymbol] as FileProxyControl<string[]>;
+
+    writeFileSync(filePath, JSON.stringify(["one", "two"]));
+    await control.reload();
+    expect(proxy).toEqual(["one", "two"]);
+
+    const { directory: mirrorDirectory, filePath: mirrorPath } = createTempFile("proxy-assign");
+    tempDirectories.push(mirrorDirectory);
+
+    const objectProxy = createJsonFileProxySync({
+      path: mirrorPath,
+      defaults: { node: { value: 1 }, mirror: {} as { value?: number } },
+    });
+
+    objectProxy.mirror = objectProxy.node;
+    objectProxy.node.value = 2;
+    expect(objectProxy.mirror.value).toBe(2);
+  });
+
+  it("throws when reloading mismatched data shapes", async () => {
+    const { directory, filePath } = createTempFile("shape-error");
+    tempDirectories.push(directory);
+
+    const proxy = createJsonFileProxySync({
+      path: filePath,
+      defaults: { count: 1 },
+    });
+
+    writeFileSync(filePath, JSON.stringify(["bad"]));
+
+    const control = proxy[FileProxyControlSymbol] as FileProxyControl<{ count: number }>;
+    await expect(control.reload()).rejects.toThrow("File proxies require object or array data");
+  });
+
+  it("tracks delete and defineProperty mutations", () => {
+    const { directory, filePath } = createTempFile("define-delete");
+    tempDirectories.push(directory);
+
+    const snapshots: Array<Record<string, unknown>> = [];
+    const proxy = createJsonFileProxySync({
+      path: filePath,
+      defaults: { value: 1 },
+      onChange(snapshot) {
+        snapshots.push(snapshot);
+      },
+    });
+
+    Object.defineProperty(proxy, "flag", {
+      value: true,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+    delete (proxy as { flag?: boolean }).flag;
+
+    expect(snapshots.length).toBeGreaterThanOrEqual(2);
+  });
 });
 
 function createTempFile(prefix: string): { directory: string; filePath: string } {
