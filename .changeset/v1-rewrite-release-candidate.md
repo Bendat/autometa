@@ -52,6 +52,7 @@ This release candidate includes:
 **Improvements:**
 - `testrail-cucumber`: Harden Gherkin parsing and attach rule metadata
 - `cli`: Improve test stability (ANSI color handling, control regex)
+- `bind-decorator`: Add error case test coverage to meet 90% threshold
 - Build stability: Isolated tsbuildinfo for type builds
 - CI workflows: Fixed shell quoting in version detection across all workflows
 - Examples: Align tsconfigs and use this-bound step functions
