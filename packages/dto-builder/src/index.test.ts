@@ -249,6 +249,49 @@ describe("DtoBuilder.forInterface", () => {
     const dto = await builder.build();
     expect(dto).toMatchObject({ settings: { theme: "dark", notifications: { email: true } } });
   });
+
+  it("extends builder factories with extra defaults and methods", async () => {
+    const extended = factory.extend({
+      defaults: { name: "extended" },
+      methods: {
+        asAdmin() {
+          return this.tags((tags) => tags.append("admin"));
+        },
+        named(name: string) {
+          return this.name(name);
+        },
+      },
+    });
+
+    const [baseDto, extendedDto] = await Promise.all([
+      factory.default(),
+      extended.create().asAdmin().build(),
+    ]);
+
+    expect(baseDto.name).toBe("anonymous");
+    expect(extendedDto.name).toBe("extended");
+    expect(extendedDto.tags).toEqual(["admin"]);
+
+    const renamed = await extended.create().named("Renamed").build();
+    expect(renamed.name).toBe("Renamed");
+  });
+
+  it("preserves extension methods when deriving builders", async () => {
+    const extended = factory.extend({
+      methods: {
+        withTag(tag: string) {
+          return this.tags((tags) => tags.append(tag));
+        },
+      },
+    });
+
+    const base = extended.create().withTag("one");
+    const derived = base.derive().withTag("two");
+
+    const [baseDto, derivedDto] = await Promise.all([base.build(), derived.build()]);
+    expect(baseDto.tags).toEqual(["one"]);
+    expect(derivedDto.tags).toEqual(["one", "two"]);
+  });
 });
 
 describe("DtoBuilder.forClass", () => {

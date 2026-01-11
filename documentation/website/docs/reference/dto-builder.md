@@ -132,6 +132,23 @@ const adminBuilder = userBuilder.extend({
 });
 ```
 
+You can also add **custom builder methods** (useful for compound operations and “domain helpers”):
+
+```ts
+const adminBuilder = userBuilder.extend({
+  methods: {
+    asAdmin() {
+      return this.roles((roles) => roles.append("admin"));
+    },
+    named(name: string) {
+      return this.name(name);
+    },
+  },
+});
+
+await adminBuilder.create().asAdmin().named("Alice").build();
+```
+
 ## How it Works
 
 The `DtoBuilder` uses a concept called **Blueprints** to manage defaults and overrides.
@@ -152,4 +169,3 @@ When `.build()` is called, the builder resolves the final object in the followin
 4.  **Validation**: The validator function is executed against the final object (unless `skipValidation` is true).
 
 This ensures that your specific test setup always takes precedence over general defaults.
-

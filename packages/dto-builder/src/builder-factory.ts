@@ -6,7 +6,9 @@ import {
   BuildOptions,
   BuilderFactory,
   BuilderInstance,
+  DefaultsInput,
   DefaultsRecord,
+  ExtendBuilderFactoryOptions,
   FluentProperty,
   MaybePromise,
   ObjectKeys,
@@ -129,22 +131,7 @@ class BuilderImpl<T> implements BaseBuilderInstance<T, BuilderImpl<T>> {
 }
 
 export function createBuilderFactory<T>(config: BuilderConfig<T>): BuilderFactory<T> {
-  return {
-    create(initial?: Partial<T>): BuilderInstance<T> {
-      const snapshot = initial ? (cloneValue(initial) as Record<PropertyKey, unknown>) : undefined;
-      const state = new BuilderImpl<T>(config, snapshot);
-      return createFluentProxy(state);
-    },
-    fromRaw(raw: Partial<T>): BuilderInstance<T> {
-      const snapshot = cloneValue(raw) as Record<PropertyKey, unknown>;
-      const state = new BuilderImpl<T>(config, snapshot);
-      return createFluentProxy(state);
-    },
-    default(options?: BuildOptions): MaybePromise<T> {
-      const builder = createFluentProxy(new BuilderImpl<T>(config));
-      return builder.build(options);
-    },
-  };
+  return createBuilderFactoryWithExtensions(config);
 }
 
 export function toBuilderConfig<T>(params: {
@@ -166,7 +153,96 @@ export function toBuilderConfig<T>(params: {
 
 export type { BuilderConfig };
 
-function createFluentProxy<T>(state: BuilderImpl<T>): BuilderInstance<T> {
+type BuilderExtensionMap = Record<PropertyKey, unknown>;
+const EMPTY_EXTENSIONS: BuilderExtensionMap = {};
+type EmptyMethods = Record<PropertyKey, never>;
+
+function createBuilderFactoryWithExtensions<T, Methods extends BuilderExtensionMap = EmptyMethods>(
+  config: BuilderConfig<T>,
+  extensions: Methods = {} as Methods
+): BuilderFactory<T, Methods> {
+  return {
+    create(initial?: Partial<T>) {
+      const snapshot = initial ? (cloneValue(initial) as Record<PropertyKey, unknown>) : undefined;
+      const state = new BuilderImpl<T>(config, snapshot);
+      return createFluentProxy(state, extensions) as BuilderInstance<T> & Methods;
+    },
+    fromRaw(raw: Partial<T>) {
+      const snapshot = cloneValue(raw) as Record<PropertyKey, unknown>;
+      const state = new BuilderImpl<T>(config, snapshot);
+      return createFluentProxy(state, extensions) as BuilderInstance<T> & Methods;
+    },
+    default(options?: BuildOptions): MaybePromise<T> {
+      const builder = createFluentProxy(new BuilderImpl<T>(config), extensions);
+      return builder.build(options);
+    },
+    extend<MoreMethods extends BuilderExtensionMap = EmptyMethods>(
+      options: ExtendBuilderFactoryOptions<T, MoreMethods> = {}
+    ): BuilderFactory<T, Methods & MoreMethods> {
+      const mergedConfig: BuilderConfig<T> = {
+        createTarget: config.createTarget,
+        defaults: {
+          ...config.defaults,
+          ...normalizeDefaultsInput<T>(options.defaults),
+        },
+        validator: composeValidator(config.validator, options.validator),
+      };
+
+      const mergedMethods = {
+        ...(extensions as BuilderExtensionMap),
+        ...(options.methods as BuilderExtensionMap),
+      } as Methods & MoreMethods;
+
+      return createBuilderFactoryWithExtensions(mergedConfig, mergedMethods);
+    },
+  };
+}
+
+function normalizeDefaultsInput<T>(input?: DefaultsInput<T>): DefaultsRecord<T> {
+  if (!input) {
+    return {};
+  }
+  const result: DefaultsRecord<T> = {};
+  for (const key of Object.keys(input) as Array<keyof T>) {
+    const definition = input[key];
+    if (definition === undefined) {
+      continue;
+    }
+    if (typeof definition === "function") {
+      result[key] = definition as () => T[typeof key];
+      continue;
+    }
+    const snapshot = cloneValue(definition as T[typeof key]);
+    result[key] = () => cloneValue(snapshot);
+  }
+  return result;
+}
+
+function composeValidator<T>(
+  base: Validator<T> | undefined,
+  extra: Validator<T> | undefined
+): Validator<T> | undefined {
+  if (!base) {
+    return extra;
+  }
+  if (!extra) {
+    return base;
+  }
+
+  return (value: T) => {
+    const first = base(value);
+    if (isPromiseLike(first)) {
+      return first.then(() => extra(value)).then(() => undefined);
+    }
+    const second = extra(value);
+    if (isPromiseLike(second)) {
+      return second.then(() => undefined);
+    }
+    return undefined;
+  };
+}
+
+function createFluentProxy<T>(state: BuilderImpl<T>, extensions: BuilderExtensionMap): BuilderInstance<T> {
   const cache = new Map<PropertyKey, unknown>();
   const objectPrototype = Object.prototype;
   const baseMethodNames = new Set(
@@ -177,6 +253,23 @@ function createFluentProxy<T>(state: BuilderImpl<T>): BuilderInstance<T> {
     get(target, prop, receiver) {
       if (typeof prop === "symbol") {
         return Reflect.get(target, prop, receiver);
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensions, prop)) {
+        const extension = (extensions as Record<string, unknown>)[prop];
+        if (typeof extension === "function") {
+          return (...args: unknown[]) => {
+            const result = (extension as (...args: unknown[]) => unknown).apply(proxy, args);
+            if (result === undefined || result === proxy || result === target) {
+              return proxy;
+            }
+            if (result instanceof BuilderImpl) {
+              return createFluentProxy(result, extensions);
+            }
+            return result;
+          };
+        }
+        return extension;
       }
 
       if (Reflect.has(target, prop)) {
@@ -192,7 +285,7 @@ function createFluentProxy<T>(state: BuilderImpl<T>): BuilderInstance<T> {
               return proxy;
             }
             if (result instanceof BuilderImpl) {
-              return createFluentProxy(result);
+              return createFluentProxy(result, extensions);
             }
             return result;
           };
@@ -458,7 +551,7 @@ class FluentCallbackContext<T, K extends keyof T> {
         defaults: {},
       };
       const childState = new BuilderImpl<ObjectValue>(childConfig, initialState);
-      this.objectBuilder = createFluentProxy(childState);
+      this.objectBuilder = createFluentProxy(childState, EMPTY_EXTENSIONS);
       this.resolvedKind = "object";
     }
     this.mode = "object";

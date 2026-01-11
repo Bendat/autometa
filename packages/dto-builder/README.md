@@ -64,6 +64,23 @@ Builders created with `DtoBuilder.forClass(SomeCtor)` behave the same but guaran
 result is an instance of `SomeCtor`. Defaults sourced from decorators will be integrated
 through the metadata pipeline once `collectDecoratorBlueprint` is implemented.
 
+### Extending factories
+
+Factories can be extended to override defaults and add custom builder methods:
+
+```ts
+const adminFactory = factory.extend({
+	defaults: { name: "admin" },
+	methods: {
+		asAdmin() {
+			return this.tags((tags) => tags.append("admin"));
+		},
+	},
+});
+
+await adminFactory.create().asAdmin().build();
+```
+
 ### Dynamic helper methods
 
 - `assign(key, value)` writes directly to the builder state for declared or ad-hoc keys.

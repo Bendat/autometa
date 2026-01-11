@@ -105,8 +105,22 @@ export type BuilderInstance<T> = BaseBuilderInstance<T, BuilderInstance<T>> & {
   [K in keyof T]-?: FluentProperty<T, K>;
 };
 
-export interface BuilderFactory<T> {
-  create(initial?: Partial<T>): BuilderInstance<T>;
-  fromRaw(raw: Partial<T>): BuilderInstance<T>;
+export type BuilderFactoryMethods = Record<PropertyKey, unknown>;
+
+type EmptyMethods = Record<PropertyKey, never>;
+
+export type ExtendBuilderFactoryOptions<
+  T,
+  Methods extends BuilderFactoryMethods = EmptyMethods
+> = InterfaceBuilderOptions<T> & {
+  readonly methods?: Methods;
+};
+
+export interface BuilderFactory<T, Methods extends BuilderFactoryMethods = EmptyMethods> {
+  create(initial?: Partial<T>): BuilderInstance<T> & Methods;
+  fromRaw(raw: Partial<T>): BuilderInstance<T> & Methods;
   default(options?: BuildOptions): MaybePromise<T>;
+  extend<MoreMethods extends BuilderFactoryMethods = EmptyMethods>(
+    options?: ExtendBuilderFactoryOptions<T, MoreMethods>
+  ): BuilderFactory<T, Methods & MoreMethods>;
 }
