@@ -55,7 +55,7 @@ Use additional keys (e.g. `playwright`, `vitest`) when you need runner-specific 
 | `test.timeout` | `[value, unit]` tuple that controls scenario timeout. Executors convert this to the host runner’s timeout format. |
 | `test.tagFilter` | A tag expression (e.g., `@smoke and not @slow`) to filter scenarios. |
 | `shim` | Optional module hooks/shims used by some runners (advanced). |
-| `events` | Optional event modules to load (advanced). |
+| `events` | Optional event listener modules to load for side effects; see [Events](./events.md). |
 | `builder` | Optional build/transpile controls for the CLI compiler (advanced). |
 | `logging.http` | Enables structured HTTP logging from `@autometa/http`. |
 | `reporting.hierarchical.bufferOutput` | When `false`, streaming reporters flush immediately (handy during watch mode). |
