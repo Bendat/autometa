@@ -49,6 +49,45 @@ BeforeScenario(
 );
 ```
 
+## Worlds Per Scope
+
+Autometa always creates a fresh **scenario world** per scenario. It can *also* create “persistent” worlds for higher scopes, but only when needed:
+
+- **Feature world**: created when you register `BeforeFeature`/`AfterFeature` hooks.
+- **Rule world**: created when you register `BeforeRule`/`AfterRule` hooks.
+- **Scenario outline world**: created when you register `BeforeScenarioOutline`/`AfterScenarioOutline` hooks.
+
+When a persistent world exists, it becomes the `parent` world for the next nested scope (feature → rule → scenario outline → scenario).
+
+This means:
+
+- Feature hooks run with a **feature world**
+- Rule hooks run with a **rule world**
+- Scenario outline hooks run with a **scenario outline world**
+- Scenario hooks + step definitions run with a **scenario world**
+
+If you never register feature/rule/outline hooks, those worlds are never created—so scenarios run with just the scenario world.
+
+### Accessing parent worlds from a scenario
+
+Autometa does not automatically add typed `world.feature` / `world.rule` properties. Instead:
+
+- Your `.withWorld(...)` factory receives `context.parent` when a parent world exists.
+- A non-enumerable `world.ancestors` array is attached, containing the parent world and its parents (nearest-first).
+
+If you want selected values copied from the parent world into the child world, opt-in via `WORLD_INHERIT_KEYS`:
+
+```ts
+import { WORLD_INHERIT_KEYS } from "@autometa/runner";
+
+export const worldDefaults = {
+  baseUrl: "",
+  [WORLD_INHERIT_KEYS]: ["baseUrl"] as const,
+};
+```
+
+Because persistent worlds can be shared across many scenarios (including concurrent runs), treat them as read-only unless you intentionally want shared state.
+
 ## Hook Arguments
 
 All hooks receive an object containing the `World` and other context information.

@@ -22,13 +22,30 @@ const runner = CucumberRunner.builder();
 
 #### `.withWorld(factory)`
 
-Defines the world factory used to create a fresh context for each scenario.
+Defines the world factory used to create worlds for execution scopes.
 
 - **factory**: A function or class that returns the world object.
 - **Returns**: A new builder instance typed with the new world.
 
 ```ts
 runner.withWorld(() => ({ count: 0 }));
+```
+
+Notes:
+
+- A fresh **scenario world** is always created per scenario.
+- Autometa may also create **feature/rule/scenario-outline** worlds when you register hooks for those scopes (`BeforeFeature`, `BeforeRule`, `BeforeScenarioOutline`, etc.).
+- When a higher-scope world exists, the next nested scope receives it as `context.parent` in your world factory.
+
+If you want selected values copied from the parent world into the child world, opt-in via `WORLD_INHERIT_KEYS`:
+
+```ts
+import { WORLD_INHERIT_KEYS } from "@autometa/runner";
+
+runner.withWorld({
+  baseUrl: "",
+  [WORLD_INHERIT_KEYS]: ["baseUrl"],
+});
 ```
 
 #### `.app(compositionRoot)`

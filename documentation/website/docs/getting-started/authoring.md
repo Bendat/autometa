@@ -160,6 +160,13 @@ Use whichever keeps your project maintainable—composition roots for infrastruc
 
 Ensure your world export is a function or object factory passed into `.withWorld(...)`, and keep DTO builders/assertions on the world or app to avoid refetching them every step.
 
+### Parent worlds and inheritance
+
+If you register feature/rule/scenario-outline hooks, Autometa can create worlds for those scopes and pass them as `context.parent` when creating nested worlds.
+
+- Use `WORLD_INHERIT_KEYS` to copy specific parent values into the child world.
+- A non-enumerable `world.ancestors` array is also attached (nearest parent first) for debugging or advanced use cases.
+
 ## Parameters & custom expressions
 
 Register advanced cucumber parameters by exporting a `ParameterTypeDefinition[]` next to your steps and passing it to `.parameterTypes(...)`:
