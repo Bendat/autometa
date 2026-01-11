@@ -588,9 +588,10 @@ describe("runFeatures", () => {
 
     const loggedSummary = consoleLogSpy.mock.calls[0]?.[0] as string | undefined;
     expect(typeof loggedSummary).toBe("string");
-    expect(loggedSummary).toContain("Environment: default");
-    expect(loggedSummary).toContain("Total: 1");
-    expect(loggedSummary).toContain("Passed: 1");
+    const normalizedSummary = loggedSummary.replace(/\x1B\[[0-9;]*m/g, "");
+    expect(normalizedSummary).toContain("Environment: default");
+    expect(normalizedSummary).toContain("Total: 1");
+    expect(normalizedSummary).toContain("Passed: 1");
 
     readFileSpy.mockRestore();
     consoleLogSpy.mockRestore();
