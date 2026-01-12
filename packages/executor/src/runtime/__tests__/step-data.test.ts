@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  configureStepDocstrings,
   configureStepTables,
   consumeDocstring,
   consumeTable,
   createStepRuntime,
+  getDocstringInfo,
+  getDocstringMediaType,
   type StepRuntimeHelpers,
   getDocstring,
   getRawTable,
   getTable,
+  resetStepDocstringConfig,
   resetStepTableConfig,
   setStepDocstring,
+  setStepDocstringInfo,
   setStepTable,
 } from "../step-data";
 
@@ -24,6 +29,7 @@ describe("step-data", () => {
   beforeEach(() => {
     world = {};
     resetStepTableConfig();
+    resetStepDocstringConfig();
     setStepTable(world, undefined);
     setStepDocstring(world, undefined);
   });
@@ -37,6 +43,52 @@ describe("step-data", () => {
     expect(getDocstring(world)).toBe("example docstring");
     expect(consumeDocstring(world)).toBe("example docstring");
     expect(getDocstring(world)).toBeUndefined();
+  });
+
+  it("stores and retrieves docstring media types", () => {
+    setStepDocstringInfo(world, { content: "{\"ok\":true}", mediaType: "application/json" });
+
+    expect(getDocstring(world)).toBe("{\"ok\":true}");
+    expect(getDocstringMediaType(world)).toBe("application/json");
+    expect(getDocstringInfo(world)).toEqual({
+      content: "{\"ok\":true}",
+      mediaType: "application/json",
+    });
+
+    expect(consumeDocstring(world)).toBe("{\"ok\":true}");
+    expect(getDocstring(world)).toBeUndefined();
+    expect(getDocstringMediaType(world)).toBeUndefined();
+  });
+
+  it("transforms docstrings based on media type", () => {
+    configureStepDocstrings({
+      transformers: {
+        json: (raw) => JSON.parse(raw),
+      },
+    });
+
+    setStepDocstringInfo(world, { content: "{\"count\":2}", mediaType: "application/json" });
+    const runtime = createStepRuntime(world);
+
+    expect(runtime.getDocstringTransformed()).toEqual({ count: 2 });
+    expect(runtime.getDocstring()).toBe("{\"count\":2}");
+
+    expect(runtime.consumeDocstringTransformed()).toEqual({ count: 2 });
+    expect(runtime.hasDocstring).toBe(false);
+  });
+
+  it("falls back to raw content when no docstring transformer matches", () => {
+    setStepDocstringInfo(world, { content: "plain text", mediaType: "text/plain" });
+    const runtime = createStepRuntime(world);
+    expect(runtime.getDocstringTransformed()).toBe("plain text");
+  });
+
+  it("can throw when a transformer is required but missing", () => {
+    setStepDocstringInfo(world, { content: "{}", mediaType: "application/json" });
+    const runtime = createStepRuntime(world);
+    expect(() => runtime.getDocstringTransformed({ fallback: "throw" })).toThrow(
+      "No docstring transformer is configured for media type"
+    );
   });
 
   it("defaults horizontal tables to primitive coercion", () => {
@@ -87,7 +139,7 @@ describe("step-data", () => {
       ["id", "flag"],
       ["1", "true"],
     ]);
-    setStepDocstring(world, "example docstring");
+    setStepDocstringInfo(world, { content: "example docstring", mediaType: "text/plain" });
 
     const runtime = createStepRuntime(world);
 
@@ -100,6 +152,7 @@ describe("step-data", () => {
     const consumed = runtime.requireTable("horizontal");
     expect(consumed.getRow(0)).toEqual({ id: 1, flag: true });
     expect(runtime.getDocstring()).toBe("example docstring");
+    expect(runtime.getDocstringMediaType()).toBe("text/plain");
 
     expect(runtime.hasTable).toBe(false);
 

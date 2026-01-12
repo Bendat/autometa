@@ -51,6 +51,9 @@ export interface SimplePickleStep {
   
   /** Doc string attached to this step, if any */
   docString?: string;
+
+  /** Doc string media type (from the Gherkin text block), if any */
+  docStringMediaType?: string;
   
   /** AST node IDs for traceability */
   astNodeIds: string[];

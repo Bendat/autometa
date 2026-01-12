@@ -164,3 +164,32 @@ ensure(value).toBe(expected);
 ### Built-in Assertions
 
 (List some common assertions here if available, or link to `@autometa/assertions` docs if they exist separately)
+
+## StepRuntimeHelpers (docstrings, tables, metadata)
+
+Steps can optionally receive a `StepRuntimeHelpers` parameter (inserted before the world) which provides access to docstrings, tables, and step metadata.
+
+```ts
+import type { StepRuntimeHelpers } from "@autometa/executor";
+import { Given } from "./step-definitions";
+
+Given("the request payload is defined", (runtime: StepRuntimeHelpers, world) => {
+  world.state.payload = runtime.consumeDocstringTransformed();
+});
+```
+
+You can also access the same helpers via `world.runtime` during step execution.
+
+Docstring media types (text block types) are preserved and can be transformed via `configureStepDocstrings`:
+
+```ts
+import { configureStepDocstrings } from "@autometa/runner";
+
+configureStepDocstrings({
+  transformers: {
+    json: (raw) => JSON.parse(raw),
+  },
+});
+```
+
+Full reference and examples: see `documentation/website/docs/reference/step-runtime.md:1`.

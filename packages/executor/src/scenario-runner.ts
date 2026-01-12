@@ -32,7 +32,7 @@ import {
   clearStepDocstring,
   clearStepTable,
   clearStepMetadata,
-  setStepDocstring,
+  setStepDocstringInfo,
   setStepMetadata,
   setStepTable,
   type StepRuntimeMetadata,
@@ -106,7 +106,15 @@ export async function runScenarioExecution<World>(
 
       setStepMetadata(world, metadata);
       setStepTable(world, gherkinStep?.dataTable);
-      setStepDocstring(world, gherkinStep?.docString?.content);
+      setStepDocstringInfo(
+        world,
+        gherkinStep?.docString
+          ? {
+              content: gherkinStep.docString.content,
+              mediaType: gherkinStep.docString.mediaType,
+            }
+          : undefined
+      );
       let status: StepStatus = "passed";
       try {
         const args = resolveStepArguments(

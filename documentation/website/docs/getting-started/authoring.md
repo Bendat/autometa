@@ -116,6 +116,270 @@ export class MenuSteps {
 
 Decorator steps are collected via metadata, so the main difference is *where registration happens*: you decorate classes/methods, then the runner discovers those bindings when it builds the environment.
 
+## Detailed step inputs (tables, docstrings, runtime metadata)
+
+Autometa steps can optionally receive a **runtime helpers** argument that exposes tables, docstrings, and step metadata. You can also access the same helpers through `world.runtime`. These helpers are per-step and read-only; they are re-bound on each step execution.
+
+### Step runtime helpers (`StepRuntimeHelpers`)
+
+If your step signature includes an extra parameter after the expression args, Autometa injects a `StepRuntimeHelpers` instance before the world:
+
+```ts title="src/steps/flight.steps.ts"
+import type { StepRuntimeHelpers } from "@autometa/executor";
+import { Given } from "../step-definitions";
+
+Given("the flight is ready to board", (runtime: StepRuntimeHelpers, world) => {
+  if (runtime.hasDocstring) {
+    world.state.note = runtime.consumeDocstring();
+  }
+});
+```
+
+Expression arguments still come first. The runtime helper always sits just before the world:
+
+```ts title="src/steps/flight.steps.ts"
+import type { StepRuntimeHelpers } from "@autometa/executor";
+import { When } from "../step-definitions";
+
+When("the flight has {int} passengers", (count: number, runtime: StepRuntimeHelpers, world) => {
+  world.state.passengerCount = count;
+  world.state.sourceLine = runtime.currentStep?.step?.source?.line ?? null;
+});
+```
+
+When you prefer not to add the extra parameter, read the same helpers from `world.runtime`:
+
+```ts title="src/steps/flight.steps.ts"
+import { When } from "../step-definitions";
+
+When("the gate is assigned", (world) => {
+  const table = world.runtime?.getTable("horizontal");
+  world.state.gate = table?.getRow(0)?.gate ?? "A1";
+});
+```
+
+`world.runtime` is a non-enumerable, per-step view that is attached on demand. Avoid storing it outside the step or hook that receives it. In hooks, `runtime.currentStep` may be `undefined` (there is no step yet).
+
+### Docstrings
+
+Docstrings are attached to a step in Gherkin using triple quotes:
+
+```gherkin
+Given the manifest is recorded
+  """
+  flight: SP-102
+  captain: Aster
+  """
+```
+
+Access them via `getDocstring()` or `consumeDocstring()`:
+
+```ts title="src/steps/manifest.steps.ts"
+import { Given } from "../step-definitions";
+
+Given("the manifest is recorded", (runtime, world) => {
+  const raw = runtime.getDocstring();
+  if (!raw) return;
+  world.state.manifest = raw.trim().split("\n");
+});
+```
+
+`consumeDocstring()` clears the docstring so downstream steps do not accidentally reuse it.
+
+#### Docstring media types (text block types)
+
+Gherkin docstrings can declare a media type (sometimes called a “docstring content type” or “text block type”) immediately after the opening delimiter:
+
+```gherkin
+Given the request payload is defined
+  \"\"\"json
+  { \"priority\": \"high\", \"route\": \"orbital\" }
+  \"\"\"
+```
+
+Autometa preserves that media type and exposes it via `runtime.getDocstringMediaType()` / `runtime.getDocstringInfo()`.
+
+If you register docstring transformers, you can also parse docstrings automatically based on that media type:
+
+```ts title="src/step-definitions.ts"
+import { configureStepDocstrings } from "@autometa/runner";
+
+configureStepDocstrings({
+  transformers: {
+    json: (raw) => JSON.parse(raw),
+    "application/json": (raw) => JSON.parse(raw),
+  },
+});
+```
+
+```ts title="src/steps/payload.steps.ts"
+import { Given } from "../step-definitions";
+
+Given("the request payload is defined", (runtime, world) => {
+  world.state.payload = runtime.consumeDocstringTransformed();
+});
+```
+
+If you want to parse structured payloads, do it explicitly:
+
+```gherkin
+Given the payload is prepared
+  """
+  { "priority": "high", "route": "orbital" }
+  """
+```
+
+```ts title="src/steps/payload.steps.ts"
+import { Given } from "../step-definitions";
+
+Given("the payload is prepared", (runtime, world) => {
+  const raw = runtime.consumeDocstring();
+  world.state.payload = raw ? JSON.parse(raw) : null;
+});
+```
+
+### Data tables
+
+Tables are attached to steps directly under the step text:
+
+```gherkin
+When the crew roster is loaded
+  | name  | role    |
+  | Ada   | pilot   |
+  | Quinn | ops     |
+```
+
+Then read them using a table shape:
+
+```ts title="src/steps/crew.steps.ts"
+import { When } from "../step-definitions";
+
+When("the crew roster is loaded", (runtime, world) => {
+  const table = runtime.requireTable("horizontal");
+  world.state.crew = table.records();
+});
+```
+
+Available table shapes:
+
+- `horizontal`: first row is headers (`table.records()` returns objects).
+- `vertical`: first column is headers (`table.records()` returns objects by row).
+- `matrix`: full grid, with row/column headers.
+- `headerless`: raw rows with no implicit headers.
+
+Use `getTable(...)` to read without clearing, `consumeTable(...)` to clear after reading, and `requireTable(...)` to throw if no table is attached.
+
+Vertical tables treat the first column as headers:
+
+```gherkin
+Then the environment is configured
+  | key       | value |
+  | region    | us-east |
+  | retries   | 3 |
+```
+
+```ts title="src/steps/env.steps.ts"
+import { Then } from "../step-definitions";
+
+Then("the environment is configured", (runtime, world) => {
+  const table = runtime.requireTable("vertical");
+  world.state.env = table.getRecord(0);
+});
+```
+
+Headerless tables return raw rows with optional coercion:
+
+```gherkin
+And the boarding zones are set
+  | A |
+  | B |
+  | C |
+```
+
+```ts title="src/steps/boarding.steps.ts"
+import { And } from "../step-definitions";
+
+And("the boarding zones are set", (runtime, world) => {
+  const table = runtime.requireTable("headerless");
+  world.state.zones = table.raw().map((row) => row[0]);
+});
+```
+
+Matrix tables allow both row and column headers:
+
+```gherkin
+When the bay occupancy grid is updated
+  | bay | A | B | C |
+  | 1   | 1 | 0 | 0 |
+  | 2   | 0 | 1 | 1 |
+```
+
+```ts title="src/steps/bay.steps.ts"
+import { When } from "../step-definitions";
+
+When("the bay occupancy grid is updated", (runtime, world) => {
+  const table = runtime.requireTable("matrix");
+  world.state.occupancy = table.getCell("B", "2");
+});
+```
+
+Table coercion defaults to:
+
+- `horizontal`, `vertical`, `matrix`: coerce primitives by default
+- `headerless`: do not coerce by default
+
+Override per-call as needed:
+
+```ts title="src/steps/crew.steps.ts"
+const table = runtime.requireTable("horizontal", {
+  coerce: false,
+  transformers: {
+    age: (value) => Number.parseInt(value, 10),
+  },
+});
+```
+
+### Step metadata and pickle context
+
+Autometa attaches step metadata to the runtime so you can inspect file/line information and scenario context:
+
+```ts title="src/steps/telemetry.steps.ts"
+import { Then } from "../step-definitions";
+
+Then("the telemetry is logged", (runtime, world) => {
+  const metadata = runtime.currentStep;
+  const source = metadata?.step?.source;
+  if (source?.file && source?.line) {
+    world.state.lastSeenAt = `${source.file}:${source.line}`;
+  }
+});
+```
+
+`runtime.currentStep` (also available via `runtime.getStepMetadata()`) contains:
+
+- `feature`, `scenario`, `outline`, `example`, `step`, `definition`
+- `source` refs with `file`, `line`, and `column` when available
+- the resolved step keyword/expression for the step definition that matched
+
+For a full view of compiled scenarios (including background steps), Autometa generates **pickles**. The `@autometa/gherkin` package exposes `SimplePickle` structures that include `feature`, `scenario`, and `steps` with location metadata:
+
+```ts title="Pickle shape (simplified)"
+export interface SimplePickle {
+  id: string;
+  name: string;
+  uri?: string;
+  tags: string[];
+  feature: SimplePickleFeatureRef;
+  scenario: SimplePickleScenarioRef;
+  rule?: SimplePickleRuleRef;
+  steps: SimplePickleStep[];
+}
+```
+
+Pickle step entries include line/column data, docstrings, and tables, so you can build reporters or diagnostics that link directly back to the Gherkin file.
+
+For full runtime helper APIs and pickle structures, see [Reference → Step runtime helpers](../reference/step-runtime).
+
 ## Dependency injection: composition root vs decorators
 
 Autometa offers two DI layers and you can mix them:

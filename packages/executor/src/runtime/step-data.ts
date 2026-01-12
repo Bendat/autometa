@@ -17,6 +17,7 @@ export type RawTable = readonly (readonly string[])[];
 
 declare const DATA_TABLE_SYMBOL_KEY: unique symbol;
 declare const DOCSTRING_SYMBOL_KEY: unique symbol;
+declare const DOCSTRING_MEDIA_TYPE_SYMBOL_KEY: unique symbol;
 declare const STEP_RUNTIME_SYMBOL_KEY: unique symbol;
 declare const STEP_METADATA_SYMBOL_KEY: unique symbol;
 
@@ -26,6 +27,9 @@ const DATA_TABLE_SYMBOL: typeof DATA_TABLE_SYMBOL_KEY = Symbol.for(
 const DOCSTRING_SYMBOL: typeof DOCSTRING_SYMBOL_KEY = Symbol.for(
   "autometa:runner:step:docstring"
 ) as typeof DOCSTRING_SYMBOL_KEY;
+const DOCSTRING_MEDIA_TYPE_SYMBOL: typeof DOCSTRING_MEDIA_TYPE_SYMBOL_KEY = Symbol.for(
+  "autometa:runner:step:docstring:media-type"
+) as typeof DOCSTRING_MEDIA_TYPE_SYMBOL_KEY;
 const STEP_RUNTIME_SYMBOL: typeof STEP_RUNTIME_SYMBOL_KEY = Symbol.for(
   "autometa:runner:step:runtime"
 ) as typeof STEP_RUNTIME_SYMBOL_KEY;
@@ -36,6 +40,7 @@ const STEP_METADATA_SYMBOL: typeof STEP_METADATA_SYMBOL_KEY = Symbol.for(
 type TableCarrier = Record<never, never> & {
   [DATA_TABLE_SYMBOL]?: RawTable;
   [DOCSTRING_SYMBOL]?: string | undefined;
+  [DOCSTRING_MEDIA_TYPE_SYMBOL]?: string | undefined;
   [STEP_RUNTIME_SYMBOL]?: StepRuntimeHelpers;
   [STEP_METADATA_SYMBOL]?: StepRuntimeMetadata;
   runtime?: StepRuntimeHelpers;
@@ -45,6 +50,23 @@ type TableConfig = Record<TableShape, boolean>;
 
 const DEFAULT_CONFIG: TableConfig = { ...DEFAULT_COERCE_BY_SHAPE };
 let activeConfig: TableConfig = { ...DEFAULT_CONFIG };
+
+export interface DocstringInfo {
+  readonly content: string;
+  readonly mediaType?: string;
+}
+
+export type DocstringTransformer<T = unknown> = (
+  content: string,
+  context: { readonly mediaType?: string }
+) => T;
+
+export interface DocstringTransformConfig {
+  readonly transformers: Readonly<Record<string, DocstringTransformer>>;
+}
+
+const DEFAULT_DOCSTRING_CONFIG: DocstringTransformConfig = { transformers: {} };
+let activeDocstringConfig: DocstringTransformConfig = { ...DEFAULT_DOCSTRING_CONFIG };
 
 function isObjectLike(value: unknown): value is TableCarrier {
   return typeof value === "object" && value !== null;
@@ -118,6 +140,7 @@ export function setStepDocstring(world: unknown, docstring?: string): void {
   }
   if (docstring === undefined) {
     Reflect.deleteProperty(carrier, DOCSTRING_SYMBOL);
+    Reflect.deleteProperty(carrier, DOCSTRING_MEDIA_TYPE_SYMBOL);
     return;
   }
   if (Object.prototype.hasOwnProperty.call(carrier, DOCSTRING_SYMBOL)) {
@@ -125,6 +148,38 @@ export function setStepDocstring(world: unknown, docstring?: string): void {
   } else {
     Object.defineProperty(carrier, DOCSTRING_SYMBOL, {
       value: docstring,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  }
+  Reflect.deleteProperty(carrier, DOCSTRING_MEDIA_TYPE_SYMBOL);
+}
+
+export function setStepDocstringInfo(world: unknown, docstring?: DocstringInfo): void {
+  if (docstring === undefined) {
+    setStepDocstring(world, undefined);
+    return;
+  }
+
+  setStepDocstring(world, docstring.content);
+
+  const carrier = withCarrier(world);
+  if (!carrier) {
+    return;
+  }
+
+  const mediaType = docstring.mediaType;
+  if (mediaType === undefined) {
+    Reflect.deleteProperty(carrier, DOCSTRING_MEDIA_TYPE_SYMBOL);
+    return;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(carrier, DOCSTRING_MEDIA_TYPE_SYMBOL)) {
+    carrier[DOCSTRING_MEDIA_TYPE_SYMBOL] = mediaType;
+  } else {
+    Object.defineProperty(carrier, DOCSTRING_MEDIA_TYPE_SYMBOL, {
+      value: mediaType,
       writable: true,
       configurable: true,
       enumerable: false,
@@ -138,6 +193,7 @@ export function clearStepDocstring(world: unknown): void {
     return;
   }
   Reflect.deleteProperty(carrier, DOCSTRING_SYMBOL);
+  Reflect.deleteProperty(carrier, DOCSTRING_MEDIA_TYPE_SYMBOL);
 }
 
 export interface StepRuntimeStepMetadata {
@@ -224,6 +280,19 @@ export function getStepMetadata(world: unknown): StepRuntimeMetadata | undefined
 export function getDocstring(world: unknown): string | undefined {
   const carrier = withCarrier(world);
   return carrier?.[DOCSTRING_SYMBOL];
+}
+
+export function getDocstringMediaType(world: unknown): string | undefined {
+  const carrier = withCarrier(world);
+  return carrier?.[DOCSTRING_MEDIA_TYPE_SYMBOL];
+}
+
+export function getDocstringInfo(world: unknown): DocstringInfo | undefined {
+  const content = getDocstring(world);
+  if (content === undefined) {
+    return undefined;
+  }
+  return { content, mediaType: getDocstringMediaType(world) };
 }
 
 export function getRawTable(world: unknown): RawTable | undefined {
@@ -347,6 +416,70 @@ export function consumeDocstring(world: unknown): string | undefined {
   return value;
 }
 
+function normalizeDocstringMediaType(mediaType: string | undefined): string | undefined {
+  if (!mediaType) {
+    return undefined;
+  }
+  const normalized = mediaType.trim();
+  if (!normalized) {
+    return undefined;
+  }
+  const [primary] = normalized.split(";", 1);
+  return primary?.trim().toLowerCase() || undefined;
+}
+
+function resolveDocstringTransformer(
+  transformers: Readonly<Record<string, DocstringTransformer>>,
+  mediaType: string | undefined
+): DocstringTransformer | undefined {
+  const normalized = normalizeDocstringMediaType(mediaType);
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (transformers[normalized]) {
+    return transformers[normalized];
+  }
+
+  const slashIndex = normalized.indexOf("/");
+  if (slashIndex !== -1) {
+    const subtype = normalized.slice(slashIndex + 1);
+    if (transformers[subtype]) {
+      return transformers[subtype];
+    }
+    const plusIndex = subtype.lastIndexOf("+");
+    if (plusIndex !== -1) {
+      const suffix = subtype.slice(plusIndex + 1);
+      if (transformers[`+${suffix}`]) {
+        return transformers[`+${suffix}`];
+      }
+      if (transformers[suffix]) {
+        return transformers[suffix];
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export function configureStepDocstrings(
+  config: Partial<DocstringTransformConfig>
+): void {
+  if (config.transformers) {
+    activeDocstringConfig = {
+      ...activeDocstringConfig,
+      transformers: {
+        ...activeDocstringConfig.transformers,
+        ...config.transformers,
+      },
+    };
+  }
+}
+
+export function resetStepDocstringConfig(): void {
+  activeDocstringConfig = { ...DEFAULT_DOCSTRING_CONFIG };
+}
+
 export interface StepRuntimeHelpers {
   readonly hasTable: boolean;
   readonly hasDocstring: boolean;
@@ -425,7 +558,11 @@ export interface StepRuntimeHelpers {
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable;
   getRawTable(): RawTable | undefined;
   getDocstring(): string | undefined;
+  getDocstringMediaType(): string | undefined;
+  getDocstringInfo(): DocstringInfo | undefined;
   consumeDocstring(): string | undefined;
+  getDocstringTransformed(options?: { readonly fallback?: "raw" | "throw" }): unknown | undefined;
+  consumeDocstringTransformed(options?: { readonly fallback?: "raw" | "throw" }): unknown | undefined;
   getStepMetadata(): StepRuntimeMetadata | undefined;
 }
 
@@ -665,6 +802,29 @@ export function createStepRuntime(world: unknown): StepRuntimeHelpers {
     return existing;
   }
 
+  const getDocstringTransformed = (
+    options?: { readonly fallback?: "raw" | "throw" }
+  ): unknown | undefined => {
+    const info = getDocstringInfo(world);
+    if (!info) {
+      return undefined;
+    }
+    const transformer = resolveDocstringTransformer(
+      activeDocstringConfig.transformers,
+      info.mediaType
+    );
+    if (!transformer) {
+      if (options?.fallback === "throw") {
+        const type = normalizeDocstringMediaType(info.mediaType) ?? "<unknown>";
+        throw new RangeError(
+          `No docstring transformer is configured for media type '${type}'.`
+        );
+      }
+      return info.content;
+    }
+    return transformer(info.content, { mediaType: info.mediaType });
+  };
+
   const runtime: StepRuntimeHelpers = {
     get hasTable() {
       return getRawTable(world) !== undefined;
@@ -683,8 +843,20 @@ export function createStepRuntime(world: unknown): StepRuntimeHelpers {
     getDocstring() {
       return getDocstring(world);
     },
+    getDocstringMediaType() {
+      return getDocstringMediaType(world);
+    },
+    getDocstringInfo() {
+      return getDocstringInfo(world);
+    },
     consumeDocstring() {
       return consumeDocstring(world);
+    },
+    getDocstringTransformed,
+    consumeDocstringTransformed(options) {
+      const result = getDocstringTransformed(options);
+      clearStepDocstring(world);
+      return result;
     },
     getStepMetadata() {
       return getStepMetadata(world);

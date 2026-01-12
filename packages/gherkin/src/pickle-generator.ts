@@ -257,6 +257,9 @@ export class PickleGenerator {
     
     if (step.docString?.content) {
       pickleStep.docString = step.docString.content;
+      if (step.docString.mediaType) {
+        pickleStep.docStringMediaType = step.docString.mediaType;
+      }
     }
     
     if (ruleRef) {
