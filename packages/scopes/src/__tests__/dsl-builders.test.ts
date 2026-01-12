@@ -13,7 +13,7 @@ describe("dsl builders edge cases", () => {
     const scopes = createScopes();
 
     scopes.feature("Feature", () => {
-      const scenario = scopes.scenario("Scenario", () => {});
+      const scenario = scopes.scenario("Scenario", () => undefined);
       expect(scenario).toBeDefined();
     });
 
@@ -27,7 +27,7 @@ describe("dsl builders edge cases", () => {
   it("rejects non-finite hook order values", () => {
     const composer = new ScopeComposer();
     const builder = createHookBuilder(composer, "beforeFeature");
-    const hookRegistration = builder(() => {});
+    const hookRegistration = builder(() => undefined);
 
     expect(() => hookRegistration.order(Number.NaN)).toThrow(/finite number/);
   });
@@ -46,7 +46,7 @@ describe("dsl builders edge cases", () => {
 registration);                                                                                                  
 
     const builder = createHookBuilder(composer, "beforeFeature");
-    const result = builder(() => {});
+    const result = builder(() => undefined);
     expect(result).toBe(registration);
     vi.restoreAllMocks();
   });
@@ -73,7 +73,7 @@ registration);
             },
           ],
         },
-        () => {}
+        () => undefined
       );
     });
 
@@ -106,7 +106,7 @@ registration);
     featureComposerBuilder("feature-name", undefined, () => {
       ruleBuilder(123 as unknown as string, undefined, () => {
         scenarioBuilder(undefined as unknown as string, undefined, scenarioAction);
-        outlineBuilder("   ", undefined, () => {});
+        outlineBuilder("   ", undefined, () => undefined);
         ruleAction();
       });
     });
@@ -125,7 +125,7 @@ registration);
   it("derives metadata from .feature filenames", () => {
     const composer = new ScopeComposer();
     const featureBuilder = createFeatureBuilder(composer);
-    featureBuilder("path/to/story.feature", () => {});
+    featureBuilder("path/to/story.feature", () => undefined);
 
     const feature = composer.plan.root.children[0];
     expect(feature?.data?.file).toBe("path/to/story.feature");

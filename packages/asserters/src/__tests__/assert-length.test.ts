@@ -53,6 +53,11 @@ describe("assertMinLength", () => {
   it("should include context in error messages", () => {
     expect(() => assertMinLength([], 1, "items")).toThrow("[items]");
   });
+
+  it("should throw for non-length-like values", () => {
+    expect(() => assertMinLength(123 as unknown as string, 1)).toThrow(AutomationError);
+    expect(() => assertMinLength(undefined as unknown as string, 1)).toThrow(AutomationError);
+  });
 });
 
 describe("assertMaxLength", () => {
@@ -74,5 +79,10 @@ describe("assertMaxLength", () => {
 
   it("should include context in error messages", () => {
     expect(() => assertMaxLength([1, 2, 3, 4], 2, "limit")).toThrow("[limit]");
+  });
+
+  it("should throw for non-length-like values", () => {
+    expect(() => assertMaxLength(null as unknown as string, 1)).toThrow(AutomationError);
+    expect(() => assertMaxLength(undefined as unknown as string, 1)).toThrow(AutomationError);
   });
 });

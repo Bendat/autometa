@@ -90,9 +90,6 @@ function getTypeName(value: unknown): string {
 }
 
 function formatExpected(expected: unknown): string {
-  if (typeof expected === "function") {
-    return (expected as { name?: string }).name ?? "Function";
-  }
   if (typeof expected === "string") {
     return `type "${expected}"`;
   }

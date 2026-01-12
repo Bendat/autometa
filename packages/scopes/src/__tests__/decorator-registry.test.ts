@@ -8,7 +8,9 @@ const featureToken = Symbol("feature");
 const ruleToken = Symbol("rule");
 const scenarioToken = Symbol("scenario");
 
-function noopHook(_ctx: HookContext<World>): void {}
+function noopHook(_ctx: HookContext<World>): void {
+  return undefined;
+}
 
 function makeScenarioDescriptor(kind: DecoratorScenarioDescriptor["kind"]): DecoratorScenarioDescriptor {
   return {

@@ -48,6 +48,19 @@ describe("assertKey", () => {
     expect(() => assertKey(obj, sym)).not.toThrow();
   });
 
+  it("does not include suggestions for missing non-string keys", () => {
+    const sym = Symbol("present");
+    const obj = { [sym]: "value" };
+    expect(() => assertKey(obj, Symbol("missing"))).toThrow(InvalidKeyError);
+    expect(() => assertKey(obj, Symbol("missing"))).toThrow("Key");
+    expect(() => assertKey(obj, Symbol("missing"))).not.toThrow(/Did you mean/);
+  });
+
+  it("does not include suggestions when there are no candidate keys", () => {
+    expect(() => assertKey({}, "anything")).toThrow(InvalidKeyError);
+    expect(() => assertKey({}, "anything")).not.toThrow(/Did you mean/);
+  });
+
   it("should handle numeric keys", () => {
     const arr = ["a", "b", "c"];
     expect(() => assertKey(arr, 0)).not.toThrow();

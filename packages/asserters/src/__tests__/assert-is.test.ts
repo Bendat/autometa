@@ -101,5 +101,15 @@ describe("assertIs", () => {
       expect(() => assertIs({}, "object")).not.toThrow();
       expect(() => assertIs([], "object")).not.toThrow(); // Arrays are objects
     });
+
+    it("treats object expected values as type matches", () => {
+      expect(() => assertIs({ a: 1 }, { b: 2 } as unknown)).not.toThrow();
+    });
+
+    it("handles circular values when formatting errors", () => {
+      const circular: Record<string, unknown> = {};
+      circular.self = circular;
+      expect(() => assertIs(circular, "string")).toThrow(AutomationError);
+    });
   });
 });
