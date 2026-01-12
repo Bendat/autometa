@@ -106,15 +106,16 @@ export async function runScenarioExecution<World>(
 
       setStepMetadata(world, metadata);
       setStepTable(world, gherkinStep?.dataTable);
-      setStepDocstringInfo(
-        world,
-        gherkinStep?.docString
-          ? {
-              content: gherkinStep.docString.content,
-              mediaType: gherkinStep.docString.mediaType,
-            }
-          : undefined
-      );
+      if (!gherkinStep?.docString) {
+        setStepDocstringInfo(world, undefined);
+      } else if (gherkinStep.docString.mediaType === undefined) {
+        setStepDocstringInfo(world, { content: gherkinStep.docString.content });
+      } else {
+        setStepDocstringInfo(world, {
+          content: gherkinStep.docString.content,
+          mediaType: gherkinStep.docString.mediaType,
+        });
+      }
       let status: StepStatus = "passed";
       try {
         const args = resolveStepArguments(

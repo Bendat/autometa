@@ -292,7 +292,11 @@ export function getDocstringInfo(world: unknown): DocstringInfo | undefined {
   if (content === undefined) {
     return undefined;
   }
-  return { content, mediaType: getDocstringMediaType(world) };
+  const mediaType = getDocstringMediaType(world);
+  if (mediaType === undefined) {
+    return { content };
+  }
+  return { content, mediaType };
 }
 
 export function getRawTable(world: unknown): RawTable | undefined {
@@ -822,7 +826,10 @@ export function createStepRuntime(world: unknown): StepRuntimeHelpers {
       }
       return info.content;
     }
-    return transformer(info.content, { mediaType: info.mediaType });
+    return transformer(
+      info.content,
+      info.mediaType === undefined ? {} : { mediaType: info.mediaType }
+    );
   };
 
   const runtime: StepRuntimeHelpers = {
