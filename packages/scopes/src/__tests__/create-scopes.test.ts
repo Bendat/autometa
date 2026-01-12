@@ -188,6 +188,66 @@ describe("createScopes DSL", () => {
     expect(scopes.plan().root.hooks[0]?.options.order).toBe(0);
   });
 
+  it("treats empty tag calls as passthrough and deduplicates tag inputs", () => {
+    const scopes = createScopes<TestWorld>();
+
+    scopes.feature("Feature", () => {
+      scopes.scenario("Scenario", () => {
+        scopes.when.tags()("untagged", (_world) => undefined, { tags: ["@base"] });
+
+        scopes.then.tags(["@a", "@b"], "@a")(
+          "tagged",
+          (_world) => undefined
+        );
+
+        scopes.when.skip.tags("@skip")(
+          "skipped",
+          (_world) => undefined
+        );
+      });
+    });
+
+    const plan = scopes.plan();
+    const [whenStep, thenStep, skipWhen] = plan.root.children[0].children[0].steps;
+    expect(whenStep.options.tags).toEqual(["@base"]);
+    expect(thenStep.options.tags).toEqual(["@a", "@b"]);
+    expect(skipWhen.options.tags).toEqual(["@skip"]);
+    expect(skipWhen.options.mode).toBe("skip");
+  });
+
+  it("returns mode-specific tag variants for all execution modes", () => {
+    const scopes = createScopes<TestWorld>();
+
+    scopes.feature("Feature", () => {
+      scopes.scenario("Scenario", () => {
+        scopes.when.only.tags("@only")("only", (_world) => undefined);
+        scopes.when.failing.tags("@flaky")("flaky", (_world) => undefined);
+        scopes.when.concurrent.tags("@concurrent")("conc", (_world) => undefined);
+      });
+    });
+
+    const [onlyStep, failingStep, concurrentStep] = scopes.plan().root.children[0].children[0].steps;
+    expect(onlyStep.options.mode).toBe("only");
+    expect(onlyStep.options.tags).toEqual(["@only"]);
+    expect(failingStep.options.mode).toBe("failing");
+    expect(failingStep.options.tags).toEqual(["@flaky"]);
+    expect(concurrentStep.options.mode).toBe("concurrent");
+    expect(concurrentStep.options.tags).toEqual(["@concurrent"]);
+  });
+
+  it("enforces hook handler requirements and order validation", () => {
+    const scopes = createScopes<TestWorld>();
+
+    scopes.feature("Feature", () => {
+      expect(() => scopes.beforeFeature("desc", { tags: ["x"] } as never)).toThrow(
+        /Hook handler must be a function/
+      );
+
+      const registration = scopes.beforeScenario((_ctx: HookContext<TestWorld>) => undefined);
+      expect(() => registration.order(Number.NaN)).toThrow(/Hook order must be a finite number/);
+    });
+  });
+
   it("applies configured default mode to scopes, steps, and hooks", () => {
     const scopes = createScopes<TestWorld>({ defaultMode: "skip" });
 

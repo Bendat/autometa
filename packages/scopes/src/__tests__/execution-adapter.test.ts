@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { createScopes } from "../create-scopes";
 import { createExecutionAdapter } from "../execution-adapter";
 import { resetIdCounter } from "../id";
-import type { HookContext, ScopeNode } from "../types";
+import type { HookContext, ScopeNode, ScopePlan } from "../types";
 
 interface TestWorld {
   readonly name: string;
@@ -53,6 +53,9 @@ describe("createExecutionAdapter", () => {
 
     const world = await adapter.createWorld(scenarioNode);
     expect(world).toEqual({ name: "world" });
+
+    const childWorld = await adapter.createWorld(scenarioNode, { name: "parent" });
+    expect(childWorld).toEqual({ name: "world" });
   });
 
   it("uses fallback options when plan lacks world factory or registry", async () => {
@@ -82,6 +85,28 @@ describe("createExecutionAdapter", () => {
     expect(adapter.getParameterRegistry()).toBe(parameterRegistry);
   });
 
+  it("does not include a parent when createWorld is called without one", async () => {
+    const scopes = createScopes<TestWorld>({
+      worldFactory: async (context) => ({ name: context.parent ? "child" : "root" }),
+    });
+
+    let scenario: ScopeNode<TestWorld> | undefined;
+
+    scopes.feature("Feature", () => {
+      scenario = scopes.scenario("Scenario", () => {
+        scopes.given("a step", () => undefined);
+      });
+    });
+
+    if (!scenario) {
+      throw new Error("Scenario not created");
+    }
+
+    const adapter = createExecutionAdapter(scopes.plan());
+    const world = await adapter.createWorld(scenario);
+    expect(world).toEqual({ name: "root" });
+  });
+
   it("throws if no world factory is available", async () => {
     const scopes = createScopes<TestWorld>();
     scopes.feature("Feature", () => undefined);
@@ -93,5 +118,46 @@ describe("createExecutionAdapter", () => {
     await expect(adapter.createWorld(featureScope)).rejects.toThrow(
       /No world factory configured/
     );
+  });
+
+  it("throws when scenarios are missing a feature ancestor", () => {
+    const orphan: ScopeNode<TestWorld> = {
+      id: "scenario-1",
+      kind: "scenario",
+      name: "Orphan",
+      mode: "default",
+      tags: [],
+      pending: false,
+      steps: [],
+      hooks: [],
+      children: [],
+    };
+
+    const root: ScopeNode<TestWorld> = {
+      id: "root",
+      kind: "root",
+      name: "root",
+      mode: "default",
+      tags: [],
+      pending: false,
+      steps: [],
+      hooks: [],
+      children: [orphan],
+    };
+
+    const plan: ScopePlan<TestWorld> = {
+      root,
+      scopesById: new Map([
+        [root.id, root],
+        [orphan.id, orphan],
+      ]),
+      stepsById: new Map(),
+      hooksById: new Map(),
+    };
+
+    const adapter = createExecutionAdapter(plan);
+    expect(() => adapter.listScenarios()).toThrow(/missing a feature ancestor/);
+
+    expect(adapter.getAncestors("unknown" as string)).toEqual([]);
   });
 });
