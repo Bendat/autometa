@@ -118,47 +118,36 @@ Decorator steps are collected via metadata, so the main difference is *where reg
 
 ## Detailed step inputs (tables, docstrings, runtime metadata)
 
-Autometa steps can optionally receive a **runtime helpers** argument that exposes tables, docstrings, and step metadata. You can also access the same helpers through `world.runtime`. These helpers are per-step and read-only; they are re-bound on each step execution.
+Autometa provides **runtime helpers** that expose tables, docstrings, and step metadata. These helpers are per-step and read-only; they are re-bound on each step execution.
 
 ### Step runtime helpers (`StepRuntimeHelpers`)
 
-If your step signature includes an extra parameter after the expression args, Autometa injects a `StepRuntimeHelpers` instance before the world:
+Access runtime helpers through `world.runtime`:
 
 ```ts title="src/steps/flight.steps.ts"
-import type { StepRuntimeHelpers } from "@autometa/executor";
 import { Given } from "../step-definitions";
 
-Given("the flight is ready to board", (runtime: StepRuntimeHelpers, world) => {
-  if (runtime.hasDocstring) {
-    world.state.note = runtime.consumeDocstring();
+Given("the flight is ready to board", (world) => {
+  if (world.runtime.hasDocstring) {
+    world.state.note = world.runtime.consumeDocstring();
   }
 });
 ```
 
-Expression arguments still come first. The runtime helper always sits just before the world:
+`world.runtime` is a non-enumerable, per-step view that is attached on demand. This is the recommended approach as it keeps your step signatures clean and doesn't require importing the `StepRuntimeHelpers` type.
+
+When you have expression arguments, they come before the world:
 
 ```ts title="src/steps/flight.steps.ts"
-import type { StepRuntimeHelpers } from "@autometa/executor";
 import { When } from "../step-definitions";
 
-When("the flight has {int} passengers", (count: number, runtime: StepRuntimeHelpers, world) => {
+When("the flight has {int} passengers", (count: number, world) => {
   world.state.passengerCount = count;
-  world.state.sourceLine = runtime.currentStep?.step?.source?.line ?? null;
+  world.state.sourceLine = world.runtime.currentStep?.step?.source?.line ?? null;
 });
 ```
 
-When you prefer not to add the extra parameter, read the same helpers from `world.runtime`:
-
-```ts title="src/steps/flight.steps.ts"
-import { When } from "../step-definitions";
-
-When("the gate is assigned", (world) => {
-  const table = world.runtime?.getTable("horizontal");
-  world.state.gate = table?.getRow(0)?.gate ?? "A1";
-});
-```
-
-`world.runtime` is a non-enumerable, per-step view that is attached on demand. Avoid storing it outside the step or hook that receives it. In hooks, `runtime.currentStep` may be `undefined` (there is no step yet).
+Avoid storing `world.runtime` outside the step or hook that receives it. In hooks, `runtime.currentStep` may be `undefined` (there is no step yet).
 
 ### Docstrings
 
@@ -177,8 +166,8 @@ Access them via `getDocstring()` or `consumeDocstring()`:
 ```ts title="src/steps/manifest.steps.ts"
 import { Given } from "../step-definitions";
 
-Given("the manifest is recorded", (runtime, world) => {
-  const raw = runtime.getDocstring();
+Given("the manifest is recorded", (world) => {
+  const raw = world.runtime.getDocstring();
   if (!raw) return;
   world.state.manifest = raw.trim().split("\n");
 });
@@ -215,8 +204,8 @@ configureStepDocstrings({
 ```ts title="src/steps/payload.steps.ts"
 import { Given } from "../step-definitions";
 
-Given("the request payload is defined", (runtime, world) => {
-  world.state.payload = runtime.consumeDocstringTransformed();
+Given("the request payload is defined", (world) => {
+  world.state.payload = world.runtime.consumeDocstringTransformed();
 });
 ```
 
@@ -232,8 +221,8 @@ Given the payload is prepared
 ```ts title="src/steps/payload.steps.ts"
 import { Given } from "../step-definitions";
 
-Given("the payload is prepared", (runtime, world) => {
-  const raw = runtime.consumeDocstring();
+Given("the payload is prepared", (world) => {
+  const raw = world.runtime.consumeDocstring();
   world.state.payload = raw ? JSON.parse(raw) : null;
 });
 ```
@@ -254,8 +243,8 @@ Then read them using a table shape:
 ```ts title="src/steps/crew.steps.ts"
 import { When } from "../step-definitions";
 
-When("the crew roster is loaded", (runtime, world) => {
-  const table = runtime.requireTable("horizontal");
+When("the crew roster is loaded", (world) => {
+  const table = world.runtime.requireTable("horizontal");
   world.state.crew = table.records();
 });
 ```
@@ -281,8 +270,8 @@ Then the environment is configured
 ```ts title="src/steps/env.steps.ts"
 import { Then } from "../step-definitions";
 
-Then("the environment is configured", (runtime, world) => {
-  const table = runtime.requireTable("vertical");
+Then("the environment is configured", (world) => {
+  const table = world.runtime.requireTable("vertical");
   world.state.env = table.getRecord(0);
 });
 ```
@@ -299,9 +288,9 @@ And the boarding zones are set
 ```ts title="src/steps/boarding.steps.ts"
 import { And } from "../step-definitions";
 
-And("the boarding zones are set", (runtime, world) => {
-  const table = runtime.requireTable("headerless");
-  world.state.zones = table.raw().map((row) => row[0]);
+And("the boarding zones are set", (world) => {
+  const table = world.runtime.requireTable("headerless");
+  world.state.zones = table.rows().map((row) => row[0]);
 });
 ```
 
@@ -317,9 +306,9 @@ When the bay occupancy grid is updated
 ```ts title="src/steps/bay.steps.ts"
 import { When } from "../step-definitions";
 
-When("the bay occupancy grid is updated", (runtime, world) => {
-  const table = runtime.requireTable("matrix");
-  world.state.occupancy = table.getCell("B", "2");
+When("the bay occupancy grid is updated", (world) => {
+  const table = world.runtime.requireTable("matrix");
+  world.state.occupancy = table.getCell("2", "B");
 });
 ```
 
@@ -331,13 +320,27 @@ Table coercion defaults to:
 Override per-call as needed:
 
 ```ts title="src/steps/crew.steps.ts"
-const table = runtime.requireTable("horizontal", {
+const table = world.runtime.requireTable("horizontal", {
   coerce: false,
   transformers: {
     age: (value) => Number.parseInt(value, 10),
   },
 });
 ```
+
+#### Table transformers
+
+Table transformers let you transform *individual cells* as the table is read.
+
+- They run **before** primitive coercion.
+- They are keyed differently depending on the table shape:
+  - `horizontal` / `vertical`: keyed by **header name** (string)
+  - `headerless`: keyed by **column index** (0-based number)
+  - `matrix`: keyed by row (`rows`), column (`columns`), or specific coordinates (`cells`)
+
+Transformers receive `(value, context)`, where `context` includes the table shape, the cell coordinates, and (when available) the header names.
+
+For complete examples (including matrix precedence rules and the full `CellContext` shape), see [Reference → Step runtime helpers](../reference/step-runtime#table-transformers).
 
 ### Step metadata and pickle context
 
@@ -346,8 +349,8 @@ Autometa attaches step metadata to the runtime so you can inspect file/line info
 ```ts title="src/steps/telemetry.steps.ts"
 import { Then } from "../step-definitions";
 
-Then("the telemetry is logged", (runtime, world) => {
-  const metadata = runtime.currentStep;
+Then("the telemetry is logged", (world) => {
+  const metadata = world.runtime.currentStep;
   const source = metadata?.step?.source;
   if (source?.file && source?.line) {
     world.state.lastSeenAt = `${source.file}:${source.line}`;
@@ -355,7 +358,7 @@ Then("the telemetry is logged", (runtime, world) => {
 });
 ```
 
-`runtime.currentStep` (also available via `runtime.getStepMetadata()`) contains:
+`world.runtime.currentStep` (also available via `world.runtime.getStepMetadata()`) contains:
 
 - `feature`, `scenario`, `outline`, `example`, `step`, `definition`
 - `source` refs with `file`, `line`, and `column` when available
@@ -464,9 +467,7 @@ The runner binds `this` to the current world **only** for classic `function` dec
 | Syntax | How to access the world | When to use |
 | --- | --- | --- |
 | `function step(arg1) { /* use this */ }` | `this` is the world, and the last argument is still provided if you declare it. | When migrating legacy CucumberJS steps or whenever you prefer `this` for ergonomics. |
-| `(arg1, world) => { ... }` | World is the last argument (after optional runtime helpers). `this` is untouched. | When you want explicit TypeScript types on the world parameter or prefer arrow functions. |
-
-If your handler length indicates you expect the runtime helpers, Autometa automatically inserts `StepRuntimeHelpers` before the world argument. That means you can upscale a handler whenever you need direct table/file helpers without rewriting every step.
+| `(arg1, world) => { ... }` | World is the last argument. `this` is untouched. | When you want explicit TypeScript types on the world parameter or prefer arrow functions. |
 
 ---
 

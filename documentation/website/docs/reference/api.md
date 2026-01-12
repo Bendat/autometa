@@ -167,18 +167,15 @@ ensure(value).toBe(expected);
 
 ## StepRuntimeHelpers (docstrings, tables, metadata)
 
-Steps can optionally receive a `StepRuntimeHelpers` parameter (inserted before the world) which provides access to docstrings, tables, and step metadata.
+Steps can access runtime helpers via `world.runtime`, which provides access to docstrings, tables, and step metadata.
 
 ```ts
-import type { StepRuntimeHelpers } from "@autometa/executor";
 import { Given } from "./step-definitions";
 
-Given("the request payload is defined", (runtime: StepRuntimeHelpers, world) => {
-  world.state.payload = runtime.consumeDocstringTransformed();
+Given("the request payload is defined", (world) => {
+  world.state.payload = world.runtime.consumeDocstringTransformed();
 });
 ```
-
-You can also access the same helpers via `world.runtime` during step execution.
 
 Docstring media types (text block types) are preserved and can be transformed via `configureStepDocstrings`:
 

@@ -8,35 +8,26 @@ This reference explains how Autometa exposes per-step runtime data (tables, docs
 
 ## Accessing runtime helpers
 
-Autometa creates a `StepRuntimeHelpers` instance for each step execution. You can access it in two ways:
-
-1) **Explicit parameter injection** (recommended when you need tables/docstrings).
-2) **`world.runtime`** (convenient when you want to keep the signature lean).
-
-### Signature and injection order
-
-Runtime helpers are injected *after* expression arguments and *before* the world:
-
-```ts title="src/steps/boarding.steps.ts"
-import type { StepRuntimeHelpers } from "@autometa/executor";
-import { Given } from "../step-definitions";
-
-Given("the flight has {int} passengers", (count: number, runtime: StepRuntimeHelpers, world) => {
-  world.state.passengerCount = count;
-  world.state.stepLine = runtime.currentStep?.step?.source?.line ?? null;
-});
-```
-
-If you omit the runtime parameter, the world is still the last argument:
+Autometa creates a `StepRuntimeHelpers` instance for each step execution. Access it through `world.runtime`:
 
 ```ts title="src/steps/boarding.steps.ts"
 import { Given } from "../step-definitions";
 
 Given("the boarding gate is ready", (world) => {
-  const runtime = world.runtime;
-  if (runtime?.hasDocstring) {
-    world.state.note = runtime.consumeDocstring();
+  if (world.runtime.hasDocstring) {
+    world.state.note = world.runtime.consumeDocstring();
   }
+});
+```
+
+When you have expression arguments, they come before the world:
+
+```ts title="src/steps/boarding.steps.ts"
+import { Given } from "../step-definitions";
+
+Given("the flight has {int} passengers", (count: number, world) => {
+  world.state.passengerCount = count;
+  world.state.stepLine = world.runtime.currentStep?.step?.source?.line ?? null;
 });
 ```
 
@@ -59,8 +50,8 @@ Read them via `getDocstring()` or `consumeDocstring()`:
 ```ts title="src/steps/manifest.steps.ts"
 import { Given } from "../step-definitions";
 
-Given("the manifest is recorded", (runtime, world) => {
-  const raw = runtime.getDocstring();
+Given("the manifest is recorded", (world) => {
+  const raw = world.runtime.getDocstring();
   if (!raw) return;
   world.state.manifest = raw.trim().split("\n");
 });
@@ -71,8 +62,8 @@ Use `consumeDocstring()` if you want to clear it after processing:
 ```ts title="src/steps/payload.steps.ts"
 import { Given } from "../step-definitions";
 
-Given("the payload is prepared", (runtime, world) => {
-  const raw = runtime.consumeDocstring();
+Given("the payload is prepared", (world) => {
+  const raw = world.runtime.consumeDocstring();
   world.state.payload = raw ? JSON.parse(raw) : null;
 });
 ```
@@ -111,15 +102,15 @@ Transformer keys are matched against the docstring media type after basic normal
 ```ts title="src/steps/payload.steps.ts"
 import { Given } from "../step-definitions";
 
-Given("the request payload is defined", (runtime, world) => {
-  world.state.payload = runtime.consumeDocstringTransformed();
+Given("the request payload is defined", (world) => {
+  world.state.payload = world.runtime.consumeDocstringTransformed();
 });
 ```
 
 If no transformer matches, `getDocstringTransformed()` falls back to the raw string. To require a transformer, pass `fallback: "throw"`:
 
 ```ts
-runtime.getDocstringTransformed({ fallback: "throw" });
+world.runtime.getDocstringTransformed({ fallback: "throw" });
 ```
 
 ## Data tables
@@ -138,8 +129,8 @@ When the crew roster is loaded
 ```ts title="src/steps/crew.steps.ts"
 import { When } from "../step-definitions";
 
-When("the crew roster is loaded", (runtime, world) => {
-  const table = runtime.requireTable("horizontal");
+When("the crew roster is loaded", (world) => {
+  const table = world.runtime.requireTable("horizontal");
   world.state.crew = table.records();
 });
 ```
@@ -156,8 +147,8 @@ Then the environment is configured
 ```ts title="src/steps/env.steps.ts"
 import { Then } from "../step-definitions";
 
-Then("the environment is configured", (runtime, world) => {
-  const table = runtime.requireTable("vertical");
+Then("the environment is configured", (world) => {
+  const table = world.runtime.requireTable("vertical");
   world.state.env = table.getRecord(0);
 });
 ```
@@ -174,8 +165,8 @@ And the boarding zones are set
 ```ts title="src/steps/boarding.steps.ts"
 import { And } from "../step-definitions";
 
-And("the boarding zones are set", (runtime, world) => {
-  const table = runtime.requireTable("headerless");
+And("the boarding zones are set", (world) => {
+  const table = world.runtime.requireTable("headerless");
   world.state.zones = table.rows().map((row) => row[0]);
 });
 ```
@@ -192,8 +183,8 @@ When the bay occupancy grid is updated
 ```ts title="src/steps/bay.steps.ts"
 import { When } from "../step-definitions";
 
-When("the bay occupancy grid is updated", (runtime, world) => {
-  const table = runtime.requireTable("matrix");
+When("the bay occupancy grid is updated", (world) => {
+  const table = world.runtime.requireTable("matrix");
   world.state.occupancy = table.getCell("2", "B");
 });
 ```
@@ -207,43 +198,275 @@ When("the bay occupancy grid is updated", (runtime, world) => {
 
 ## Coercion and transformers
 
-By default, primitive coercion is **enabled** for `horizontal`, `vertical`, and `matrix` tables, and **disabled** for `headerless` tables. You can override this per call and add transformers:
+### Primitive coercion
 
-```ts title="src/steps/crew.steps.ts"
-const table = runtime.requireTable("horizontal", {
-  coerce: false,
-  transformers: {
-    age: (value) => Number.parseInt(value, 10),
-  },
-});
+By default, primitive coercion is **enabled** for `horizontal`, `vertical`, and `matrix` tables, and **disabled** for `headerless` tables. Coercion automatically converts string values to their primitive types:
+
+- `"true"` / `"false"` → `boolean`
+- `"123"` → `number`
+- `"null"` → `null`
+- `"undefined"` → `undefined`
+
+You can override coercion per call:
+
+```ts
+const table = world.runtime.requireTable("horizontal", { coerce: false });
 ```
 
-You can also adjust default coercion globally:
+Or adjust defaults globally:
 
 ```ts title="src/step-definitions.ts"
 import { configureStepTables } from "@autometa/runner";
 
 configureStepTables({
   coercePrimitives: {
-    headerless: true,
+    headerless: true,  // Enable coercion for headerless tables
   },
 });
 ```
 
+### Table transformers
+
+Transformers let you customize how cell values are parsed before they reach your step code. They run **before** primitive coercion, giving you full control over the final value type.
+
+#### Transformer signature
+
+```ts
+type TableTransformer = (value: string, context: CellContext) => unknown;
+```
+
+Each transformer receives:
+- `value`: The raw string from the table cell
+- `context`: Cell context including shape + coordinates (and headers when applicable)
+
+`CellContext` provides enough metadata to write shape-aware transformers:
+
+```ts
+export interface CellContext {
+  readonly shape: "horizontal" | "vertical" | "headerless" | "matrix";
+  readonly rowIndex: number;
+  readonly columnIndex: number;
+  /**
+   * Header name for:
+   * - horizontal/vertical tables
+   * - matrix column headers
+   */
+  readonly header?: string;
+  /** Row header for matrix tables. */
+  readonly verticalHeader?: string;
+  /** The original, unmodified cell value. */
+  readonly raw: string;
+}
+```
+
+Notes:
+
+- In **horizontal** tables, `rowIndex` is the 0-based record row (excluding the header row) and `columnIndex` is the 0-based header index.
+- In **vertical** tables, `rowIndex` is the 0-based header index (down the first column) and `columnIndex` is the 0-based record index (across).
+- In **headerless** tables, `rowIndex` / `columnIndex` are the 0-based raw table coordinates.
+- In **matrix** tables, `verticalHeader` is the row header, `header` is the column header, and indices are 0-based within their respective header lists.
+
+#### Horizontal and vertical table transformers
+
+For horizontal and vertical tables, transformers are keyed by **header name**:
+
+```ts title="src/steps/crew.steps.ts"
+const table = world.runtime.requireTable("horizontal", {
+  transformers: {
+    age: (value) => Number.parseInt(value, 10),
+    hiredAt: (value) => new Date(value),
+    isActive: (value) => value.toLowerCase() === "yes",
+    roles: (value) => value.split(",").map(r => r.trim()),
+  },
+});
+
+// Vertical tables use the same header-keyed shape, but the header names come
+// from the first column (e.g. "region", "retries" in a key/value table).
+world.runtime.requireTable("vertical", {
+  transformers: {
+    retries: (value) => Number(value),
+  },
+});
+```
+
+Given this table:
+
+```gherkin
+| name  | age | hiredAt    | isActive | roles          |
+| Alice | 28  | 2020-01-15 | yes      | dev,lead       |
+| Bob   | 32  | 2019-06-01 | no       | qa,automation  |
+```
+
+The records will have properly typed values:
+
+```ts
+const records = table.records();
+// records[0].age is number 28
+// records[0].hiredAt is Date object
+// records[0].isActive is boolean true
+// records[0].roles is string[] ["dev", "lead"]
+```
+
+#### Headerless table transformers
+
+For headerless tables, transformers are keyed by **column index** (0-based):
+
+```ts title="src/steps/zones.steps.ts"
+const table = world.runtime.requireTable("headerless", {
+  transformers: {
+    0: (value) => value.toUpperCase(),      // First column
+    1: (value) => Number(value),            // Second column
+    2: (value) => value === "active",       // Third column
+  },
+});
+```
+
+Given this table:
+
+```gherkin
+| a | 100 | active   |
+| b | 200 | inactive |
+| c | 150 | active   |
+```
+
+Each row will have transformed values:
+
+```ts
+const rows = table.rows();
+// rows[0] is ["A", 100, true]
+// rows[1] is ["B", 200, false]
+```
+
+#### Matrix table transformers
+
+Matrix tables support the most flexible transformation options. You can transform by row header, column header, or specific cells:
+
+```ts title="src/steps/grid.steps.ts"
+const table = world.runtime.requireTable("matrix", {
+  transformers: {
+    // Transform all values in specific rows
+    rows: {
+      // Row transformers apply to every cell in that row.
+      // If you only want to transform some columns, branch on context.header.
+      "Row2": (value) => {
+        const numeric = Number(value);
+        return Number.isNaN(numeric) ? value : numeric;
+      },
+    },
+    // Transform all values in specific columns
+    columns: {
+      "ColA": (value) => value.toUpperCase(),
+    },
+    // Transform specific cells (most specific, highest priority)
+    cells: {
+      "Row1": {
+        "ColB": (value) => Number(value) * 2,  // Double this specific cell
+      },
+    },
+  },
+});
+```
+
+Given this table:
+
+```gherkin
+| grid | ColA | ColB | ColC |
+| Row1 | abc  | 10   | 20   |
+| Row2 | def  | 30   | 40   |
+```
+
+Transformers are applied with this priority:
+1. **Cell-specific** (`cells`) - highest priority
+2. **Row** (`rows`)
+3. **Column** (`columns`)
+4. Primitive coercion (if enabled and no transformer matched)
+
+```ts
+table.getCell("Row1", "ColA");  // "ABC" (column transformer)
+table.getCell("Row1", "ColB");  // 20 (cell-specific: 10 * 2)
+table.getCell("Row2", "ColA");  // "def" (row transformer overrides column)
+table.getCell("Row2", "ColB");  // 30 (row transformer)
+```
+
+### Common transformer patterns
+
+#### Parsing enums
+
+```ts
+transformers: {
+  status: (value) => {
+    const statuses = { active: "ACTIVE", pending: "PENDING", closed: "CLOSED" };
+    return statuses[value.toLowerCase()] ?? value;
+  },
+}
+```
+
+#### Parsing nullable values
+
+```ts
+transformers: {
+  optionalField: (value) => value === "-" ? null : value,
+}
+```
+
+#### Complex objects
+
+```ts
+transformers: {
+  metadata: (value) => {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return { raw: value };
+    }
+  },
+}
+```
+
+#### Using context for conditional logic
+
+```ts
+transformers: {
+  amount: (value, context) => {
+    // Access row/column info from context if needed
+    const numeric = Number(value);
+    return isNaN(numeric) ? 0 : numeric;
+  },
+}
+```
+
+### Combining transformers with coercion
+
+Transformers run **before** coercion. If a transformer returns a string, coercion (if enabled) will still attempt to convert it:
+
+```ts
+const table = world.runtime.requireTable("horizontal", {
+  coerce: true,  // Enabled by default for horizontal tables
+  transformers: {
+    // This transformer returns a string, so "123" becomes number 123 via coercion
+    code: (value) => value.trim(),
+  },
+});
+```
+
+To prevent coercion after transformation, either:
+- Return a non-string type from your transformer
+- Disable coercion: `coerce: false`
+
 ## Step metadata (source refs, definitions, outline examples)
 
-`StepRuntimeHelpers` exposes step metadata in two forms:
+`world.runtime` exposes step metadata in two forms:
 
-- `runtime.currentStep` (getter)
-- `runtime.getStepMetadata()` (method)
+- `world.runtime.currentStep` (getter)
+- `world.runtime.getStepMetadata()` (method)
 
 Metadata includes the feature/scenario/outline/example context, the matched step definition, and source refs (`file`, `line`, `column`) where available.
 
 ```ts title="src/steps/telemetry.steps.ts"
 import { Then } from "../step-definitions";
 
-Then("the telemetry is logged", (runtime, world) => {
-  const metadata = runtime.currentStep;
+Then("the telemetry is logged", (world) => {
+  const metadata = world.runtime.currentStep;
   const source = metadata?.step?.source;
   const example = metadata?.example;
 
