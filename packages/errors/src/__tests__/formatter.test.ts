@@ -65,6 +65,33 @@ describe("formatErrorCauses", () => {
     const output = formatErrorCauses(second);
     expect(output).toContain("cycle detected");
   });
+
+  it("falls back when stack is missing", () => {
+    const error = new AutomationError("Root");
+    Object.defineProperty(error, "stack", {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: undefined,
+    });
+
+    const output = formatErrorCauses(error, { includeStack: true });
+    expect(output).toContain("<no stack trace available>");
+  });
+
+  it("describes strings and unserialisable values", () => {
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+
+    const stringCause = new AutomationError("Root", { cause: "stringy" });
+    const circularCause = new AutomationError("Root", { cause: circular });
+
+    const stringOutput = formatErrorCauses(stringCause, { includeStack: false });
+    const circularOutput = formatErrorCauses(circularCause, { includeStack: false });
+
+    expect(stringOutput).toContain("stringy");
+    expect(circularOutput).toContain("[object Object]");
+  });
 });
 
 describe("formatErrorTree", () => {
@@ -140,5 +167,23 @@ describe("formatErrorTree", () => {
     });
 
     expect(logs).toEqual(["• AutomationError: Root"]);
+  });
+
+  it("renders multiline content with stack traces", () => {
+    const error = new AutomationError("Root");
+    Object.defineProperty(error, "stack", {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: "Error: Root\nfirst line\nsecond line",
+    });
+
+    const output = formatErrorTree(error, { includeStack: true });
+    const lines = output.split("\n");
+
+    expect(lines.length).toBeGreaterThan(2);
+    expect(lines[0]).toBe("• AutomationError: Root");
+    expect(lines[1]).toBe("  Stacktrace:");
+    expect(lines[2]).toBe("  Error: Root");
   });
 });

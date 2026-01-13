@@ -131,3 +131,68 @@ jobs:
           else
             echo "No integrate script defined; skipping"
           fi
+
+  examples-integration:
+    name: Examples integration (API-backed)
+    needs:
+      - prepare
+      - tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.prepare.outputs.pnpm-version }}
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.prepare.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace (incl. CLI & API)
+        run: pnpm build
+
+      - name: Start Brew Buddy API
+        run: |
+          PORT=4000 HOST=127.0.0.1 pnpm --filter @autometa/examples-api run dev > api.log 2>&1 &
+          echo $! > api.pid
+
+      - name: Wait for API readiness
+        run: pnpm dlx wait-on@7.2.0 http://127.0.0.1:4000/health --timeout 20000
+
+      - name: Run Vitest functions features
+        env:
+          BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
+        run: pnpm --filter @autometa/examples-vitest-functions exec autometa run
+
+      - name: Run Vitest decorators features
+        env:
+          BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
+        run: pnpm --filter @autometa/examples-vitest-decorators run features
+
+      - name: Run Jest functions features
+        env:
+          BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
+        run: pnpm --filter @autometa/examples-jest-functions run features
+
+      - name: Stop Brew Buddy API
+        if: always()
+        run: |
+          if [ -f api.pid ]; then
+            kill $(cat api.pid) || true
+          fi
+          if [ -f api.log ]; then
+            tail -n 200 api.log || true
+          fi
