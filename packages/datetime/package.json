@@ -1,6 +1,6 @@
 {
   "name": "@autometa/datetime",
-  "version": "0.1.16",
+  "version": "1.0.0-rc.0",
   "description": "Date and time utilities for Autometa tests",
   "type": "module",
   "main": "dist/index.cjs",

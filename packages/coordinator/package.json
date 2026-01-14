@@ -1,6 +1,6 @@
 {
   "name": "@autometa/coordinator",
-  "version": "0.3.33",
+  "version": "1.0.0-rc.0",
   "description": "",
   "type": "module",
   "main": "dist/index.cjs",
