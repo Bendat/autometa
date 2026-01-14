@@ -74,9 +74,6 @@
       "path": "packages/datetime/tsconfig.types.json"
     },
     {
-      "path": "packages/cucumber-expressions/tsconfig.types.json"
-    },
-    {
       "path": "packages/core/tsconfig.types.json"
     },
     {
@@ -84,6 +81,9 @@
     },
     {
       "path": "packages/config/tsconfig.types.json"
+    },
+    {
+      "path": "packages/cucumber-expressions/tsconfig.types.json"
     },
     {
       "path": "packages/cli/tsconfig.types.json"

@@ -317,6 +317,22 @@ describe("createRunnerBuilder", () => {
 		expect(a2.steps().getPlan().stepsById.size).toBe(1);
 	});
 
+	it("preserves assertion plugins after derived world changes", () => {
+		type World = BaseWorld & { extra?: string };
+		const plugins = {
+			demo: () => (world: World) => ({ value: world.value }),
+		};
+
+		const root = createRunnerBuilder<World>()
+			.derivable()
+			.assertionPlugins(plugins);
+		const derived = root.group("sales").extendWorld({ extra: "ok" });
+
+		const steps = derived.steps();
+		const facade = steps.ensure({ value: 3, extra: "ok" });
+		expect((facade as unknown as { demo: { value: number } }).demo.value).toBe(3);
+	});
+
 	it("extendWorld composes base + extension (extension wins)", async () => {
 		interface Base extends BaseWorld {
 			readonly baseOnly: string;

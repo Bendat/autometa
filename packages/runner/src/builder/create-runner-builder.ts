@@ -356,6 +356,7 @@ interface BuilderState {
 	worldFactory?: WorldFactory<unknown>;
 	appFactory?: AppFactory<unknown, unknown>;
 	ensureFactory?: RunnerEnsureFactory<unknown, Record<string, unknown>>;
+	assertionPlugins?: Record<string, AssertionPlugin<unknown, unknown>>;
 	stepsEnvironmentMeta?: StepsEnvironmentMeta;
 	stepsCache?: StepsCache;
 	decoratorsCache?: DecoratorsCache;
@@ -484,7 +485,7 @@ class RunnerBuilderImpl<
 		}
 
 		this.state.worldFactory = merged as unknown as WorldFactory<unknown>;
-		delete this.state.ensureFactory;
+		clearEnsureFactory(this.state);
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<
 			World & ExtensionWorld,
@@ -540,7 +541,7 @@ class RunnerBuilderImpl<
 		};
 
 		this.state.appFactory = chained;
-		delete this.state.ensureFactory;
+		clearEnsureFactory(this.state);
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<
 			WorldWithApp<World, App>,
@@ -598,7 +599,7 @@ class RunnerBuilderImpl<
 		} else {
 			this.state.worldFactory = async (_context) => ({} as NextWorld);
 		}
-		delete this.state.ensureFactory;
+		clearEnsureFactory(this.state);
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<
 			NextWorld,
@@ -620,7 +621,7 @@ class RunnerBuilderImpl<
 	> {
 		this.state.appFactory =
 			normalizeAppFactory<World, App>(app) as AppFactory<unknown, unknown>;
-		delete this.state.ensureFactory;
+		clearEnsureFactory(this.state);
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<
 			WorldWithApp<World, App>,
@@ -642,6 +643,7 @@ class RunnerBuilderImpl<
 			unknown,
 			Record<string, unknown>
 		>;
+		this.state.assertionPlugins = undefined;
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<World, ExpressionTypes, NextFacets>(
 			this.state
@@ -657,7 +659,7 @@ class RunnerBuilderImpl<
 		ExpressionTypes,
 		EnsurePluginFacets<World, NextPlugins>
 	> {
-		return this.assertions<EnsurePluginFacets<World, NextPlugins>>(
+		const builder = this.assertions<EnsurePluginFacets<World, NextPlugins>>(
 			(ensureInvoke) => {
 				const factory = createEnsureFactory<World, NextPlugins>(
 					ensureInvoke,
@@ -666,6 +668,11 @@ class RunnerBuilderImpl<
 				return createImplicitEnsureProxy(factory);
 			}
 		);
+		this.state.assertionPlugins = plugins as unknown as Record<
+			string,
+			AssertionPlugin<unknown, unknown>
+		>;
+		return builder;
 	}
 
 	parameterTypes(
@@ -735,6 +742,9 @@ function cloneBuilderState(source: BuilderState): BuilderState {
 	if (source.ensureFactory) {
 		next.ensureFactory = source.ensureFactory;
 	}
+	if (source.assertionPlugins) {
+		next.assertionPlugins = source.assertionPlugins;
+	}
 	// caches intentionally dropped
 	// derived builders are intentionally not shared across forks
 	return next;
@@ -771,7 +781,7 @@ function applyOptions<World>(
 		} else {
 			delete state.worldFactory;
 		}
-		delete state.ensureFactory;
+		clearEnsureFactory(state);
 	}
 	invalidateCaches(state);
 }
@@ -887,6 +897,10 @@ function invalidateCaches(state: BuilderState): void {
 	delete state.stepsCache;
 	delete state.decoratorsCache;
 	delete state.bindingsTSCache;
+}
+
+function clearEnsureFactory(state: BuilderState): void {
+	delete state.ensureFactory;
 }
 
 function ensureSteps<
@@ -1119,6 +1133,22 @@ function resolveEnsureFactory<
 >(state: BuilderState): RunnerEnsureFactory<World, Facets> {
 	if (state.ensureFactory) {
 		return state.ensureFactory as RunnerEnsureFactory<World, Facets>;
+	}
+	if (state.assertionPlugins) {
+		const plugins = state.assertionPlugins as Record<
+			string,
+			AssertionPlugin<World, unknown>
+		>;
+		const factory = createEnsureFactory(
+			baseEnsure,
+			plugins
+		) as EnsureFactory<World, Record<string, unknown>>;
+		const proxy = createImplicitEnsureProxy(factory);
+		state.ensureFactory = proxy as RunnerEnsureFactory<
+			unknown,
+			Record<string, unknown>
+		>;
+		return proxy as RunnerEnsureFactory<World, Facets>;
 	}
 	const factory = createDefaultEnsureFactory<World>();
 	const proxy = createImplicitEnsureProxy(factory);

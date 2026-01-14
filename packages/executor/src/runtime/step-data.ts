@@ -355,17 +355,17 @@ export function getTable(
   shape: "matrix",
   options?: TableOptionsProvider<MatrixTableOptions>
 ): MatrixTable | undefined;
-export function getTable<const TKeys extends TableKeysMap>(
+export function getTable<TKeys extends TableKeysMap>(
   world: unknown,
   shape: "horizontal",
   options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
 ): HorizontalTable | undefined;
-export function getTable<const TKeys extends TableKeysMap>(
+export function getTable<TKeys extends TableKeysMap>(
   world: unknown,
   shape: "vertical",
   options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
 ): VerticalTable | undefined;
-export function getTable<const TKeys extends MatrixKeys>(
+export function getTable<TKeys extends MatrixKeys>(
   world: unknown,
   shape: "matrix",
   options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
@@ -528,7 +528,7 @@ export interface StepRuntimeHelpers {
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions>
   ): HorizontalTable | undefined;
-  getTable<const TKeys extends TableKeysMap>(
+  getTable<TKeys extends TableKeysMap>(
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
@@ -536,7 +536,7 @@ export interface StepRuntimeHelpers {
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions>
   ): VerticalTable | undefined;
-  getTable<const TKeys extends TableKeysMap>(
+  getTable<TKeys extends TableKeysMap>(
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
@@ -544,7 +544,7 @@ export interface StepRuntimeHelpers {
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions>
   ): MatrixTable | undefined;
-  getTable<const TKeys extends MatrixKeys>(
+  getTable<TKeys extends MatrixKeys>(
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
@@ -564,7 +564,7 @@ export interface StepRuntimeHelpers {
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions>
   ): HorizontalTable | undefined;
-  consumeTable<const TKeys extends TableKeysMap>(
+  consumeTable<TKeys extends TableKeysMap>(
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
@@ -572,7 +572,7 @@ export interface StepRuntimeHelpers {
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions>
   ): VerticalTable | undefined;
-  consumeTable<const TKeys extends TableKeysMap>(
+  consumeTable<TKeys extends TableKeysMap>(
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
@@ -580,7 +580,7 @@ export interface StepRuntimeHelpers {
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions>
   ): MatrixTable | undefined;
-  consumeTable<const TKeys extends MatrixKeys>(
+  consumeTable<TKeys extends MatrixKeys>(
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
@@ -600,7 +600,7 @@ export interface StepRuntimeHelpers {
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions>
   ): HorizontalTable;
-  requireTable<const TKeys extends TableKeysMap>(
+  requireTable<TKeys extends TableKeysMap>(
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable;
@@ -608,7 +608,7 @@ export interface StepRuntimeHelpers {
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions>
   ): VerticalTable;
-  requireTable<const TKeys extends TableKeysMap>(
+  requireTable<TKeys extends TableKeysMap>(
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable;
@@ -616,7 +616,7 @@ export interface StepRuntimeHelpers {
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions>
   ): MatrixTable;
-  requireTable<const TKeys extends MatrixKeys>(
+  requireTable<TKeys extends MatrixKeys>(
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable;
@@ -647,7 +647,7 @@ function bindGetTable(world: unknown) {
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions>
   ): HorizontalTable | undefined;
-  function getTable<const TKeys extends TableKeysMap>(
+  function getTable<TKeys extends TableKeysMap>(
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
@@ -655,7 +655,7 @@ function bindGetTable(world: unknown) {
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions>
   ): VerticalTable | undefined;
-  function getTable<const TKeys extends TableKeysMap>(
+  function getTable<TKeys extends TableKeysMap>(
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
@@ -663,7 +663,7 @@ function bindGetTable(world: unknown) {
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions>
   ): MatrixTable | undefined;
-  function getTable<const TKeys extends MatrixKeys>(
+  function getTable<TKeys extends MatrixKeys>(
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
@@ -743,7 +743,7 @@ function bindConsumeTable(world: unknown) {
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions>
   ): HorizontalTable | undefined;
-  function consume<const TKeys extends TableKeysMap>(
+  function consume<TKeys extends TableKeysMap>(
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
@@ -751,7 +751,7 @@ function bindConsumeTable(world: unknown) {
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions>
   ): VerticalTable | undefined;
-  function consume<const TKeys extends TableKeysMap>(
+  function consume<TKeys extends TableKeysMap>(
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
@@ -759,7 +759,7 @@ function bindConsumeTable(world: unknown) {
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions>
   ): MatrixTable | undefined;
-  function consume<const TKeys extends MatrixKeys>(
+  function consume<TKeys extends MatrixKeys>(
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
@@ -796,7 +796,7 @@ function bindRequireTable(world: unknown) {
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions>
   ): HorizontalTable;
-  function require<const TKeys extends TableKeysMap>(
+  function require<TKeys extends TableKeysMap>(
     shape: "horizontal",
     options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable;
@@ -804,7 +804,7 @@ function bindRequireTable(world: unknown) {
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions>
   ): VerticalTable;
-  function require<const TKeys extends TableKeysMap>(
+  function require<TKeys extends TableKeysMap>(
     shape: "vertical",
     options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable;
@@ -812,7 +812,7 @@ function bindRequireTable(world: unknown) {
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions>
   ): MatrixTable;
-  function require<const TKeys extends MatrixKeys>(
+  function require<TKeys extends MatrixKeys>(
     shape: "matrix",
     options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable;
