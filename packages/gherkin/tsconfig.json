@@ -1,4 +1,4 @@
 {
-  "extends": "tsconfig/base.json",
-  "files": ["src/index.ts", "src/steps/datatables/table-types/vertical-table.ts", "src/steps/datatables/table-types/matrix-table.ts", "src/steps/datatables/compiled-data-table.ts", "src/steps/datatables/table-types/never-table.ts"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.dev.json"
 }

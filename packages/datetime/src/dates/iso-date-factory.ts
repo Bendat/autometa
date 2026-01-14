@@ -1,97 +1,69 @@
-import { TimeUnit } from "@autometa/phrases";
-import { midnight } from "./midnight";
-import { DateFactory } from "./date-factory";
+import type { DateFactory, DateShortcut } from "./date-factory.js";
+import type { StandardTimeUnit } from "./time-units.js";
+
+export interface IsoDateFactoryOptions {
+  serializer?: (date: Date) => string;
+}
 
 export class IsoDateFactory {
-  constructor(readonly dateFactory: DateFactory) {}
-  phraseMap = new Map<string, string>([
-    ["beforeYesterday", this.make(-2, "days")],
-    ["yesterday", this.make(-1, "days")],
-    ["today", this.make(0, "days")],
-    ["tomorrow", this.make(1, "days")],
-    ["afterTomorrow", this.make(2, "days")],
-    ["nextWeek", this.make(7, "days")],
-    ["lastWeek", this.make(-7, "days")],
-    ["nextFortnight", this.make(14, "days")],
-    ["lastFortnight", this.make(-14, "days")],
-    ["midnight", midnight().toISOString()],
-  ]);
-  make(daysOffset: number, timeunit: TimeUnit) {
-    return this.dateFactory.make(daysOffset, timeunit).toISOString();
+  private readonly serialise: (date: Date) => string;
+
+  constructor(
+    private readonly dateFactory: DateFactory,
+    options: IsoDateFactoryOptions = {}
+  ) {
+    this.serialise = options.serializer ?? ((date) => date.toISOString());
   }
 
-  /**
-   * Attempts to parse a phrase into a date.
-   * @param phrase
-   * @returns
-   */
-  fromPhrase(phrase: string) {
-    return this.dateFactory.fromPhrase(phrase)?.toISOString();
+  make(offset: number, unit: StandardTimeUnit | string): string {
+    return this.serialise(this.dateFactory.make(offset, unit));
   }
 
-  /**
-   * Returns the date and time of the day before yesterday
-   */
-  get beforeYesterday() {
-    return this.phraseMap.get("beforeYesterday");
+  fromPhrase(phrase: unknown): string {
+    return this.serialise(this.dateFactory.fromPhrase(phrase));
   }
 
-  /**
-   * Returns the date and time of yesterday
-   */
-  get yesterday() {
-    return this.phraseMap.get("yesterday");
+  get beforeYesterday(): string {
+    return this.fromShortcut("beforeYesterday");
   }
 
-  /**
-   * Returns the date and time of today
-   */
-  get today() {
-    return this.phraseMap.get("today");
+  get yesterday(): string {
+    return this.fromShortcut("yesterday");
   }
 
-  /**
-   * Returns the date and time of tomorrow
-   */
-  get tomorrow() {
-    return this.phraseMap.get("tomorrow");
+  get today(): string {
+    return this.fromShortcut("today");
   }
 
-  /**
-   * Returns the date and time of the day after tomorrow
-   */
-  get afterTomorrow() {
-    return this.phraseMap.get("afterTomorrow");
+  get tomorrow(): string {
+    return this.fromShortcut("tomorrow");
   }
 
-  /**
-   * Returns the date and time of midnight today
-   */
-  get midnight() {
-    return this.phraseMap.get("midnight");
+  get afterTomorrow(): string {
+    return this.fromShortcut("afterTomorrow");
   }
 
-  /**
-   * Returns the date and time of today 1 week ago
-   */
-  get lastWeek() {
-    return this.phraseMap.get("lastWeek");
+  get midnight(): string {
+    return this.fromShortcut("midnight");
   }
 
-  /**
-   * Returns the date and time of today 1 week from now
-   */
-  get nextWeek() {
-    return this.phraseMap.get("nextWeek");
-  }
-  get lastFortnight() {
-    return this.phraseMap.get("lastFortnight");
+  get lastWeek(): string {
+    return this.fromShortcut("lastWeek");
   }
 
-  /**
-   * Returns the date and time of today 1 fortnight from now
-   */
-  get nextFortnight() {
-    return this.phraseMap.get("nextFortnight");
+  get nextWeek(): string {
+    return this.fromShortcut("nextWeek");
+  }
+
+  get lastFortnight(): string {
+    return this.fromShortcut("lastFortnight");
+  }
+
+  get nextFortnight(): string {
+    return this.fromShortcut("nextFortnight");
+  }
+
+  private fromShortcut(shortcut: DateShortcut): string {
+    return this.serialise(this.dateFactory.find(shortcut));
   }
 }

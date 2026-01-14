@@ -1,0 +1,11 @@
+# Autometa Repository Guidance
+
+- Prefer TypeScript for runtime code. Keep files in `src/` and export through `src/index.ts`.
+- When generating build configs, extend `configuration/tsconfig/package.config.json` and enable `compilerOptions.composite` for any project referenced from the root solution.
+- Use the shared `tsup-config` helper. Override only what the package truly needs and keep runtime dependencies marked as externals rather than bundling node_modules.
+- Run checks with `pnpm --filter <package> lint`, `test`, and `type-check` before publishing. Use `pnpm tsc --build` for solution-wide validation.
+- Packages that need declaration output (e.g. `@autometa/errors`, `@autometa/types`, `@autometa/overloaded`, `@autometa/asserters`, `@autometa/gherkin`, `@autometa/dto-builder`, `@autometa/injection`) run `tsup` first and then `tsc --build --force tsconfig.types.json` to emit declarations into `dist/`.
+- Each package owns a `tsconfig.types.json` that extends the runtime config, sets `rootDir: "./src"`, and maps `@autometa/*` to sibling `dist/index.d.ts` outputs so cross-package imports resolve without pulling in source files.
+- Run checks with `pnpm --filter <package> lint`, `test`, and `type-check` before publishing. Use `pnpm tsc --build` for solution-wide validation.
+- Package docs live under each package `README.md`; update them alongside API changes. Keep change log entries brief but informative.
+- Avoid introducing non-ASCII characters unless a file already uses them or a test case requires it.

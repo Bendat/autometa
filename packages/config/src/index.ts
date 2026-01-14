@@ -1,4 +1,40 @@
-export * from "./config-object";
-export * from "./environment-reader";
-export * from "./types";
-export * from "./define-config";
+export { Config, defineConfig } from "./config";
+export { EnvironmentSelector } from "./environment-selector";
+export {
+  ExecutorConfigSchema,
+  EventsSchema,
+  PathSchema,
+  PartialRootSchema,
+  RootSchema,
+  RunnerSchema,
+  BuilderConfigSchema,
+  ModuleFormatSchema,
+  ShimSchema,
+  TagFilterSchema,
+  TestSchema,
+  TimeUnitSchema,
+  TimeoutSchema,
+  PartialExecutorConfigSchema,
+  ReporterSchema,
+} from "./schema";
+export type {
+  ConfigDefinition,
+  ConfigDefinitionInput,
+  ExecutorConfig,
+  PartialExecutorConfig,
+  BuilderConfig,
+  BuilderHooks,
+  PartialRootsConfig,
+  ResolveOptions,
+  ResolvedConfig,
+  RootsConfig,
+  ShimConfig,
+  TestConfig,
+  TimeoutSetting,
+  ModuleFormat,
+  BuildHook,
+  BuildHookContext,
+  SourceMapSetting,
+  LoggingConfig,
+  ReporterConfig,
+} from "./types";

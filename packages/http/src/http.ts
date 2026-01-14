@@ -1,621 +1,458 @@
-import { Fixture, INJECTION_SCOPE } from "@autometa/injection";
-import { AxiosClient } from "./axios-client";
-import { HTTPClient } from "./http-client";
-import { defaultClientFactory } from "./default-client-factory";
+import { AutomationError } from "@autometa/errors";
+import { createFetchTransport } from "./fetch-transport";
 import { HTTPRequest, HTTPRequestBuilder } from "./http-request";
-import { HTTPResponse } from "./http-response";
+import type { HeaderPrimitive, ParamValue } from "./http-request";
+import { HTTPResponse, HTTPResponseBuilder } from "./http-response";
 import { MetaConfig, MetaConfigBuilder } from "./request-meta.config";
-import {
+import type {
+  HTTPErrorContext,
+  HTTPPlugin,
+  HTTPRequestContext,
+  HTTPResponseContext,
+} from "./plugins";
+import { transformResponse } from "./transform-response";
+import type { HTTPTransport } from "./transport";
+import type {
   HTTPAdditionalOptions,
+  HTTPMethod,
+  HTTPRetryOptions,
+  QueryParamSerializationOptions,
   RequestHook,
   ResponseHook,
   SchemaParser,
   StatusCode,
 } from "./types";
-import { transformResponse } from "./transform-response";
-import { AutomationError } from "@autometa/errors";
+
+export class HTTPError extends AutomationError {
+  readonly request: HTTPRequest<unknown>;
+  readonly response: HTTPResponse<unknown> | undefined;
+  readonly originalError: unknown;
+
+  constructor(
+    message: string,
+    request: HTTPRequest<unknown>,
+    response?: HTTPResponse<unknown>,
+    cause?: unknown
+  ) {
+    super(message, {
+      cause: cause instanceof Error ? cause : undefined,
+    });
+    this.request = request;
+    this.response = response;
+    this.originalError = cause;
+    this.name = this.constructor.name;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class HTTPTransportError extends HTTPError {
+  constructor(request: HTTPRequest<unknown>, cause: unknown) {
+    super("Failed to execute HTTP request", request, undefined, cause);
+    this.name = "HTTPTransportError";
+  }
+}
+
+export class HTTPSchemaValidationError extends HTTPError {
+  constructor(
+    request: HTTPRequest<unknown>,
+    response: HTTPResponse<unknown>,
+    cause: unknown
+  ) {
+    super("Response schema validation failed", request, response, cause);
+    this.name = "HTTPSchemaValidationError";
+  }
+}
+
+export class HTTPServerError extends HTTPError {
+  constructor(request: HTTPRequest<unknown>, response: HTTPResponse<unknown>) {
+    super(`Server responded with status ${response.status}`, request, response);
+    this.name = "HTTPServerError";
+  }
+}
 
 /**
- * The HTTP fixture allows requests to be built and sent to a server. In general,
- * there are 2 modes of operation:
- *
- * * Shared Chain: The shared chain is used to configure the client for all requests, such as
- * routes this instance will always be used. When a shared chain method is called, it returns
- * the same instance of HTTP which can be further chained to configure the client.
- * * Request Chain: The request chain is used to configure a single request, inheriting values
- * set by the shared chain. When called, a new HTTP client instance is created and inherits the values
- * set by it's parent.
- *
- * The 2 modes are intended to simplify configuring an object through an inheritance chain. For example,
- * assume we have an API with 2 controller routes, `/product` and `/seller`. We can set up a Base Client
- * which consumes the HTTP fixture and configures it with the base url of our API.
- *
- * Inheritors can further configure their HTTP instance's routes.
- *
- * ```ts
- * \@Constructor(HTTP)
- * export class BaseClient {
- *  constructor(protected readonly http: HTTP) {
- *    this.http.url("https://api.example.com");
- *   }
- * }
- *
- * export class ProductClient extends BaseClient {
- *  constructor(http: HTTP) {
- *   super(http);
- *   this.http.sharedRoute("product");
- *  }
- *  getProduct(id: number) {
- *   return this.http.route(id).get();
- * }
- *
- * export class SellerClient extends BaseClient {
- *  constructor(http: HTTP) {
- *   super(http);
- *   this.http.sharedRoute("seller");
- *  }
- *
- *  getSeller(id: number) {
- *    return this.http.route(id).get();
- *  }
- * }
- * ```
- *
- * 'Schemas' can also be configured. A Schema is a function or an object with a `parse` method, which
- * takes a response data payload and returns a validated object. Schemas are mapped to
- * HTTP Status Codes, and if configured to be required the request will fail if no schema is found
- * matching that code.
- *
- * Defining a schema function:
- *
- * ```
- * // user.schema.ts
- * export function UserSchema(data: unknown) {
- *   if(typeof data !== "object") {
- *    throw new Error("Expected an object");
- *   }
- *
- *   if(typeof data.name !== "string") {
- *    throw new Error("Expected a string");
- *   }
- *
- *  return data as { name: string };
- * }
- *
- * // user.controller.ts
- * \@Fixture(INJECTION_SCOPE.TRANSIENT)
- * export class UserController extends BaseController {
- *   constructor(private readonly http: HTTP) {
- *      super(http);
- *      this.http
- *          .sharedRoute("user")
- *          .sharedSchema(ErrorSchema, { from: 400, to: 499 });
- *   }
- *
- *   getUser(id: number) {
- *    return this.http.route(id).schema(UserSchema, 200).get();
- *    // or
- *    return this.http
- *               .route(id)
- *               .schema(UserSchema, { from: 200, to: 299 })
- *               .get();
- *    // or
- *    return this.http
- *               .route(id)
- *               .schema(UserSchema, 200, 201, 202)
- *               .get();
- *   }
- * }
- * ```
- *
- * Validation libraries which use a `.parse` or `.validation`,  method, such as Zod or MyZod, can also be used as schemas:
- *
- * ```ts
- * // user.schema.ts
- * import { z } from "myzod";
- *
- * export const UserSchema = z.object({
- *  name: z.string()
- * });
- *
- * // user.controller.ts
- * \@Fixture(INJECTION_SCOPE.TRANSIENT)
- * export class UserController extends BaseController {
- *  constructor(private readonly http: HTTP) {
- *   super(http);
- *   this.http
- *       .sharedRoute("user")
- *       .sharedSchema(ErrorSchema, { from: 400, to: 499 })
- *  }
- *
- *  getUser(id: number) {
- *   return this.http.route(id).schema(UserSchema, 200).get();
- *  }
- * }
- * ```
+ * Optional configuration applied during {@link HTTP.create}.
  */
-@Fixture(INJECTION_SCOPE.TRANSIENT)
-export class HTTP {
-  #request: HTTPRequestBuilder<HTTPRequest<unknown>>;
-  #metaConfig: MetaConfigBuilder;
-  constructor(
-    private readonly client: HTTPClient = defaultClientFactory(),
-    builder: HTTPRequestBuilder<
-      HTTPRequest<unknown>
-    > = new HTTPRequestBuilder(),
-    metaConfig: MetaConfigBuilder = new MetaConfigBuilder()
-  ) {
-    this.#request = builder;
-    this.#metaConfig = metaConfig.derive();
-  }
+export interface HTTPCreateOptions {
+  /**
+   * Custom transport implementation overriding the default Fetch based transport.
+   */
+  transport?: HTTPTransport;
+  /**
+   * Plugins that will be registered on every derived client instance.
+   */
+  plugins?: HTTPPlugin[];
+}
 
-  static create(
-    client: HTTPClient = new AxiosClient(),
-    builder: HTTPRequestBuilder<
-      HTTPRequest<unknown>
-    > = new HTTPRequestBuilder(),
-    metaConfig: MetaConfigBuilder = new MetaConfigBuilder()
+/**
+ * Fluent HTTP client with pluggable transport, schema validation and hook support.
+ */
+export class HTTP {
+  private static sharedPlugins: HTTPPlugin[] = [];
+  private transport: HTTPTransport;
+  private builder: HTTPRequestBuilder<HTTPRequest<unknown>>;
+  private meta: MetaConfigBuilder;
+  private sharedPlugins: HTTPPlugin[];
+  private scopedPlugins: HTTPPlugin[];
+
+  private constructor(
+    transport: HTTPTransport,
+    builder: HTTPRequestBuilder<HTTPRequest<unknown>>,
+    meta: MetaConfigBuilder,
+    sharedPlugins: HTTPPlugin[],
+    scopedPlugins: HTTPPlugin[]
   ) {
-    const derived = new HTTP(client, builder, metaConfig);
-    return derived;
+    this.transport = transport;
+    this.builder = builder;
+    this.meta = meta;
+    this.sharedPlugins = sharedPlugins;
+    this.scopedPlugins = scopedPlugins;
   }
 
   /**
-   * Sets the base url of the request for this client, such as
-   * `https://api.example.com`, and could include always-used routes like
-   * the api version, such as `/v1` or `/api/v1` at the end.
-   *
-   * ```ts
-   *
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export abstract class BaseClient {
-   *   constructor(protected readonly http: HTTP) {
-   *      this.http.url("https://api.example.com");
-   *   }
-   * }
-   * ```
-   * @param url
-   * @returns
+   * Factory helper that prepares an {@link HTTP} instance with shared state.
+   */
+  static create(options: HTTPCreateOptions = {}) {
+    const transport = options.transport ?? createFetchTransport();
+    const plugins = [...HTTP.sharedPlugins, ...(options.plugins ?? [])];
+    return new HTTP(
+      transport,
+      HTTPRequestBuilder.create(),
+      new MetaConfigBuilder(),
+      plugins,
+      []
+    );
+  }
+
+  /**
+   * Registers a plugin applied to every client created via {@link HTTP.create}.
+   */
+  static registerSharedPlugin(plugin: HTTPPlugin): void {
+    this.sharedPlugins = [...this.sharedPlugins, plugin];
+  }
+
+  /**
+   * Replaces the shared plugin registry used by {@link HTTP.create}.
+   */
+  static setSharedPlugins(plugins: readonly HTTPPlugin[]): void {
+    this.sharedPlugins = [...plugins];
+  }
+
+  /**
+   * Returns a copy of the currently registered shared plugins.
+   */
+  static getSharedPlugins(): readonly HTTPPlugin[] {
+    return [...this.sharedPlugins];
+  }
+
+  /**
+   * Registers a plugin that runs for every request executed by this instance and its clones.
+   */
+  use(plugin: HTTPPlugin) {
+    this.sharedPlugins.push(plugin);
+    return this;
+  }
+
+  /**
+   * Returns a scoped clone with an additional plugin applied only to that clone.
+   */
+  plugin(plugin: HTTPPlugin) {
+    return this.derive(({ plugins }) => {
+      plugins.push(plugin);
+    });
+  }
+
+  /**
+   * Mutates the current instance to use a different transport implementation.
+   */
+  useTransport(transport: HTTPTransport) {
+    this.transport = transport;
+    return this;
+  }
+
+  /**
+   * Produces a new client with an alternate transport without changing the original instance.
+   */
+  withTransport(transport: HTTPTransport) {
+    return this.derive(undefined, { transport });
+  }
+
+  /**
+   * Sets the base URL shared by subsequent requests.
    */
   url(url: string) {
-    this.#request.url(url);
-    return this;
-  }
-
-  sharedOptions(options: HTTPAdditionalOptions<unknown>) {
-    this.#metaConfig.options(options);
+    this.builder.url(url);
     return this;
   }
 
   /**
-   * If set to true, all requests derived from this client will require a schema be defined
-   * matching any response status code. If set to false, a schema will still be used for validation
-   * if defined, or the unadulterated original body will be returned if no schema matches.
-   *
-   * @param required Whether or not a schema is required for all responses.
-   * @returns This instance of HTTP.
+   * Applies additional transport specific options to every request executed by this instance.
+   */
+  sharedOptions(options: HTTPAdditionalOptions<unknown>) {
+    this.meta.options(options);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with extra transport options applied only to that clone.
+   */
+  withOptions(options: HTTPAdditionalOptions<unknown>) {
+    return this.derive(({ meta }) => {
+      meta.options(options);
+    });
+  }
+
+  /**
+   * Registers an {@link AbortSignal} that will be forwarded to every request issued by this instance.
+   */
+  sharedAbortSignal(signal: AbortSignal | null) {
+    this.meta.options({ signal: signal ?? undefined });
+    return this;
+  }
+
+  /**
+   * Returns a derived client configured with the provided {@link AbortSignal}.
+   */
+  abortSignal(signal: AbortSignal | null) {
+    return this.derive(({ meta }) => {
+      meta.options({ signal: signal ?? undefined });
+    });
+  }
+
+  /**
+   * Configures automatic retries for this instance and all derived clients.
+   */
+  sharedRetry(options: HTTPRetryOptions | null) {
+    this.meta.retry(options);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with custom retry behaviour.
+   */
+  retry(options: HTTPRetryOptions | null) {
+    return this.derive(({ meta }) => {
+      meta.retry(options);
+    });
+  }
+
+  /**
+   * Forces subsequent requests to return raw response streams without parsing.
+   */
+  sharedStreamResponse(enabled: boolean) {
+    this.meta.streamResponse(enabled);
+    return this;
+  }
+
+  /**
+   * Returns a derived client configured for streaming responses.
+   */
+  streamResponse(enabled: boolean) {
+    return this.derive(({ meta }) => {
+      meta.streamResponse(enabled);
+    });
+  }
+
+  /**
+   * Convenience helper that returns a clone configured for streaming responses.
+   */
+  asStream() {
+    return this.streamResponse(true);
+  }
+
+  /**
+   * Executes a GET request while preserving the raw response stream.
+   */
+  stream<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.streamResponse(true).get<TResponse>(options);
+  }
+
+  /**
+   * Sets a shared timeout (in milliseconds) applied to every request from this instance.
+   */
+  sharedTimeout(duration: number | null) {
+    this.meta.timeout(duration);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with a per-request timeout in milliseconds.
+   */
+  timeout(duration: number | null) {
+    return this.derive(({ meta }) => {
+      meta.timeout(duration);
+    });
+  }
+
+  /**
+   * Configures whether schema validation is required before resolving a response.
    */
   requireSchema(required: boolean) {
-    this.#metaConfig.requireSchema(required);
+    this.meta.requireSchema(required);
     return this;
   }
 
   /**
-   * If set to true, all requests derived from this client will allow plain text
-   * responses. If set to false, plain text responses will throw an serialization error.
-   *
-   * Useful when an endpoint returns a HTML or plain text response. If the plain text
-   * is the value of `true` or `false`, or a number, it will be parsed into the
-   * appropriate type.
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP.
-   *
-   * @param allow Whether or not plain text responses are allowed.
-   * @returns This instance of HTTP.
-   */
-  sharedAllowPlainText(allow: boolean) {
-    this.#metaConfig.allowPlainText(allow);
-    return this;
-  }
-
-  /**
-   * If set to true, all requests derived from this client will allow plain text
-   * responses. If set to false, plain text responses will throw an serialization error.
-   *
-   * Useful when an endpoint returns a HTML or plain text response. If the plain text
-   * is the value of `true` or `false`, or a number, it will be parsed into the
-   * appropriate type.
-   *
-   * This method is a request chain method, and will return a new instance of HTTP.
-   *
-   * @param allow Whether or not plain text responses are allowed.
-   * @returns A new child instance of HTTP derived from this one.
+   * Returns a clone with overridden plain text handling mode.
    */
   allowPlainText(allow: boolean) {
-    return HTTP.create(
-      this.client,
-      this.#request.derive(),
-      this.#metaConfig.derive().allowPlainText(allow)
-    );
+    return this.derive(({ meta }) => {
+      meta.allowPlainText(allow);
+    });
   }
 
   /**
-   * Attaches a route to the request, such as `/product` or `/user`. Subsequent calls
-   * to this method will append the route to the existing route, such as `/product/1`.
-   *
-   * Numbers will be converted to strings automatically. Routes can be defined one
-   * at a time or as a spread argument.
-   *
-   * ```ts
-   * constructor(http: HTTP) {
-   *   super(http);
-   *   this.http.sharedRoute("user", id).get();
-   * }
-   *
-   * // or
-   *
-   * constructor(http: HTTP) {
-   *   super(http);
-   *   this.http
-   *       .sharedRoute("user")
-   *       .sharedRoute(id)
-   *       .get();
-   * }
-   * ```
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the routes defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param route A route or spread list of routes to append to the request.
-   * @returns This instance of HTTP.
+   * Sets plain text handling for the current instance and all future requests.
    */
-  sharedRoute(...route: (string | number | boolean)[]) {
-    this.#request.route(...route.map((r) => r.toString()));
+  sharedAllowPlainText(allow: boolean) {
+    this.meta.allowPlainText(allow);
     return this;
   }
 
   /**
-   * Attaches a route to the request, such as `/product` or `/user`. Subsequent calls
-   * to this method will append the route to the existing route, such as `/product/1`.
-   *
-   * Numbers will be converted to strings automatically. Routes can be defined one
-   * at a time or as a spread argument.
-   *
-   * ```ts
-   * getUser(id: number) {
-   *   return this.http.route("user", id).get();
-   * }
-   *
-   * // or
-   *
-   * getUser(id: number) {
-   *  return this.http
-   *            .route("user")
-   *            .route(id)
-   *            .get();
-   * }
-   * ```
-   *
-   * This method is a request chain method, and will return a new instance of HTTP, inheriting
-   * any routes previously defined and appending the new route. Useful to configure
-   * in class methods as part of finalizing a request.
-   *
-   * @param route A route or spread list of routes to append to the request.
-   * @returns A new child instance of HTTP derived from this one.
+   * Adds path segments that will be included in every request.
    */
-  route(...route: (string | number | boolean)[]) {
-    const mapped = route.map((r) => String(r));
-    return HTTP.create(
-      this.client,
-      this.#request.derive().route(...mapped),
-      this.#metaConfig.derive()
-    );
+  sharedRoute(...segments: (string | number | boolean)[]) {
+    this.builder.route(...segments);
+    return this;
   }
 
   /**
-   * Attaches a shared schema mapping for all requests by this client. Schemas are
-   * mapped to HTTP Status Codes, and if configured to be required the request will fail
-   * if no schema is found matching that code.
+   * Executes a request using the provided method.
    *
-   * The status code mapping can be defined as a single code, a range of codes, or a spread list.
-   *
-   * ```ts
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export class UserController extends BaseController {
-   *  constructor(private readonly http: HTTP) {
-   *   super(http);
-   *   this.http
-   *       .sharedRoute("user")
-   *       .sharedSchema(UserSchema, 200)
-   *       .sharedSchema(EmptySchema, 201, 204)
-   *       .sharedSchema(ErrorSchema, { from: 400, to: 499 });
-   *  }
-   * }
-   * ```
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the schemas defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param parser The schema parser to use for this mapping.
-   * @param codes A single status code, a range of status codes, or a spread list of status codes.
-   * @returns This instance of HTTP.
+   * Use this when the verb is dynamic (e.g. provided by a parameter). It
+   * behaves like calling {@link get}/{@link post}/{@link patch}, respecting any
+   * route/headers/body configured earlier in the chain.
+   */
+  fetchWith<TResponse>(method: HTTPMethod | Lowercase<HTTPMethod>, options?: HTTPAdditionalOptions<unknown>) {
+    const normalized = String(method).trim().toUpperCase() as HTTPMethod;
+    return this.execute<TResponse>(normalized, options);
+  }
+
+  /**
+   * Returns a clone with additional path segments.
+   */
+  route(...segments: (string | number | boolean)[]) {
+    return this.derive(({ builder }) => {
+      builder.route(...segments);
+    });
+  }
+
+  /**
+   * Applies query serialization preferences to all future requests originating from this instance.
+   */
+  sharedQueryFormat(options: QueryParamSerializationOptions) {
+    this.builder.queryFormat(options);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with custom query serialization that does not affect the source instance.
+   */
+  queryFormat(options: QueryParamSerializationOptions) {
+    return this.derive(({ builder }) => {
+      builder.queryFormat(options);
+    });
+  }
+
+  /**
+   * Registers schema validation for one or more status codes on the current instance.
    */
   sharedSchema(parser: SchemaParser, ...codes: StatusCode[]): HTTP;
   sharedSchema(
     parser: SchemaParser,
-    ...range: { from: StatusCode; to: StatusCode }[]
+    ...ranges: { from: StatusCode; to: StatusCode }[]
   ): HTTP;
   sharedSchema(
     parser: SchemaParser,
     ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
-  ): HTTP {
-    this.#metaConfig.schema(parser, ...args);
+  ) {
+    this.meta.schema(parser, ...(args as never[]));
     return this;
   }
 
   /**
-   * Attaches a schema mapping for this request. Schemas are
-   * mapped to HTTP Status Codes, and if configured to be required the request will fail
-   * if no schema is found matching that code.
-   *
-   * The status code mapping can be defined as a single code, a range of codes, or a spread list.
-   *
-   * ```ts
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export class UserController extends BaseController {
-   *  constructor(private readonly http: HTTP) {
-   *   super(http);
-   *   this.http
-   *       .sharedRoute("user")
-   *       .schema(ErrorSchema, { from: 400, to: 499 });
-   *  }
-   *
-   *  getUser(id: number) {
-   *   return this.http.route(id).schema(UserSchema, 200).get();
-   *  }
-   *
-   *  getUsers(...ids: number[]) {
-   *    return this.http
-   *               .route("users")
-   *               .schema(UserSchema, { from: 200, to: 299 })
-   *               .schema(UserSchema, 200)
-   *               .get();
-   * }
-   * ```
-   *
-   * This method is a request chain method, and will return a new instance of HTTP, inheriting
-   * any schemas previously defined and appending the new schema. Useful to configure
-   * in class methods as part of finalizing a request.
-   *
-   * @param parser The schema parser to use for this mapping.
-   * @param codes A single status code, a range of status codes, or a spread list of status codes.
-   * @returns A new child instance of HTTP derived from this one.
+   * Returns a clone with schema validation limited to the derived instance.
    */
   schema(parser: SchemaParser, ...codes: StatusCode[]): HTTP;
   schema(
     parser: SchemaParser,
-    ...range: { from: StatusCode; to: StatusCode }[]
+    ...ranges: { from: StatusCode; to: StatusCode }[]
   ): HTTP;
   schema(
     parser: SchemaParser,
     ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
-  ): HTTP {
-    return HTTP.create(
-      this.client,
-      this.#request.derive(),
-      this.#metaConfig.derive().schema(parser, ...args)
-    );
+  ) {
+    return this.derive(({ meta }) => {
+      meta.schema(parser, ...(args as never[]));
+    });
   }
 
   /**
-   * Attaches a shared query string parameter to all requests by this client. Query string
-   * parameters are key-value pairs which are appended to the request url, such as
-   * `https://api.example.com?name=John&age=30`.
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the query string parameters defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param name The name of the query string parameter.
-   * @param value The value of the query string parameter.
-   * @returns This instance of HTTP.
+   * Sets a shared query parameter for all future requests.
    */
   sharedParam(name: string, value: Record<string, unknown>): HTTP;
-  sharedParam(name: string, ...value: (string | number | boolean)[]): HTTP;
-  sharedParam(name: string, value: (string | number | boolean)[]): HTTP;
   sharedParam(
     name: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any
-  ): HTTP {
-    this.#request.param(name, value);
+    value: (string | number | boolean | null | undefined)[]
+  ): HTTP;
+  sharedParam(name: string, ...value: (string | number | boolean)[]): HTTP;
+  sharedParam(name: string, value: unknown, ...rest: unknown[]) {
+    this.builder.param(name, toParamValue(value, rest));
     return this;
   }
 
   /**
-   * `onSend` is a pre-request hook which will be executed in order of definition
-   * immediately before the request is sent. This hook can be used to analyze or
-   * log the request state.
-   *
-   * ```ts
-   *
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export class UserController extends BaseController {
-   *  constructor(private readonly http: HTTP) {
-   *     super(http);
-   *     this.http
-   *         .sharedRoute("user")
-   *         .sharedOnSend("log request",
-   *                       (request) => console.log(JSON.stringify(request, null, 2))
-   *     );
-   *  }
-   * }
-   * ```
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the onSend hooks defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param description A description of the hook, used for debugging.
-   * @param hook The hook to execute.
-   * @returns This instance of HTTP.
-   */
-  sharedOnSend(description: string, hook: RequestHook) {
-    this.#metaConfig.onBeforeSend(description, hook);
-    return this;
-  }
-
-  /**
-   * `onReceive` is a post-request hook which will be executed in order of definition
-   * immediately after the response is received. This hook can be used to analyze or
-   * log the response state.
-   *
-   * ```ts
-   *
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export class UserController extends BaseController {
-   *  constructor(private readonly http: HTTP) {
-   *     super(http);
-   *     this.http
-   *         .sharedRoute("user")
-   *         .sharedOnReceive("log response",
-   *                          (response) => console.log(JSON.stringify(response, null, 2))
-   *     );
-   *  }
-   * }
-   * ```
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the onReceive hooks defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param description A description of the hook, used for debugging.
-   * @param hook The hook to execute.
-   * @returns This instance of HTTP.
-   */
-  sharedOnReceive(description: string, hook: ResponseHook<unknown>) {
-    this.#metaConfig.onReceiveResponse(description, hook);
-    return this;
-  }
-
-  /**
-   * Attaches a query string parameter object to the request. Query string
-   * parameters are key-value pairs which are appended to the request url, such as
-   * `https://api.example.com?name=John&age=30`.
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the query string parameters defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * ```ts
-   * constructor(http: HTTP) {
-   *    super(http);
-   *    this.http
-   *        .sharedParams({ 'is-test': "true" })
-   * ```
-   * @param name The name of the query string parameter.
-   * @param value The value of the query string parameter.
-   * @returns This instance of HTTP.
-   */
-  sharedParams(dict: Record<string, unknown>) {
-    this.#request.params(dict);
-    return this;
-  }
-
-  /**
-   * Attaches a query string parameter to the request. Query string
-   * parameters are key-value pairs which are appended to the request url, such as
-   * `https://api.example.com?name=John&age=30`.
-   *
-   * This method is a request chain method, and will return a new instance of HTTP, inheriting
-   * any query string parameters previously defined and appending the new parameter. Useful to configure
-   * in class methods as part of finalizing a request.
-   *
-   * ```ts
-   * getUser(id: number) {
-   *   return this.http
-   *             .route(id)
-   *             .param("name", "John")
-   *             .param("age", 30)
-   * ```
-   *
-   * Note: Numbers and Booleans will be converted to strings automatically.
-   *
-   * @param name The name of the query string parameter.
-   * @param value The value of the query string parameter.
-   * @returns A new child instance of HTTP derived from this one.
+   * Derives a client with additional query parameters.
    */
   param(name: string, value: Record<string, unknown>): HTTP;
+  param(
+    name: string,
+    value: (string | number | boolean | null | undefined)[]
+  ): HTTP;
   param(name: string, ...value: (string | number | boolean)[]): HTTP;
-  param(name: string, value: (string | number | boolean)[]): HTTP;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  param(name: string, ...value: any) {
-    return HTTP.create(
-      this.client,
-      this.#request.derive().param(name, value),
-      this.#metaConfig.derive()
-    );
+  param(name: string, value: unknown, ...rest: unknown[]) {
+    return this.derive(({ builder }) => {
+      builder.param(name, toParamValue(value, rest));
+    });
   }
 
   /**
-   * Attaches a query string parameter object to the request. Query string
-   * parameters are key-value pairs which are appended to the request url, such as
-   * `https://api.example.com?name=John&age=30`.
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the query string parameters defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * ```ts
-   * getUser(id: number) {
-   *   return this.http
-   *             .route(id)
-   *             .param({ name: "John", age: "30" })
-   *
-   * @param name The name of the query string parameter.
-   * @param value The value of the query string parameter.
-   * @returns This instance of HTTP.
+   * Merges multiple shared query parameters into the instance.
    */
-  params(dict: Record<string, unknown>) {
-    return HTTP.create(
-      this.client,
-      this.#request.derive().params(dict),
-      this.#metaConfig.derive()
-    );
-  }
-
-  /**
-   * Attaches a shared data payload to this client. The data payload is the body of the request,
-   * and can be any type. If the data payload is an object, it will be serialized to JSON.
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the data payload defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param data The data payload to attach to the request.
-   * @returns This instance of HTTP.
-   */
-  sharedData<T>(data: T) {
-    this.#request.data(data);
+  sharedParams(dict: Record<string, unknown>) {
+    this.builder.params(dict);
     return this;
   }
 
   /**
-   * Attaches a shared header to this client. Headers are string:string key-value pairs which are
-   * sent with the request, such as `Content-Type: application/json`.
-   *
-   * Numbers, Booleans and Null will be converted to string values automatically.
-   *
-   * A Factory function can also be provided to generate the header value at the time of request.
-   *
-   * This method is a shared chain method, and will return the same instance of HTTP. All
-   * child clients will inherit the header defined by this method. Useful to configure
-   * in the constructor body.
-   *
-   * @param name The name of the header.
-   * @param value The value of the header.
+   * Derives a client with additional query parameters applied together.
+   */
+  params(dict: Record<string, unknown>) {
+    return this.derive(({ builder }) => {
+      builder.params(dict);
+    });
+  }
+
+  /**
+   * Sets a shared request body used by every request from this instance.
+   */
+  sharedData<T>(data: T | undefined) {
+    this.builder.data(data);
+    return this;
+  }
+
+  /**
+   * Derives a client with a one-off request body.
+   */
+  data<T>(data: T | undefined) {
+    return this.derive(({ builder }) => {
+      builder.data(data);
+    });
+  }
+
+  /**
+   * Registers a header that will be resolved for every request on this instance.
    */
   sharedHeader(
     name: string,
@@ -625,13 +462,15 @@ export class HTTP {
       | boolean
       | null
       | (string | number | boolean)[]
-      | (() => string | number | boolean | null)
-      | (() => Promise<string | number | boolean | null>)
+      | (() => HeaderPrimitive | Promise<HeaderPrimitive>)
   ) {
-    this.#request.header(name, value);
+    this.builder.header(name, value);
     return this;
   }
 
+  /**
+   * Returns a clone with a header applied only to the resulting client.
+   */
   header(
     name: string,
     value:
@@ -640,226 +479,308 @@ export class HTTP {
       | boolean
       | null
       | (string | number | boolean)[]
-      | (() => string | number | boolean | null)
-      | (() => Promise<string | number | boolean | null>)
+      | (() => HeaderPrimitive | Promise<HeaderPrimitive>)
   ) {
-    return HTTP.create(
-      this.client,
-      this.#request.derive().header(name, value),
-      this.#metaConfig.derive()
-    );
+    return this.derive(({ builder }) => {
+      builder.header(name, value);
+    });
   }
 
   /**
-   * Attaches a data payload to this request. The data payload is the body of the request,
-   * and can be any type. If the data payload is an object, it will be serialized to JSON.
-   *
-   * This method is a request chain method, and will return a new instance of HTTP, inheriting
-   * any data payload previously defined and appending the new payload. Useful to configure
-   * in class methods as part of finalizing a request.
-   *
-   * @param data The data payload to attach to the request.
-   * @returns A new child instance of HTTP derived from this one.
+   * Registers multiple shared headers for every downstream request.
    */
-  data<T>(data: T) {
-    this.#request.data(data);
-    return HTTP.create(
-      this.client,
-      this.#request.derive().data(data),
-      this.#metaConfig.derive()
-    );
+  sharedHeaders(dict: Record<string, HeaderPrimitive | HeaderPrimitive[]>) {
+    this.builder.headers(dict);
+    return this;
   }
 
   /**
-   * `onSend` is a pre-request hook which will be executed in order of definition
-   * immediately before the request is sent. This hook can be used to modify the request,
-   * or to log the state of a request before final send-off.
-   *
-   * ```ts
-   *
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export class UserController extends BaseController {
-   *  constructor(private readonly http: HTTP) {
-   *   super(http);
-   *  }
-   *
-   *  getUser(id: number) {
-   *   return this.http
-   *              .route(id)
-   *              .onSend("log request",
-   *                (request) => console.log(JSON.stringify(request, null, 2)
-   *              )
-   *              .get();
-   * }
-   * ```
-   *
-   * This method is a request chain method, and will return a new instance of HTTP, inheriting
-   * any onSend hooks previously defined and appending the new hook. Useful to configure
-   * in class methods as part of finalizing a request.
-   *
-   * @param description A description of the hook, used for debugging.
-   * @param hook The hook to execute.
-   * @returns A new child instance of HTTP derived from this one.
+   * Returns a derived client with additional headers.
+   */
+  headers(dict: Record<string, HeaderPrimitive | HeaderPrimitive[]>) {
+    return this.derive(({ builder }) => {
+      builder.headers(dict);
+    });
+  }
+
+  /**
+   * Registers a request hook that runs before every execution on this instance.
+   */
+  sharedOnSend(description: string, hook: RequestHook) {
+    this.meta.onBeforeSend(description, hook);
+    return this;
+  }
+
+  /**
+   * Returns a clone with a request hook used only for that clone.
    */
   onSend(description: string, hook: RequestHook) {
-    return HTTP.create(
-      this.client,
-      this.#request.derive(),
-      this.#metaConfig.derive().onBeforeSend(description, hook)
-    );
+    return this.derive(({ meta }) => {
+      meta.onBeforeSend(description, hook);
+    });
   }
 
   /**
-   * `onReceive` is a post-request hook which will be executed in order of definition
-   * immediately after the response is received. This hook can be used to modify the response,
-   * or to log the state of a response after it is received.
-   *
-   * ```ts
-   *
-   * \@Fixture(INJECTION_SCOPE.TRANSIENT)
-   * export class UserController extends BaseController {
-   *  constructor(private readonly http: HTTP) {
-   *   super(http);
-   *  }
-   *
-   *  getUser(id: number) {
-   *   return this.http
-   *              .route(id)
-   *              .onReceive("log response",
-   *                (response) => console.log(JSON.stringify(response, null, 2)
-   *              )
-   *              .get();
-   * }
-   * ```
-   *
-   * This method is a request chain method, and will return a new instance of HTTP, inheriting
-   * any onReceive hooks previously defined and appending the new hook. Useful to configure
-   * in class methods as part of finalizing a request.
-   *
-   * @param description A description of the hook, used for debugging.
-   * @param hook The hook to execute.
-   * @returns A new child instance of HTTP derived from this one.
+   * Registers a response hook executed after every transport response.
+   */
+  sharedOnReceive(description: string, hook: ResponseHook<unknown>) {
+    this.meta.onReceiveResponse(description, hook);
+    return this;
+  }
+
+  /**
+   * Returns a derived client with a response hook limited to that client.
    */
   onReceive(description: string, hook: ResponseHook<unknown>) {
-    return HTTP.create(
-      this.client,
-      this.#request.derive(),
-      this.#metaConfig.derive().onReceiveResponse(description, hook)
-    );
+    return this.derive(({ meta }) => {
+      meta.onReceiveResponse(description, hook);
+    });
   }
 
   /**
-   * Executes the current request state as a GET request.
-   *
-   * @param options Additional options to pass to the underlying http client, such
-   *                as e.g Axios configuration values.
-   * @returns A promise which resolves to the response.
+   * Configures whether server errors (>=500) throw by default for every request.
    */
-  get<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("GET"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  sharedThrowOnServerError(value: boolean) {
+    this.meta.throwOnServerError(value);
+    return this;
   }
 
   /**
-   * Executes the current request state as a POST request.
-   *
-   * @param data The data payload to attach to the request.
-   * @param options Additional options to pass to the underlying http client, such
-   *                as e.g Axios configuration values.
-   * @returns A promise which resolves to the response.
+   * Returns a derived client with custom server error behaviour.
    */
-  post<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("POST"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  throwOnServerError(value: boolean) {
+    return this.derive(({ meta }) => {
+      meta.throwOnServerError(value);
+    });
   }
 
   /**
-   * Executes the current request state as a DELETE request.
-   *
-   * @param options Additional options to pass to the underlying http client, such
-   *                as e.g Axios configuration values.
-   * @returns A promise which resolves to the response.
-   *               as e.g Axios configuration values.
+   * Executes a GET request using the current configuration.
    */
-  delete<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("DELETE"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  get<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("GET", options);
   }
 
   /**
-   * Executes the current request state as a PUT request.
-   *
-   * @param options Additional options to pass to the underlying http client, such
-   *                as e.g Axios configuration values.
-   * @returns A promise which resolves to the response.
+   * Executes a POST request using the current configuration.
    */
-  put<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("PUT"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  post<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("POST", options);
   }
+
   /**
-   * Executes the current request state as a PATCH request.
-   *
-   * @param options Additional options to pass to the underlying http client, such
-   *                as e.g Axios configuration values.
-   * @returns A promise which resolves to the response.
+   * Executes a PUT request using the current configuration.
    */
-  patch<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("PATCH"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  put<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("PUT", options);
   }
 
-  head<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("HEAD"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  /**
+   * Executes a PATCH request using the current configuration.
+   */
+  patch<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("PATCH", options);
   }
 
-  options<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("OPTIONS"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  /**
+   * Executes a DELETE request using the current configuration.
+   */
+  delete<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("DELETE", options);
   }
 
-  trace<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("TRACE"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  /**
+   * Executes a HEAD request using the current configuration.
+   */
+  head<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("HEAD", options);
   }
 
-  connect<TResponseType>(options?: HTTPAdditionalOptions<unknown>) {
-    return this.#makeRequest(
-      this.#request.derive().method("CONNECT"),
-      options
-    ) as Promise<HTTPResponse<TResponseType>>;
+  /**
+   * Executes an OPTIONS request using the current configuration.
+   */
+  options<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("OPTIONS", options);
   }
 
-  async #makeRequest(
-    builder: HTTPRequestBuilder<HTTPRequest<unknown>>,
+  /**
+   * Executes a TRACE request using the current configuration.
+   */
+  trace<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("TRACE", options);
+  }
+
+  /**
+   * Executes a CONNECT request using the current configuration.
+   */
+  connect<TResponse>(options?: HTTPAdditionalOptions<unknown>) {
+    return this.execute<TResponse>("CONNECT", options);
+  }
+
+  private async execute<TResponse>(
+    method: HTTPMethod,
     options?: HTTPAdditionalOptions<unknown>
   ) {
-    const request = (await builder.resolveDynamicHeaders()).build();
-    const meta = this.#metaConfig.derive().build();
-    await this.runOnSendHooks(meta, request);
-    const opts = { ...meta.options, ...options };
-    const result = await this.client.request<unknown, string>(request, opts);
-    result.data = transformResponse(meta.allowPlainText, result.data);
-    await this.runOnReceiveHooks(meta, result);
-    const validated = this.#validateResponse(result, meta);
-    return validated;
+    const baseBuilder = this.builder.clone().method(method);
+    const meta = this.meta.derive().build();
+    const baseOptions = mergeOptions(meta.options, options);
+    if (meta.streamResponse) {
+      (baseOptions as Record<string, unknown>).streamResponse = true;
+    }
+    const retryPolicy = meta.retry;
+    const maxRetries = retryPolicy?.attempts ?? 0;
+
+    for (let retriesUsed = 0; ; ) {
+      const attemptBuilder = baseBuilder.clone();
+      await attemptBuilder.resolveDynamicHeaders();
+      const request = attemptBuilder.build();
+      request.method = method;
+
+      const attemptOptions = {
+        ...baseOptions,
+      } as HTTPAdditionalOptions<unknown> & { signal?: AbortSignal };
+
+      let timeoutController: AbortController | undefined;
+      let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+      let combinedSignal: CombinedAbortSignal | undefined;
+
+      if (typeof meta.timeoutMs === "number" && meta.timeoutMs > 0) {
+        const setup = createTimeoutController(meta.timeoutMs);
+        timeoutController = setup.controller;
+        timeoutHandle = setup.timer;
+      }
+
+      const existingSignal = attemptOptions.signal;
+      const signals: AbortSignal[] = [];
+      if (existingSignal) {
+        signals.push(existingSignal);
+      }
+      if (timeoutController) {
+        signals.push(timeoutController.signal);
+      }
+
+      if (signals.length === 1) {
+        const singleSignal = signals[0];
+        if (singleSignal) {
+          attemptOptions.signal = singleSignal;
+        } else if ("signal" in attemptOptions) {
+          delete attemptOptions.signal;
+        }
+      } else if (signals.length > 1) {
+        combinedSignal = combineAbortSignals(signals);
+        attemptOptions.signal = combinedSignal.signal;
+      } else if ("signal" in attemptOptions) {
+        delete attemptOptions.signal;
+      }
+
+      const activeSignal = attemptOptions.signal;
+      if (activeSignal?.aborted) {
+        const reason = (activeSignal.reason as unknown) ?? createAbortError();
+        throw new HTTPTransportError(request, reason);
+      }
+
+      const requestContext: HTTPRequestContext = {
+        request,
+        options: attemptOptions,
+      };
+
+      let response: HTTPResponse<unknown> | undefined;
+
+      try {
+        await this.runRequestPlugins(requestContext);
+        await this.runOnSendHooks(meta, request);
+        const raw = await this.transport
+          .send(request, attemptOptions)
+          .catch((cause) => {
+            throw new HTTPTransportError(request, cause);
+          });
+
+        response = this.buildResponse(raw, request);
+        const isStreaming = meta.streamResponse;
+        if (!isStreaming) {
+          response.data = transformResponse(meta.allowPlainText, response.data);
+        }
+
+        if (meta.throwOnServerError && response.status >= 500) {
+          throw new HTTPServerError(request, response);
+        }
+
+        await this.runOnReceiveHooks(meta, response);
+
+        let validated: HTTPResponse<TResponse>;
+        if (meta.streamResponse) {
+          validated = response as HTTPResponse<TResponse>;
+        } else {
+          try {
+            validated = this.validateResponse<TResponse>(response, meta);
+          } catch (cause) {
+            throw new HTTPSchemaValidationError(request, response, cause);
+          }
+        }
+
+        await this.runResponsePlugins({
+          request,
+          response: validated,
+          options: attemptOptions,
+        });
+
+        return validated;
+      } catch (thrown) {
+        const normalized = thrown instanceof HTTPError ? thrown : (thrown as unknown);
+        const retryAttempt = retriesUsed + 1;
+        const policy = retryPolicy;
+        const canRetry =
+          policy !== undefined &&
+          retryAttempt <= maxRetries &&
+          (await this.shouldRetryRequest(
+            normalized,
+            policy,
+            retryAttempt,
+            request
+          ));
+
+        if (!canRetry) {
+          await this.runErrorPlugins({
+            request,
+            options: attemptOptions,
+            error: normalized,
+          });
+          throw normalized;
+        }
+
+        retriesUsed += 1;
+        await this.delayRetry(retryAttempt, policy);
+      } finally {
+        if (timeoutHandle !== undefined) {
+          clearTimeout(timeoutHandle);
+        }
+        combinedSignal?.dispose();
+      }
+    }
+  }
+
+  private async runRequestPlugins(context: HTTPRequestContext) {
+    for (const plugin of this.plugins()) {
+      if (plugin.onRequest) {
+        await plugin.onRequest(context);
+      }
+    }
+  }
+
+  private async runResponsePlugins(context: HTTPResponseContext) {
+    for (const plugin of this.plugins()) {
+      if (plugin.onResponse) {
+        await plugin.onResponse(context);
+      }
+    }
+  }
+
+  private async runErrorPlugins(context: HTTPErrorContext) {
+    for (const plugin of this.plugins()) {
+      if (plugin.onError) {
+        await plugin.onError(context);
+      }
+    }
   }
 
   private async runOnSendHooks(
@@ -869,13 +790,15 @@ export class HTTP {
     for (const [description, hook] of meta.onSend) {
       try {
         await hook(request);
-      } catch (e) {
-        const cause = e as Error;
-        const msg = `An error occurred while sending a request in hook: '${description}'`;
-        throw new AutomationError(msg, { cause });
+      } catch (error) {
+        throw new AutomationError(
+          `An error occurred in onSend hook "${description}"`,
+          { cause: error as Error }
+        );
       }
     }
   }
+
   private async runOnReceiveHooks(
     meta: MetaConfig,
     response: HTTPResponse<unknown>
@@ -883,25 +806,216 @@ export class HTTP {
     for (const [description, hook] of meta.onReceive) {
       try {
         await hook(response);
-      } catch (e) {
-        const cause = e as Error;
-        const msg = `An error occurred while receiving a response in hook: '${description}'`;
-        throw new AutomationError(msg, { cause });
+      } catch (error) {
+        throw new AutomationError(
+          `An error occurred in onReceive hook "${description}"`,
+          { cause: error as Error }
+        );
       }
     }
   }
 
-  #validateResponse<T>(
-    response: HTTPResponse<unknown>,
-    meta: MetaConfig
-  ): HTTPResponse<T> {
-    const { status, data } = response;
+  private validateResponse<T>(response: HTTPResponse<unknown>, meta: MetaConfig) {
     const validated = meta.schemas.validate(
-      status,
-      data,
+      response.status as StatusCode,
+      response.data,
       meta.requireSchema
     ) as T;
     response.data = validated;
     return response as HTTPResponse<T>;
   }
+
+  private buildResponse<T>(
+    raw: {
+      status: StatusCode;
+      statusText: string;
+      headers: Record<string, string | string[]>;
+      data: T;
+    },
+    request: HTTPRequest<unknown>
+  ) {
+    return HTTPResponseBuilder.create()
+      .status(raw.status)
+      .statusText(raw.statusText)
+      .headers(normalizeHeaders(raw.headers))
+      .data(raw.data)
+      .request(request)
+      .build();
+  }
+
+  private plugins() {
+    return [...this.sharedPlugins, ...this.scopedPlugins];
+  }
+
+  private async shouldRetryRequest(
+    error: unknown,
+    policy: HTTPRetryOptions,
+    attempt: number,
+    request: HTTPRequest<unknown>
+  ) {
+    if (attempt > policy.attempts) {
+      return false;
+    }
+
+    const response = error instanceof HTTPError ? error.response : undefined;
+
+    if (policy.retryOn) {
+      const retryContext = response
+        ? { error, attempt, request, response }
+        : { error, attempt, request };
+      return await policy.retryOn(retryContext);
+    }
+
+    if (error instanceof HTTPTransportError) {
+      return true;
+    }
+
+    if (response && response.status >= 500) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private async delayRetry(attempt: number, policy: HTTPRetryOptions) {
+    const { delay } = policy;
+
+    let duration: number | undefined;
+    if (typeof delay === "function") {
+      duration = await delay(attempt);
+    } else if (typeof delay === "number") {
+      duration = delay * attempt;
+    } else {
+      duration = attempt * 100;
+    }
+
+    if (!duration || duration <= 0) {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, duration));
+  }
+
+  private derive(
+    mutate?: (state: {
+      builder: HTTPRequestBuilder<HTTPRequest<unknown>>;
+      meta: MetaConfigBuilder;
+      plugins: HTTPPlugin[];
+    }) => void,
+    overrides?: { transport?: HTTPTransport }
+  ) {
+    const builder = this.builder.clone();
+    const meta = this.meta.derive();
+    const plugins = [...this.scopedPlugins];
+
+    if (mutate) {
+      mutate({ builder, meta, plugins });
+    }
+
+    return new HTTP(
+      overrides?.transport ?? this.transport,
+      builder,
+      meta,
+      this.sharedPlugins,
+      plugins
+    );
+  }
+}
+
+function mergeOptions(
+  base: HTTPAdditionalOptions<unknown>,
+  overrides?: HTTPAdditionalOptions<unknown>
+) {
+  if (!overrides) {
+    return { ...base } as HTTPAdditionalOptions<unknown>;
+  }
+
+  const merged = { ...base } as Record<string, unknown>;
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === undefined) {
+      delete merged[key];
+    } else {
+      merged[key] = value;
+    }
+  }
+  return merged as HTTPAdditionalOptions<unknown>;
+}
+
+function normalizeHeaders(headers: Record<string, string | string[]>) {
+  const next: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    next[key] = Array.isArray(value) ? value.join(",") : String(value);
+  }
+  return next;
+}
+
+function toParamValue(value: unknown, rest: unknown[]): ParamValue {
+  if (rest.length > 0) {
+    return [value, ...rest] as ParamValue;
+  }
+  return value as ParamValue;
+}
+
+interface CombinedAbortSignal {
+  signal: AbortSignal;
+  dispose: () => void;
+}
+
+interface TimeoutSetup {
+  controller: AbortController;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+function createTimeoutController(timeoutMs: number): TimeoutSetup {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(createAbortError(`Request timed out after ${timeoutMs} ms`));
+  }, timeoutMs);
+  maybeUnrefTimer(timer);
+  return { controller, timer };
+}
+
+function combineAbortSignals(signals: AbortSignal[]): CombinedAbortSignal {
+  const controller = new AbortController();
+
+  const aborted = signals.find((signal) => signal.aborted);
+  if (aborted) {
+    controller.abort((aborted.reason as unknown) ?? createAbortError());
+    return { signal: controller.signal, dispose: () => undefined };
+  }
+
+  const listeners: Array<{ signal: AbortSignal; listener: () => void }> = [];
+
+  for (const signal of signals) {
+    const listener = () => {
+      controller.abort((signal.reason as unknown) ?? createAbortError());
+    };
+    signal.addEventListener("abort", listener, { once: true });
+    listeners.push({ signal, listener });
+  }
+
+  const dispose = () => {
+    for (const { signal, listener } of listeners) {
+      signal.removeEventListener("abort", listener);
+    }
+  };
+
+  controller.signal.addEventListener("abort", dispose, { once: true });
+
+  return { signal: controller.signal, dispose };
+}
+
+function maybeUnrefTimer(timer: ReturnType<typeof setTimeout>) {
+  if (typeof timer === "object" && timer !== null) {
+    const maybeTimer = timer as { unref?: () => void };
+    if (typeof maybeTimer.unref === "function") {
+      maybeTimer.unref();
+    }
+  }
+}
+
+function createAbortError(message = "The operation was aborted.") {
+  const error = new Error(message);
+  error.name = "AbortError";
+  return error;
 }

@@ -18,7 +18,7 @@ export default function (plop: PlopTypes.NodePlopAPI) {
         type: "list",
         name: "root",
         message: "What is the root of the library?",
-        choices: ["packages", "libraries", "__integration__"],
+        choices: ["packages", "examples"],
       },
     ],
     actions: [
@@ -41,6 +41,11 @@ export default function (plop: PlopTypes.NodePlopAPI) {
         type: "add",
         path: "{{root}}/{{kebabCase name}}/tsconfig.json",
         templateFile: "plop-templates/library/tsconfig.json.hbs",
+      },
+      {
+        type: "add",
+        path: "{{root}}/{{kebabCase name}}/tsconfig.types.json",
+        templateFile: "plop-templates/library/tsconfig.types.json.hbs",
       },
       {
         type: "add",

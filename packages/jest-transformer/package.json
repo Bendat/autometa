@@ -1,49 +1,56 @@
 {
   "name": "@autometa/jest-transformer",
   "version": "0.1.111",
-  "description": "",
-  "type": "commonjs",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.js",
+  "description": "Jest transformer for Autometa - transforms .feature files into test suites",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "rimraf tsconfig.types.tsbuildinfo && tsc --build tsconfig.types.json",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",
-    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "test:watch": "vitest --passWithNoTests",
+    "test:ui": "vitest --ui --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "clean": "rimraf dist",
-    "build": "tsup",
-    "build:watch": "tsup --watch"
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
   },
   "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/index.js",
-    "default": "./dist/esm/index.js",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "jiti": "^1.21.0"
+  },
   "devDependencies": {
     "@types/node": "^18.11.18",
-    "@types/uuid": "^9.0.5",
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
-    "@vitest/coverage-istanbul": "^1.4.0",
-    "@vitest/coverage-v8": "^1.4.0",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
-    "eslint-config-prettier": "^8.3.0",
-    "istanbul": "^0.4.5",
     "rimraf": "^4.1.2",
-    "tsconfig": "workspace: *",
+    "tsconfig": "workspace:*",
     "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
     "typescript": "^4.9.5",
     "vitest": "1.4.0"
   },
-  "dependencies": {
-    "@autometa/runner": "workspace:^",
-    "@babel/core": "^7.21.4",
-    "@jest/types": "^29.4.3",
-    "@types/babel__core": "^7.20.0",
-    "babel-preset-jest": "^29.5.0"
+  "peerDependencies": {
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/jest-executor": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "jest": ">=29.0.0"
   }
 }

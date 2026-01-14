@@ -2,10 +2,21 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    setupFiles: ["reflect-metadata"],
+    include: [
+      "src/**/__test__/**/*.test.ts",
+      "test/**/*.test.ts",
+      "integration/**/*.test.ts",
+    ],
+    exclude: ["**/.reference/**"],
     coverage: {
-      provider: "v8", // or 'v8'
-      reporter: ["json-summary", "json"],
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      thresholds: {
+        lines: 90,
+        branches: 86,
+        functions: 90,
+        statements: 90,
+      },
     },
   },
 });

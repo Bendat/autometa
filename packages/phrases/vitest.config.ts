@@ -2,10 +2,16 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    setupFiles: ["reflect-metadata"],
     coverage: {
-      provider: "v8", // or 'v8'
-      reporter: ["json-summary", "json"],
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      exclude: ["src/index.ts", "**/.eslintrc.cjs"],
+      thresholds: {
+        lines: 89,
+        branches: 84,
+        functions: 90,
+        statements: 89,
+      },
     },
   },
 });

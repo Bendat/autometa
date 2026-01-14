@@ -1,0 +1,108 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/vitest-plugins/tsconfig.types.json"
+    },
+    {
+      "path": "packages/vitest-executor/tsconfig.types.json"
+    },
+    {
+      "path": "packages/types/tsconfig.types.json"
+    },
+    {
+      "path": "packages/testrail-cucumber/tsconfig.types.json"
+    },
+    {
+      "path": "packages/test-builder/tsconfig.types.json"
+    },
+    {
+      "path": "packages/status-codes/tsconfig.types.json"
+    },
+    {
+      "path": "packages/scopes/tsconfig.types.json"
+    },
+    {
+      "path": "packages/runner/tsconfig.types.json"
+    },
+    {
+      "path": "packages/playwright-loader/tsconfig.types.json"
+    },
+    {
+      "path": "packages/playwright-executor/tsconfig.types.json"
+    },
+    {
+      "path": "packages/phrases/tsconfig.types.json"
+    },
+    {
+      "path": "packages/overloaded/tsconfig.types.json"
+    },
+    {
+      "path": "packages/jest-transformer/tsconfig.types.json"
+    },
+    {
+      "path": "packages/jest-executor/tsconfig.types.json"
+    },
+    {
+      "path": "packages/injection/tsconfig.types.json"
+    },
+    {
+      "path": "packages/http/tsconfig.types.json"
+    },
+    {
+      "path": "packages/gherkin/tsconfig.types.json"
+    },
+    {
+      "path": "packages/fixture-proxies/tsconfig.types.json"
+    },
+    {
+      "path": "packages/file-proxies/tsconfig.types.json"
+    },
+    {
+      "path": "packages/executor/tsconfig.types.json"
+    },
+    {
+      "path": "packages/events/tsconfig.types.json"
+    },
+    {
+      "path": "packages/errors/tsconfig.types.json"
+    },
+    {
+      "path": "packages/dto-builder/tsconfig.types.json"
+    },
+    {
+      "path": "packages/datetime/tsconfig.types.json"
+    },
+    {
+      "path": "packages/cucumber-expressions/tsconfig.types.json"
+    },
+    {
+      "path": "packages/coordinator/tsconfig.types.json"
+    },
+    {
+      "path": "packages/config/tsconfig.types.json"
+    },
+    {
+      "path": "packages/cli/tsconfig.types.json"
+    },
+    {
+      "path": "packages/bind-decorator/tsconfig.types.json"
+    },
+    {
+      "path": "packages/assertions/tsconfig.types.json"
+    },
+    {
+      "path": "packages/asserters/tsconfig.types.json"
+    },
+    {
+      "path": "packages/app/tsconfig.types.json"
+    }
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "skipLibCheck": true
+  }
+}

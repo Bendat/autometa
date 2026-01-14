@@ -6,3 +6,5 @@ packages:
   - "cucumber/*"
   - "libraries/*"
   - "documentation/*"
+  - "examples/*"
+  - "examples/.api"

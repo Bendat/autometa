@@ -1,3 +1,3 @@
-# Errors
+# Introduction
 
-Errors & Exceptions implementation for @autometa.
+There's nothing here yet

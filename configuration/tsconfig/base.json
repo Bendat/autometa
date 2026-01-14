@@ -10,8 +10,6 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "strictPropertyInitialization": false,
     "inlineSources": false,

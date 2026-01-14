@@ -5,52 +5,65 @@
   "scripts": {
     "changesets": "changesets",
     "preinstall": "npx only-allow pnpm",
-    "coverage": "vitest run --coverage.provider istanbul --coverage.enabled true",
-    "build": "pnpm nx run-many -t build",
-    "build:runner": "turbo run build:runner",
-    "build:filter": "turbo run build",
+    "postinstall": "node scripts/update-ts-references.mjs",
+    "sync-ts-references": "node scripts/update-ts-references.mjs",
+    "type-check": "turbo run type-check",
+    "type-check:watch": "turbo run type-check --watch",
+    "coverage": "turbo run coverage && pnpm coverage:merge",
+    "coverage:merge": "node scripts/merge-coverage.mjs",
+    "build": "turbo run build",
+    "build:types": "turbo run build:types",
     "build:docs": "turbo run build:docs",
-    "test": "turbo run test --filter='!@autometa/documentation' && rm -rf /**/*/vitest.config.ts.timestamp-*",
+    "docs:start": "pnpm --filter @autometa/documentation start",
+    "dev": "turbo run dev",
+    "test": "vitest",
+    "test:examples:vitest-functions": "pnpm --filter @autometa/cli run build && pnpm --filter @autometa/examples-vitest-functions run features",
+    "dev:examples:api": "pnpm --filter @autometa/examples-api run dev",
     "test:types": "turbo run test:types --filter='!@autometa/documentation'",
-    "integrate": "turbo run integrate",
-    "vitest:clean": "rm -rf **/*/vitest.config.ts.timestamp-*",
-    "vitest:all": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json-summary --coverage.reporter=json --coverage.reporter=html",
-    "lint": "nx run-many -t lint -- --max-warnings=0",
-    "lint:fix": "turbo run lint:fix -- --max-warnings=0",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
     "clean": "turbo run clean",
     "prettify": "prettier **/*.{ts,tsx,md} --write",
+    "integrate": "TURBO_LOG_PREFIX=none turbo run test:integration --filter='!@autometa/documentation'",
     "turbo:update": "npx @turbo/codemod migrate",
-    "turbo:gen": "turbo gen library && pnpm i",
+    "turbo:gen": "turbo gen library && pnpm i && pnpm sync-ts-references",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepublish": "pnpm run build",
-    "release": "pnpm run build && changeset version && changeset publish",
+    "release": "pnpm run build && pnpm run release:publish",
+    "release:publish": "node scripts/changeset-publish-ci.mjs",
+    "release:prepare": "pnpm changeset version",
     "local:unpublish": "pnpm unpublish --registry http://localhost:4873/ --force",
-    "local:publish": "pnpm publish --registry http://localhost:4873/ --force"
+    "local:publish": "pnpm publish --registry http://localhost:4873/ --force",
+    "update:references": "node scripts/update-ts-references.mjs",
+    "verify:packages": "turbo run verify:packages"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
-    "@nrwl/js": "^16.5.1",
-    "@turbo/gen": "^1.10.7",
+    "@turbo/gen": "^2.5.5",
     "@types/lodash": "^4.14.195",
+    "@types/node": "18.19.24",
+    "@vitest/coverage-v8": "^1.4.0",
     "eslint-config-custom": "workspace:*",
+    "glob": "^11.0.3",
     "lodash": "^4.17.21",
-    "nx": "16.5.1",
-    "nx-cloud": "^16.2.0",
     "prettier": "^2.8.3",
-    "turbo": "^1.11.0",
+    "turbo": "^2.5.5",
     "typescript": "4.9.5",
-    "vitest": "1.4.0",
-    "@vitest/coverage-v8": "^1.4.0"
+    "vitest": "1.4.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@7.24.3",
+  "packageManager": "pnpm@10.22.0",
   "volta": {
-    "node": "16.20.0"
+    "node": "20.17.0"
   },
   "dependencies": {
-    "@nrwl/linter": "^16.6.0",
     "@vitest/coverage-istanbul": "^1.4.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "cytoscape": "3.23.0"
+    }
   }
 }

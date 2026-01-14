@@ -1,0 +1,486 @@
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
+
+import { AutomationError } from "@autometa/errors";
+
+import { defineConfig } from "../config";
+
+const createDefaultConfig = () => ({
+  runner: "vitest" as const,
+  roots: {
+    features: ["features"],
+    steps: ["steps"],
+  },
+});
+
+describe("defineConfig", () => {
+  const originalEnv = process.env.TEST_ENV;
+
+  beforeEach(() => {
+    delete process.env.TEST_ENV;
+  });
+
+  afterEach(() => {
+    process.env.TEST_ENV = originalEnv;
+  });
+
+  it("resolves the default environment when no detectors are provided", () => {
+    const config = defineConfig({
+      default: createDefaultConfig(),
+    });
+
+    const resolved = config.resolve();
+
+    expect(resolved.environment).toBe("default");
+    expect(resolved.config.runner).toBe("vitest");
+    expect(resolved.config.roots.features).toEqual(["features"]);
+  });
+
+  it("merges environment overrides when detectors select them", () => {
+    const config = defineConfig({
+      default: createDefaultConfig(),
+      environments: {
+        ci: {
+          test: {
+            timeout: { value: 30, unit: "s" },
+          },
+          roots: {
+            features: ["ci/features"],
+            steps: ["ci/steps"],
+          },
+        },
+      },
+      environment: (env) => env.byLiteral("ci"),
+    });
+
+    const resolved = config.resolve();
+
+    expect(resolved.environment).toBe("ci");
+    expect(resolved.config.test?.timeout).toEqual({ value: 30, unit: "s" });
+    expect(resolved.config.roots.features).toEqual(["ci/features"]);
+    expect(resolved.config.roots.steps).toEqual(["ci/steps"]);
+  });
+
+  it("honours explicit resolve overrides", () => {
+    const config = defineConfig({
+      default: createDefaultConfig(),
+      environments: {
+        qa: {
+          events: ["qa"],
+        },
+      },
+    });
+
+    const resolved = config.resolve({ environment: "qa" });
+
+    expect(resolved.environment).toBe("qa");
+    expect(resolved.config.events).toEqual(["qa"]);
+  });
+
+  it("throws when requesting an unknown environment", () => {
+    const config = defineConfig({
+      default: createDefaultConfig(),
+    });
+
+    expect(() => config.forEnvironment("qa")).toThrowError(AutomationError);
+  });
+
+  it("detects environments via process environment variables", () => {
+    const config = defineConfig({
+      default: createDefaultConfig(),
+      environments: {
+        staging: {
+          roots: {
+            features: ["staging/features"],
+            steps: ["staging/steps"],
+          },
+        },
+      },
+      environment: (env) => env.byEnvironmentVariable("TEST_ENV"),
+    });
+
+    process.env.TEST_ENV = "staging";
+    const resolved = config.resolve();
+
+    expect(resolved.environment).toBe("staging");
+    expect(resolved.config.roots.features).toEqual(["staging/features"]);
+  });
+
+  it("returns deeply frozen configuration objects", () => {
+    const config = defineConfig({
+      default: createDefaultConfig(),
+    });
+
+    const { config: resolved } = config.resolve();
+
+    expect(Object.isFrozen(resolved)).toBe(true);
+    expect(Object.isFrozen(resolved.roots.features)).toBe(true);
+    expect(() => {
+      resolved.roots.features.push("new");
+    }).toThrow();
+  });
+
+  it("expands module-relative roots into effective roots", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+          parameterTypes: ["parameter-types"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["src/steps"],
+            parameterTypes: ["src/parameter-types.ts"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["api"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve();
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/brew-buddy/api/.features",
+      "features",
+    ]);
+
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/brew-buddy/api/src/steps",
+      "steps",
+    ]);
+
+    expect(resolved.config.roots.parameterTypes).toEqual([
+      "apps/brew-buddy/api/src/parameter-types.ts",
+      "parameter-types",
+    ]);
+  });
+
+  it("filters modules when module selectors are provided", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["menu", "order"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ modules: ["order"] });
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/brew-buddy/order/.features",
+      "features",
+    ]);
+
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/brew-buddy/order/steps",
+      "steps",
+    ]);
+  });
+
+  it("supports group filtering to disambiguate module names", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["api"],
+            },
+            "brew-buddy-auditing": {
+              root: "apps/brew-buddy-auditing",
+              modules: ["api"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["brew-buddy"], modules: ["api"] });
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/brew-buddy/api/.features",
+      "features",
+    ]);
+  });
+
+  it("throws when module suffix is ambiguous without a group", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: ["api"],
+            },
+            "brew-buddy-auditing": {
+              root: "apps/brew-buddy-auditing",
+              modules: ["api"],
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => config.resolve({ modules: ["api"] })).toThrowError(AutomationError);
+  });
+
+  it("supports nested module declarations and deep module selectors", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: [
+                "reports",
+                {
+                  name: "orders",
+                  submodules: ["cancellations"],
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["backoffice"], modules: ["orders:cancellations"] });
+
+    expect(resolved.config.roots.features).toEqual([
+      "apps/backoffice/orders/cancellations/.features",
+      "features",
+    ]);
+
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/backoffice/orders/cancellations/steps",
+      "steps",
+    ]);
+  });
+
+  it("supports exact deep selectors using group:module:submodule", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            "brew-buddy": {
+              root: "apps/brew-buddy",
+              modules: [{ name: "orders", submodules: ["cancellations"] }],
+            },
+            backoffice: {
+              root: "apps/backoffice",
+              modules: [{ name: "orders", submodules: ["cancellations"] }],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ modules: ["backoffice:orders:cancellations"] });
+    expect(resolved.config.roots.features).toEqual([
+      "apps/backoffice/orders/cancellations/.features",
+      "features",
+    ]);
+  });
+
+  it("allows modules groups without relativeRoots (hoisted discovery)", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve();
+    expect(resolved.config.roots.features).toEqual(["features"]);
+    expect(resolved.config.roots.steps).toEqual(["steps"]);
+  });
+
+  it("throws when module filters are used without relativeRoots", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => config.resolve({ groups: ["backoffice"], modules: ["reports"] })).toThrowError(
+      AutomationError
+    );
+  });
+
+  it("allows hoisted features while expanding only module-relative steps", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features/**/*.feature"],
+          steps: ["src/autometa/steps.ts"],
+        },
+        modules: {
+          relativeRoots: {
+            steps: ["steps/**/*.steps.ts"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["backoffice"], modules: ["reports"] });
+
+    // Features are hoisted (no module-relative features configured)
+    expect(resolved.config.roots.features).toEqual(["features/**/*.feature"]);
+
+    // Steps are module-expanded and then existing steps are preserved
+    expect(resolved.config.roots.steps).toEqual([
+      "apps/backoffice/reports/steps/**/*.steps.ts",
+      "src/autometa/steps.ts",
+    ]);
+  });
+
+  it("combines hoisted and module-relative features when both are configured", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features/**/*.feature"],
+          steps: ["steps/**/*.steps.ts"],
+        },
+        modules: {
+          relativeRoots: {
+            features: [".features/**/*.feature"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve({ groups: ["backoffice"], modules: ["reports"] });
+
+    // Module-expanded features are prepended, hoisted features remain
+    expect(resolved.config.roots.features).toEqual([
+      "apps/backoffice/reports/.features/**/*.feature",
+      "features/**/*.feature",
+    ]);
+
+    // Steps remain hoisted
+    expect(resolved.config.roots.steps).toEqual(["steps/**/*.steps.ts"]);
+  });
+
+  it("merges reporter buffering preferences", () => {
+    const config = defineConfig({
+      default: {
+        ...createDefaultConfig(),
+        reporting: {
+          hierarchical: {
+            bufferOutput: true,
+          },
+        },
+      },
+      environments: {
+        ci: {
+          reporting: {
+            hierarchical: {
+              bufferOutput: false,
+            },
+          },
+        },
+      },
+      environment: (env) => env.byLiteral("ci"),
+    });
+
+    const ciResolved = config.resolve();
+    expect(ciResolved.config.reporting?.hierarchical?.bufferOutput).toBe(false);
+
+    const defaultResolved = config.resolve({ environment: "default" });
+    expect(defaultResolved.config.reporting?.hierarchical?.bufferOutput).toBe(true);
+  });
+});

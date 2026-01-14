@@ -1,0 +1,20 @@
+{
+  "name": "@autometa/module-examples",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "autometa run --standalone -g brew-buddy && autometa run --standalone -g backoffice",
+    "test:list": "autometa run --standalone -g brew-buddy --dry-run && autometa run --standalone -g backoffice --dry-run",
+    "type-check": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@autometa/config": "workspace:*",
+    "@autometa/runner": "workspace:*"
+  },
+  "devDependencies": {
+    "@autometa/cli": "workspace:*",
+    "@types/node": "18.19.24",
+    "typescript": "5.4.5"
+  }
+}

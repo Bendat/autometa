@@ -1,0 +1,42 @@
+{
+  "name": "@autometa/examples-playwright-functions",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "autometa run",
+    "test:ui": "autometa run --watch",
+    "test:list": "autometa run --dry-run",
+    "features": "autometa run",
+    "features:ui": "autometa run --watch",
+    "type-check": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@autometa/app": "workspace:*",
+    "@autometa/assertions": "workspace:*",
+    "@autometa/config": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:*",
+    "@autometa/errors": "workspace:*",
+    "@autometa/executor": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/http": "workspace:*",
+    "@autometa/injection": "workspace:*",
+    "@autometa/playwright-executor": "workspace:*",
+    "@autometa/playwright-loader": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/scopes": "workspace:*",
+    "@cucumber/cucumber-expressions": "^16.1.2",
+    "@cucumber/gherkin": "^26.0.3",
+    "@cucumber/messages": "^21.0.1",
+    "@cucumber/tag-expressions": "^5.0.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@autometa/cli": "workspace:*",
+    "@babel/preset-typescript": "^7.28.5",
+    "@playwright/test": "^1.40.0",
+    "@types/node": "18.19.24",
+    "tsx": "^4.20.6",
+    "typescript": "5.4.5"
+  }
+}

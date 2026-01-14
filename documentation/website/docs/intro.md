@@ -2,46 +2,22 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Autometa v1 Docs
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Autometa v1 is now live. The refactor that unified our runners, DTO builders, and assertion tooling has shipped, and this site documents the release you can install from the public registry today.
 
-## Getting Started
+## What you can expect
 
-Get started by **creating a new site**.
+- **Task-focused guides** that mirror the source in `/examples`, so every instruction maps to a working project.
+- **Architecture notes** describing how the coordinator, executors, scopes, builders, and plugins cooperate at runtime.
+- **Reference docs** you can trust during delivery—callouts highlight when a feature still varies by runner or package version.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+## Where to start
 
-### What you'll need
+1. Head to [Getting Started → Installation](getting-started/installation) for the runner-specific setup tabs.
+2. Clone or browse the projects in `/examples` to compare each supported runner implementation side by side.
+3. Explore the architecture and reference sections for deeper dives into decorators, the `DtoBuilder`, and the `ensure(...)` plugin system.
 
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
-
-## Generate a new site
-
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
-```
-
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+:::tip Looking for Autometa v0?
+Use the version dropdown in the navigation bar and pick **Legacy (v0)** to view the previous documentation set.
+:::

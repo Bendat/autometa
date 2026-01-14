@@ -2,13 +2,15 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    alias: {
-      find: "@cucumber/tag-expressions",
-      replacement: "@cucumber/tag-expressions/dist/esm/index.js",
-    },
     coverage: {
-      provider: "v8", // or 'v8'
-      reporter: ["json-summary", "json"],
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      thresholds: {
+        lines: 49,
+        branches: 33,
+        functions: 14,
+        statements: 49,
+      },
     },
   },
 });

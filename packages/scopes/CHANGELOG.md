@@ -1,4 +1,4 @@
-# Gherkin
+# @autometa/scopes
 
 ## 0.7.2
 
@@ -602,7 +602,7 @@
   - @autometa/events@0.1.0
   - @autometa/gherkin@0.4.0
   - @autometa/phrases@0.1.0
-  - @autometa/types@0.4.0
+  - @automета/types@0.4.0
 
 ## 0.1.10
 

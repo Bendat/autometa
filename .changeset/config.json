@@ -7,5 +7,14 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": [
+    "@autometa/documentation",
+    "@autometa/examples-api",
+    "@autometa/examples-jest-functions",
+    "@autometa/examples-playwright-functions",
+    "@autometa/examples-runner-composition",
+    "@autometa/examples-vitest-decorators",
+    "@autometa/examples-vitest-functions",
+    "@autometa/module-examples"
+  ]
 }

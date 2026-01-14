@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Package Bundle Configuration",
+  "extends": "./package.build.json",
+  "compilerOptions": {
+    "paths": {}
+  }
+}

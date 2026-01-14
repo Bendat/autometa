@@ -1,4 +1,4 @@
-# Gherkin
+# @autometa/events
 
 ## 0.3.2
 

@@ -1,6 +1,7 @@
 import { SchemaMap } from "./schema.map";
-import {
+import type {
   HTTPAdditionalOptions,
+  HTTPRetryOptions,
   RequestHook,
   ResponseHook,
   SchemaParser,
@@ -18,117 +19,183 @@ export interface HTTPHooks {
   onReceive: [string, ResponseHook<unknown>][];
 }
 
-// export type MetaConfig = SchemaConfig & HTTPHooks;
-
 export class MetaConfig implements SchemaConfig, HTTPHooks {
-  schemas: SchemaMap;
-  requireSchema: boolean;
-  allowPlainText: boolean;
+  schemas: SchemaMap = new SchemaMap();
+  requireSchema = false;
+  allowPlainText = false;
   onSend: [string, RequestHook][] = [];
   onReceive: [string, ResponseHook<unknown>][] = [];
-  throwOnServerError: boolean;
+  throwOnServerError = false;
   options: HTTPAdditionalOptions<unknown> = {};
+  retry?: HTTPRetryOptions;
+  streamResponse = false;
+  timeoutMs: number | undefined = undefined;
+
+  constructor(init?: Partial<MetaConfig>) {
+    Object.assign(this, init);
+  }
 }
 
 export class MetaConfigBuilder {
-  #schemaMap = new SchemaMap();
-  #requireSchema = false;
-  #allowPlainText = false;
-  #onBeforeSend: [string, RequestHook][] = [];
-  #onAfterSend: [string, ResponseHook<unknown>][] = [];
-  #throwOnServerError = false;
-  #options: HTTPAdditionalOptions<unknown> = {};
+  private schemaMapValue = new SchemaMap();
+  private requireSchemaValue = false;
+  private allowPlainTextValue = false;
+  private onBeforeSendHooks: [string, RequestHook][] = [];
+  private onAfterReceiveHooks: [string, ResponseHook<unknown>][] = [];
+  private throwOnServerErrorValue = false;
+  private optionsValue: HTTPAdditionalOptions<unknown> = {};
+  private retryOptionsValue: HTTPRetryOptions | undefined;
+  private streamResponseValue = false;
+  private timeoutMsValue: number | undefined;
 
-  options(options: HTTPAdditionalOptions<unknown>) {
-    this.#options = { ...options };
+  merge(builder: MetaConfigBuilder) {
+    this.schemaMapValue = builder.schemaMapValue.derive();
+    this.requireSchemaValue = builder.requireSchemaValue;
+    this.allowPlainTextValue = builder.allowPlainTextValue;
+    this.onBeforeSendHooks = [...builder.onBeforeSendHooks];
+    this.onAfterReceiveHooks = [...builder.onAfterReceiveHooks];
+    this.throwOnServerErrorValue = builder.throwOnServerErrorValue;
+    this.optionsValue = { ...builder.optionsValue };
+    this.retryOptionsValue = builder.retryOptionsValue
+      ? { ...builder.retryOptionsValue }
+      : undefined;
+    this.streamResponseValue = builder.streamResponseValue;
+    this.timeoutMsValue = builder.timeoutMsValue;
     return this;
   }
+
   schemaMap(map: SchemaMap) {
-    this.#schemaMap = map;
+    this.schemaMapValue = map;
     return this;
   }
 
   schema(parser: SchemaParser, ...codes: StatusCode[]): MetaConfigBuilder;
   schema(
     parser: SchemaParser,
-    ...range: { from: StatusCode; to: StatusCode }[]
+    ...ranges: { from: StatusCode; to: StatusCode }[]
   ): MetaConfigBuilder;
   schema(
     parser: SchemaParser,
     ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
-  ): MetaConfigBuilder;
-  schema(
-    parser: SchemaParser,
-    ...args: (StatusCode | { from: StatusCode; to: StatusCode })[]
-  ) {
+  ): MetaConfigBuilder {
     args.forEach((arg) => {
       if (typeof arg === "number") {
-        this.#schemaMap.registerStatus(parser, arg);
-      } else if (Array.isArray(arg)) {
-        this.#schemaMap.registerStatus(parser, ...arg);
-      } else {
-        this.#schemaMap.registerRange(parser, arg.from, arg.to);
+        this.schemaMapValue.registerStatus(parser, arg);
+        return;
       }
+      if (Array.isArray(arg)) {
+        this.schemaMapValue.registerStatus(parser, ...arg);
+        return;
+      }
+      this.schemaMapValue.registerRange(parser, arg.from, arg.to);
     });
-
     return this;
   }
 
   requireSchema(value: boolean) {
-    this.#requireSchema = value;
+    this.requireSchemaValue = value;
     return this;
   }
 
   allowPlainText(value: boolean) {
-    this.#allowPlainText = value;
+    this.allowPlainTextValue = value;
     return this;
   }
 
   onBeforeSend(description: string, hook: RequestHook) {
-    this.#onBeforeSend.push([description, hook]);
-    return this;
-  }
-
-  #setOnSend(hooks: [string, RequestHook][]) {
-    this.#onBeforeSend = [...hooks];
-    return this;
-  }
-
-  throwOnServerError(value: boolean) {
-    this.#throwOnServerError = value;
+    this.onBeforeSendHooks.push([description, hook]);
     return this;
   }
 
   onReceiveResponse(description: string, hook: ResponseHook<unknown>) {
-    this.#onAfterSend.push([description, hook]);
+    this.onAfterReceiveHooks.push([description, hook]);
     return this;
   }
 
-  #setOnReceive(hooks: [string, ResponseHook<unknown>][]) {
-    this.#onAfterSend = [...hooks];
+  throwOnServerError(value: boolean) {
+    this.throwOnServerErrorValue = value;
+    return this;
+  }
+
+  options(options: HTTPAdditionalOptions<unknown>) {
+    this.optionsValue = mergeOptions(this.optionsValue, options);
+    return this;
+  }
+
+  retry(options: HTTPRetryOptions | null) {
+    this.retryOptionsValue = options ? { ...options } : undefined;
+    return this;
+  }
+
+  streamResponse(value: boolean) {
+    this.streamResponseValue = value;
+    return this;
+  }
+
+  timeout(duration: number | null | undefined) {
+    if (typeof duration === "number" && duration > 0) {
+      this.timeoutMsValue = duration;
+    } else {
+      this.timeoutMsValue = undefined;
+    }
     return this;
   }
 
   build() {
-    const config = new MetaConfig();
-    config.schemas = this.#schemaMap.derive();
-    config.requireSchema = this.#requireSchema;
-    config.allowPlainText = this.#allowPlainText;
-    config.onSend = this.#onBeforeSend;
-    config.onReceive = this.#onAfterSend;
-    config.options = this.#options;
-    config.throwOnServerError = this.#throwOnServerError;
-    return config;
+    const retry = this.retryOptionsValue
+      ? { ...this.retryOptionsValue }
+      : undefined;
+
+    return new MetaConfig({
+      schemas: this.schemaMapValue.derive(),
+      requireSchema: this.requireSchemaValue,
+      allowPlainText: this.allowPlainTextValue,
+      onSend: [...this.onBeforeSendHooks],
+      onReceive: [...this.onAfterReceiveHooks],
+      options: { ...this.optionsValue },
+      throwOnServerError: this.throwOnServerErrorValue,
+      ...(retry ? { retry } : {}),
+      streamResponse: this.streamResponseValue,
+      timeoutMs: this.timeoutMsValue,
+    });
   }
 
   derive() {
     return new MetaConfigBuilder()
-      .schemaMap(this.#schemaMap.derive())
-      .requireSchema(this.#requireSchema)
-      .allowPlainText(this.#allowPlainText)
-      .throwOnServerError(this.#throwOnServerError)
-      .options(this.#options)
-      .#setOnSend(this.#onBeforeSend)
-      .#setOnReceive(this.#onAfterSend);
+      .schemaMap(this.schemaMapValue.derive())
+      .requireSchema(this.requireSchemaValue)
+      .allowPlainText(this.allowPlainTextValue)
+      .throwOnServerError(this.throwOnServerErrorValue)
+      .options(this.optionsValue)
+      .retry(this.retryOptionsValue ?? null)
+      .streamResponse(this.streamResponseValue)
+      .timeout(this.timeoutMsValue)
+      .setOnBeforeSend(this.onBeforeSendHooks)
+      .setOnAfterReceive(this.onAfterReceiveHooks);
   }
+
+  private setOnBeforeSend(hooks: [string, RequestHook][]) {
+    this.onBeforeSendHooks = [...hooks];
+    return this;
+  }
+
+  private setOnAfterReceive(hooks: [string, ResponseHook<unknown>][]) {
+    this.onAfterReceiveHooks = [...hooks];
+    return this;
+  }
+}
+
+function mergeOptions(
+  target: HTTPAdditionalOptions<unknown>,
+  updates: HTTPAdditionalOptions<unknown>
+) {
+  const next = { ...target } as Record<string, unknown>;
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined) {
+      delete next[key];
+    } else {
+      next[key] = value;
+    }
+  }
+  return next as HTTPAdditionalOptions<unknown>;
 }

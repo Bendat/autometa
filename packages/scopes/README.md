@@ -1,3 +1,3 @@
-# Gherkin
+# Introduction
 
-Gherkin implementation for @autometa.
+There's nothing here yet

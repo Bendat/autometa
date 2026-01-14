@@ -1,29 +1,29 @@
-import type { StringTransformer } from "./string-transformer";
+import type { AnyFunction } from "@autometa/types";
 
-export type StringTransformers = (() => StringTransformer)[];
+/**
+ * Describes a concrete transformation that mutates a phrase.
+ */
+export interface PhraseTransform {
+  readonly name: string;
+  readonly apply: (value: string) => string;
+  readonly kind?: "case" | "prefix" | "suffix" | "sanitize" | "custom";
+}
 
-export type TimeUnit =
-  | "years"
-  | "months"
-  | "weeks"
-  | "days"
-  | "hours"
-  | "minutes"
-  | "seconds"
-  | "milliseconds";
+/**
+ * Factory that produces a new {@link PhraseTransform} instance.
+ */
+export type PhraseTransformFactory = () => PhraseTransform;
+
+export type PhraseTransforms = ReadonlyArray<PhraseTransformFactory>;
 
 export type PhraseConverter = (
   key: string,
-  ...transformers: StringTransformers
+  ...mutations: PhraseTransformFactory[]
 ) => string;
 
-export type FromPhraseFunction = <TObj, TReturn>(
-  item: TObj,
+export type CurriedPhraseConverter<TDefault = unknown> = <T = TDefault>(
   key: string,
-  ...mutations: (() => StringTransformer)[]
-) => TReturn;
+  ...mutations: PhraseTransformFactory[]
+) => T;
 
-export type CurriedFromPhraseFunction = <TReturn>(
-  key: string,
-  ...mutations: (() => StringTransformer)[]
-) => TReturn;
+export type PhraseTarget = Record<string, unknown> | AnyFunction;

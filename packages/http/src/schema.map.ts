@@ -1,68 +1,60 @@
-import { SchemaParser, StatusCode } from "./types";
+import type { SchemaParser, StatusCode } from "./types";
+
 export class SchemaMap {
-  #map: Map<StatusCode, SchemaParser>;
+  private map: Map<StatusCode, SchemaParser>;
+
   constructor(map?: Map<StatusCode, SchemaParser> | SchemaMap) {
     if (map instanceof SchemaMap) {
-      this.#map = new Map(map.#map);
+      this.map = new Map(map.map);
       return;
     }
-    this.#map = new Map(map);
+    this.map = map ? new Map(map) : new Map();
   }
 
   derive() {
-    return new SchemaMap(this.#map);
+    return new SchemaMap(this.map);
   }
 
   registerStatus(parser: SchemaParser, ...codes: StatusCode[]) {
     codes.forEach((code) => {
-      if (this.#map.has(code)) {
-        const msg = `Status code ${code} is already registered with a parser`;
-        throw new Error(msg);
-      }
-      this.#map.set(code, parser);
+      this.map.set(code, parser);
     });
   }
 
   registerRange(parser: SchemaParser, from: StatusCode, to: StatusCode) {
-    for (let i = from; i <= to; i++) {
-      if (this.#map.has(i)) {
-        throw new Error(`Status code ${i} is already registered with a parser`);
-      }
-      this.#map.set(i, parser);
+    for (let code = from; code <= to; code++) {
+      this.map.set(code as StatusCode, parser);
     }
   }
 
   validate(status: StatusCode, data: unknown, requireSchema: boolean) {
     const parser = this.getParser(status, requireSchema);
+    if (!parser) {
+      return data;
+    }
+    if (typeof parser === "function") {
+      return parser(data);
+    }
     if ("parse" in parser) {
       return parser.parse(data);
     }
     if ("validate" in parser) {
       return parser.validate(data);
     }
-    try {
-      return parser(data);
-    } catch (e) {
-      const msg = `Failed to schema parse response data for status code ${status} with data:
-      
-${JSON.stringify(data, null, 2)}}`;
-      throw new Error(msg);
-    }
+    return data;
   }
 
   getParser(status: StatusCode, requireSchema: boolean) {
-    const parser = this.#map.get(status);
+    const parser = this.map.get(status);
     if (!parser && requireSchema) {
-      const msg = `No parser registered for status code ${status} but 'requireSchema' is true`;
-      throw new Error(msg);
+      throw new Error(
+        `No schema parser registered for status code ${status} while requireSchema is true.`
+      );
     }
-    if (parser) {
-      return parser;
-    }
-    return (data: unknown) => data;
+    return parser ?? null;
   }
 
   toObject() {
-    return Object.fromEntries(this.#map) as Record<StatusCode, SchemaParser>;
+    return Object.fromEntries(this.map) as Record<StatusCode, SchemaParser>;
   }
 }

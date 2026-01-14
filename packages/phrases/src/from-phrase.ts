@@ -1,76 +1,111 @@
-import { FromKey, ConfirmKey, AssertKey } from "@autometa/asserters";
+import { assertKey, confirmKey, getKey } from "@autometa/asserters";
+import type { Class } from "@autometa/types";
 import { convertPhrase } from "./convert-phrase";
-import { StringTransformer } from "./string-transformer";
-import { PhraseConverter } from "./types";
-import { AnyFunction, Class } from "@autometa/types";
+import type {
+  CurriedPhraseConverter,
+  PhraseConverter,
+  PhraseTarget,
+  PhraseTransformFactory,
+} from "./types";
 
-export function IsPhrase<
-  TObj extends Record<string, unknown> | AnyFunction,
-  TPhrase extends string,
-  TMutations extends (() => StringTransformer)[]
->(item: TObj, key: TPhrase, ...mutations: TMutations) {
-  const asVariable = convertPhrase(key, ...mutations);
-  return ConfirmKey(item, asVariable);
-}
-
-export function AssertPhrase<
-  TObj extends Record<string, unknown> | AnyFunction,
-  TPhrase extends string,
-  TMutations extends (() => StringTransformer)[]
->(item: TObj, key: TPhrase, ...mutations: TMutations) {
-  const asVariable = convertPhrase(key, ...mutations);
-  AssertKey(item, asVariable);
-}
-
-export type IFromPhrase<TDefault = unknown> = <T = TDefault>(
+function resolveProperty(
   key: string,
-  ...mutations: (() => StringTransformer)[]
-) => T;
-export function FromPhrase(target: Class<unknown>) {
-  target.prototype.fromPhrase = function (
-    key: string,
-    ...mutations: (() => StringTransformer)[]
-  ) {
-    return From(this).byPhrase(key, ...mutations);
-  };
+  transforms: PhraseTransformFactory[]
+): string {
+  return convertPhrase(key, ...transforms);
 }
 
-export function From<TObj extends Record<string, unknown> | AnyFunction>(
-  obj: TObj
+export function isPhrase<
+  TObj extends PhraseTarget,
+  TPhrase extends string
+>(
+  item: TObj,
+  key: TPhrase,
+  ...mutations: PhraseTransformFactory[]
 ) {
+  const property = resolveProperty(key, mutations);
+  return confirmKey(item, property);
+}
+
+export const IsPhrase = isPhrase;
+
+export function assertPhrase<
+  TObj extends PhraseTarget,
+  TPhrase extends string
+>(
+  item: TObj,
+  key: TPhrase,
+  ...mutations: PhraseTransformFactory[]
+): void {
+  const property = resolveProperty(key, mutations);
+  assertKey(item, property);
+}
+
+export const AssertPhrase = assertPhrase;
+
+export type IFromPhrase<TDefault = unknown> = CurriedPhraseConverter<TDefault>;
+
+function createResolver(context: PhraseTarget): PhraseConverter {
+  return (key, ...mutations) => from(context).byPhrase(key, ...mutations);
+}
+
+export function from<TObj extends PhraseTarget>(obj: TObj) {
   return {
-    byPhrase(key: string, ...mutations: (() => StringTransformer)[]) {
-      AssertPhrase(obj, key, ...mutations);
-      const asVariable = convertPhrase(key, ...mutations);
-      return FromKey(obj, asVariable) as TObj[keyof TObj];
+    byPhrase<TResult = TObj[keyof TObj]>(
+      key: string,
+      ...mutations: PhraseTransformFactory[]
+    ): TResult {
+      assertPhrase(obj, key, ...mutations);
+      const property = resolveProperty(key, mutations);
+      return getKey(obj, property) as TResult;
     },
   };
 }
 
-export function AddPhraseImpl<T extends Record<string, unknown> | AnyFunction>(
+export const From = from;
+
+function defineLazyResolver(
+  target: object,
+  factory: (ctx: PhraseTarget) => PhraseConverter
+): void {
+  Object.defineProperty(target, "fromPhrase", {
+    configurable: true,
+    enumerable: false,
+    get(this: PhraseTarget) {
+      const resolver = factory(this);
+      Object.defineProperty(this, "fromPhrase", {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: resolver,
+      });
+      return resolver;
+    },
+  });
+}
+
+export function AddPhraseImpl<T extends PhraseTarget>(
   obj: T,
   transformer?: PhraseConverter
-): T & { fromPhrase: PhraseConverter } {
-  const func = transformer ?? FromPhrase.bind(obj).bind(obj);
-  return Object.defineProperties(obj, {
-    fromPhrase: {
-      enumerable: false,
+): T & { readonly fromPhrase: PhraseConverter } {
+  if (transformer) {
+    Object.defineProperty(obj, "fromPhrase", {
       configurable: false,
+      enumerable: false,
       writable: false,
-      value: {
-        get() {
-          return func;
-        },
-      },
-    },
-  }) as unknown as T & { fromPhrase: PhraseConverter };
+      value: transformer,
+    });
+    return obj as T & { readonly fromPhrase: PhraseConverter };
+  }
+
+  defineLazyResolver(obj, createResolver);
+  return obj as T & { readonly fromPhrase: PhraseConverter };
 }
 
-export function PhraseParser<T>(target: Class<T>) {
-  target.prototype.fromPhrase = function (
-    key: string,
-    ...mutations: (() => StringTransformer)[]
-  ) {
-    return From(this).byPhrase(key, ...mutations);
-  };
+export function PhraseParser<T>(target: Class<T>): void {
+  defineLazyResolver(target.prototype, createResolver);
+}
+
+export function FromPhrase(target: Class<unknown>): void {
+  defineLazyResolver(target.prototype, createResolver);
 }

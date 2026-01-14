@@ -1,0 +1,198 @@
+name: CI
+
+on:
+  push:
+    branches: [main, refactor/v1-rewrite]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Determine tool versions
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ steps.versions.outputs.node-version }}
+      pnpm-version: ${{ steps.versions.outputs.pnpm-version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Read Node and pnpm versions
+        id: versions
+        shell: bash
+        run: |
+          echo "node-version=$(node -p "(() => { const pkg = require('./package.json'); return (pkg?.volta?.node) ?? process.versions.node; })()")" >> "$GITHUB_OUTPUT"
+          echo "pnpm-version=$(node -p "(() => { const pkg = require('./package.json'); const manager = pkg?.packageManager || ''; const parts = manager.split('@'); return parts.length > 1 ? parts[1] : '9.0.0'; })()")" >> "$GITHUB_OUTPUT"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.prepare.outputs.pnpm-version }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.prepare.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run lint
+        run: pnpm lint
+
+  tests:
+    name: Build and Test
+    needs:
+      - prepare
+      - lint
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.prepare.outputs.pnpm-version }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.prepare.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build
+      - name: Test generated types
+        if: runner.os == 'Linux'
+        run: pnpm test:types
+      - name: Run unit tests
+        run: pnpm test
+      - name: Generate coverage report
+        if: runner.os == 'Linux'
+        run: pnpm coverage
+      - name: Report coverage
+        if: runner.os == 'Linux'
+        uses: davelosert/vitest-coverage-report-action@v2
+
+  integration:
+    name: Integration tests
+    needs:
+      - prepare
+      - tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.prepare.outputs.pnpm-version }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.prepare.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build
+      - name: Run integration suite
+        run: |
+          if node -e "const pkg = require('./package.json'); process.exit(pkg?.scripts?.integrate ? 0 : 1)"; then
+            pnpm run integrate
+          else
+            echo "No integrate script defined; skipping"
+          fi
+
+  examples-integration:
+    name: Examples integration (API-backed)
+    needs:
+      - prepare
+      - tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.prepare.outputs.pnpm-version }}
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.prepare.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace (incl. CLI & API)
+        run: pnpm build
+
+      - name: Start Brew Buddy API
+        run: |
+          PORT=4000 HOST=127.0.0.1 pnpm --filter @autometa/examples-api run dev > api.log 2>&1 &
+          echo $! > api.pid
+
+      - name: Wait for API readiness
+        run: pnpm dlx wait-on@7.2.0 http://127.0.0.1:4000/health --timeout 20000
+
+      - name: Run Vitest functions features
+        env:
+          BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
+        run: pnpm --filter @autometa/examples-vitest-functions run features
+
+      - name: Run Vitest decorators features
+        env:
+          BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
+        run: pnpm --filter @autometa/examples-vitest-decorators run features
+
+      - name: Run Jest functions features
+        env:
+          BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
+        run: pnpm --filter @autometa/examples-jest-functions run features
+
+      - name: Stop Brew Buddy API
+        if: always()
+        run: |
+          if [ -f api.pid ]; then
+            kill $(cat api.pid) || true
+          fi
+          if [ -f api.log ]; then
+            tail -n 200 api.log || true
+          fi

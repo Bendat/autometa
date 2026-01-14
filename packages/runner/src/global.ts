@@ -1,0 +1,69 @@
+import type { RunnerEnvironment } from "./dsl/create-runner";
+import type { RunnerContextOptions } from "./core/runner-context";
+import {
+	createGlobalRunner,
+	type GlobalRunner,
+} from "./dsl/create-global-runner";
+
+export interface GlobalWorld {
+	[key: string]: unknown;
+}
+
+export type GlobalRunnerOptions = RunnerContextOptions<GlobalWorld>;
+
+let runnerInstance: GlobalRunner<GlobalWorld> | undefined;
+
+function instantiateRunner(options?: GlobalRunnerOptions) {
+	return createGlobalRunner<GlobalWorld>(options);
+}
+
+function requireConfigured(action: string): GlobalRunner<GlobalWorld> {
+	if (!runnerInstance) {
+		throw new Error(
+			`Global runner has not been configured. ${action}`
+		);
+	}
+	return runnerInstance;
+}
+export function getGlobalRunner(options?: GlobalRunnerOptions) {
+	if (!runnerInstance) {
+		runnerInstance = instantiateRunner(options);
+	}
+	return runnerInstance;
+}
+
+export function configureGlobalRunner(options?: GlobalRunnerOptions) {
+	runnerInstance = instantiateRunner(options);
+	return runnerInstance;
+}
+
+export function resetGlobalRunner(options?: GlobalRunnerOptions) {
+	runnerInstance = instantiateRunner(options);
+	return runnerInstance;
+}
+
+export function disposeGlobalRunner() {
+	runnerInstance = undefined;
+}
+
+export function useGlobalRunnerEnvironment(
+	environment: RunnerEnvironment<GlobalWorld>
+) {
+	const runner = requireConfigured(
+		"Call configureGlobalRunner() before injecting environments."
+	);
+	return runner.useEnvironment(environment);
+}
+
+export function getGlobalRunnerEnvironment() {
+	const runner = requireConfigured(
+		"Call configureGlobalRunner() before reading environments."
+	);
+	return runner.getEnvironment();
+}
+
+export function getConfiguredGlobalRunner() {
+	return requireConfigured(
+		"Call configureGlobalRunner() before accessing runner APIs."
+	);
+}

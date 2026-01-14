@@ -1,4 +1,2 @@
-export * from "./bridges";
-export * from "./test-builder";
-export * from "./scope-search";
-export * from "./gherkin-walker";
+export { buildTestPlan } from "./build-test-plan";
+export * from "./types";

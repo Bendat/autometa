@@ -1,14 +1,6 @@
-import { defineConfig } from "tsup";
+import { createTsupConfig } from "tsup-config";
 
-export default defineConfig({
-  clean: true, // clean up the dist folder
-  dts: true, // generate dts files
-  sourcemap: true, // generate sourcemaps
-  format: ["cjs", "esm"], // generate cjs and esm files
-  skipNodeModulesBundle: true,
-  entryPoints: ["src/index.ts"],
-  target: "es2020",
-  outDir: "dist",
-  legacyOutput: true,
-  external: ["dist"],
+export default createTsupConfig({
+  tsconfig: "./tsconfig.bundle.json",
+  dts: false, // Use tsc post-build to emit declarations into dist/
 });

@@ -1,14 +1,8 @@
-import { defineConfig } from "tsup";
+import { createTsupConfig } from "tsup-config";
 
-export default defineConfig({
-  clean: true, // clean up the dist folder
-  sourcemap: true, // generate sourcemaps
-  format: ["cjs", "esm"], // generate cjs and esm files
-  dts: true,
-  skipNodeModulesBundle: true,
-  entryPoints: ["src/index.ts"],
-  target: "es2020",
-  outDir: "dist",
-  legacyOutput: true,
-  external: ["dist"],
+export default createTsupConfig({
+  tsconfig: "./tsconfig.bundle.json",
+  dts: false, // Declarations are emitted by the dedicated tsc build step
+  // Keep runtime dependencies external so consumers resolve their own copies
+  external: ["@cucumber/gherkin", "@cucumber/messages", "uuid"]
 });

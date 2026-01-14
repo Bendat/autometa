@@ -1,0 +1,51 @@
+name: Release PR
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine tool versions
+        id: versions
+        run: |
+          echo "node-version=$(node -p "(() => { const pkg = require('./package.json'); return (pkg?.volta?.node) ?? process.versions.node; })()")" >> "$GITHUB_OUTPUT"
+          echo "pnpm-version=$(node -p "(() => { const pkg = require('./package.json'); const manager = pkg?.packageManager || ''; const parts = manager.split('@'); return parts.length > 1 ? parts[1] : '9.0.0'; })()")" >> "$GITHUB_OUTPUT"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ steps.versions.outputs.pnpm-version }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.versions.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Create or update release PR
+        uses: changesets/action@v1
+        with:
+          version: pnpm release:prepare
+          commit: "chore(release): version packages"
+          title: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

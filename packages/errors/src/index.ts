@@ -1,4 +1,38 @@
-export * from "./automation-error";
-export * from "./raise";
-export * from "./safe-error";
-export * from "./formatter";
+export {
+	AutomationError,
+	type AutomationErrorOptions,
+} from "./automation-error";
+export {
+	GherkinStepError,
+	getGherkinErrorContext,
+	isGherkinStepError,
+	type CodeContextSegment,
+	type GherkinContextSegment,
+	type GherkinContextPathSegment,
+	type GherkinContextRole,
+	type GherkinErrorContext,
+	type GherkinStepStatus,
+	type GherkinStepSummary,
+	type GherkinStepErrorOptions,
+	type SourceLocation,
+	type SourcePosition,
+} from "./gherkin-error";
+export {
+	formatErrorCauses,
+	formatErrorTree,
+	printErrorTree,
+	type FormatErrorCausesOptions,
+	type FormatErrorTreeOptions,
+	type PrintErrorTreeOptions,
+} from "./formatter";
+export {
+	raise,
+	type RaiseOptions,
+} from "./raise";
+export {
+	safe,
+	safeAsync,
+	type SafeErr,
+	type SafeOk,
+	type SafeResult,
+} from "./safe-error";

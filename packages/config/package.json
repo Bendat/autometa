@@ -3,49 +3,51 @@
   "version": "0.1.27",
   "description": "",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "rimraf tsconfig.types.tsbuildinfo && tsc --build tsconfig.types.json",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",
-    "coverage": "vitest run --coverage",
-    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "test:watch": "vitest --passWithNoTests",
+    "test:ui": "vitest --ui --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "clean": "rimraf dist",
-    "build": "tsup",
-    "build:watch": "tsup --watch"
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
   },
   "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/index.js",
-    "default": "./dist/esm/index.js",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^18.11.18",
-    "@types/uuid": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "@vitest/coverage-istanbul": "^1.4.0",
-    "@vitest/coverage-v8": "^1.4.0",
     "eslint": "^8.37.0",
     "eslint-config-custom": "workspace:*",
     "eslint-config-prettier": "^8.3.0",
-    "istanbul": "^0.4.5",
     "rimraf": "^4.1.2",
-    "tsconfig": "workspace: *",
+    "tsconfig": "workspace:*",
     "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
     "typescript": "^4.9.5",
     "vitest": "1.4.0"
   },
   "dependencies": {
-    "@autometa/app": "workspace:^",
-    "@autometa/asserters": "workspace:^",
-    "@autometa/errors": "workspace:^",
-    "@autometa/types": "workspace:^",
-    "error-cause": "^1.0.5",
-    "zod": "^3.21.4"
+    "@autometa/errors": "workspace:*",
+    "zod": "^3.25.76"
   }
 }

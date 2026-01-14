@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
+    "paths": {
+      "@autometa/*": [
+        "../*/src",
+        "../*/dist/index.d.ts"
+      ]
+    },
+    "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    ".reference"
+  ],
+  "references": [
+    {
+      "path": "../assertions/tsconfig.types.json"
+    },
+    {
+      "path": "../coordinator/tsconfig.types.json"
+    },
+    {
+      "path": "../cucumber-expressions/tsconfig.types.json"
+    },
+    {
+      "path": "../executor/tsconfig.types.json"
+    },
+    {
+      "path": "../injection/tsconfig.types.json"
+    },
+    {
+      "path": "../scopes/tsconfig.types.json"
+    }
+  ]
+}

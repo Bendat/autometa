@@ -1,66 +1,139 @@
-import { DataTable, Feature } from "@autometa/gherkin";
-import { GherkinNode } from "@autometa/gherkin";
-import { Scope, ScenarioScope, StepScope } from "@autometa/scopes";
-import { App } from "@autometa/app";
-import { Step } from "@autometa/gherkin";
-import { Scenario } from "@autometa/gherkin";
-import { ScenarioOutline } from "@autometa/gherkin";
-import { FeatureScope } from "@autometa/scopes";
+import type {
+  ScopeExecutionAdapter,
+  ScopeNode,
+  ScenarioSummary,
+  StepDefinition,
+  ExecutionMode,
+  TimeoutSpec,
+} from "@autometa/scopes";
+import type {
+  SimpleCompiledScenario,
+  SimpleExampleGroup,
+  SimpleFeature,
+  SimpleRule,
+  SimpleScenario,
+  SimpleScenarioOutline,
+  SimpleStep,
+} from "@autometa/gherkin";
 
-type HookFunction = (app: App) => unknown | Promise<unknown>;
-export type HookWrapper = (...args: unknown[]) => unknown | Promise<unknown>;
-export type TimeoutFunction = (ms: number) => void;
-export type ExternalHooks = {
-  beforeAll: HookFunction;
-  beforeEach: HookFunction;
-  afterAll: HookFunction;
-  afterEach: HookFunction;
-};
+/**
+ * Status values tracked for each executable scenario row within a feature.
+ */
+export type ScenarioStatus = "pending" | "passed" | "failed" | "skipped";
 
-export type ExternalHookWrappers = {
-  beforeAll: HookWrapper;
-  beforeEach: HookWrapper;
-  afterAll: HookWrapper;
-  afterEach: HookWrapper;
-};
-export type Groups = "Feature" | "Rule" | "Scenario Outline" | "Examples";
-export type GroupData = {
-  gherkin: GherkinNode;
-  scope?: Scope;
-};
-export type FeatureData = {
-  gherkin: Feature;
-  scope: FeatureScope;
-};
-export type TestData = {
-  gherkin: Scenario | ScenarioOutline;
-  scope?: ScenarioScope;
-};
-export type StepData = {
-  gherkin: Step;
-  scope: StepScope<string, DataTable>;
-};
+/**
+ * Runtime result metadata captured for a scenario or example execution.
+ */
+export interface ScenarioResult {
+  readonly status: ScenarioStatus;
+  readonly error?: Error;
+  readonly reason?: string;
+  readonly startedAt?: number;
+  readonly completedAt?: number;
+}
 
-export type OnFailure = () => void;
+/**
+ * Shared metadata for the fully qualified Gherkin location of a node.
+ */
+export interface QualifiedPathSegment {
+  readonly keyword: string;
+  readonly name?: string;
+  readonly suffix?: string;
+}
 
-export type TestGroup = ((
-  title: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (...args: any[]) => void
-) => void) & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  skip: (title: string, action: (...args: any[]) => void) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  only: (title: string, action: (...args: any[]) => void) => void;
-};
+export interface ScenarioExecution<World> {
+  readonly id: string;
+  readonly type: "scenario" | "example";
+  readonly name: string;
+  readonly keyword: string;
+  readonly qualifiedName: string;
+  readonly tags: readonly string[];
+  readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
+  readonly timeout?: TimeoutSpec;
+  readonly data?: Record<string, unknown>;
+  readonly feature: FeatureNode<World>;
+  readonly rule?: RuleNode<World>;
+  readonly outline?: ScenarioOutlineNode<World>;
+  readonly scope: ScopeNode<World>;
+  readonly summary: ScenarioSummary<World>;
+  readonly gherkin: SimpleScenario | SimpleCompiledScenario;
+  readonly gherkinSteps: readonly SimpleStep[];
+  readonly steps: readonly StepDefinition<World>[];
+  readonly ancestors: readonly ScopeNode<World>[];
+  readonly result: ScenarioResult;
+  markPassed(): void;
+  markFailed(error: unknown): void;
+  markSkipped(reason?: string): void;
+  markPending(reason?: string): void;
+  reset(): void;
+}
 
-export type Test = ((
-  title: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (...args: any[]) => void
-) => void) & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  skip: (title: string, action: (...args: any[]) => void) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  only: (title: string, action: (...args: any[]) => void) => void;
-};
+export interface ScenarioOutlineExample<World> extends ScenarioExecution<World> {
+  readonly outline: ScenarioOutlineNode<World>;
+  readonly exampleGroup: SimpleExampleGroup;
+  readonly compiled: SimpleCompiledScenario;
+  readonly exampleIndex: number;
+}
+
+export interface ScenarioNode<World> extends ScenarioExecution<World> {
+  readonly gherkin: SimpleScenario;
+}
+
+export interface ScenarioOutlineNode<World> {
+  readonly type: "scenarioOutline";
+  readonly name: string;
+  readonly keyword: string;
+  readonly qualifiedName: string;
+  readonly outline: SimpleScenarioOutline;
+  readonly scope: ScopeNode<World>;
+  readonly summary: ScenarioSummary<World>;
+  readonly tags: readonly string[];
+  readonly mode: ExecutionMode;
+  readonly pending: boolean;
+  readonly pendingReason?: string;
+  readonly timeout?: TimeoutSpec;
+  readonly data?: Record<string, unknown>;
+  readonly ancestors: readonly ScopeNode<World>[];
+  readonly examples: readonly ScenarioOutlineExample<World>[];
+}
+
+export interface RuleNode<World> {
+  readonly type: "rule";
+  readonly name: string;
+  readonly keyword: string;
+  readonly qualifiedName: string;
+  readonly rule: SimpleRule;
+  readonly scope: ScopeNode<World>;
+  readonly scenarios: readonly ScenarioNode<World>[];
+  readonly scenarioOutlines: readonly ScenarioOutlineNode<World>[];
+  readonly background?: SimpleScenario;
+}
+
+export interface FeatureNode<World> {
+  readonly type: "feature";
+  readonly name: string;
+  readonly keyword: string;
+  readonly feature: SimpleFeature;
+  readonly scope: ScopeNode<World>;
+  readonly scenarios: readonly ScenarioNode<World>[];
+  readonly scenarioOutlines: readonly ScenarioOutlineNode<World>[];
+  readonly rules: readonly RuleNode<World>[];
+  readonly background?: SimpleScenario;
+  listExecutables(): readonly ScenarioExecution<World>[];
+}
+
+export interface TestPlan<World> {
+  readonly feature: FeatureNode<World>;
+  listExecutables(): readonly ScenarioExecution<World>[];
+  listFailed(): readonly ScenarioExecution<World>[];
+  findById(id: string): ScenarioExecution<World> | undefined;
+  findByQualifiedName(name: string): ScenarioExecution<World> | undefined;
+}
+
+export interface BuildTestPlanOptions<World> {
+  readonly feature: SimpleFeature;
+  readonly adapter: ScopeExecutionAdapter<World>;
+  readonly featureScope?: ScopeNode<World>;
+}

@@ -8,6 +8,10 @@ node_modules
 # testing
 coverage
 
+# playwright
+playwright-report/
+test-results/
+
 # next.js
 .next/
 out/
@@ -35,13 +39,20 @@ yarn-error.log*
 # build
 test-out/
 dist/
+*.tsbuildinfo
 *.tgz
 tests-out/
 
 .allure
 .allure-reports
 
-.nx
 **/*/vitest.config.ts.timestamp-*
 
 tmp*/
+# temporarily ignore migratory cache files for packages
+.reference
+
+# autometa cli build cache
+.autometa-cli/
+.ignore/
+.claude/

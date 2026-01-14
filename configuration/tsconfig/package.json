@@ -2,7 +2,14 @@
   "name": "tsconfig",
   "version": "0.7.0",
   "private": true,
+  "description": "Shared TypeScript configurations for Autometa packages",
+  "exports": {
+    "./base.json": "./base.json",
+    "./package.config.json": "./package.config.json",
+    "./package.json": "./package.config.json"
+  },
   "files": [
-    "base.json"
+    "base.json",
+    "package.config.json"
   ]
 }

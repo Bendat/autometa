@@ -1,0 +1,71 @@
+name: Publish Packages
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+concurrency:
+  group: publish-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          (startsWith(github.event.workflow_run.head_commit.message, 'chore: release packages') ||
+           startsWith(github.event.workflow_run.head_commit.message, 'chore(release): version packages') ||
+           startsWith(github.event.workflow_run.head_commit.message, 'chore(release):')) }}
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Determine tool versions
+        id: versions
+        run: |
+          echo "node-version=$(node -p "(() => { const pkg = require('./package.json'); return (pkg?.volta?.node) ?? process.versions.node; })()")" >> "$GITHUB_OUTPUT"
+          echo "pnpm-version=$(node -p "(() => { const pkg = require('./package.json'); const manager = pkg?.packageManager || ''; const parts = manager.split('@'); return parts.length > 1 ? parts[1] : '9.0.0'; })()")" >> "$GITHUB_OUTPUT"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ steps.versions.outputs.pnpm-version }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.versions.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+          registry-url: https://registry.npmjs.org
+      - name: Verify npm credentials
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "Missing NPM_TOKEN; aborting before publish to avoid broken releases."
+            exit 1
+          fi
+          npm whoami
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build
+      - name: Publish with Changesets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+        run: pnpm release:publish

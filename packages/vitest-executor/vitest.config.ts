@@ -1,0 +1,31 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { defineConfig } from "vitest/config";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const resolveFromRoot = (relativePath: string) => path.resolve(__dirname, relativePath);
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@autometa/gherkin": resolveFromRoot("../gherkin/src/index.ts"),
+      "@cucumber/gherkin": resolveFromRoot("../gherkin/node_modules/@cucumber/gherkin"),
+      "@cucumber/messages": resolveFromRoot("../gherkin/node_modules/@cucumber/messages"),
+      "@cucumber/tag-expressions": resolveFromRoot("../gherkin/node_modules/@cucumber/tag-expressions"),
+      uuid: resolveFromRoot("../gherkin/node_modules/uuid"),
+    },
+  },
+  test: {
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      thresholds: {
+        lines: 52,
+        branches: 50,
+        functions: 16,
+        statements: 52,
+      },
+    },
+  },
+});

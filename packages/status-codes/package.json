@@ -1,0 +1,49 @@
+{
+  "name": "@autometa/status-codes",
+  "version": "0.4.1",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "rimraf tsconfig.types.tsbuildinfo && tsc --build tsconfig.types.json",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests",
+    "test:ui": "vitest --ui --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
+  },
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "rimraf": "^4.1.2",
+    "tsconfig": "workspace:*",
+    "tsup-config": "workspace:*",
+    "tsup": "^7.2.0",
+    "typescript": "^4.9.5",
+    "vitest": "1.4.0"
+  }
+}
