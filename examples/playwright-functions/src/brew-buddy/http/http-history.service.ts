@@ -1,4 +1,4 @@
-import { HTTPError, type HTTPResponse } from "@autometa/http";
+import { HTTPError, type HTTPResponse } from "@autometa/core/http";
 
 /**
  * Scenario-scoped HTTP response history.

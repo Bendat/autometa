@@ -1,8 +1,9 @@
-import { CucumberRunner } from "@autometa/runner";
-import type { HookLifecycleMetadata } from "@autometa/runner";
+import { CucumberRunner } from "@autometa/core/runner";
+import type { HookLifecycleMetadata } from "@autometa/core/executor";
 
 import {
   brewBuddyWorldDefaults,
+  type BrewBuddyWorld,
   type BrewBuddyWorldBase,
   type LifecycleStepRecord,
   type StepLifecycleStatus,
@@ -10,7 +11,7 @@ import {
 
 import type { HttpMethod } from "../brew-buddy/domain/clients/client";
 import type { MenuExpectation, MenuRegion } from "../utils/regions";
-import { brewBuddyPlugins } from "../brew-buddy/domain/ensure/plugins";
+import { brewBuddyPlugins, type BrewBuddyEnsure } from "../brew-buddy/domain/ensure/plugins";
 import { brewBuddyApp } from "./app";
 import { brewBuddyParameterTypes } from "./parameter-types";
 
@@ -36,7 +37,9 @@ const lifecycleLoggingEnabled = (() => {
 
 const runner = CucumberRunner.builder()
   .expressionMap<BrewBuddyExpressionTypes>()
-  .withWorld<BrewBuddyWorldBase>(brewBuddyWorldDefaults)
+  // Type the world as BrewBuddyWorld so assertion plugins have access to world.app
+  // The defaults only cover the base shape; cast is safe because .app() adds the app at runtime
+  .withWorld<BrewBuddyWorld>(brewBuddyWorldDefaults as Partial<BrewBuddyWorld>)
   .app(brewBuddyApp)
   .assertionPlugins(brewBuddyPlugins)
   .parameterTypes(brewBuddyParameterTypes);
@@ -62,8 +65,11 @@ export const {
   AfterStep,
   BeforeFeature,
   AfterFeature,
-  ensure,
 } = stepsEnvironment;
+
+// Re-export a typed ensure with the BrewBuddy plugin facets so downstream usage has strong types
+export const ensure = stepsEnvironment.ensure as unknown as BrewBuddyEnsure;
+export type { BrewBuddyEnsure };
 
 function writeLifecycleLog(
   logger: ((message: string) => void) | undefined,

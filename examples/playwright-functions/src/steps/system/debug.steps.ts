@@ -1,4 +1,4 @@
-import type { SourceRef } from "@autometa/scopes";
+import type { SourceRef } from "@autometa/core/scopes";
 
 import { Then } from "../../autometa/steps";
 

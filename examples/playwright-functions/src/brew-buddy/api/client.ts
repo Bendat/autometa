@@ -1,4 +1,4 @@
-import { HTTP } from "@autometa/http";
+import { HTTP } from "@autometa/core/http";
 
 import type { BrewBuddyWorldBase } from "../../world";
 import { BrewBuddyStreamManager } from "../services/stream-manager";

@@ -1,0 +1,170 @@
+{
+  "name": "@autometa/core",
+  "version": "1.0.0-rc.1",
+  "description": "Unified core entrypoint for Autometa. Re-exports common APIs and provides the autometa CLI.",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "bin": {
+    "autometa": "dist/bin.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",
+    "build": "tsup && pnpm run build:types",
+    "build:types": "rimraf tsconfig.types.tsbuildinfo && tsc --build tsconfig.types.json",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests",
+    "test:ui": "vitest --ui --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./assert": {
+      "import": "./dist/assert.js",
+      "require": "./dist/assert.cjs",
+      "default": "./dist/assert.js",
+      "types": "./dist/assert.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http.js",
+      "require": "./dist/http.cjs",
+      "default": "./dist/http.js",
+      "types": "./dist/http.d.ts"
+    },
+    "./config": {
+      "import": "./dist/config.js",
+      "require": "./dist/config.cjs",
+      "default": "./dist/config.js",
+      "types": "./dist/config.d.ts"
+    },
+    "./cucumber": {
+      "import": "./dist/cucumber.js",
+      "require": "./dist/cucumber.cjs",
+      "default": "./dist/cucumber.js",
+      "types": "./dist/cucumber.d.ts"
+    },
+    "./gherkin": {
+      "import": "./dist/gherkin.js",
+      "require": "./dist/gherkin.cjs",
+      "default": "./dist/gherkin.js",
+      "types": "./dist/gherkin.d.ts"
+    },
+    "./executor": {
+      "import": "./dist/executor.js",
+      "require": "./dist/executor.cjs",
+      "default": "./dist/executor.js",
+      "types": "./dist/executor.d.ts"
+    },
+    "./scopes": {
+      "import": "./dist/scopes.js",
+      "require": "./dist/scopes.cjs",
+      "default": "./dist/scopes.js",
+      "types": "./dist/scopes.d.ts"
+    },
+    "./injection": {
+      "import": "./dist/injection.js",
+      "require": "./dist/injection.cjs",
+      "default": "./dist/injection.js",
+      "types": "./dist/injection.d.ts"
+    },
+    "./phrases": {
+      "import": "./dist/phrases.js",
+      "require": "./dist/phrases.cjs",
+      "default": "./dist/phrases.js",
+      "types": "./dist/phrases.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs",
+      "default": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/errors.js",
+      "require": "./dist/errors.cjs",
+      "default": "./dist/errors.js",
+      "types": "./dist/errors.d.ts"
+    },
+    "./status-codes": {
+      "import": "./dist/status-codes.js",
+      "require": "./dist/status-codes.cjs",
+      "default": "./dist/status-codes.js",
+      "types": "./dist/status-codes.d.ts"
+    },
+    "./datetime": {
+      "import": "./dist/datetime.js",
+      "require": "./dist/datetime.cjs",
+      "default": "./dist/datetime.js",
+      "types": "./dist/datetime.d.ts"
+    },
+    "./dto": {
+      "import": "./dist/dto.js",
+      "require": "./dist/dto.cjs",
+      "default": "./dist/dto.js",
+      "types": "./dist/dto.d.ts"
+    },
+    "./bind": {
+      "import": "./dist/bind.js",
+      "require": "./dist/bind.cjs",
+      "default": "./dist/bind.js",
+      "types": "./dist/bind.d.ts"
+    },
+    "./runner": {
+      "import": "./dist/runner.js",
+      "require": "./dist/runner.cjs",
+      "default": "./dist/runner.js",
+      "types": "./dist/runner.d.ts"
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@autometa/assertions": "workspace:*",
+    "@autometa/http": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:*",
+    "@autometa/config": "workspace:*",
+    "@autometa/executor": "workspace:*",
+    "@autometa/scopes": "workspace:*",
+    "@autometa/injection": "workspace:*",
+    "@autometa/phrases": "workspace:*",
+    "@autometa/types": "workspace:*",
+    "@autometa/errors": "workspace:*",
+    "@autometa/status-codes": "workspace:*",
+    "@autometa/datetime": "workspace:*",
+    "@autometa/dto-builder": "workspace:*",
+    "@autometa/bind-decorator": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/cli": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.37.0",
+    "eslint-config-custom": "workspace:*",
+    "eslint-config-prettier": "^8.3.0",
+    "rimraf": "^4.1.2",
+    "tsconfig": "workspace:*",
+    "tsup": "^7.2.0",
+    "tsup-config": "workspace:*",
+    "typescript": "^4.9.5",
+    "vitest": "1.4.0"
+  }
+}

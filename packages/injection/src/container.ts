@@ -30,7 +30,7 @@ export class Container implements IContainer {
     Map<Identifier, unknown>
   >();
   private readonly children = new Set<Container>();
-  declare public readonly parent?: IContainer;
+  public readonly parent?: IContainer;
 
   constructor(parent?: IContainer) {
     if (parent !== undefined) {

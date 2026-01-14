@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
+    "paths": {
+      "@autometa/*": [
+        "../*/dist/index.d.ts"
+      ]
+    },
+    "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    ".reference"
+  ],
+  "references": [
+    {
+      "path": "../assertions/tsconfig.types.json"
+    },
+    {
+      "path": "../http/tsconfig.types.json"
+    },
+    {
+      "path": "../gherkin/tsconfig.types.json"
+    },
+    {
+      "path": "../cucumber-expressions/tsconfig.types.json"
+    },
+    {
+      "path": "../config/tsconfig.types.json"
+    },
+    {
+      "path": "../executor/tsconfig.types.json"
+    },
+    {
+      "path": "../scopes/tsconfig.types.json"
+    },
+    {
+      "path": "../injection/tsconfig.types.json"
+    },
+    {
+      "path": "../phrases/tsconfig.types.json"
+    },
+    {
+      "path": "../types/tsconfig.types.json"
+    },
+    {
+      "path": "../errors/tsconfig.types.json"
+    },
+    {
+      "path": "../status-codes/tsconfig.types.json"
+    },
+    {
+      "path": "../datetime/tsconfig.types.json"
+    },
+    {
+      "path": "../dto-builder/tsconfig.types.json"
+    },
+    {
+      "path": "../bind-decorator/tsconfig.types.json"
+    },
+    {
+      "path": "../runner/tsconfig.types.json"
+    },
+    {
+      "path": "../cli/tsconfig.types.json"
+    }
+  ]
+}

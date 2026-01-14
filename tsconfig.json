@@ -77,6 +77,9 @@
       "path": "packages/cucumber-expressions/tsconfig.types.json"
     },
     {
+      "path": "packages/core/tsconfig.types.json"
+    },
+    {
       "path": "packages/coordinator/tsconfig.types.json"
     },
     {

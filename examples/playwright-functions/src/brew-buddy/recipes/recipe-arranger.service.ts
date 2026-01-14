@@ -1,4 +1,4 @@
-import { HTTPError } from "@autometa/http";
+import { HTTPError } from "@autometa/core/http";
 
 import { HttpHistoryService } from "../http/http-history.service";
 import type { BrewBuddyMemoryService } from "../state/memory.service";

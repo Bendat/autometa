@@ -1,4 +1,4 @@
-import type { AssertionPlugin } from "@autometa/assertions";
+import type { AssertionPlugin } from "@autometa/core/assert";
 
 import type { Order, OrderItem } from "../../../../.api/src/types/domain.js";
 

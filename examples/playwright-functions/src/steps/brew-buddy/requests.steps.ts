@@ -1,5 +1,5 @@
 import { ensure, Then, When } from "../../autometa/steps";
-import { HTTPError } from "@autometa/http";
+import { HTTPError } from "@autometa/core/http";
 import { toPathExpectations } from "../../brew-buddy/domain/ensure/plugins";
 import type { BrewBuddyWorld } from "../../world";
 import type { HttpMethodInput } from "../../brew-buddy/domain/clients/client";

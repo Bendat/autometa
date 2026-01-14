@@ -1,4 +1,4 @@
-import { HTTP } from "@autometa/http";
+import { HTTP } from "@autometa/core/http";
 
 export interface ResetAdminInput {
   readonly scopes: readonly string[];

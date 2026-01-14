@@ -11,20 +11,11 @@
     "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@autometa/app": "workspace:*",
-    "@autometa/assertions": "workspace:*",
-    "@autometa/config": "workspace:*",
-    "@autometa/cucumber-expressions": "workspace:*",
-    "@autometa/errors": "workspace:*",
-    "@autometa/executor": "workspace:*",
+    "@autometa/core": "workspace:*",
     "@autometa/gherkin": "workspace:*",
-    "@autometa/http": "workspace:*",
-    "@autometa/injection": "workspace:*",
     "@autometa/jest-executor": "workspace:*",
     "@autometa/jest-transformer": "workspace:*",
     "@autometa/runner": "workspace:*",
-    "@autometa/scopes": "workspace:*",
-    "@autometa/test-builder": "workspace:*",
     "@cucumber/cucumber-expressions": "^17.1.0",
     "@cucumber/gherkin": "^28.0.0",
     "@cucumber/messages": "^24.1.0"

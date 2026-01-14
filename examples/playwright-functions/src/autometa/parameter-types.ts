@@ -1,7 +1,10 @@
 import type {
   ParameterTypeDefinition,
   ParameterTransformContext,
-} from "@autometa/cucumber-expressions";
+} from "@autometa/core/cucumber";
+// Re-export via core
+// Note: Consumers import this module, so our internal import is via core subpath
+// but the types above come from the same package re-exported through core.
 
 import type { BrewBuddyWorld } from "../world";
 import type { HttpMethod } from "../brew-buddy/domain/clients/client";
@@ -62,7 +65,9 @@ const HTTP_METHOD_VARIANTS = caseInsensitivePattern([
 ]);
 const REGION_VARIANTS = caseInsensitivePattern(Object.keys(REGION_EXPECTATIONS));
 const SELECTION_VARIANTS = caseInsensitivePattern(
-  Object.values(REGION_EXPECTATIONS).map((detail) => detail.expected)
+  (Object.values(REGION_EXPECTATIONS) as Array<{ expected: string }>).map(
+    (detail) => detail.expected
+  )
 );
 const BOOLEAN_VARIANTS = caseInsensitivePattern(["true", "false"]);
 

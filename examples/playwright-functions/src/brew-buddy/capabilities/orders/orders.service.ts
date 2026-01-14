@@ -1,5 +1,5 @@
-import { HTTPError } from "@autometa/http";
-import { createEnsureFactory, ensure } from "@autometa/assertions";
+import { HTTPError } from "@autometa/core/http";
+import { createEnsureFactory, ensure } from "@autometa/core/assert";
 
 import type { BrewBuddyWorldBase } from "../../../world";
 import type { Order, OrderInput } from "../../../../../.api/src/types/domain.js";

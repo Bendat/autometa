@@ -1,4 +1,4 @@
-import type { VerticalTable } from "@autometa/gherkin";
+import type { VerticalTable } from "@autometa/core/gherkin";
 
 import { normalizeValue } from "../../../utils/json";
 import { ORDER_ITEM_FIELDS, type OrderItemField } from "./order-fields";

@@ -1,6 +1,6 @@
-import { createToken } from "@autometa/injection";
-import { HTTP } from "@autometa/http";
-import { App, WORLD_TOKEN, type AppFactoryContext } from "@autometa/runner";
+import { createToken } from "@autometa/core/injection";
+import { HTTP } from "@autometa/core/http";
+import { App, WORLD_TOKEN, type AppFactoryContext } from "@autometa/core/runner";
 
 import type { BrewBuddyWorldBase } from "../world";
 import { BrewBuddyClient } from "../brew-buddy/domain/clients/client";

@@ -1,4 +1,4 @@
-import { defineConfig } from "@autometa/config";
+import { defineConfig } from "@autometa/core";
 
 export default defineConfig({
   default: {

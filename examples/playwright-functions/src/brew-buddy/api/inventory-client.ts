@@ -1,4 +1,4 @@
-import { HTTP } from "@autometa/http";
+import { HTTP } from "@autometa/core/http";
 import type { InventoryItem } from "../../../../.api/src/types/domain.js";
 
 export interface UpdateInventoryInput {

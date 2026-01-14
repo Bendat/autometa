@@ -1,4 +1,4 @@
-import type { HTTPResponse } from "@autometa/http";
+import type { HTTPResponse } from "@autometa/core/http";
 import {
   ensureHttp,
   type HttpEnsureChain,
@@ -6,15 +6,16 @@ import {
   type HeaderExpectation,
   type CacheControlExpectation,
   type StatusExpectation,
-} from "@autometa/http";
-import type { TableRecord } from "@autometa/gherkin";
+} from "@autometa/core/http";
+import type { TableRecord } from "@autometa/core/gherkin";
 
 import {
   type AssertionPlugin,
   runtimeAssertionsPlugin,
   type RuntimeAssertions,
   type EnsurePluginFacets,
-} from "@autometa/assertions";
+  type EnsureFacade,
+} from "@autometa/core/assert";
 
 import { normalizeValue, resolveJsonPath } from "../../../utils/json";
 import type { BrewBuddyWorld } from "../../../world";
@@ -195,6 +196,8 @@ export type BrewBuddyEnsureFacets = EnsurePluginFacets<
   BrewBuddyWorld,
   typeof brewBuddyPlugins
 >;
+
+export type BrewBuddyEnsure = EnsureFacade<BrewBuddyWorld, BrewBuddyEnsureFacets>;
 
 export function toPathExpectations(records: TableRecord[]): PathExpectation[] {
   return records.map((record) => {

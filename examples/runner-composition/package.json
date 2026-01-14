@@ -10,13 +10,9 @@
     "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@autometa/assertions": "workspace:*",
-    "@autometa/config": "workspace:*",
-    "@autometa/executor": "workspace:*",
-    "@autometa/gherkin": "workspace:*",
-    "@autometa/http": "workspace:*",
-    "@autometa/injection": "workspace:*",
-    "@autometa/runner": "workspace:*"
+    "@autometa/core": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/gherkin": "workspace:*"
   },
   "devDependencies": {
     "@autometa/cli": "workspace:*",

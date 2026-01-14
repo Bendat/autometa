@@ -32,9 +32,6 @@
       "path": "../config/tsconfig.types.json"
     },
     {
-      "path": "../cucumber-expressions/tsconfig.types.json"
-    },
-    {
       "path": "../executor/tsconfig.types.json"
     },
     {

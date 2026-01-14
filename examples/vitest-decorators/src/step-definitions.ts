@@ -1,6 +1,6 @@
 import "reflect-metadata";
-import { CucumberRunner, WORLD_TOKEN } from "@autometa/runner";
-import type { HookLifecycleMetadata } from "@autometa/runner";
+import { CucumberRunner, WORLD_TOKEN } from "@autometa/core/runner";
+import type { HookLifecycleMetadata } from "@autometa/core/executor";
 import {
   brewBuddyWorldDefaults,
   type BrewBuddyWorldBase,
