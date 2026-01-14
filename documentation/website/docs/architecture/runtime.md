@@ -6,6 +6,7 @@ sidebar_position: 1
 
 Autometa v1 separates authoring concerns (steps, phrases, DTO builders) from runtime concerns (executors, reporters, and fixture scopes). The released runtime is composed of the following layers:
 
+- **Umbrella entrypoint (`@autometa/core`)** – ergonomic re-exports for user-facing APIs via subpaths (`/runner`, `/config`, `/assert`, `/http`, ...).
 - **Coordinator (`@autometa/app`)** – resolves feature intents, bootstraps scopes, and orchestrates providers.
 - **Executor core (`@autometa/executor`)** – shared runtime used by all runner-specific executors.
 - **Executors (`@autometa/*-executor`)** – bind to a specific runner (Jest, Vitest, or Playwright) and drive Autometa’s lifecycle.
@@ -51,6 +52,15 @@ flowchart LR
 - Playwright consumes `.spec.ts` files emitted by `@autometa/playwright-loader` and drives them via `@autometa/playwright-executor`.
 
 Across all runners, the coordinator injects the same world builder, DTO factories, and assertion plugins. That parity is what enables the examples to share step definitions even though the host runner changes.
+
+## CLI orchestrator & config discovery
+
+The CLI (`@autometa/cli`) reads your config and picks an execution mode:
+
+- Detects native runners (Vitest/Jest/Playwright) by checking for their config files; delegates when present.
+- Falls back to a standalone runtime when no native runner is available or when `--standalone` is set.
+- Compiles TypeScript configs on the fly into a cache dir (override via `AUTOMETA_CACHE_DIR` or `AUTOMETA_HOME`).
+- Locates config by searching upward for `autometa.config.*` or `autometa.<name>.config.*` (use `--config` to override).
 
 ## Next: discovery details
 

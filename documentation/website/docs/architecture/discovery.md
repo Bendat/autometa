@@ -56,3 +56,19 @@ flowchart LR
 
 For the concrete layout and config model, see [Getting Started → Monorepos](../getting-started/monorepos.md) and [Reference → CLI](../reference/cli.md).
 
+### Overriding scope with tags
+
+When `modules.stepScoping` is enabled, feature files can explicitly select scope using a tag:
+
+```
+@scope(backoffice:reports)
+Feature: Reports
+```
+
+Supported forms:
+
+- `@scope(group)` to target a group’s root steps
+- `@scope(group:module/submodule)` for a specific module path
+
+This is especially useful for “hoisted” features that live outside any specific group root.
+
