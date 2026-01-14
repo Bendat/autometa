@@ -19,7 +19,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests",
     "test:ui": "vitest --ui --passWithNoTests",
-    "test:integration": "jest --config jest.integration.config.cjs",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "coverage": "vitest run --coverage --passWithNoTests",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",

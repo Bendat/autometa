@@ -15,6 +15,8 @@ export default defineConfig({
         // Externalize all node_modules - don't try to bundle them
         // This makes vitest resolve modules from node_modules at runtime
         external: [/node_modules/],
+        // uuid ships ESM in a CJS package, so it must be inlined
+        inline: ["uuid"],
       },
     },
   },

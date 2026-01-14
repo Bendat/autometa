@@ -16,6 +16,8 @@ export default defineConfig({
     server: {
       deps: {
         external: [/node_modules/],
+        // uuid ships ESM in a CJS package, so it must be inlined
+        inline: ["uuid"],
       },
     },
   },

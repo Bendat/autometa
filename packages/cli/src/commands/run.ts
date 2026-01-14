@@ -1041,7 +1041,9 @@ async function readFeatureFile(path: string, cwd: string): Promise<SimpleFeature
   const feature = parseGherkin(source);
   if (!feature.uri) {
     const relativePath = relative(cwd, path);
-    feature.uri = relativePath.startsWith("..") ? path : relativePath;
+    const candidate = relativePath.startsWith("..") ? path : relativePath;
+    // Normalize for cross-platform consistency (Windows paths may contain backslashes)
+    feature.uri = candidate.replace(/\\/g, "/");
   }
   return feature;
 }

@@ -12,6 +12,7 @@
     "declarationDir": "./dist",
     "paths": {
       "@autometa/*": [
+        "../*/src",
         "../*/dist/index.d.ts"
       ]
     },

@@ -175,7 +175,7 @@ jobs:
       - name: Run Vitest functions features
         env:
           BREW_BUDDY_BASE_URL: http://127.0.0.1:4000
-        run: pnpm --filter @autometa/examples-vitest-functions exec autometa run
+        run: pnpm --filter @autometa/examples-vitest-functions run features
 
       - name: Run Vitest decorators features
         env:

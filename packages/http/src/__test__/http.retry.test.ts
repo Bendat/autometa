@@ -178,7 +178,8 @@ describe("HTTP retries", () => {
 
     await client.get();
     const duration = Date.now() - start;
-    expect(duration).toBeGreaterThanOrEqual(50);
+    // Allow a small jitter budget because timers on CI can fire a few ms early
+    expect(duration).toBeGreaterThanOrEqual(45);
     expect(attempts).toBe(2);
   });
 
