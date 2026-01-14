@@ -1,5 +1,14 @@
 # @autometa/datetime
 
+## 1.0.0-rc.1
+
+### Patch Changes
+
+- Roll prerelease tag to rc.1+ for the v1 rewrite packages (rc2 drop).
+- Updated dependencies
+  - @autometa/asserters@1.0.0-rc.1
+  - @autometa/errors@1.0.0-rc.1
+
 ## 1.0.0-rc.0
 
 ### Major Changes

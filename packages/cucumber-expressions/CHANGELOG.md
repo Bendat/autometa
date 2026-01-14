@@ -1,5 +1,18 @@
 # @autometa/cucumber-expressions
 
+## 1.0.0-rc.1
+
+### Patch Changes
+
+- Roll prerelease tag to rc.1+ for the v1 rewrite packages (rc2 drop).
+- Updated dependencies
+  - @autometa/app@1.0.0-rc.1
+  - @autometa/asserters@1.0.0-rc.1
+  - @autometa/datetime@1.0.0-rc.1
+  - @autometa/errors@1.0.0-rc.1
+  - @autometa/overloaded@1.0.0-rc.1
+  - @autometa/types@1.0.0-rc.1
+
 ## 1.0.0-rc.0
 
 ### Major Changes

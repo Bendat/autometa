@@ -1,5 +1,16 @@
 # @autometa/playwright-executor
 
+## 1.0.0-rc.1
+
+### Patch Changes
+
+- Roll prerelease tag to rc.1+ for the v1 rewrite packages (rc2 drop).
+- Updated dependencies
+  - @autometa/config@1.0.0-rc.1
+  - @autometa/executor@1.0.0-rc.1
+  - @autometa/scopes@1.0.0-rc.1
+  - @autometa/test-builder@1.0.0-rc.1
+
 ## 1.0.0-rc.0
 
 ### Major Changes

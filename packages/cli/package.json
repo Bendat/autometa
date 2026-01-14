@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cli",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "Command-line runner for Autometa features",
   "type": "module",
   "main": "dist/index.cjs",
