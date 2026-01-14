@@ -1,6 +1,6 @@
 {
   "name": "@autometa/errors",
-  "version": "0.2.2",
+  "version": "1.0.0-rc.0",
   "description": "Error utilities for Autometa runtimes.",
   "type": "module",
   "main": "dist/index.cjs",

@@ -1,6 +1,6 @@
 {
   "name": "@autometa/bind-decorator",
-  "version": "0.5.1",
+  "version": "1.0.0-rc.0",
   "description": "Decorators that bind or freeze class methods for Autometa consumers.",
   "type": "module",
   "main": "dist/index.cjs",

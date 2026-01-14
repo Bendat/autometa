@@ -1,12 +1,14 @@
 {
   "name": "@autometa/assertions",
-  "version": "0.0.0",
+  "version": "1.0.0-rc.0",
   "description": "Runner-agnostic assertion helpers powered by ensure(value) matcher chains.",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "type-check": "tsc --noEmit -p tsconfig.dev.json",
     "type-check:watch": "tsc --noEmit --watch -p tsconfig.dev.json",

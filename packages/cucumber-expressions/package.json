@@ -1,6 +1,6 @@
 {
   "name": "@autometa/cucumber-expressions",
-  "version": "0.4.4",
+  "version": "1.0.0-rc.0",
   "description": "Cucumber expression helpers and parameter utilities for Autometa",
   "type": "module",
   "main": "dist/index.cjs",

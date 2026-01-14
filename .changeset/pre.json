@@ -46,5 +46,7 @@
     "@autometa/vitest-executor": "0.0.0",
     "@autometa/vitest-plugins": "0.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "v1-rewrite-release-candidate"
+  ]
 }
