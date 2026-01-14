@@ -1,6 +1,6 @@
 {
   "name": "@autometa/jest-transformer",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Jest transformer for Autometa - transforms .feature files into test suites",
   "type": "module",
   "main": "dist/index.cjs",

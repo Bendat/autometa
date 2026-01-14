@@ -1,5 +1,11 @@
 # @autometa/jest-executor
 
+## 1.0.0-rc.2
+
+### Patch Changes
+
+- d00f39be: Fix publish workflow to trigger correctly on releases
+
 ## 1.0.0-rc.1
 
 ### Patch Changes

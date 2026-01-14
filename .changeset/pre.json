@@ -47,6 +47,7 @@
     "@autometa/vitest-plugins": "0.0.0"
   },
   "changesets": [
+    "fix-publish-workflow",
     "publish-rc0",
     "v1-rewrite-release-candidate"
   ]
