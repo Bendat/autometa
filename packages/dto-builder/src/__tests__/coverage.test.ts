@@ -135,7 +135,7 @@ describe("Additional coverage for builder-factory", () => {
   describe("FluentCallbackContext error cases", () => {
     it("throws when mixing array and object helpers", async () => {
       expect(() => {
-        factory.create().items((items: any) => {
+        factory.create().items((items) => {
           items.append("a");
           items.key("value"); // Try to use object helper after array
         });
@@ -146,7 +146,7 @@ describe("Additional coverage for builder-factory", () => {
       // When property is initially undefined/unknown, it can adapt to either mode
       const dto = await factory
         .create()
-        .metadata((meta: any) => {
+        .metadata((meta) => {
           meta.key("value"); // Uses object mode
         })
         .build();
@@ -271,17 +271,17 @@ describe("Additional coverage for builder-factory", () => {
     it("handles symbol properties", () => {
       const builder = factory.create();
       const sym = Symbol("test");
-      const builderAsAny = builder as any;
+      const builderWithSymbols = builder as unknown as Record<PropertyKey, unknown>;
 
       // Symbols should be passed through to the underlying target
-      builderAsAny[sym] = "value";
-      expect(builderAsAny[sym]).toBe("value");
+      builderWithSymbols[sym] = "value";
+      expect(builderWithSymbols[sym]).toBe("value");
     });
 
     it("handles Symbol.toStringTag in callback context", async () => {
       const dto = await factory
         .create()
-        .items((items: any) => {
+        .items((items) => {
           const tag = items[Symbol.toStringTag];
           expect(tag).toBe("FluentCallbackContext");
           return items.append("test");
@@ -333,7 +333,8 @@ describe("Additional coverage for decorators", () => {
     const dto = await factory.default();
 
     expect(dto.createdAt).toBeInstanceOf(Date);
-    expect(dto.createdAt!.getTime()).toBeGreaterThan(0);
+    const createdAt = dto.createdAt;
+    expect(createdAt?.getTime()).toBeGreaterThan(0);
   });
 
   it("supports Property decorator with function", async () => {
@@ -415,7 +416,7 @@ describe("Additional coverage for utils", () => {
     deepMerge(target, malicious);
 
     // Should not pollute Object.prototype
-    expect((Object.prototype as any).polluted).toBeUndefined();
+    expect((Object.prototype as Record<string, unknown>).polluted).toBeUndefined();
     expect(target).not.toHaveProperty("__proto__");
   });
 
@@ -460,7 +461,7 @@ describe("Edge cases for builder normalization", () => {
       defaults: {
         defined: "value",
         undefined: undefined,
-      } as any,
+      } satisfies Partial<Record<keyof TestDto, unknown>>,
     });
 
     const dto = await factory.default();

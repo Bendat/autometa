@@ -17,7 +17,7 @@ describe("EnvironmentSelector coverage", () => {
 
   it("sanitizes null values to undefined", () => {
     const selector = new EnvironmentSelector();
-    const factory = () => null as any;
+    const factory = () => null;
 
     selector.byFactory(factory);
     const result = selector.resolve();
@@ -67,7 +67,7 @@ describe("EnvironmentSelector coverage", () => {
   it("throws when defaultTo is called with null", () => {
     const selector = new EnvironmentSelector();
 
-    expect(() => selector.defaultTo(null as any)).toThrow("Default environment name must be a non-empty string");
+    expect(() => selector.defaultTo(null as unknown as string)).toThrow("Default environment name must be a non-empty string");
   });
 
   it("uses custom default when set", () => {
@@ -206,7 +206,7 @@ describe("Config merging edge cases", () => {
   });
 
   it("merges undefined environment variable values correctly", () => {
-    delete process.env.UNDEFINED_VAR;
+    delete process.env.TEST_ENV;
 
     const config = defineConfig({
       default: {
@@ -224,7 +224,7 @@ describe("Config merging edge cases", () => {
           },
         },
       },
-      environment: (env) => env.byEnvironmentVariable("UNDEFINED_VAR"),
+      environment: (env) => env.byEnvironmentVariable("TEST_ENV"),
     });
 
     const resolved = config.resolve();
