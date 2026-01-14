@@ -1,5 +1,11 @@
 # @autometa/cli
 
+## 1.0.0-rc.1
+
+### Patch Changes
+
+- a63c4734: Publish 1.0.0-rc.0 packages and fix CI workflows
+
 ## 1.0.0-rc.0
 
 ### Major Changes
