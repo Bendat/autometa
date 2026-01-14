@@ -31,6 +31,29 @@ describe("VerticalTable", () => {
     expect(table.getRecord(1, { raw: true })).toEqual({ id: "2", flag: "false", label: "beta" });
   });
 
+  it("supports explicit keys mapping for record keys and transformer lookup", () => {
+    const table = new VerticalTable(
+      [
+        ["Reports To", "Ada", "Bob"],
+        ["Team Size", "10", "12"],
+      ],
+      {
+        coerce: false,
+        keys: {
+          "Reports To": "reportsTo",
+          "Team Size": "teamSize",
+        } as const,
+        transformers: {
+          teamSize: (value) => Number(value) * 2,
+        },
+      }
+    );
+
+    expect(table.getRecord(0)).toEqual({ reportsTo: "Ada", teamSize: 20 });
+    expect(table.getCell("teamSize", 1)).toBe(24);
+    expect(table.getSeries("reportsTo", { raw: true })).toEqual(["Ada", "Bob"]);
+  });
+
   it("retrieves individual cells and validates existence", () => {
     const table = new VerticalTable(RAW_TABLE);
     expect(table.getCell("label", 2)).toBe("gamma");

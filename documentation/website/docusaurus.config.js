@@ -42,8 +42,8 @@ const config = {
           editUrl: "https://github.com/Bendat/autometa/tree/main/documentation/website",
           versions: {
             current: {
-              label: "v1.0.0-rc.0",
-              path: "v1.0.0-rc.0",
+              label: "v1.0.0-rc.1",
+              path: "v1.0.0-rc.1",
               banner: "unreleased",
             },
             legacy: {
@@ -83,22 +83,22 @@ const config = {
         },
         items: [
           {
-            to: "/docs/v1.0.0-rc.0/intro",
+            to: "/docs/v1.0.0-rc.1/intro",
             position: "left",
             label: "Overview",
           },
           {
-            to: "/docs/v1.0.0-rc.0/getting-started/intro",
+            to: "/docs/v1.0.0-rc.1/getting-started/intro",
             position: "left",
             label: "Getting started",
           },
           {
-            to: "/docs/v1.0.0-rc.0/architecture/runtime",
+            to: "/docs/v1.0.0-rc.1/architecture/runtime",
             position: "left",
             label: "Architecture",
           },
           {
-            to: "/docs/v1.0.0-rc.0/reference/configuration",
+            to: "/docs/v1.0.0-rc.1/reference/configuration",
             position: "left",
             label: "Reference",
           },
@@ -119,7 +119,7 @@ const config = {
             items: [
               {
                 label: "Overview",
-                to: "/docs/v1.0.0-rc.0/intro",
+                to: "/docs/v1.0.0-rc.1/intro",
               },
             ],
           },

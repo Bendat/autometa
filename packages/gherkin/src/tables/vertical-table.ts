@@ -18,6 +18,8 @@ const SHAPE: TableShape = "vertical";
 export class VerticalTable {
   private readonly headers: readonly string[];
   private readonly columns: readonly (readonly string[])[];
+  private readonly headerByKey: ReadonlyMap<string, string>;
+  private readonly keys: Readonly<Record<string, string>>;
   private readonly options: Required<Omit<VerticalTableOptions, "transformers">> & {
     readonly transformers: Readonly<Record<string, TableTransformer>>;
   };
@@ -31,6 +33,10 @@ export class VerticalTable {
     }
     this.headers = data.map((row) => String(row[0] ?? ""));
     this.columns = data.map((row) => row.slice(1)) as readonly (readonly string[])[];
+
+    this.keys = (options as { readonly keys?: Readonly<Record<string, string>> }).keys ?? {};
+    this.headerByKey = new Map(this.buildReverseKeyMap(this.headers, this.keys));
+
     this.options = {
       coerce: options.coerce ?? true,
       transformers: options.transformers ?? {},
@@ -46,12 +52,16 @@ export class VerticalTable {
   }
 
   getSeries(header: string, options?: ResolveOptions): TableValue[] {
-    const headerIndex = this.headers.indexOf(header);
+    const resolvedHeader = this.resolveHeader(header);
+    if (!resolvedHeader) {
+      return [];
+    }
+    const headerIndex = this.headers.indexOf(resolvedHeader);
     if (headerIndex === -1) {
       return [];
     }
     return this.columns[headerIndex]?.map((value, columnIndex) =>
-      this.resolve(header, value, headerIndex, columnIndex, options)
+      this.resolve(resolvedHeader, value, headerIndex, columnIndex, options)
     ) ?? [];
   }
 
@@ -69,7 +79,8 @@ export class VerticalTable {
       const column = this.columns[headerIndex];
       const rawValue = column?.[index];
       if (rawValue !== undefined) {
-        record[header] = this.resolve(header, rawValue, headerIndex, index, options);
+        const key = this.keyForHeader(header);
+        record[key] = this.resolve(header, rawValue, headerIndex, index, options);
       }
     });
     return record;
@@ -114,7 +125,11 @@ export class VerticalTable {
     index: number,
     options?: ResolveOptions
   ): TableValue | undefined {
-    const headerIndex = this.headers.indexOf(header);
+    const resolvedHeader = this.resolveHeader(header);
+    if (!resolvedHeader) {
+      return undefined;
+    }
+    const headerIndex = this.headers.indexOf(resolvedHeader);
     if (headerIndex === -1) {
       return undefined;
     }
@@ -123,7 +138,7 @@ export class VerticalTable {
     if (rawValue === undefined) {
       return undefined;
     }
-    return this.resolve(header, rawValue, headerIndex, index, options);
+    return this.resolve(resolvedHeader, rawValue, headerIndex, index, options);
   }
 
   getCellOrThrow(
@@ -163,7 +178,8 @@ export class VerticalTable {
     if (options?.raw === true) {
       return rawValue;
     }
-    const transformer = this.options.transformers[header];
+    const key = this.keyForHeader(header);
+    const transformer = this.options.transformers[key] ?? this.options.transformers[header];
     const context: CellContext = {
       shape: SHAPE,
       header,
@@ -173,5 +189,38 @@ export class VerticalTable {
     };
     const shouldCoerce = options?.coerce ?? this.options.coerce;
     return applyTransformers(rawValue, context, transformer, shouldCoerce);
+  }
+
+  private keyForHeader(header: string): string {
+    return this.keys[header] ?? header;
+  }
+
+  private resolveHeader(headerOrKey: string): string | undefined {
+    if (this.headers.includes(headerOrKey)) {
+      return headerOrKey;
+    }
+    return this.headerByKey.get(headerOrKey);
+  }
+
+  private buildReverseKeyMap(
+    headers: readonly string[],
+    keys: Readonly<Record<string, string>>
+  ): Array<[string, string]> {
+    const reverse: Array<[string, string]> = [];
+    const usedKeys = new Set<string>();
+    for (const header of headers) {
+      const key = keys[header];
+      if (!key) {
+        continue;
+      }
+      if (usedKeys.has(key)) {
+        throw new RangeError(
+          `Vertical table keys mapping is not unique: multiple headers map to '${key}'.`
+        );
+      }
+      usedKeys.add(key);
+      reverse.push([key, header]);
+    }
+    return reverse;
   }
 }

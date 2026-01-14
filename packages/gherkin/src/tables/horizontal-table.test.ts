@@ -33,6 +33,29 @@ describe("HorizontalTable", () => {
     expect(table.getRow(0)).toEqual({ first: "1", second: 20, flag: "true" });
   });
 
+  it("supports explicit keys mapping for record keys and transformer lookup", () => {
+    const table = new HorizontalTable(
+      [
+        ["Reports To", "Start Date"],
+        ["Ada", "2020-01-15"],
+      ],
+      {
+        coerce: false,
+        keys: {
+          "Reports To": "reportsTo",
+          "Start Date": "startDate",
+        } as const,
+        transformers: {
+          reportsTo: (value) => value.toUpperCase(),
+        },
+      }
+    );
+
+    expect(table.getRow(0)).toEqual({ reportsTo: "ADA", startDate: "2020-01-15" });
+    expect(table.getCell("reportsTo", 0)).toBe("ADA");
+    expect(table.getColumn("startDate", { raw: true })).toEqual(["2020-01-15"]);
+  });
+
   it("retrieves specific cells and throws when missing", () => {
     const table = new HorizontalTable(RAW_TABLE);
     expect(table.getCell("first", 1)).toBe(3);

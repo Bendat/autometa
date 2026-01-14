@@ -43,6 +43,44 @@ describe("MatrixTable", () => {
     expect(table.getCell("row2", "colA")).toBe(20);
   });
 
+  it("supports explicit keys mapping for row/column names", () => {
+    const table = new MatrixTable(
+      [
+        ["", "Reports To", "Team Size"],
+        ["Row1", "Ada", "10"],
+        ["Row2", "Bob", "12"],
+      ],
+      {
+        coerce: false,
+        keys: {
+          rows: { Row1: "row1", Row2: "row2" },
+          columns: { "Reports To": "reportsTo", "Team Size": "teamSize" },
+        } as const,
+        transformers: {
+          rows: {
+            row2: (value) => value.toUpperCase(),
+          },
+          columns: {
+            teamSize: (value) => Number(value) * 2,
+          },
+          cells: {
+            row1: {
+              reportsTo: () => "cell-specific",
+            },
+          },
+        },
+      }
+    );
+
+    // Output keys are mapped
+    // Row transformer overrides the column transformer for row2 (cell > row > column)
+    expect(table.getRow("row2")).toEqual({ reportsTo: "BOB", teamSize: "12" });
+    expect(table.getColumn("teamSize")).toEqual({ row1: 20, row2: "12" });
+
+    // Lookup accepts mapped keys
+    expect(table.getCell("row1", "reportsTo")).toBe("cell-specific");
+  });
+
   it("throws when requesting missing coordinates", () => {
     const table = new MatrixTable(RAW_TABLE);
     expect(table.getCell("missing", "colA")).toBeUndefined();
