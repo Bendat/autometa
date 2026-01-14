@@ -61,6 +61,17 @@ export interface RunnerBindingsSurface<_World> {
    * Can be used for advanced scenarios like manual registration.
    */
   readonly container: IContainer;
+
+  /**
+   * Assertion facade mirroring `steps().ensure`.
+   * Provided for convenience so bindings users can import `ensure` alongside
+   * the decorators without needing separate access to the steps environment.
+   *
+   * Note: This is intentionally typed as `any` to avoid leaking the builder's
+   * Ensure facet generics into the bindings surface. Runtime will be identical
+   * to `stepsEnvironment.ensure`.
+   */
+  readonly ensure: any;
 }
 
 // ============================================================================
@@ -287,5 +298,7 @@ export function createBindingsTS<World>(
     Inject,
     LazyInject,
     container: globalContainer,
+    // Expose assertions facade from the steps environment for bindings usage
+    ensure: (stepsEnvironment as unknown as { ensure?: unknown }).ensure,
   };
 }
