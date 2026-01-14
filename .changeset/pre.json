@@ -49,6 +49,7 @@
   "changesets": [
     "fix-publish-workflow",
     "publish-rc0",
+    "rc2-rollup",
     "v1-rewrite-release-candidate"
   ]
 }

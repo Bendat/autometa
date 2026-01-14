@@ -1,5 +1,16 @@
 # @autometa/jest-transformer
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- Roll prerelease tag to rc.1+ for the v1 rewrite packages (rc2 drop).
+- Updated dependencies
+  - @autometa/config@1.0.0-rc.1
+  - @autometa/gherkin@1.0.0-rc.1
+  - @autometa/jest-executor@1.0.0-rc.3
+  - @autometa/runner@1.0.0-rc.1
+
 ## 1.0.0-rc.2
 
 ### Patch Changes

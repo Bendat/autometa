@@ -1,5 +1,14 @@
 # @autometa/dto-builder
 
+## 1.0.0-rc.1
+
+### Patch Changes
+
+- Roll prerelease tag to rc.1+ for the v1 rewrite packages (rc2 drop).
+- Updated dependencies
+  - @autometa/injection@1.0.0-rc.1
+  - @autometa/types@1.0.0-rc.1
+
 ## 1.0.0-rc.0
 
 ### Major Changes

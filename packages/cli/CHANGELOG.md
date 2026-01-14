@@ -1,5 +1,21 @@
 # @autometa/cli
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- Roll prerelease tag to rc.1+ for the v1 rewrite packages (rc2 drop).
+- Updated dependencies
+  - @autometa/config@1.0.0-rc.1
+  - @autometa/coordinator@1.0.0-rc.1
+  - @autometa/errors@1.0.0-rc.1
+  - @autometa/executor@1.0.0-rc.1
+  - @autometa/gherkin@1.0.0-rc.1
+  - @autometa/http@2.0.0-rc.1
+  - @autometa/runner@1.0.0-rc.1
+  - @autometa/scopes@1.0.0-rc.1
+  - @autometa/test-builder@1.0.0-rc.1
+
 ## 1.0.0-rc.2
 
 ### Patch Changes
