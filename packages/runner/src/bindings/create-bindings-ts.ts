@@ -67,11 +67,11 @@ export interface RunnerBindingsSurface<_World> {
    * Provided for convenience so bindings users can import `ensure` alongside
    * the decorators without needing separate access to the steps environment.
    *
-   * Note: This is intentionally typed as `any` to avoid leaking the builder's
-   * Ensure facet generics into the bindings surface. Runtime will be identical
-   * to `stepsEnvironment.ensure`.
+  * Note: This is intentionally typed as `unknown` to avoid leaking the builder's
+  * Ensure facet generics into the bindings surface. Runtime will be identical
+  * to `stepsEnvironment.ensure`.
    */
-  readonly ensure: any;
+  readonly ensure: unknown;
 }
 
 // ============================================================================

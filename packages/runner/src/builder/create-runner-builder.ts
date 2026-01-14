@@ -643,7 +643,7 @@ class RunnerBuilderImpl<
 			unknown,
 			Record<string, unknown>
 		>;
-		this.state.assertionPlugins = undefined;
+		delete this.state.assertionPlugins;
 		invalidateCaches(this.state);
 		return new RunnerBuilderImpl<World, ExpressionTypes, NextFacets>(
 			this.state

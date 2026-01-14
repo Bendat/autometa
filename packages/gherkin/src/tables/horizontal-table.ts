@@ -21,7 +21,10 @@ export class HorizontalTable {
   private readonly headerMap: ReadonlyMap<string, number>;
   private readonly headerByKey: ReadonlyMap<string, string>;
   private readonly keys: Readonly<Record<string, string>>;
-  private readonly options: Required<Omit<HorizontalTableOptions, "transformers">> & {
+  private readonly options: Required<
+    Omit<HorizontalTableOptions, "transformers" | "keys">
+  > & {
+    readonly keys: Readonly<Record<string, string>>;
     readonly transformers: Readonly<Record<string, TableTransformer>>;
   };
 
@@ -41,11 +44,13 @@ export class HorizontalTable {
     this.rows = rows.map((row) => [...row]) as readonly (readonly string[])[];
     this.headerMap = new Map(this.headers.map((header, index) => [header, index]));
 
-    this.keys = (options as { readonly keys?: Readonly<Record<string, string>> }).keys ?? {};
+    const keys = (options.keys ?? {}) as Readonly<Record<string, string>>;
+    this.keys = keys;
     this.headerByKey = new Map(this.buildReverseKeyMap(this.headers, this.keys));
 
     this.options = {
       coerce: options.coerce ?? true,
+      keys,
       transformers: options.transformers ?? {},
     };
   }

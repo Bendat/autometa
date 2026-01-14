@@ -21,7 +21,11 @@ export class MatrixTable {
   private readonly columnKeys: Readonly<Record<string, string>>;
   private readonly rowHeaderByKey: ReadonlyMap<string, string>;
   private readonly columnHeaderByKey: ReadonlyMap<string, string>;
-  private readonly options: Required<Omit<MatrixTableOptions, "transformers">> & {
+  private readonly options: Required<Omit<MatrixTableOptions, "transformers" | "keys">> & {
+    readonly keys: {
+      readonly rows: Readonly<Record<string, string>>;
+      readonly columns: Readonly<Record<string, string>>;
+    };
     readonly transformers: CellTransforms;
   };
 
@@ -42,14 +46,12 @@ export class MatrixTable {
       .slice(1)
       .map((row) => row.slice(1)) as readonly (readonly string[])[];
 
-    const keys = (options as {
-      readonly keys?: {
-        readonly rows?: Readonly<Record<string, string>>;
-        readonly columns?: Readonly<Record<string, string>>;
-      };
-    }).keys;
-    this.rowKeys = keys?.rows ?? {};
-    this.columnKeys = keys?.columns ?? {};
+    const keys = (options.keys ?? {}) as {
+      readonly rows?: Readonly<Record<string, string>>;
+      readonly columns?: Readonly<Record<string, string>>;
+    };
+    this.rowKeys = keys.rows ?? {};
+    this.columnKeys = keys.columns ?? {};
     this.rowHeaderByKey = new Map(
       this.buildReverseKeyMap("Matrix row", this.verticalHeaders, this.rowKeys)
     );
@@ -63,6 +65,10 @@ export class MatrixTable {
 
     this.options = {
       coerce: options.coerce ?? true,
+      keys: {
+        rows: this.rowKeys,
+        columns: this.columnKeys,
+      },
       transformers: {
         rows: options.transformers?.rows ?? {},
         columns: options.transformers?.columns ?? {},

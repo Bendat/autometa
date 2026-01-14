@@ -93,14 +93,20 @@ export interface MatrixKeys<
 }
 
 type MatrixRowKeys<TKeys extends MatrixKeys | undefined> =
-  TKeys extends MatrixKeys<infer TRows, any>
+  TKeys extends MatrixKeys<
+    infer TRows extends TableKeysMap | undefined,
+    infer _TColumns extends TableKeysMap | undefined
+  >
     ? TRows extends TableKeysMap
       ? KeyValues<TRows>
       : never
     : never;
 
 type MatrixColumnKeys<TKeys extends MatrixKeys | undefined> =
-  TKeys extends MatrixKeys<any, infer TColumns>
+  TKeys extends MatrixKeys<
+    infer _TRows extends TableKeysMap | undefined,
+    infer TColumns extends TableKeysMap | undefined
+  >
     ? TColumns extends TableKeysMap
       ? KeyValues<TColumns>
       : never

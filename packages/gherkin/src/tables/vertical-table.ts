@@ -20,7 +20,10 @@ export class VerticalTable {
   private readonly columns: readonly (readonly string[])[];
   private readonly headerByKey: ReadonlyMap<string, string>;
   private readonly keys: Readonly<Record<string, string>>;
-  private readonly options: Required<Omit<VerticalTableOptions, "transformers">> & {
+  private readonly options: Required<
+    Omit<VerticalTableOptions, "transformers" | "keys">
+  > & {
+    readonly keys: Readonly<Record<string, string>>;
     readonly transformers: Readonly<Record<string, TableTransformer>>;
   };
 
@@ -34,11 +37,13 @@ export class VerticalTable {
     this.headers = data.map((row) => String(row[0] ?? ""));
     this.columns = data.map((row) => row.slice(1)) as readonly (readonly string[])[];
 
-    this.keys = (options as { readonly keys?: Readonly<Record<string, string>> }).keys ?? {};
+    const keys = (options.keys ?? {}) as Readonly<Record<string, string>>;
+    this.keys = keys;
     this.headerByKey = new Map(this.buildReverseKeyMap(this.headers, this.keys));
 
     this.options = {
       coerce: options.coerce ?? true,
+      keys,
       transformers: options.transformers ?? {},
     };
   }
