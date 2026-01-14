@@ -1,5 +1,12 @@
 # @autometa/jest-transformer
 
+## 1.0.0-rc.1
+
+### Patch Changes
+
+- Updated dependencies [a63c4734]
+  - @autometa/jest-executor@1.0.0-rc.1
+
 ## 1.0.0-rc.0
 
 ### Major Changes
