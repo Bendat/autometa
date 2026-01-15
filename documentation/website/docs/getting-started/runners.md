@@ -89,6 +89,7 @@ module.exports = {
 
 **Tradeoffs**
 - Playwright does not discover `.feature` files by itself; you must import them from a `.spec.ts` entrypoint.
+ - For smooth TS + ESM interop, set `module: "ESNext"` and `moduleResolution: "Bundler"` in your `tsconfig.json`.
 
 **Install**
 ```bash

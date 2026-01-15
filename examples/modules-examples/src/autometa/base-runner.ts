@@ -1,4 +1,4 @@
-import { CucumberRunner } from "@autometa/runner";
+import { CucumberRunner } from "@autometa/core/runner";
 
 /**
  * Base world shared across all derived/group environments.

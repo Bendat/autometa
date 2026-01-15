@@ -21,7 +21,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@autometa/*": ["../../packages/*/src", "../../libraries/*/src"]
+      "@autometa/*": ["../../packages/*/src", "../../libraries/*/src"],
+      "@autometa/core/*": ["../../packages/core/src/*"]
     }
   }
 }

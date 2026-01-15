@@ -19,7 +19,12 @@ export class HorizontalTable {
   private readonly headers: readonly string[];
   private readonly rows: readonly (readonly string[])[];
   private readonly headerMap: ReadonlyMap<string, number>;
-  private readonly options: Required<Omit<HorizontalTableOptions, "transformers">> & {
+  private readonly headerByKey: ReadonlyMap<string, string>;
+  private readonly keys: Readonly<Record<string, string>>;
+  private readonly options: Required<
+    Omit<HorizontalTableOptions, "transformers" | "keys">
+  > & {
+    readonly keys: Readonly<Record<string, string>>;
     readonly transformers: Readonly<Record<string, TableTransformer>>;
   };
 
@@ -38,8 +43,14 @@ export class HorizontalTable {
     const rows = data.slice(1);
     this.rows = rows.map((row) => [...row]) as readonly (readonly string[])[];
     this.headerMap = new Map(this.headers.map((header, index) => [header, index]));
+
+    const keys = (options.keys ?? {}) as Readonly<Record<string, string>>;
+    this.keys = keys;
+    this.headerByKey = new Map(this.buildReverseKeyMap(this.headers, this.keys));
+
     this.options = {
       coerce: options.coerce ?? true,
+      keys,
       transformers: options.transformers ?? {},
     };
   }
@@ -64,7 +75,8 @@ export class HorizontalTable {
     const record: Record<string, TableValue> = {};
     this.headers.forEach((header, columnIndex) => {
       const rawValue = source[columnIndex] ?? "";
-      record[header] = this.resolve(header, rawValue, rowIndex, columnIndex, options);
+      const key = this.keyForHeader(header);
+      record[key] = this.resolve(header, rawValue, rowIndex, columnIndex, options);
     });
     return record;
   }
@@ -99,12 +111,16 @@ export class HorizontalTable {
   }
 
   getColumn(header: string, options?: ResolveOptions): TableValue[] {
-    const columnIndex = this.headerMap.get(header);
+    const resolvedHeader = this.resolveHeader(header);
+    if (!resolvedHeader) {
+      return [];
+    }
+    const columnIndex = this.headerMap.get(resolvedHeader);
     if (columnIndex === undefined) {
       return [];
     }
     return this.rows.map((row, rowIndex) =>
-      this.resolve(header, row[columnIndex] ?? "", rowIndex, columnIndex, options)
+      this.resolve(resolvedHeader, row[columnIndex] ?? "", rowIndex, columnIndex, options)
     );
   }
 
@@ -113,7 +129,11 @@ export class HorizontalTable {
     rowIndex: number,
     options?: ResolveOptions
   ): TableValue | undefined {
-    const columnIndex = this.headerMap.get(header);
+    const resolvedHeader = this.resolveHeader(header);
+    if (!resolvedHeader) {
+      return undefined;
+    }
+    const columnIndex = this.headerMap.get(resolvedHeader);
     if (columnIndex === undefined) {
       return undefined;
     }
@@ -125,7 +145,7 @@ export class HorizontalTable {
     if (value === undefined) {
       return undefined;
     }
-    return this.resolve(header, value, rowIndex, columnIndex, options);
+    return this.resolve(resolvedHeader, value, rowIndex, columnIndex, options);
   }
 
   getCellOrThrow(
@@ -162,7 +182,8 @@ export class HorizontalTable {
     if (options?.raw === true) {
       return rawValue;
     }
-    const transformer = this.options.transformers[header];
+    const key = this.keyForHeader(header);
+    const transformer = this.options.transformers[key] ?? this.options.transformers[header];
     const context: CellContext = {
       shape: SHAPE,
       header,
@@ -172,5 +193,38 @@ export class HorizontalTable {
     };
     const shouldCoerce = options?.coerce ?? this.options.coerce;
     return applyTransformers(rawValue, context, transformer, shouldCoerce);
+  }
+
+  private keyForHeader(header: string): string {
+    return this.keys[header] ?? header;
+  }
+
+  private resolveHeader(headerOrKey: string): string | undefined {
+    if (this.headerMap.has(headerOrKey)) {
+      return headerOrKey;
+    }
+    return this.headerByKey.get(headerOrKey);
+  }
+
+  private buildReverseKeyMap(
+    headers: readonly string[],
+    keys: Readonly<Record<string, string>>
+  ): Array<[string, string]> {
+    const reverse: Array<[string, string]> = [];
+    const usedKeys = new Set<string>();
+    for (const header of headers) {
+      const key = keys[header];
+      if (!key) {
+        continue;
+      }
+      if (usedKeys.has(key)) {
+        throw new RangeError(
+          `Horizontal table keys mapping is not unique: multiple headers map to '${key}'.`
+        );
+      }
+      usedKeys.add(key);
+      reverse.push([key, header]);
+    }
+    return reverse;
   }
 }

@@ -7,16 +7,13 @@
     "test": "autometa run --standalone",
     "test:watch": "autometa run --standalone --watch",
     "test:list": "autometa run --standalone --dry-run",
-    "type-check": "tsc --project tsconfig.json --noEmit"
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
   },
   "dependencies": {
-    "@autometa/assertions": "workspace:*",
-    "@autometa/config": "workspace:*",
-    "@autometa/executor": "workspace:*",
-    "@autometa/gherkin": "workspace:*",
-    "@autometa/http": "workspace:*",
-    "@autometa/injection": "workspace:*",
-    "@autometa/runner": "workspace:*"
+    "@autometa/core": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/gherkin": "workspace:*"
   },
   "devDependencies": {
     "@autometa/cli": "workspace:*",

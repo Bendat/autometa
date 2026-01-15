@@ -14,7 +14,7 @@ Autometa scenarios run through a single executor surface that you shape inside y
 ## Configure the Autometa executor
 
 ```ts title="src/step-definitions.ts"
-import { CucumberRunner } from "@autometa/runner";
+import { CucumberRunner } from "@autometa/core/runner";
 import { brewBuddyWorldDefaults } from "./world";
 import { CompositionRoot } from "./composition/brew-buddy-app";
 import { brewBuddyPlugins } from "./utils/assertions";
@@ -64,6 +64,28 @@ pnpm autometa run --standalone        # force the built-in runtime
 ```
 
 Pass `--config autometa.jest.config.ts` (or similar) if you keep multiple executor configs per runner. Otherwise the CLI automatically loads `autometa.config.ts` from the workspace root.
+The CLI also supports `autometa.<name>.config.*` variants and searches upward from the current directory.
+
+### Using ensure from bindings
+
+Decorator projects can destructure `ensure` directly from the bindings surface:
+
+```ts
+import "reflect-metadata";
+import { CucumberRunner } from "@autometa/core/runner";
+
+const runner = CucumberRunner.builder();
+const { Binding, Given, ensure, Injectable, Inject, LazyInject } = runner.bindingsTS();
+
+@Binding()
+export class MenuSteps {
+  @Given("I have brewed a {word}")
+  brewed(type: string) {
+    ensure.value(type).is.oneOf(["lager", "ale", "stout"]);
+  }
+}
+```
+Note: bindings require `reflect-metadata` to be imported once in your project.
 
 ## Step authoring strategies
 

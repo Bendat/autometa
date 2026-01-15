@@ -6,17 +6,16 @@
   "scripts": {
     "test": "vitest run --config vitest.unit.config.ts",
     "test:watch": "vitest --config vitest.unit.config.ts",
-    "features": "vitest run",
-    "features:watch": "vitest",
-    "type-check": "tsc --project tsconfig.json --noEmit"
+    "features": "node ./scripts/run-features.mjs",
+    "features:watch": "node ./scripts/run-features.mjs --watch",
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
   },
   "dependencies": {
-    "@autometa/app": "workspace:*",
     "@autometa/assertions": "workspace:*",
-    "@autometa/config": "workspace:*",
+    "@autometa/core": "workspace:*",
     "@autometa/cucumber-expressions": "workspace:*",
     "@autometa/events": "workspace:*",
-    "@autometa/errors": "workspace:*",
     "@autometa/executor": "workspace:*",
     "@autometa/gherkin": "workspace:*",
     "@autometa/http": "workspace:*",

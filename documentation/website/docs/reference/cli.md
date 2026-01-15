@@ -22,7 +22,7 @@ autometa run [options] [patterns...]
 
 | Option | Description |
 | --- | --- |
-| `--config <path>` | Path to the configuration file. Defaults to `autometa.config.ts`. |
+| `--config <path>` | Path to the configuration file (overrides discovery). |
 | `-e, --environment <environment>` | Select a named environment from `environments` in your config. |
 | `-g, --group <group>` | Filter module groups to include (affects module/step loading; patterns are not auto-scoped). Repeatable. |
 | `-m, --module <module>` | Filter modules to include (by id or unambiguous suffix; affects module/step loading; patterns are not auto-scoped). Repeatable. |
@@ -97,3 +97,37 @@ Forward Playwright args to the native runner:
 ```bash
 autometa run --handover -- --project=api --headed
 ```
+
+### Config discovery, global installs, and custom names
+
+The CLI locates your config by searching upward from the current directory for:
+
+- `autometa.config.{ts,mts,cts,js,mjs,cjs}`
+- `autometa.<name>.config.{ts,mts,cts,js,mjs,cjs}` (e.g. `autometa.e2e.config.ts`)
+
+This works well with globally installed CLIs or when you run from a subfolder. Use `--config` to point at a specific file when you keep multiple configs.
+
+### Runner detection and modes
+
+If `runner` is not explicitly set (or set to `auto`-like behavior), the CLI detects a native runner based on project files:
+
+- Vitest: presence of `vitest.config.*`
+- Jest: presence of `jest.config.*`
+- Playwright: presence of `playwright.config.*`
+
+Modes:
+
+- Default ("native"/"auto"): delegate to the detected runner when available
+- `--standalone`: use the built-in runtime regardless of native runner presence
+
+### Cache directory configuration
+
+The CLI compiles TS modules (e.g., configs) into a cache directory. Defaults:
+
+- `node_modules/.cache/autometa` when `node_modules` is present
+- OS cache fallback otherwise
+
+You can override via environment variables:
+
+- `AUTOMETA_CACHE_DIR` – absolute or relative path to use as the cache dir
+- `AUTOMETA_HOME` – base directory; the CLI writes a `cache/` subfolder under it

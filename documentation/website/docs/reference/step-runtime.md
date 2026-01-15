@@ -268,7 +268,13 @@ Notes:
 
 #### Horizontal and vertical table transformers
 
-For horizontal and vertical tables, transformers are keyed by **header name**:
+For horizontal and vertical tables, transformers are keyed by **header name**.
+
+If you want your table to map cleanly onto JSON field names (and get nicer autocomplete), you can provide an explicit `keys` mapping. When `keys` is present, Autometa will:
+
+- use the mapped key in `table.records()` / `table.getRow(...)` output
+- resolve transformers by mapped key (with fallback to the raw header name)
+- allow lookups like `table.getCell("reportsTo", 0)`
 
 ```ts title="src/steps/crew.steps.ts"
 const table = world.runtime.requireTable("horizontal", {
@@ -287,6 +293,33 @@ world.runtime.requireTable("vertical", {
     retries: (value) => Number(value),
   },
 });
+
+// Optional: map raw headers to record keys
+world.runtime.requireTable("horizontal", {
+  keys: {
+    "Reports To": "reportsTo",
+    "Start Date": "startDate",
+  } as const,
+  transformers: {
+    reportsTo: (value) => value.trim(),
+    startDate: (value) => new Date(value),
+  },
+});
+
+// You can also pass a class (or instance) as the second argument.
+class MyTableTransform {
+  readonly keys = {
+    "Reports To": "reportsTo",
+    "Start Date": "startDate",
+  } as const;
+  readonly transformers = {
+    reportsTo: (value: string) => value.trim(),
+    startDate: (value: string) => new Date(value),
+  };
+}
+
+world.runtime.requireTable("horizontal", MyTableTransform);
+world.runtime.requireTable("horizontal", new MyTableTransform());
 ```
 
 Given this table:
@@ -361,6 +394,30 @@ const table = world.runtime.requireTable("matrix", {
     cells: {
       "Row1": {
         "ColB": (value) => Number(value) * 2,  // Double this specific cell
+      },
+    },
+  },
+});
+```
+
+You can also map row/column headers to JSON keys using `keys`:
+
+```ts title="src/steps/grid.steps.ts"
+world.runtime.requireTable("matrix", {
+  keys: {
+    rows: { "Row1": "row1", "Row2": "row2" },
+    columns: { "Reports To": "reportsTo", "Team Size": "teamSize" },
+  } as const,
+  transformers: {
+    rows: {
+      row2: (value) => value.toUpperCase(),
+    },
+    columns: {
+      teamSize: (value) => Number(value),
+    },
+    cells: {
+      row1: {
+        reportsTo: (value) => value.trim(),
       },
     },
   },

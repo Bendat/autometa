@@ -11,22 +11,19 @@ Autometa v1 installs through any Node package manager. The packages published un
 
 ## Core packages
 
-| Package | Why you need it |
-| --- | --- |
-| `@autometa/config` | Exposes `defineConfig` plus typed helpers for `autometa.config.ts`. |
-| `@autometa/app` & `@autometa/executor` | Wire the coordinator lifecycle, hook registry, and runtime harness used by every runner. |
-| `@autometa/runner` & `@autometa/scopes` | Provide the scenario DSL, world container, scope-aware hooks, and lifecycle events. |
-| `@autometa/assertions` | Offers the `ensure(...)` fluent assertions and the plugin factory. |
-| `@autometa/dto-builder` (optional) | Ships the fluent builder used in the examples for fixture payloads. |
+Prefer the umbrella package:
 
-Install the core plus your runner tooling in one go:
+- `@autometa/core` – ergonomics-focused entrypoint that re-exports user-facing APIs via subpaths:
+	- `@autometa/core/runner`, `@autometa/core/config`, `@autometa/core/assert`, `@autometa/core/http`, etc.
+
+Install the CLI and core:
 
 ```bash
-pnpm add -D @autometa/cli typescript ts-node
-pnpm add @autometa/app @autometa/config @autometa/executor @autometa/runner @autometa/scopes @autometa/assertions
+pnpm add -D @autometa/cli typescript
+pnpm add @autometa/core
 ```
 
-> The CLI is optional but recommended—it provides the `autometa run` shortcuts used in the Playwright example project.
+You can still import specific packages directly if you prefer, but `@autometa/core` keeps imports consistent across examples and reduces boilerplate.
 
 ## Configure your runner
 
@@ -48,7 +45,7 @@ pnpm add @autometa/jest-executor @autometa/jest-transformer
 ### 2. Create `autometa.config.ts`
 
 ```ts title="autometa.config.ts"
-import { defineConfig } from "@autometa/config";
+import { defineConfig } from "@autometa/core/config";
 
 export default defineConfig({
 	default: {
@@ -97,7 +94,7 @@ pnpm add @autometa/vitest-executor @autometa/vitest-plugins
 ### 2. Create `autometa.config.ts`
 
 ```ts title="autometa.config.ts"
-import { defineConfig } from "@autometa/config";
+import { defineConfig } from "@autometa/core/config";
 
 export default defineConfig({
 	default: {
@@ -149,7 +146,7 @@ pnpm add @autometa/playwright-executor @autometa/playwright-loader
 ### 2. Create `autometa.config.ts`
 
 ```ts title="autometa.config.ts"
-import { defineConfig } from "@autometa/config";
+import { defineConfig } from "@autometa/core/config";
 
 export default defineConfig({
 	default: {
@@ -192,7 +189,23 @@ Wire the loader by importing `@autometa/playwright-loader/register` inside the s
 Use the CLI to compile `.feature` files and execute them through Playwright:
 
 ```bash
-pnpm autometa run --config autometa.config.ts
+pnpm autometa run
+```
+
+The CLI searches upward for `autometa.config.{ts,mts,cts,js,mjs,cjs}` or `autometa.<name>.config.*`.
+Pass `-c/--config` to select a specific file when you maintain multiple configs.
+
+### Playwright TypeScript/ESM notes
+
+For smooth TS + ESM interop in Playwright projects, we recommend:
+
+```json title="tsconfig.json"
+{
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "Bundler"
+	}
+}
 ```
 
 </TabItem>

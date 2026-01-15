@@ -161,21 +161,15 @@ importers:
 
   examples/jest-functions:
     dependencies:
-      '@autometa/app':
-        specifier: workspace:*
-        version: link:../../packages/app
       '@autometa/assertions':
         specifier: workspace:*
         version: link:../../packages/assertions
-      '@autometa/config':
+      '@autometa/core':
         specifier: workspace:*
-        version: link:../../packages/config
+        version: link:../../packages/core
       '@autometa/cucumber-expressions':
         specifier: workspace:*
         version: link:../../packages/cucumber-expressions
-      '@autometa/errors':
-        specifier: workspace:*
-        version: link:../../packages/errors
       '@autometa/executor':
         specifier: workspace:*
         version: link:../../packages/executor
@@ -197,12 +191,6 @@ importers:
       '@autometa/runner':
         specifier: workspace:*
         version: link:../../packages/runner
-      '@autometa/scopes':
-        specifier: workspace:*
-        version: link:../../packages/scopes
-      '@autometa/test-builder':
-        specifier: workspace:*
-        version: link:../../packages/test-builder
       '@cucumber/cucumber-expressions':
         specifier: ^17.1.0
         version: 17.1.0
@@ -234,9 +222,12 @@ importers:
 
   examples/modules-examples:
     dependencies:
-      '@autometa/config':
+      '@autometa/core':
         specifier: workspace:*
-        version: link:../../packages/config
+        version: link:../../packages/core
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../../packages/gherkin
       '@autometa/runner':
         specifier: workspace:*
         version: link:../../packages/runner
@@ -253,9 +244,6 @@ importers:
 
   examples/playwright-functions:
     dependencies:
-      '@autometa/app':
-        specifier: workspace:*
-        version: link:../../packages/app
       '@autometa/assertions':
         specifier: workspace:*
         version: link:../../packages/assertions
@@ -265,9 +253,6 @@ importers:
       '@autometa/cucumber-expressions':
         specifier: workspace:*
         version: link:../../packages/cucumber-expressions
-      '@autometa/errors':
-        specifier: workspace:*
-        version: link:../../packages/errors
       '@autometa/executor':
         specifier: workspace:*
         version: link:../../packages/executor
@@ -329,24 +314,12 @@ importers:
 
   examples/runner-composition:
     dependencies:
-      '@autometa/assertions':
+      '@autometa/core':
         specifier: workspace:*
-        version: link:../../packages/assertions
-      '@autometa/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@autometa/executor':
-        specifier: workspace:*
-        version: link:../../packages/executor
+        version: link:../../packages/core
       '@autometa/gherkin':
         specifier: workspace:*
         version: link:../../packages/gherkin
-      '@autometa/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@autometa/injection':
-        specifier: workspace:*
-        version: link:../../packages/injection
       '@autometa/runner':
         specifier: workspace:*
         version: link:../../packages/runner
@@ -363,21 +336,15 @@ importers:
 
   examples/vitest-decorators:
     dependencies:
-      '@autometa/app':
-        specifier: workspace:*
-        version: link:../../packages/app
       '@autometa/assertions':
         specifier: workspace:*
         version: link:../../packages/assertions
-      '@autometa/config':
+      '@autometa/core':
         specifier: workspace:*
-        version: link:../../packages/config
+        version: link:../../packages/core
       '@autometa/cucumber-expressions':
         specifier: workspace:*
         version: link:../../packages/cucumber-expressions
-      '@autometa/errors':
-        specifier: workspace:*
-        version: link:../../packages/errors
       '@autometa/executor':
         specifier: workspace:*
         version: link:../../packages/executor
@@ -393,9 +360,6 @@ importers:
       '@autometa/runner':
         specifier: workspace:*
         version: link:../../packages/runner
-      '@autometa/scopes':
-        specifier: workspace:*
-        version: link:../../packages/scopes
       '@autometa/vitest-executor':
         specifier: workspace:*
         version: link:../../packages/vitest-executor
@@ -439,21 +403,15 @@ importers:
 
   examples/vitest-functions:
     dependencies:
-      '@autometa/app':
-        specifier: workspace:*
-        version: link:../../packages/app
       '@autometa/assertions':
         specifier: workspace:*
         version: link:../../packages/assertions
-      '@autometa/config':
+      '@autometa/core':
         specifier: workspace:*
-        version: link:../../packages/config
+        version: link:../../packages/core
       '@autometa/cucumber-expressions':
         specifier: workspace:*
         version: link:../../packages/cucumber-expressions
-      '@autometa/errors':
-        specifier: workspace:*
-        version: link:../../packages/errors
       '@autometa/events':
         specifier: workspace:*
         version: link:../../packages/events
@@ -766,6 +724,9 @@ importers:
         specifier: ^0.5.21
         version: 0.5.21
     devDependencies:
+      '@types/babel__code-frame':
+        specifier: ^7.0.8
+        version: 7.27.0
       '@types/node':
         specifier: ^18.11.18
         version: 18.19.24
@@ -909,6 +870,97 @@ importers:
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@4.9.5)(vite@5.1.6(@types/node@18.19.24)(terser@5.16.6))
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
+  packages/core:
+    dependencies:
+      '@autometa/assertions':
+        specifier: workspace:*
+        version: link:../assertions
+      '@autometa/bind-decorator':
+        specifier: workspace:*
+        version: link:../bind-decorator
+      '@autometa/cli':
+        specifier: workspace:*
+        version: link:../cli
+      '@autometa/config':
+        specifier: workspace:*
+        version: link:../config
+      '@autometa/cucumber-expressions':
+        specifier: workspace:*
+        version: link:../cucumber-expressions
+      '@autometa/datetime':
+        specifier: workspace:*
+        version: link:../datetime
+      '@autometa/dto-builder':
+        specifier: workspace:*
+        version: link:../dto-builder
+      '@autometa/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@autometa/executor':
+        specifier: workspace:*
+        version: link:../executor
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../gherkin
+      '@autometa/http':
+        specifier: workspace:*
+        version: link:../http
+      '@autometa/injection':
+        specifier: workspace:*
+        version: link:../injection
+      '@autometa/phrases':
+        specifier: workspace:*
+        version: link:../phrases
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../runner
+      '@autometa/scopes':
+        specifier: workspace:*
+        version: link:../scopes
+      '@autometa/status-codes':
+        specifier: workspace:*
+        version: link:../status-codes
+      '@autometa/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.19.24
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.54.1
+        version: 5.54.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@4.9.5))(eslint@8.37.0)(typescript@4.9.5)
+      '@typescript-eslint/parser':
+        specifier: ^5.54.1
+        version: 5.62.0(eslint@8.37.0)(typescript@4.9.5)
+      eslint:
+        specifier: ^8.37.0
+        version: 8.37.0
+      eslint-config-custom:
+        specifier: workspace:*
+        version: link:../../configuration/eslint-config-custom
+      eslint-config-prettier:
+        specifier: ^8.3.0
+        version: 8.6.0(eslint@8.37.0)
+      rimraf:
+        specifier: ^4.1.2
+        version: 4.1.2
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../configuration/tsconfig
+      tsup:
+        specifier: ^7.2.0
+        version: 7.2.0(postcss@8.4.36)(ts-node@10.9.2(@types/node@18.19.24)(typescript@4.9.5))(typescript@4.9.5)
+      tsup-config:
+        specifier: workspace:*
+        version: link:../../configuration/tsup-config
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
       vitest:
         specifier: 1.4.0
         version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
@@ -4215,6 +4267,9 @@ packages:
   '@turbo/workspaces@2.5.5':
     resolution: {integrity: sha512-Gye68+szmOp96xMvmondTRQYcYvevDqUP9JuN9jC6kqzFel7U1pJ/hoPvyD3WGQNxyKsdF+wJ5fvNaYXkzr6tQ==}
     hasBin: true
+
+  '@types/babel__code-frame@7.27.0':
+    resolution: {integrity: sha512-Dwlo+LrxDx/0SpfmJ/BKveHf7QXWvLBLc+x03l5sbzykj3oB9nHygCpSECF1a+s+QIxbghe+KHqC90vGtxLRAA==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -12484,7 +12539,7 @@ snapshots:
 
   '@docusaurus/react-loadable@5.5.2(react@18.2.0)':
     dependencies:
-      '@types/react': 18.2.14
+      '@types/react': 18.2.67
       prop-types: 15.8.1
       react: 18.2.0
 
@@ -13461,6 +13516,8 @@ snapshots:
       picocolors: 1.0.1
       semver: 7.6.2
       update-check: 1.5.4
+
+  '@types/babel__code-frame@7.27.0': {}
 
   '@types/babel__core@7.20.5':
     dependencies:

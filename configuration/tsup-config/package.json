@@ -5,6 +5,10 @@
   "type": "module",
   "description": "Shared TSUP configuration for Autometa packages",
   "main": "index.js",
+  "scripts": {
+    "type-check": "node -e \"process.exit(0)\"",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
+  },
   "exports": {
     ".": "./index.js",
     "./base": "./base.js"

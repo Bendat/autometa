@@ -32,6 +32,11 @@ export interface RunCommandOptions {
    * When omitted, the CLI will choose a sensible default (preferring node_modules/.cache).
    */
   readonly cacheDir?: string;
+  /**
+   * Explicit path to the Autometa config file. If omitted, the CLI will search upward
+   * from the current working directory for autometa.config.* or autometa.<name>.config.* files.
+   */
+  readonly configPath?: string;
   readonly patterns?: readonly string[];
   /**
    * Extra args to pass directly to the detected native runner.
@@ -304,6 +309,7 @@ export function registerRunCommand(program: Command): Command {
     .option("--watch", "Run in watch mode (vitest/jest only)")
     .option("--verbose", "Show detailed output including runner detection")
     .option("--standalone", "Force standalone runtime instead of native runner")
+    .option("-c, --config <path>", "Path to Autometa config file (e.g. autometa.config.ts)")
     .option("-e, --environment <environment>", "Select config environment")
     .option(
       "-g, --group <group>",
@@ -322,6 +328,7 @@ export function registerRunCommand(program: Command): Command {
       flags: {
         handover?: boolean;
         cacheDir?: string;
+        config?: string;
         dryRun?: boolean;
         watch?: boolean;
         verbose?: boolean;
@@ -340,6 +347,9 @@ export function registerRunCommand(program: Command): Command {
           cwd: process.cwd(),
           ...(typeof flags?.cacheDir === "string" && flags.cacheDir.trim().length > 0
             ? { cacheDir: flags.cacheDir }
+            : {}),
+          ...(typeof flags?.config === "string" && flags.config.trim().length > 0
+            ? { configPath: flags.config }
             : {}),
           ...(split.patterns.length > 0 ? { patterns: split.patterns } : {}),
           ...(split.runnerArgs.length > 0 ? { runnerArgs: split.runnerArgs } : {}),
@@ -542,6 +552,9 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
   const summaryFormatter = options.summaryFormatter ?? formatSummary;
   const { resolved } = await loadExecutorConfig(cwd, {
     cacheDir,
+    ...(typeof options.configPath === "string" && options.configPath.trim().length > 0
+      ? { configPath: options.configPath }
+      : {}),
     ...(typeof options.environment === "string" && options.environment.trim().length > 0
       ? { environment: options.environment }
       : {}),

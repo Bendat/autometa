@@ -17,7 +17,15 @@ export class MatrixTable {
   private readonly horizontalHeaders: readonly string[];
   private readonly verticalHeaders: readonly string[];
   private readonly grid: readonly (readonly string[])[];
-  private readonly options: Required<Omit<MatrixTableOptions, "transformers">> & {
+  private readonly rowKeys: Readonly<Record<string, string>>;
+  private readonly columnKeys: Readonly<Record<string, string>>;
+  private readonly rowHeaderByKey: ReadonlyMap<string, string>;
+  private readonly columnHeaderByKey: ReadonlyMap<string, string>;
+  private readonly options: Required<Omit<MatrixTableOptions, "transformers" | "keys">> & {
+    readonly keys: {
+      readonly rows: Readonly<Record<string, string>>;
+      readonly columns: Readonly<Record<string, string>>;
+    };
     readonly transformers: CellTransforms;
   };
 
@@ -38,8 +46,29 @@ export class MatrixTable {
       .slice(1)
       .map((row) => row.slice(1)) as readonly (readonly string[])[];
 
+    const keys = (options.keys ?? {}) as {
+      readonly rows?: Readonly<Record<string, string>>;
+      readonly columns?: Readonly<Record<string, string>>;
+    };
+    this.rowKeys = keys.rows ?? {};
+    this.columnKeys = keys.columns ?? {};
+    this.rowHeaderByKey = new Map(
+      this.buildReverseKeyMap("Matrix row", this.verticalHeaders, this.rowKeys)
+    );
+    this.columnHeaderByKey = new Map(
+      this.buildReverseKeyMap(
+        "Matrix column",
+        this.horizontalHeaders,
+        this.columnKeys
+      )
+    );
+
     this.options = {
       coerce: options.coerce ?? true,
+      keys: {
+        rows: this.rowKeys,
+        columns: this.columnKeys,
+      },
       transformers: {
         rows: options.transformers?.rows ?? {},
         columns: options.transformers?.columns ?? {},
@@ -57,7 +86,11 @@ export class MatrixTable {
   }
 
   getRow(header: string, options?: ResolveOptions): Record<string, TableValue> {
-    const rowIndex = this.verticalHeaders.indexOf(header);
+    const resolvedRowHeader = this.resolveVerticalHeader(header);
+    if (!resolvedRowHeader) {
+      return {};
+    }
+    const rowIndex = this.verticalHeaders.indexOf(resolvedRowHeader);
     if (rowIndex === -1) {
       return {};
     }
@@ -65,8 +98,9 @@ export class MatrixTable {
     const record: Record<string, TableValue> = {};
     this.horizontalHeaders.forEach((hHeader, columnIndex) => {
       const rawValue = rowData[columnIndex] ?? "";
-      record[hHeader] = this.resolve(
-        header,
+      const key = this.keyForHorizontalHeader(hHeader);
+      record[key] = this.resolve(
+        resolvedRowHeader,
         hHeader,
         rawValue,
         rowIndex,
@@ -78,7 +112,11 @@ export class MatrixTable {
   }
 
   getColumn(header: string, options?: ResolveOptions): Record<string, TableValue> {
-    const columnIndex = this.horizontalHeaders.indexOf(header);
+    const resolvedColumnHeader = this.resolveHorizontalHeader(header);
+    if (!resolvedColumnHeader) {
+      return {};
+    }
+    const columnIndex = this.horizontalHeaders.indexOf(resolvedColumnHeader);
     if (columnIndex === -1) {
       return {};
     }
@@ -86,9 +124,10 @@ export class MatrixTable {
     this.verticalHeaders.forEach((vHeader, rowIndex) => {
       const rowData = this.grid[rowIndex] ?? [];
       const rawValue = rowData[columnIndex] ?? "";
-      record[vHeader] = this.resolve(
+      const key = this.keyForVerticalHeader(vHeader);
+      record[key] = this.resolve(
         vHeader,
-        header,
+        resolvedColumnHeader,
         rawValue,
         rowIndex,
         columnIndex,
@@ -103,8 +142,14 @@ export class MatrixTable {
     horizontalHeader: string,
     options?: ResolveOptions
   ): TableValue | undefined {
-    const rowIndex = this.verticalHeaders.indexOf(verticalHeader);
-    const columnIndex = this.horizontalHeaders.indexOf(horizontalHeader);
+    const resolvedRowHeader = this.resolveVerticalHeader(verticalHeader);
+    const resolvedColumnHeader = this.resolveHorizontalHeader(horizontalHeader);
+    if (!resolvedRowHeader || !resolvedColumnHeader) {
+      return undefined;
+    }
+
+    const rowIndex = this.verticalHeaders.indexOf(resolvedRowHeader);
+    const columnIndex = this.horizontalHeaders.indexOf(resolvedColumnHeader);
     if (rowIndex === -1 || columnIndex === -1) {
       return undefined;
     }
@@ -114,8 +159,8 @@ export class MatrixTable {
       return undefined;
     }
     return this.resolve(
-      verticalHeader,
-      horizontalHeader,
+      resolvedRowHeader,
+      resolvedColumnHeader,
       rawValue,
       rowIndex,
       columnIndex,
@@ -178,16 +223,70 @@ export class MatrixTable {
     verticalHeader: string,
     horizontalHeader: string
   ): TableTransformer | undefined {
-    const cellTransformer = this.options.transformers.cells[verticalHeader]?.[
-      horizontalHeader
-    ];
-    if (cellTransformer) {
-      return cellTransformer;
+    const vKey = this.keyForVerticalHeader(verticalHeader);
+    const hKey = this.keyForHorizontalHeader(horizontalHeader);
+
+    const cells = this.options.transformers.cells;
+    const rows = this.options.transformers.rows;
+    const columns = this.options.transformers.columns;
+
+    // Cell-specific (most specific)
+    return (
+      cells[vKey]?.[hKey] ??
+      cells[vKey]?.[horizontalHeader] ??
+      cells[verticalHeader]?.[hKey] ??
+      cells[verticalHeader]?.[horizontalHeader] ??
+      // Row-wide
+      rows[vKey] ??
+      rows[verticalHeader] ??
+      // Column-wide
+      columns[hKey] ??
+      columns[horizontalHeader]
+    );
+  }
+
+  private keyForVerticalHeader(header: string): string {
+    return this.rowKeys[header] ?? header;
+  }
+
+  private keyForHorizontalHeader(header: string): string {
+    return this.columnKeys[header] ?? header;
+  }
+
+  private resolveVerticalHeader(headerOrKey: string): string | undefined {
+    if (this.verticalHeaders.includes(headerOrKey)) {
+      return headerOrKey;
     }
-    const rowTransformer = this.options.transformers.rows[verticalHeader];
-    if (rowTransformer) {
-      return rowTransformer;
+    return this.rowHeaderByKey.get(headerOrKey);
+  }
+
+  private resolveHorizontalHeader(headerOrKey: string): string | undefined {
+    if (this.horizontalHeaders.includes(headerOrKey)) {
+      return headerOrKey;
     }
-    return this.options.transformers.columns[horizontalHeader];
+    return this.columnHeaderByKey.get(headerOrKey);
+  }
+
+  private buildReverseKeyMap(
+    label: string,
+    headers: readonly string[],
+    keys: Readonly<Record<string, string>>
+  ): Array<[string, string]> {
+    const reverse: Array<[string, string]> = [];
+    const usedKeys = new Set<string>();
+    for (const header of headers) {
+      const key = keys[header];
+      if (!key) {
+        continue;
+      }
+      if (usedKeys.has(key)) {
+        throw new RangeError(
+          `${label} keys mapping is not unique: multiple headers map to '${key}'.`
+        );
+      }
+      usedKeys.add(key);
+      reverse.push([key, header]);
+    }
+    return reverse;
   }
 }

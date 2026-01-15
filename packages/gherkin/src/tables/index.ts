@@ -13,6 +13,8 @@ export type {
   MatrixTableOptions,
   MatrixCellTransformers,
   TableTransformer,
+  MatrixKeys,
+  TableKeysMap,
   TablePrimitive,
   TableRecord,
   TableRowContext,

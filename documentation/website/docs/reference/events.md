@@ -55,6 +55,7 @@ Autometa emits these event types:
 - `scenarioOutline.started` / `scenarioOutline.completed`
 - `example.started` / `example.completed`
 - `scenario.started` / `scenario.completed`
+- `background.started` / `background.completed`
 - `step.started` / `step.completed`
 - `hook.started` / `hook.completed`
 - `status.changed`

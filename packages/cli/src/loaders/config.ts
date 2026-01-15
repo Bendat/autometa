@@ -1,6 +1,6 @@
-import { access } from "node:fs/promises";
+import { access, readdir } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
-import { resolve as resolvePath } from "node:path";
+import { dirname, resolve as resolvePath } from "node:path";
 
 import { Config } from "@autometa/config";
 import type { ResolvedConfig } from "@autometa/config";
@@ -22,14 +22,54 @@ export interface LoadExecutorConfigOptions {
   readonly environment?: string;
 }
 
-const CONFIG_CANDIDATES = [
-  "autometa.config.ts",
-  "autometa.config.mts",
-  "autometa.config.cts",
-  "autometa.config.js",
-  "autometa.config.mjs",
-  "autometa.config.cjs",
-];
+const CONFIG_EXTENSIONS = ["ts", "mts", "cts", "js", "mjs", "cjs"] as const;
+
+/**
+ * Return candidate filenames for a given directory, following patterns similar to Vitest/Jest:
+ * - autometa.config.{ts,mts,cts,js,mjs,cjs}
+ * - autometa.<name>.config.{ts,mts,cts,js,mjs,cjs} (e.g. autometa.e2e.config.ts)
+ * Preference order:
+ *  1) Plain name (autometa.config.*)
+ *  2) Shortest named variant (autometa.<name>.config.*)
+ */
+async function findConfigInDir(dir: string): Promise<string | undefined> {
+  // First, prefer the plain name variants
+  for (const ext of CONFIG_EXTENSIONS) {
+    const candidate = resolvePath(dir, `autometa.config.${ext}`);
+    if (await fileExists(candidate)) {
+      return candidate;
+    }
+  }
+
+  // Then, search the directory for named variants: autometa.<name>.config.<ext>
+  try {
+    const entries = await readdir(dir, { withFileTypes: true });
+    // Collect matching files and sort deterministically
+    const matches: string[] = [];
+    const pattern = /^autometa\.[A-Za-z0-9_-]+\.config\.(?:ts|mts|cts|js|mjs|cjs)$/u;
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      if (pattern.test(entry.name)) {
+        matches.push(resolvePath(dir, entry.name));
+      }
+    }
+    if (matches.length > 0) {
+      // Prefer shortest filename (i.e., shortest <name>), then alphabetically to stabilize
+      matches.sort((a, b) => {
+        const an = a.split("/").pop() ?? a;
+        const bn = b.split("/").pop() ?? b;
+        const alen = an.length;
+        const blen = bn.length;
+        return alen === blen ? an.localeCompare(bn) : alen - blen;
+      });
+      return matches[0];
+    }
+  } catch {
+    // ignore directory read errors
+  }
+
+  return undefined;
+}
 
 export async function loadExecutorConfig(
   cwd: string,
@@ -72,15 +112,29 @@ async function resolveConfigPath(cwd: string, explicitPath?: string): Promise<st
     return absolutePath;
   }
 
-  for (const candidate of CONFIG_CANDIDATES) {
-    const absoluteCandidate = resolvePath(cwd, candidate);
-    if (await fileExists(absoluteCandidate)) {
-      return absoluteCandidate;
+  // Walk upwards from cwd to root, searching for a valid config file
+  // in each directory according to our patterns.
+  let current = cwd;
+  // Guard against infinite loops by limiting depth to a reasonable number
+  for (let depth = 0; depth < 50; depth += 1) {
+    const found = await findConfigInDir(current);
+    if (found) {
+      return found;
     }
+
+    const parent = dirname(current);
+    if (parent === current) {
+      break;
+    }
+    current = parent;
   }
 
+  const expected = [
+    ...CONFIG_EXTENSIONS.map((ext) => `autometa.config.${ext}`),
+    "autometa.<name>.config.{ts,mts,cts,js,mjs,cjs}",
+  ];
   throw new Error(
-    `Unable to locate an Autometa config file in "${cwd}". Expected one of: ${CONFIG_CANDIDATES.join(
+    `Unable to locate an Autometa config file starting from "${cwd}". Expected one of: ${expected.join(
       ", "
     )}`
   );

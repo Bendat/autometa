@@ -389,6 +389,19 @@ export class HTTP {
   }
 
   /**
+   * Transforms the resolved response into another shape.
+   *
+   * The response has already been parsed and schema-validated before the
+   * transformer runs. This is a convenient way to project a response into
+   * a domain model while keeping type inference on the return value.
+   */
+  transform<TResponse, TResult>(
+    transformer: (response: HTTPResponse<TResponse>) => TResult | Promise<TResult>
+  ) {
+    return new HTTPTransformClient<TResponse, TResult>(this, transformer);
+  }
+
+  /**
    * Sets a shared query parameter for all future requests.
    */
   sharedParam(name: string, value: Record<string, unknown>): HTTP;
@@ -919,6 +932,74 @@ export class HTTP {
       this.sharedPlugins,
       plugins
     );
+  }
+}
+
+class HTTPTransformClient<TResponse, TResult> {
+  private base: HTTP;
+  private transform: (response: HTTPResponse<TResponse>) => TResult | Promise<TResult>;
+
+  constructor(
+    base: HTTP,
+    transform: (response: HTTPResponse<TResponse>) => TResult | Promise<TResult>
+  ) {
+    this.base = base;
+    this.transform = transform;
+  }
+
+  async fetchWith(method: HTTPMethod | Lowercase<HTTPMethod>, options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.fetchWith<TResponse>(method, options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async get(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.get<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async post(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.post<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async put(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.put<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async patch(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.patch<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async delete(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.delete<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async head(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.head<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async options(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.options<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async trace(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.trace<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async connect(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.connect<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
+  }
+
+  async stream(options?: HTTPAdditionalOptions<unknown>) {
+    const response = await this.base.stream<TResponse>(options);
+    return this.transform(response as HTTPResponse<TResponse>);
   }
 }
 

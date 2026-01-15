@@ -6,7 +6,7 @@ export interface AutomationErrorOptions {
  * Base error type emitted by Autometa utilities.
  */
 export class AutomationError extends Error {
-  declare readonly cause?: unknown;
+  readonly cause?: unknown;
 
   constructor(message: string, options: AutomationErrorOptions = {}) {
     const { cause } = options;

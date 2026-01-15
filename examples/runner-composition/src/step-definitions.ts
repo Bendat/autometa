@@ -1,5 +1,5 @@
-import { CucumberRunner } from "@autometa/runner";
-import type { HookLifecycleMetadata } from "@autometa/runner";
+import { CucumberRunner } from "@autometa/core/runner";
+import type { HookLifecycleMetadata } from "@autometa/core/executor";
 
 import {
   runnerCompositionWorldDefaults,

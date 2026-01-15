@@ -121,6 +121,39 @@ response.headers;      // Record<string, string> (lowercased keys)
 response.data;         // Parsed body (JSON, text, etc.)
 ```
 
+### Transforming responses
+
+If you want to project a response into a domain model (or just return a subset),
+use `transform(...)`. The transformer runs **after** parsing and schema validation.
+
+```ts
+import { HTTP } from "@autometa/http";
+
+type User = { id: number; name: string };
+
+const userName = await HTTP.create()
+	.url("https://api.example.com")
+	.route("users", 1)
+	.transform<User>((response) => response.data.name)
+	.get();
+// userName: string (inferred)
+```
+
+You can also combine it with schema validation:
+
+```ts
+import { z } from "zod";
+
+const UserSchema = z.object({ id: z.number(), name: z.string() });
+
+const userId = await HTTP.create()
+	.url("https://api.example.com")
+	.route("users", 1)
+	.schema(UserSchema, 200)
+	.transform((response) => response.data.id)
+	.get();
+```
+
 ### Schema Validation
 
 You can validate the response body against a schema for specific status codes (or ranges). If validation fails, it throws an `HTTPSchemaValidationError`.

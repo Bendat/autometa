@@ -5,8 +5,10 @@ import {
   type HeaderlessTableOptions,
   type HorizontalTable,
   type HorizontalTableOptions,
+  type MatrixKeys,
   type MatrixTable,
   type MatrixTableOptions,
+  type TableKeysMap,
   type TableShape,
   type VerticalTable,
   type VerticalTableOptions,
@@ -47,6 +49,8 @@ type TableCarrier = Record<never, never> & {
 };
 
 type TableConfig = Record<TableShape, boolean>;
+
+type TableOptionsProvider<T> = T | (new () => T);
 
 const DEFAULT_CONFIG: TableConfig = { ...DEFAULT_COERCE_BY_SHAPE };
 let activeConfig: TableConfig = { ...DEFAULT_CONFIG };
@@ -319,59 +323,87 @@ function resolveCoerceOverride(
   return activeConfig[shape];
 }
 
+function resolveTableOptions<T>(
+  optionsOrProvider: TableOptionsProvider<T> | undefined
+): T | undefined {
+  if (!optionsOrProvider) {
+    return undefined;
+  }
+  if (typeof optionsOrProvider === "function") {
+    return new (optionsOrProvider as new () => T)();
+  }
+  return optionsOrProvider;
+}
+
 export function getTable(
   world: unknown,
   shape: "headerless",
-  options?: HeaderlessTableOptions
+  options?: TableOptionsProvider<HeaderlessTableOptions>
 ): HeaderlessTable | undefined;
 export function getTable(
   world: unknown,
   shape: "horizontal",
-  options?: HorizontalTableOptions
+  options?: TableOptionsProvider<HorizontalTableOptions>
 ): HorizontalTable | undefined;
 export function getTable(
   world: unknown,
   shape: "vertical",
-  options?: VerticalTableOptions
+  options?: TableOptionsProvider<VerticalTableOptions>
 ): VerticalTable | undefined;
 export function getTable(
   world: unknown,
   shape: "matrix",
-  options?: MatrixTableOptions
+  options?: TableOptionsProvider<MatrixTableOptions>
+): MatrixTable | undefined;
+export function getTable<TKeys extends TableKeysMap>(
+  world: unknown,
+  shape: "horizontal",
+  options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
+): HorizontalTable | undefined;
+export function getTable<TKeys extends TableKeysMap>(
+  world: unknown,
+  shape: "vertical",
+  options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
+): VerticalTable | undefined;
+export function getTable<TKeys extends MatrixKeys>(
+  world: unknown,
+  shape: "matrix",
+  options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
 ): MatrixTable | undefined;
 export function getTable(
   world: unknown,
   shape: TableShape,
   options?:
-    | HeaderlessTableOptions
-    | HorizontalTableOptions
-    | VerticalTableOptions
-    | MatrixTableOptions
+    | TableOptionsProvider<HeaderlessTableOptions>
+    | TableOptionsProvider<HorizontalTableOptions>
+    | TableOptionsProvider<VerticalTableOptions>
+    | TableOptionsProvider<MatrixTableOptions>
 ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
   const table = getRawTable(world);
   if (!table) {
     return undefined;
   }
-  const coerce = resolveCoerceOverride(shape, options?.coerce);
+  const resolvedOptions = resolveTableOptions(options);
+  const coerce = resolveCoerceOverride(shape, resolvedOptions?.coerce);
   switch (shape) {
     case "headerless":
       return createTable(table, "headerless", {
-        ...(options as HeaderlessTableOptions | undefined),
+        ...(resolvedOptions as HeaderlessTableOptions | undefined),
         coerce,
       });
     case "horizontal":
       return createTable(table, "horizontal", {
-        ...(options as HorizontalTableOptions | undefined),
+        ...(resolvedOptions as HorizontalTableOptions | undefined),
         coerce,
       });
     case "vertical":
       return createTable(table, "vertical", {
-        ...(options as VerticalTableOptions | undefined),
+        ...(resolvedOptions as VerticalTableOptions | undefined),
         coerce,
       });
     case "matrix":
       return createTable(table, "matrix", {
-        ...(options as MatrixTableOptions | undefined),
+        ...(resolvedOptions as MatrixTableOptions | undefined),
         coerce,
       });
     default:
@@ -383,10 +415,10 @@ export function consumeTable(
   world: unknown,
   shape: TableShape,
   options?:
-    | HeaderlessTableOptions
-    | HorizontalTableOptions
-    | VerticalTableOptions
-    | MatrixTableOptions
+    | TableOptionsProvider<HeaderlessTableOptions>
+    | TableOptionsProvider<HorizontalTableOptions>
+    | TableOptionsProvider<VerticalTableOptions>
+    | TableOptionsProvider<MatrixTableOptions>
 ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
   let instance:
     | HeaderlessTable
@@ -490,75 +522,111 @@ export interface StepRuntimeHelpers {
   readonly currentStep: StepRuntimeMetadata | undefined;
   getTable(
     shape: "headerless",
-    options?: HeaderlessTableOptions
+    options?: TableOptionsProvider<HeaderlessTableOptions>
   ): HeaderlessTable | undefined;
   getTable(
     shape: "horizontal",
-    options?: HorizontalTableOptions
+    options?: TableOptionsProvider<HorizontalTableOptions>
+  ): HorizontalTable | undefined;
+  getTable<TKeys extends TableKeysMap>(
+    shape: "horizontal",
+    options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
   getTable(
     shape: "vertical",
-    options?: VerticalTableOptions
+    options?: TableOptionsProvider<VerticalTableOptions>
+  ): VerticalTable | undefined;
+  getTable<TKeys extends TableKeysMap>(
+    shape: "vertical",
+    options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
   getTable(
     shape: "matrix",
-    options?: MatrixTableOptions
+    options?: TableOptionsProvider<MatrixTableOptions>
+  ): MatrixTable | undefined;
+  getTable<TKeys extends MatrixKeys>(
+    shape: "matrix",
+    options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
   getTable(
     shape: TableShape,
     options?:
-      | HeaderlessTableOptions
-      | HorizontalTableOptions
-      | VerticalTableOptions
-      | MatrixTableOptions
+      | TableOptionsProvider<HeaderlessTableOptions>
+      | TableOptionsProvider<HorizontalTableOptions>
+      | TableOptionsProvider<VerticalTableOptions>
+      | TableOptionsProvider<MatrixTableOptions>
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined;
   consumeTable(
     shape: "headerless",
-    options?: HeaderlessTableOptions
+    options?: TableOptionsProvider<HeaderlessTableOptions>
   ): HeaderlessTable | undefined;
   consumeTable(
     shape: "horizontal",
-    options?: HorizontalTableOptions
+    options?: TableOptionsProvider<HorizontalTableOptions>
+  ): HorizontalTable | undefined;
+  consumeTable<TKeys extends TableKeysMap>(
+    shape: "horizontal",
+    options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
   consumeTable(
     shape: "vertical",
-    options?: VerticalTableOptions
+    options?: TableOptionsProvider<VerticalTableOptions>
+  ): VerticalTable | undefined;
+  consumeTable<TKeys extends TableKeysMap>(
+    shape: "vertical",
+    options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
   consumeTable(
     shape: "matrix",
-    options?: MatrixTableOptions
+    options?: TableOptionsProvider<MatrixTableOptions>
+  ): MatrixTable | undefined;
+  consumeTable<TKeys extends MatrixKeys>(
+    shape: "matrix",
+    options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
   consumeTable(
     shape: TableShape,
     options?:
-      | HeaderlessTableOptions
-      | HorizontalTableOptions
-      | VerticalTableOptions
-      | MatrixTableOptions
+      | TableOptionsProvider<HeaderlessTableOptions>
+      | TableOptionsProvider<HorizontalTableOptions>
+      | TableOptionsProvider<VerticalTableOptions>
+      | TableOptionsProvider<MatrixTableOptions>
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined;
   requireTable(
     shape: "headerless",
-    options?: HeaderlessTableOptions
+    options?: TableOptionsProvider<HeaderlessTableOptions>
   ): HeaderlessTable;
   requireTable(
     shape: "horizontal",
-    options?: HorizontalTableOptions
+    options?: TableOptionsProvider<HorizontalTableOptions>
+  ): HorizontalTable;
+  requireTable<TKeys extends TableKeysMap>(
+    shape: "horizontal",
+    options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable;
   requireTable(
     shape: "vertical",
-    options?: VerticalTableOptions
+    options?: TableOptionsProvider<VerticalTableOptions>
+  ): VerticalTable;
+  requireTable<TKeys extends TableKeysMap>(
+    shape: "vertical",
+    options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable;
   requireTable(
     shape: "matrix",
-    options?: MatrixTableOptions
+    options?: TableOptionsProvider<MatrixTableOptions>
+  ): MatrixTable;
+  requireTable<TKeys extends MatrixKeys>(
+    shape: "matrix",
+    options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable;
   requireTable(
     shape: TableShape,
     options?:
-      | HeaderlessTableOptions
-      | HorizontalTableOptions
-      | VerticalTableOptions
-      | MatrixTableOptions
+      | TableOptionsProvider<HeaderlessTableOptions>
+      | TableOptionsProvider<HorizontalTableOptions>
+      | TableOptionsProvider<VerticalTableOptions>
+      | TableOptionsProvider<MatrixTableOptions>
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable;
   getRawTable(): RawTable | undefined;
   getDocstring(): string | undefined;
@@ -573,27 +641,39 @@ export interface StepRuntimeHelpers {
 function bindGetTable(world: unknown) {
   function getTable(
     shape: "headerless",
-    options?: HeaderlessTableOptions
+    options?: TableOptionsProvider<HeaderlessTableOptions>
   ): HeaderlessTable | undefined;
   function getTable(
     shape: "horizontal",
-    options?: HorizontalTableOptions
+    options?: TableOptionsProvider<HorizontalTableOptions>
+  ): HorizontalTable | undefined;
+  function getTable<TKeys extends TableKeysMap>(
+    shape: "horizontal",
+    options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
   function getTable(
     shape: "vertical",
-    options?: VerticalTableOptions
+    options?: TableOptionsProvider<VerticalTableOptions>
+  ): VerticalTable | undefined;
+  function getTable<TKeys extends TableKeysMap>(
+    shape: "vertical",
+    options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
   function getTable(
     shape: "matrix",
-    options?: MatrixTableOptions
+    options?: TableOptionsProvider<MatrixTableOptions>
+  ): MatrixTable | undefined;
+  function getTable<TKeys extends MatrixKeys>(
+    shape: "matrix",
+    options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
   function getTable(
     shape: TableShape,
     options?:
-      | HeaderlessTableOptions
-      | HorizontalTableOptions
-      | VerticalTableOptions
-      | MatrixTableOptions
+      | TableOptionsProvider<HeaderlessTableOptions>
+      | TableOptionsProvider<HorizontalTableOptions>
+      | TableOptionsProvider<VerticalTableOptions>
+      | TableOptionsProvider<MatrixTableOptions>
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
     switch (shape) {
       case "headerless":
@@ -657,27 +737,39 @@ function getTableForShape(
 function bindConsumeTable(world: unknown) {
   function consume(
     shape: "headerless",
-    options?: HeaderlessTableOptions
+    options?: TableOptionsProvider<HeaderlessTableOptions>
   ): HeaderlessTable | undefined;
   function consume(
     shape: "horizontal",
-    options?: HorizontalTableOptions
+    options?: TableOptionsProvider<HorizontalTableOptions>
+  ): HorizontalTable | undefined;
+  function consume<TKeys extends TableKeysMap>(
+    shape: "horizontal",
+    options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable | undefined;
   function consume(
     shape: "vertical",
-    options?: VerticalTableOptions
+    options?: TableOptionsProvider<VerticalTableOptions>
+  ): VerticalTable | undefined;
+  function consume<TKeys extends TableKeysMap>(
+    shape: "vertical",
+    options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable | undefined;
   function consume(
     shape: "matrix",
-    options?: MatrixTableOptions
+    options?: TableOptionsProvider<MatrixTableOptions>
+  ): MatrixTable | undefined;
+  function consume<TKeys extends MatrixKeys>(
+    shape: "matrix",
+    options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable | undefined;
   function consume(
     shape: TableShape,
     options?:
-      | HeaderlessTableOptions
-      | HorizontalTableOptions
-      | VerticalTableOptions
-      | MatrixTableOptions
+      | TableOptionsProvider<HeaderlessTableOptions>
+      | TableOptionsProvider<HorizontalTableOptions>
+      | TableOptionsProvider<VerticalTableOptions>
+      | TableOptionsProvider<MatrixTableOptions>
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable | undefined {
     switch (shape) {
       case "headerless":
@@ -698,27 +790,39 @@ function bindConsumeTable(world: unknown) {
 function bindRequireTable(world: unknown) {
   function require(
     shape: "headerless",
-    options?: HeaderlessTableOptions
+    options?: TableOptionsProvider<HeaderlessTableOptions>
   ): HeaderlessTable;
   function require(
     shape: "horizontal",
-    options?: HorizontalTableOptions
+    options?: TableOptionsProvider<HorizontalTableOptions>
+  ): HorizontalTable;
+  function require<TKeys extends TableKeysMap>(
+    shape: "horizontal",
+    options?: TableOptionsProvider<HorizontalTableOptions<TKeys>>
   ): HorizontalTable;
   function require(
     shape: "vertical",
-    options?: VerticalTableOptions
+    options?: TableOptionsProvider<VerticalTableOptions>
+  ): VerticalTable;
+  function require<TKeys extends TableKeysMap>(
+    shape: "vertical",
+    options?: TableOptionsProvider<VerticalTableOptions<TKeys>>
   ): VerticalTable;
   function require(
     shape: "matrix",
-    options?: MatrixTableOptions
+    options?: TableOptionsProvider<MatrixTableOptions>
+  ): MatrixTable;
+  function require<TKeys extends MatrixKeys>(
+    shape: "matrix",
+    options?: TableOptionsProvider<MatrixTableOptions<TKeys>>
   ): MatrixTable;
   function require(
     shape: TableShape,
     options?:
-      | HeaderlessTableOptions
-      | HorizontalTableOptions
-      | VerticalTableOptions
-      | MatrixTableOptions
+      | TableOptionsProvider<HeaderlessTableOptions>
+      | TableOptionsProvider<HorizontalTableOptions>
+      | TableOptionsProvider<VerticalTableOptions>
+      | TableOptionsProvider<MatrixTableOptions>
   ): HeaderlessTable | HorizontalTable | VerticalTable | MatrixTable {
     switch (shape) {
       case "headerless": {

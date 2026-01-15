@@ -14,6 +14,7 @@ import {
   runtimeAssertionsPlugin,
   type RuntimeAssertions,
   type EnsurePluginFacets,
+  type EnsureFacade,
 } from "@autometa/assertions";
 
 import { normalizeValue, resolveJsonPath } from "../../utils/json";
@@ -196,6 +197,8 @@ export type BrewBuddyEnsureFacets = EnsurePluginFacets<
   BrewBuddyWorld,
   typeof brewBuddyPlugins
 >;
+
+export type BrewBuddyEnsure = EnsureFacade<BrewBuddyWorld, BrewBuddyEnsureFacets>;
 
 export function toPathExpectations(records: TableRecord[]): PathExpectation[] {
   return records.map((record) => {

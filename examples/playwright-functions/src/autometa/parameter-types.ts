@@ -3,6 +3,10 @@ import type {
   ParameterTransformContext,
 } from "@autometa/cucumber-expressions";
 
+// Note: this example previously imported these types via `@autometa/core/cucumber`.
+// Importing directly keeps the example decoupled from `@autometa/core`'s subpath
+// export surface.
+
 import type { BrewBuddyWorld } from "../world";
 import type { HttpMethod } from "../brew-buddy/domain/clients/client";
 import {
@@ -62,7 +66,9 @@ const HTTP_METHOD_VARIANTS = caseInsensitivePattern([
 ]);
 const REGION_VARIANTS = caseInsensitivePattern(Object.keys(REGION_EXPECTATIONS));
 const SELECTION_VARIANTS = caseInsensitivePattern(
-  Object.values(REGION_EXPECTATIONS).map((detail) => detail.expected)
+  (Object.values(REGION_EXPECTATIONS) as Array<{ expected: string }>).map(
+    (detail) => detail.expected
+  )
 );
 const BOOLEAN_VARIANTS = caseInsensitivePattern(["true", "false"]);
 

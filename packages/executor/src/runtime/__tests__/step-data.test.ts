@@ -100,6 +100,42 @@ describe("step-data", () => {
     expect(table?.getRow(0)).toEqual({ header: "count", value: 1 });
   });
 
+  it("accepts class and instance table option providers", () => {
+    class HorizontalTransform {
+      readonly coerce = false;
+      readonly keys = {
+        "Reports To": "reportsTo",
+        "Start Date": "startDate",
+      } as const;
+      readonly transformers = {
+        reportsTo: (value: string) => value.toUpperCase(),
+      };
+    }
+
+    setStepTable(world, [
+      ["Reports To", "Start Date"],
+      ["Ada", "2020-01-15"],
+    ]);
+
+    const tableFromClass = getTable(world, "horizontal", HorizontalTransform);
+    expect(tableFromClass?.getRow(0)).toEqual({
+      reportsTo: "ADA",
+      startDate: "2020-01-15",
+    });
+
+    setStepTable(world, [
+      ["Reports To", "Start Date"],
+      ["Bob", "2021-06-01"],
+    ]);
+
+    const tableFromInstance = getTable(
+      world,
+      "horizontal",
+      new HorizontalTransform()
+    );
+    expect(tableFromInstance?.getCell("reportsTo", 0)).toBe("BOB");
+  });
+
   it("allows coercion defaults to be overridden per shape", () => {
     setStepTable(world, [
       ["header", "value"],

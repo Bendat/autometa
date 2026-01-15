@@ -29,15 +29,197 @@ const userBuilder = DtoBuilder.forInterface<User>({
 
 ### Class Builder
 
-For classes, the builder respects property decorators if you use `@autometa/dto-builder` decorators (not yet documented here, assuming standard usage).
+For classes, the builder instantiates the class (preserving `instanceof` identity) and respects both class property initializers and decorator-driven defaults.
 
 ```ts
 class User {
   id: string = crypto.randomUUID();
-  name: string;
+  name: string = "";
 }
 
 const userBuilder = DtoBuilder.forClass(User);
+
+const user = await userBuilder.create().name("Alice").build();
+user instanceof User; // true
+```
+
+You can also provide manual defaults that override class property initializers:
+
+```ts
+const userBuilder = DtoBuilder.forClass(User, {
+  defaults: {
+    name: "anonymous",
+  },
+});
+```
+
+## Property Decorators
+
+The package exports decorators for defining default values declaratively on class properties. These integrate automatically with `DtoBuilder.forClass()`.
+
+### Available Decorators
+
+Import decorators from the package:
+
+```ts
+import { DefaultValueDecorators, DTO, Property } from "@autometa/dto-builder";
+```
+
+#### `@DTO.value(defaultValue)`
+
+Sets a static default value. The value is cloned on each build to prevent reference sharing.
+
+```ts
+class User {
+  @DTO.value("anonymous")
+  name: string;
+
+  @DTO.value(false)
+  active: boolean;
+}
+```
+
+#### `@DTO.factory(() => value)`
+
+Uses a factory function to produce a fresh default on each build. Essential for arrays, objects, or computed values.
+
+```ts
+class User {
+  @DTO.factory(() => crypto.randomUUID())
+  id: string;
+
+  @DTO.factory(() => [])
+  roles: string[];
+
+  @DTO.factory(() => ({ theme: "light", notifications: true }))
+  preferences: { theme: string; notifications: boolean };
+}
+```
+
+#### `@DTO.dto(NestedClass)`
+
+Creates a nested class instance with its own decorated defaults applied. The nested class is instantiated and its decorators are resolved recursively.
+
+```ts
+class Profile {
+  @DTO.value("")
+  bio: string;
+
+  @DTO.value(false)
+  verified: boolean;
+}
+
+class User {
+  @DTO.value("")
+  name: string;
+
+  @DTO.dto(Profile)
+  profile: Profile;
+}
+
+// When built, user.profile is a Profile instance with decorated defaults
+const factory = DtoBuilder.forClass(User);
+const user = await factory.default();
+
+user.profile instanceof Profile; // true
+user.profile.bio; // ""
+user.profile.verified; // false
+```
+
+#### `@DTO.date(timestamp?)`
+
+Creates a Date default. Without arguments, uses the current date at build time. Accepts a numeric timestamp or ISO string for fixed dates.
+
+```ts
+class Event {
+  @DTO.date()
+  createdAt: Date; // Current date at build time
+
+  @DTO.date(1609459200000)
+  epochStart: Date; // Fixed timestamp
+
+  @DTO.date("2024-01-01T00:00:00.000Z")
+  yearStart: Date; // ISO string
+}
+```
+
+#### `@Property(valueOrFactory)`
+
+A convenience decorator that auto-detects whether to use `@DTO.value()` or `@DTO.factory()`:
+
+```ts
+class User {
+  @Property("anonymous") // Static value
+  name: string;
+
+  @Property(() => []) // Factory function
+  roles: string[];
+}
+```
+
+### Optional Properties
+
+Decorators work seamlessly with optional properties. The decorated default is applied even when the property is declared optional:
+
+```ts
+class User {
+  name: string = "";
+
+  @DTO.date()
+  createdAt?: Date; // Optional, but gets a default Date when built
+
+  @DTO.factory(() => [])
+  tags?: string[]; // Optional, defaults to empty array
+}
+```
+
+### Decorator Inheritance
+
+Decorated defaults aggregate up the prototype chain. Child class decorators override parent decorators for the same property:
+
+```ts
+class BaseEntity {
+  @DTO.date()
+  createdAt: Date;
+
+  @DTO.value("draft")
+  status: string;
+}
+
+class Article extends BaseEntity {
+  @DTO.value("")
+  title: string;
+
+  @DTO.value("published") // Overrides parent's "draft"
+  status: string;
+}
+
+const factory = DtoBuilder.forClass(Article);
+const article = await factory.default();
+
+article.createdAt; // Date (inherited from BaseEntity)
+article.status; // "published" (overridden)
+article.title; // ""
+```
+
+### Combining Decorators with Manual Defaults
+
+Manual defaults passed to `forClass()` take precedence over decorator defaults:
+
+```ts
+class User {
+  @DTO.value("anonymous")
+  name: string;
+}
+
+const factory = DtoBuilder.forClass(User, {
+  defaults: {
+    name: "override", // Takes precedence over @DTO.value("anonymous")
+  },
+});
+
+const user = await factory.default();
+user.name; // "override"
 ```
 
 ## Fluent API

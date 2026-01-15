@@ -22,7 +22,12 @@ export const createTsupConfig = (options = {}) => {
 
   return defineConfig({
     // Core settings
-    clean: true,
+    // NOTE: We intentionally do not clean `dist/` here.
+    // Many packages emit declarations via a dedicated `tsc --build tsconfig.types.json`
+    // step (often run as part of `build:types`). If `tsup` cleans `dist/` while
+    // another package is concurrently building/consuming those declarations, it
+    // can cause transient TS7016/TS6305 failures.
+    clean: false,
     format: ["cjs", "esm"],
     sourcemap: true,
     skipNodeModulesBundle: true,

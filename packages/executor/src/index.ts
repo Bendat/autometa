@@ -1,7 +1,11 @@
-export { resolveTimeout, chooseTimeout, TimeoutResolution, TimeoutSource } from "./timeouts";
-export { collectScenarioHooks, HookCollection, ResolvedHook } from "./hooks";
-export { runScenarioExecution, ScenarioRunContext } from "./scenario-runner";
-export { registerFeaturePlan, ExecuteFeatureOptions } from "./execute-plan";
+export { resolveTimeout, chooseTimeout } from "./timeouts";
+export type { TimeoutResolution, TimeoutSource } from "./timeouts";
+export { collectScenarioHooks } from "./hooks";
+export type { HookCollection, ResolvedHook } from "./hooks";
+export { runScenarioExecution } from "./scenario-runner";
+export type { ScenarioRunContext } from "./scenario-runner";
+export { registerFeaturePlan } from "./execute-plan";
+export type { ExecuteFeatureOptions } from "./execute-plan";
 export {
 	ScopeLifecycle,
 	type HookLogEvent,
