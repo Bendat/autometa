@@ -63,11 +63,12 @@ export class EventDispatcher {
    * series to preserve ordering guarantees; callers can fork when concurrency is
    * desired.
    */
-  async dispatch<T extends TestEvent>(event: T): Promise<void> {
+  async dispatch<T extends TestEvent>(event: T, tags: string[] = []): Promise<void> {
     const envelope: EventEnvelope<T> = {
       sequence: ++this.sequence,
       event,
       resolve: (token) => this.container.resolve(token),
+      tags,
     };
 
     const listeners = this.subscribers.get(event.type);

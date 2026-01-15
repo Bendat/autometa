@@ -98,3 +98,48 @@ registerTestListener({
 
 The `resolve` function uses the same container as your step definitions, so services registered there are available to listeners.
 
+## Event tags
+
+Events can be tagged for categorization and filtering. Tags are passed through the `EventEnvelope` and can be accessed by listeners.
+
+```ts title="src/support/autometa.events.ts"
+import { registerTestListener } from "@autometa/events";
+
+registerTestListener({
+  onScenarioStarted({ event, tags }) {
+    // Access tags passed with this event
+    if (tags.includes("smoke")) {
+      console.log(`[smoke-test] ${event.scenario.name}`);
+    }
+  },
+
+  onStepCompleted({ event, tags }) {
+    // Tags can be used for conditional logging or filtering
+    if (tags.includes("critical") && event.metadata?.status === "failed") {
+      // Alert on critical failures
+    }
+  },
+});
+```
+
+Tags are passed when emitting events via the `EventEmitter`:
+
+```ts
+import { EventEmitter } from "@autometa/events";
+
+const emitter = new EventEmitter(dispatcher);
+
+await emitter.scenarioStarted({
+  feature: featureRef,
+  scenario: scenarioRef,
+  pickle: pickle,
+  tags: ["smoke", "critical"], // Pass tags here
+});
+```
+
+Tags enable:
+- Conditional processing based on test type (smoke, regression, integration)
+- Filtering events for specific reporters or loggers
+- Routing events to different handlers based on category
+- Metadata-driven test execution strategies
+

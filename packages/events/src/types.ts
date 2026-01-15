@@ -144,6 +144,8 @@ export interface EventEnvelope<T extends TestEvent = TestEvent> {
   event: T;
   /** Resolve a dependency from the container. */
   resolve: <S>(token: Token<S>) => S;
+  /** Optional tags for categorization and filtering. */
+  tags: string[];
 }
 
 export type EventSubscriber<T extends TestEvent = TestEvent> = (
