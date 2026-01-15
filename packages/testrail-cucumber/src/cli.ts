@@ -48,6 +48,7 @@ export async function createCliProgram(): Promise<Command> {
   registerLoginCommand(program);
   registerLogoutCommand(program);
   registerSetUrlCommand(program);
+  registerSetProjectCommand(program);
   registerPlanCommand(program);
   registerSyncCommand(program);
 
@@ -316,6 +317,36 @@ function registerSetUrlCommand(program: Command): void {
 
       await saveCredentials(updated);
       console.log(pc.green("URL updated:"), url.trim());
+    });
+}
+
+function registerSetProjectCommand(program: Command): void {
+  program
+    .command("set-project")
+    .argument("<id>", "Default TestRail project ID")
+    .description("Update the stored default project ID without re-entering credentials")
+    .action(async (id: string) => {
+      const projectId = Number(id);
+      if (Number.isNaN(projectId)) {
+        console.error(pc.red("Invalid project ID. Must be a number."));
+        process.exitCode = 1;
+        return;
+      }
+
+      const existing = await loadStoredCredentials();
+      if (!existing) {
+        console.error(pc.red("No stored credentials found. Run 'login' first."));
+        process.exitCode = 1;
+        return;
+      }
+
+      const updated: StoredCredentials = {
+        ...existing,
+        projectId,
+      };
+
+      await saveCredentials(updated);
+      console.log(pc.green("Default project ID updated:"), projectId);
     });
 }
 

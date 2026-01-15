@@ -120,6 +120,18 @@ testrail-cucumber set-url <url>
 | --- | --- |
 | `<url>` | New TestRail base URL (e.g. `https://testrail.example.com`) |
 
+### `testrail-cucumber set-project`
+
+Updates the stored default project ID without re-entering credentials.
+
+```bash
+testrail-cucumber set-project <id>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<id>` | Default TestRail project ID (number) |
+
 ### `testrail-cucumber plan`
 
 Plans how feature files would map to TestRail cases.

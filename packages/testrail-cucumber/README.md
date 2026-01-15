@@ -47,6 +47,12 @@ To update just the URL without re-entering credentials:
 testrail-cucumber set-url https://new-testrail.example.com
 ```
 
+To update the default project ID:
+
+```bash
+testrail-cucumber set-project 123
+```
+
 ### Plan vs Sync
 
 - Plan without touching TestRail:
