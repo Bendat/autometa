@@ -64,8 +64,20 @@ describe("EventDispatcher", () => {
       received.push(envelope.tags);
     });
 
-    await dispatcher.dispatch(createEvent("tagged", 1), ["@smoke", "billing"]);
+    await dispatcher.dispatch(createEvent("tagged", 1), { tags: ["@smoke", "billing"] });
     expect(received).toEqual([["@smoke", "billing"]]);
+  });
+
+  it("derives currentScope from event type", async () => {
+    const dispatcher = new EventDispatcher();
+    const received: string[] = [];
+
+    dispatcher.subscribe<FeatureLifecycleEvent>("feature.started", (envelope) => {
+      received.push(envelope.currentScope);
+    });
+
+    await dispatcher.dispatch(createEvent("scoped", 1));
+    expect(received).toEqual(["feature"]);
   });
 
   it("clears subscribers and resets sequence", async () => {

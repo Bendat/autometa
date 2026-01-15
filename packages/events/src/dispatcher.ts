@@ -7,7 +7,13 @@ import {
   Scope,
   type IContainer,
 } from "@autometa/injection";
-import type { EventEnvelope, EventSubscriber, TestEvent } from "./types.js";
+import type {
+  EnvelopeDocstring,
+  EventEnvelope,
+  EventSubscriber,
+  ExecutionScope,
+  TestEvent,
+} from "./types.js";
 
 export interface EventDispatcherOptions {
   /**
@@ -15,6 +21,20 @@ export interface EventDispatcherOptions {
    * standalone container is created per dispatcher instance.
    */
   container?: IContainer;
+}
+
+/**
+ * Additional context attached to an event dispatch.
+ */
+export interface DispatchContext {
+  /** Tags for categorization and filtering. */
+  tags?: string[] | undefined;
+  /** Current execution scope. */
+  currentScope?: ExecutionScope | undefined;
+  /** Docstring attached to the current step. */
+  docstring?: EnvelopeDocstring | undefined;
+  /** Data table attached to the current step. */
+  table?: readonly (readonly string[])[] | undefined;
 }
 
 export const EventDispatcherToken = createToken<EventDispatcher>(
@@ -63,12 +83,18 @@ export class EventDispatcher {
    * series to preserve ordering guarantees; callers can fork when concurrency is
    * desired.
    */
-  async dispatch<T extends TestEvent>(event: T, tags: string[] = []): Promise<void> {
+  async dispatch<T extends TestEvent>(
+    event: T,
+    context: DispatchContext = {}
+  ): Promise<void> {
     const envelope: EventEnvelope<T> = {
       sequence: ++this.sequence,
       event,
       resolve: (token) => this.container.resolve(token),
-      tags,
+      tags: context.tags ?? [],
+      currentScope: context.currentScope ?? deriveScope(event.type),
+      ...(context.docstring !== undefined && { docstring: context.docstring }),
+      ...(context.table !== undefined && { table: context.table }),
     };
 
     const listeners = this.subscribers.get(event.type);
@@ -85,4 +111,36 @@ export class EventDispatcher {
     this.subscribers.clear();
     this.sequence = 0;
   }
+}
+
+/**
+ * Derive the execution scope from an event type string.
+ */
+function deriveScope(eventType: string): ExecutionScope {
+  if (eventType.startsWith("feature.")) {
+    return "feature";
+  }
+  if (eventType.startsWith("rule.")) {
+    return "rule";
+  }
+  if (eventType.startsWith("background.")) {
+    return "background";
+  }
+  if (eventType.startsWith("scenarioOutline.")) {
+    return "scenarioOutline";
+  }
+  if (eventType.startsWith("scenario.")) {
+    return "scenario";
+  }
+  if (eventType.startsWith("example.")) {
+    return "example";
+  }
+  if (eventType.startsWith("step.")) {
+    return "step";
+  }
+  if (eventType.startsWith("hook.")) {
+    return "hook";
+  }
+  // Default fallback for unknown event types (e.g. status.changed, error)
+  return "step";
 }

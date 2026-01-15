@@ -134,6 +134,17 @@ describe("EventEmitter", () => {
       });
     });
 
+  const onceEnvelope = <T extends TestEvent>(
+    dispatcher: EventDispatcher,
+    type: T["type"]
+  ): Promise<import("../types.js").EventEnvelope<T>> =>
+    new Promise((resolve) => {
+      const unsubscribe = dispatcher.subscribe<T>(type, (envelope) => {
+        unsubscribe();
+        resolve(envelope);
+      });
+    });
+
   it("emits lifecycle events with deterministic ids and metadata", async () => {
     let counter = 0;
     const dispatcher = new EventDispatcher();
@@ -636,5 +647,56 @@ describe("EventEmitter", () => {
     expect(errorEvent.error).toBe(error);
     expect(errorEvent.feature).toBeUndefined();
     expect(errorEvent.metadata).toBeUndefined();
+  });
+
+  it("passes docstring and table through to the envelope on step events", async () => {
+    const dispatcher = new EventDispatcher();
+    const emitter = new EventEmitter(dispatcher);
+
+    const feature = createFeature();
+    const scenario = createScenarioRef();
+    const pickle = createPickle(feature, scenario);
+
+    const stepWithDocstring: SimplePickleStep = {
+      ...createStep(feature, scenario),
+      docString: "Hello world",
+      docStringMediaType: "text/plain",
+    };
+
+    const started = onceEnvelope<StepEvent>(dispatcher, "step.started");
+    await emitter.stepStarted({
+      feature,
+      scenario,
+      step: stepWithDocstring,
+      pickle,
+    });
+    const envelope = await started;
+    expect(envelope.docstring).toEqual({
+      content: "Hello world",
+      mediaType: "text/plain",
+    });
+    expect(envelope.currentScope).toBe("step");
+
+    const stepWithTable: SimplePickleStep = {
+      ...createStep(feature, scenario),
+      dataTable: [
+        ["name", "age"],
+        ["Bob", "42"],
+      ],
+    };
+
+    const completed = onceEnvelope<StepEvent>(dispatcher, "step.completed");
+    await emitter.stepCompleted({
+      feature,
+      scenario,
+      step: stepWithTable,
+      pickle,
+    });
+    const completedEnvelope = await completed;
+    expect(completedEnvelope.table).toEqual([
+      ["name", "age"],
+      ["Bob", "42"],
+    ]);
+    expect(completedEnvelope.currentScope).toBe("step");
   });
 });

@@ -137,6 +137,29 @@ export interface ErrorEvent extends LifecycleEventBase {
   pickle?: SimplePickle;
 }
 
+/**
+ * Current execution scope within the test lifecycle.
+ */
+export type ExecutionScope =
+  | "feature"
+  | "rule"
+  | "background"
+  | "scenario"
+  | "scenarioOutline"
+  | "example"
+  | "step"
+  | "hook";
+
+/**
+ * Docstring attached to a step.
+ */
+export interface EnvelopeDocstring {
+  /** The raw docstring content. */
+  readonly content: string;
+  /** Optional media type (e.g. "application/json", "text/markdown"). */
+  readonly mediaType?: string;
+}
+
 export interface EventEnvelope<T extends TestEvent = TestEvent> {
   /** Sequence number for deterministic ordering. */
   sequence: number;
@@ -146,6 +169,12 @@ export interface EventEnvelope<T extends TestEvent = TestEvent> {
   resolve: <S>(token: Token<S>) => S;
   /** Optional tags for categorization and filtering. */
   tags: string[];
+  /** Current execution scope (feature, scenario, step, etc.). */
+  currentScope: ExecutionScope;
+  /** Docstring attached to the current step, if any. */
+  docstring?: EnvelopeDocstring;
+  /** Data table attached to the current step, if any. Raw 2D string array. */
+  table?: readonly (readonly string[])[];
 }
 
 export type EventSubscriber<T extends TestEvent = TestEvent> = (
