@@ -1,6 +1,6 @@
-import type { StepRuntimeHelpers } from "@autometa/core/executor";
-import type { SimpleFeature } from "@autometa/core/gherkin";
-import { WORLD_INHERIT_KEYS } from "@autometa/core/runner";
+import type { StepRuntimeHelpers } from "@autometa/executor";
+import type { SimpleFeature } from "@autometa/gherkin";
+import { WORLD_INHERIT_KEYS } from "@autometa/runner";
 import type {
   InventoryItem,
   LoyaltyAccount,

@@ -8,6 +8,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "vitest run src/__tests__/integration/mixed-injection.test.ts",
+    "type-check": "tsc --noEmit -p tsconfig.dev.json",
+    "coverage": "vitest run --coverage --passWithNoTests",
     "prettify": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",

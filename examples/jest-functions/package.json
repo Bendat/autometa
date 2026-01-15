@@ -6,13 +6,19 @@
   "scripts": {
     "test": "jest --config jest.unit.config.cjs",
     "test:watch": "jest --config jest.unit.config.cjs --watch",
-    "features": "jest --config jest.config.cjs",
-    "features:watch": "jest --config jest.config.cjs --watch",
-    "type-check": "tsc --project tsconfig.json --noEmit"
+    "features": "node ./scripts/run-features.mjs",
+    "features:watch": "node ./scripts/run-features.mjs --watch",
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
   },
   "dependencies": {
+    "@autometa/assertions": "workspace:*",
     "@autometa/core": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:*",
+    "@autometa/executor": "workspace:*",
     "@autometa/gherkin": "workspace:*",
+    "@autometa/http": "workspace:*",
+    "@autometa/injection": "workspace:*",
     "@autometa/jest-executor": "workspace:*",
     "@autometa/jest-transformer": "workspace:*",
     "@autometa/runner": "workspace:*",

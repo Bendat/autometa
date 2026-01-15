@@ -1,4 +1,4 @@
-import type { HTTPResponse } from "@autometa/core/http";
+import type { HTTPResponse } from "@autometa/http";
 import {
   ensureHttp,
   type HttpEnsureChain,
@@ -6,8 +6,8 @@ import {
   type HeaderExpectation,
   type CacheControlExpectation,
   type StatusExpectation,
-} from "@autometa/core/http";
-import type { TableRecord } from "@autometa/core/gherkin";
+} from "@autometa/http";
+import type { TableRecord } from "@autometa/gherkin";
 
 import {
   type AssertionPlugin,
@@ -15,7 +15,7 @@ import {
   type RuntimeAssertions,
   type EnsurePluginFacets,
   type EnsureFacade,
-} from "@autometa/core/assert";
+} from "@autometa/assertions";
 
 import { normalizeValue, resolveJsonPath } from "../../utils/json";
 import type { BrewBuddyWorld } from "../../world";

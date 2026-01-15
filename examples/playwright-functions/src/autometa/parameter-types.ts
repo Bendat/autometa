@@ -1,10 +1,11 @@
 import type {
   ParameterTypeDefinition,
   ParameterTransformContext,
-} from "@autometa/core/cucumber";
-// Re-export via core
-// Note: Consumers import this module, so our internal import is via core subpath
-// but the types above come from the same package re-exported through core.
+} from "@autometa/cucumber-expressions";
+
+// Note: this example previously imported these types via `@autometa/core/cucumber`.
+// Importing directly keeps the example decoupled from `@autometa/core`'s subpath
+// export surface.
 
 import type { BrewBuddyWorld } from "../world";
 import type { HttpMethod } from "../brew-buddy/domain/clients/client";

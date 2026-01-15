@@ -1,4 +1,4 @@
-import { HTTP } from "@autometa/core/http";
+import { HTTP } from "@autometa/http";
 import type { Order, OrderInput } from "../../../../../.api/src/types/domain.js";
 
 /**

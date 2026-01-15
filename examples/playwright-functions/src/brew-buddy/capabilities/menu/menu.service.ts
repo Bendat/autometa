@@ -1,5 +1,5 @@
-import type { TableValue } from "@autometa/core/gherkin";
-import { WORLD_TOKEN } from "@autometa/core/runner";
+import type { TableValue } from "@autometa/gherkin";
+import { WORLD_TOKEN } from "@autometa/runner";
 
 import type { MenuItem } from "../../../../../.api/src/types/domain.js";
 import type { BrewBuddyWorld } from "../../../world";

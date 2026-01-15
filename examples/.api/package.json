@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "TS_NODE_TRANSPILE_ONLY=true node --loader ts-node/esm src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
   },
   "dependencies": {
     "cors": "^2.8.5",

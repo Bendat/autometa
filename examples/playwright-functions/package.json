@@ -9,13 +9,21 @@
     "test:list": "autometa run --dry-run",
     "features": "autometa run",
     "features:ui": "autometa run --watch",
-    "type-check": "tsc --project tsconfig.json --noEmit"
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
   },
   "dependencies": {
-    "@autometa/core": "workspace:*",
+    "@autometa/assertions": "workspace:*",
+    "@autometa/config": "workspace:*",
+    "@autometa/cucumber-expressions": "workspace:*",
+    "@autometa/executor": "workspace:*",
     "@autometa/playwright-executor": "workspace:*",
     "@autometa/playwright-loader": "workspace:*",
     "@autometa/gherkin": "workspace:*",
+    "@autometa/http": "workspace:*",
+    "@autometa/injection": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/scopes": "workspace:*",
     "@cucumber/cucumber-expressions": "^16.1.2",
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "autometa run --standalone -g brew-buddy && autometa run --standalone -g backoffice",
     "test:list": "autometa run --standalone -g brew-buddy --dry-run && autometa run --standalone -g backoffice --dry-run",
-    "type-check": "tsc --project tsconfig.json --noEmit"
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
   },
   "dependencies": {
     "@autometa/core": "workspace:*",

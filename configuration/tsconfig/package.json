@@ -3,6 +3,10 @@
   "version": "0.7.0",
   "private": true,
   "description": "Shared TypeScript configurations for Autometa packages",
+  "scripts": {
+    "type-check": "node -e \"process.exit(0)\"",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
+  },
   "exports": {
     "./base.json": "./base.json",
     "./package.config.json": "./package.config.json",
