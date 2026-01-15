@@ -1,5 +1,13 @@
 # @autometa/test-builder
 
+## 1.0.0-rc.2
+
+### Patch Changes
+
+- Updated dependencies [1bd3dbe5]
+  - @autometa/gherkin@1.0.0-rc.2
+  - @autometa/cucumber-expressions@1.0.0-rc.2
+
 ## 1.0.0-rc.1
 
 ### Patch Changes

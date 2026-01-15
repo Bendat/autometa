@@ -1,5 +1,12 @@
 # @autometa/dto-builder
 
+## 1.0.0-rc.2
+
+### Patch Changes
+
+- Updated dependencies [194871e0]
+  - @autometa/injection@1.0.0-rc.2
+
 ## 1.0.0-rc.1
 
 ### Patch Changes
