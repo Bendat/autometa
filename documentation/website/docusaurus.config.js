@@ -4,6 +4,9 @@
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
+const { version: coreVersion } = require("../../packages/core/package.json");
+const DOCS_RELEASE_VERSION = `v${coreVersion}`;
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Autometa",
@@ -42,8 +45,8 @@ const config = {
           editUrl: "https://github.com/Bendat/autometa/tree/main/documentation/website",
           versions: {
             current: {
-              label: "v1.0.0-rc.1",
-              path: "v1.0.0-rc.1",
+              label: DOCS_RELEASE_VERSION,
+              path: DOCS_RELEASE_VERSION,
               banner: "unreleased",
             },
             legacy: {
@@ -83,22 +86,22 @@ const config = {
         },
         items: [
           {
-            to: "/docs/v1.0.0-rc.1/intro",
+            to: `/docs/${DOCS_RELEASE_VERSION}/intro`,
             position: "left",
             label: "Overview",
           },
           {
-            to: "/docs/v1.0.0-rc.1/getting-started/intro",
+            to: `/docs/${DOCS_RELEASE_VERSION}/getting-started/intro`,
             position: "left",
             label: "Getting started",
           },
           {
-            to: "/docs/v1.0.0-rc.1/architecture/runtime",
+            to: `/docs/${DOCS_RELEASE_VERSION}/architecture/runtime`,
             position: "left",
             label: "Architecture",
           },
           {
-            to: "/docs/v1.0.0-rc.1/reference/configuration",
+            to: `/docs/${DOCS_RELEASE_VERSION}/reference/configuration`,
             position: "left",
             label: "Reference",
           },
@@ -119,7 +122,7 @@ const config = {
             items: [
               {
                 label: "Overview",
-                to: "/docs/v1.0.0-rc.1/intro",
+                to: `/docs/${DOCS_RELEASE_VERSION}/intro`,
               },
             ],
           },

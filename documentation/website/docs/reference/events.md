@@ -63,3 +63,38 @@ Autometa emits these event types:
 
 All events are delivered as an `EventEnvelope` with a monotonically increasing `sequence` field.
 
+## Dependency injection in listeners
+
+Event handlers receive a `resolve` function that provides access to the DI container. This allows listeners to use shared services without manual wiring.
+
+```ts title="src/support/autometa.events.ts"
+import { registerTestListener } from "@autometa/events";
+import { createToken } from "@autometa/injection";
+
+// Define or import your tokens
+const LoggerToken = createToken<Logger>("Logger");
+const MetricsToken = createToken<MetricsService>("Metrics");
+
+registerTestListener({
+  onScenarioStarted({ event, resolve }) {
+    const logger = resolve(LoggerToken);
+    const metrics = resolve(MetricsToken);
+
+    logger.info(`Starting: ${event.scenario.name}`);
+    metrics.increment("scenarios.started");
+  },
+
+  onStepCompleted({ event, resolve }) {
+    const metrics = resolve(MetricsToken);
+    metrics.timing("step.duration", event.metadata?.duration ?? 0);
+  },
+
+  onError({ event, resolve }) {
+    const logger = resolve(LoggerToken);
+    logger.error(`Error in ${event.phase}`, event.error);
+  },
+});
+```
+
+The `resolve` function uses the same container as your step definitions, so services registered there are available to listeners.
+

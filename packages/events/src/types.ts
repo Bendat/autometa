@@ -11,6 +11,7 @@ import {
   SimpleExampleGroup,
   SimpleScenario,
 } from "@autometa/gherkin";
+import type { Token } from "@autometa/injection";
 import { HookDescriptor } from "./hooks.js";
 import { TestStatus } from "./status.js";
 
@@ -141,6 +142,8 @@ export interface EventEnvelope<T extends TestEvent = TestEvent> {
   sequence: number;
   /** Event payload. */
   event: T;
+  /** Resolve a dependency from the container. */
+  resolve: <S>(token: Token<S>) => S;
 }
 
 export type EventSubscriber<T extends TestEvent = TestEvent> = (

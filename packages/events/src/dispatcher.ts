@@ -67,6 +67,7 @@ export class EventDispatcher {
     const envelope: EventEnvelope<T> = {
       sequence: ++this.sequence,
       event,
+      resolve: (token) => this.container.resolve(token),
     };
 
     const listeners = this.subscribers.get(event.type);
