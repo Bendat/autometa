@@ -16,6 +16,13 @@ import { HttpTestRailClient } from "./client";
 import { resolveSuiteContext } from "./suite-context";
 import { syncFeatureToTestRail } from "./sync";
 import { applyCaseTagsToFeatureText } from "./tag-writeback";
+import {
+  loadStoredCredentials,
+  saveCredentials,
+  clearCredentials,
+  getCredentialsFilePath,
+  type StoredCredentials,
+} from "./credentials";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version?: string };
@@ -38,6 +45,8 @@ export async function createCliProgram(): Promise<Command> {
     .description("Upload/plan Cucumber feature files to TestRail")
     .version(version ?? "0.0.0");
 
+  registerLoginCommand(program);
+  registerLogoutCommand(program);
   registerPlanCommand(program);
   registerSyncCommand(program);
 
@@ -86,7 +95,7 @@ function registerSyncCommand(program: Command): void {
       const writeTagsOnDryRun = Boolean(opts.writeTagsOnDryRun);
       const suiteTagPrefix = String(opts.suiteTagPrefix ?? "@testrail-suite-");
 
-      const { client, projectId } = requireClient(opts);
+      const { client, projectId } = await requireClientAsync(opts);
 
       const suite = await resolveSuiteContext(client, projectId, {
         ...(opts.suiteId !== undefined ? { suiteId: opts.suiteId } : {}),
@@ -197,6 +206,95 @@ function registerSyncCommand(program: Command): void {
     });
 }
 
+function registerLoginCommand(program: Command): void {
+  program
+    .command("login")
+    .description("Store TestRail credentials securely on this device")
+    .option("--testrail-url <url>", "TestRail base URL (e.g. https://testrail.example.com)")
+    .option("--testrail-username <username>", "TestRail username")
+    .option("--testrail-password <password>", "TestRail password / API key")
+    .option("--project-id <id>", "Default TestRail project ID", (v) => Number(v))
+    .action(async (opts) => {
+      const { prompt } = await import("enquirer");
+
+      let url = opts.testrailUrl ?? process.env.TESTRAIL_URL;
+      let username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME;
+      let password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD;
+      let projectId = opts.projectId ?? (process.env.TESTRAIL_PROJECT_ID ? Number(process.env.TESTRAIL_PROJECT_ID) : undefined);
+
+      // Prompt for any missing values
+      if (!url) {
+        const response = await prompt<{ url: string }>({
+          type: "input",
+          name: "url",
+          message: "TestRail URL:",
+        });
+        url = response.url;
+      }
+
+      if (!username) {
+        const response = await prompt<{ username: string }>({
+          type: "input",
+          name: "username",
+          message: "TestRail username:",
+        });
+        username = response.username;
+      }
+
+      if (!password) {
+        const response = await prompt<{ password: string }>({
+          type: "password",
+          name: "password",
+          message: "TestRail password / API key:",
+        });
+        password = response.password;
+      }
+
+      if (projectId === undefined || Number.isNaN(projectId)) {
+        const response = await prompt<{ projectId: string }>({
+          type: "input",
+          name: "projectId",
+          message: "Default project ID (optional, press Enter to skip):",
+        });
+        if (response.projectId.trim()) {
+          projectId = Number(response.projectId);
+        }
+      }
+
+      if (!url || !username || !password) {
+        console.error(pc.red("Error: URL, username, and password are required."));
+        process.exitCode = 1;
+        return;
+      }
+
+      const credentials: StoredCredentials = {
+        url: url.trim(),
+        username: username.trim(),
+        password,
+        ...(projectId !== undefined && !Number.isNaN(projectId) ? { projectId } : {}),
+      };
+
+      await saveCredentials(credentials);
+
+      console.log(pc.green("Credentials saved to:"), getCredentialsFilePath());
+      console.log(pc.dim("These will be used automatically when --testrail-* options are omitted."));
+    });
+}
+
+function registerLogoutCommand(program: Command): void {
+  program
+    .command("logout")
+    .description("Remove stored TestRail credentials from this device")
+    .action(async () => {
+      const removed = await clearCredentials();
+      if (removed) {
+        console.log(pc.green("Credentials removed:"), getCredentialsFilePath());
+      } else {
+        console.log(pc.dim("No stored credentials found."));
+      }
+    });
+}
+
 function registerPlanCommand(program: Command): void {
   program
     .command("plan")
@@ -297,10 +395,15 @@ async function loadExistingCases(file?: string): Promise<ExistingCase[]> {
 }
 
 async function maybeResolveSuite(opts: TestRailCliOptions): Promise<SuiteResolution | undefined> {
-  const url = opts.testrailUrl ?? process.env.TESTRAIL_URL;
-  const username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME;
-  const password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD;
-  const projectId = opts.projectId ?? (process.env.TESTRAIL_PROJECT_ID ? Number(process.env.TESTRAIL_PROJECT_ID) : undefined);
+  const stored = await loadStoredCredentials();
+
+  const url = opts.testrailUrl ?? process.env.TESTRAIL_URL ?? stored?.url;
+  const username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME ?? stored?.username;
+  const password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD ?? stored?.password;
+  const projectId =
+    opts.projectId ??
+    (process.env.TESTRAIL_PROJECT_ID ? Number(process.env.TESTRAIL_PROJECT_ID) : undefined) ??
+    stored?.projectId;
 
   if (!url || !username || !password || projectId === undefined || Number.isNaN(projectId)) {
     return undefined;
@@ -318,19 +421,27 @@ async function maybeResolveSuite(opts: TestRailCliOptions): Promise<SuiteResolut
   });
 }
 
-function requireClient(opts: TestRailCliOptions): { client: HttpTestRailClient; projectId: number } {
-  const url = opts.testrailUrl ?? process.env.TESTRAIL_URL;
-  const username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME;
-  const password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD;
-  const projectId = opts.projectId ?? (process.env.TESTRAIL_PROJECT_ID ? Number(process.env.TESTRAIL_PROJECT_ID) : undefined);
+async function requireClientAsync(
+  opts: TestRailCliOptions
+): Promise<{ client: HttpTestRailClient; projectId: number }> {
+  // Priority: CLI flags > env vars > stored credentials
+  const stored = await loadStoredCredentials();
+
+  const url = opts.testrailUrl ?? process.env.TESTRAIL_URL ?? stored?.url;
+  const username = opts.testrailUsername ?? process.env.TESTRAIL_USERNAME ?? stored?.username;
+  const password = opts.testrailPassword ?? process.env.TESTRAIL_PASSWORD ?? stored?.password;
+  const projectId =
+    opts.projectId ??
+    (process.env.TESTRAIL_PROJECT_ID ? Number(process.env.TESTRAIL_PROJECT_ID) : undefined) ??
+    stored?.projectId;
 
   if (!url || !username || !password) {
     throw new Error(
-      "Missing TestRail credentials. Provide --testrail-url/--testrail-username/--testrail-password or set TESTRAIL_URL/TESTRAIL_USERNAME/TESTRAIL_PASSWORD."
+      "Missing TestRail credentials. Run `testrail-cucumber login` or provide --testrail-url/--testrail-username/--testrail-password or set TESTRAIL_URL/TESTRAIL_USERNAME/TESTRAIL_PASSWORD."
     );
   }
   if (projectId === undefined || Number.isNaN(projectId)) {
-    throw new Error("Missing --project-id (or TESTRAIL_PROJECT_ID). ");
+    throw new Error("Missing --project-id (or TESTRAIL_PROJECT_ID).");
   }
 
   return { client: new HttpTestRailClient({ url, username, password }), projectId };

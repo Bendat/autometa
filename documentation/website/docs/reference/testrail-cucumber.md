@@ -53,14 +53,60 @@ testrail-cucumber plan foo \
 
 ## Authentication
 
-You can provide credentials via flags or environment variables:
+You can provide credentials via flags, environment variables, or stored credentials:
 
 - `--testrail-url` or `TESTRAIL_URL`
 - `--testrail-username` or `TESTRAIL_USERNAME`
 - `--testrail-password` or `TESTRAIL_PASSWORD`
 - `--project-id` or `TESTRAIL_PROJECT_ID`
 
+### Storing credentials locally
+
+For convenience you can save credentials once and skip the flags on subsequent runs:
+
+```bash
+testrail-cucumber login
+```
+
+This prompts for URL, username, password, and an optional default project ID, then stores them securely in your home directory:
+
+- **macOS / Linux**: `~/.config/autometa/testrail-credentials.json`
+- **Windows**: `%APPDATA%\autometa\testrail-credentials.json`
+
+The file is created with mode `0600` (owner read/write only).
+
+Once logged in, commands like `sync` and `plan` will use the stored credentials automatically when you omit the CLI flags.
+
+To remove stored credentials:
+
+```bash
+testrail-cucumber logout
+```
+
 ## Commands
+
+### `testrail-cucumber login`
+
+Stores TestRail credentials securely on your device.
+
+```bash
+testrail-cucumber login [options]
+```
+
+| Option | Description |
+| --- | --- |
+| `--testrail-url <url>` | TestRail URL (or omit to prompt) |
+| `--testrail-username <username>` | Username (or omit to prompt) |
+| `--testrail-password <password>` | Password / API key (or omit to prompt) |
+| `--project-id <id>` | Default project ID (optional) |
+
+### `testrail-cucumber logout`
+
+Removes stored credentials from your device.
+
+```bash
+testrail-cucumber logout
+```
 
 ### `testrail-cucumber plan`
 

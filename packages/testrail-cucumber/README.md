@@ -16,12 +16,30 @@ pnpm add -D @autometa/testrail-cucumber
 
 ### Authentication
 
-Credentials can be provided via flags or environment variables:
+Credentials can be provided via flags, environment variables, or stored credentials:
 
 - `--testrail-url` or `TESTRAIL_URL`
 - `--testrail-username` or `TESTRAIL_USERNAME`
 - `--testrail-password` or `TESTRAIL_PASSWORD`
 - `--project-id` or `TESTRAIL_PROJECT_ID`
+
+#### Storing credentials locally
+
+For convenience you can save credentials once and skip the flags on subsequent runs:
+
+```bash
+testrail-cucumber login
+```
+
+This prompts for URL, username, password, and an optional default project ID, then stores them securely in your home directory (`~/.config/autometa/testrail-credentials.json` on macOS/Linux, `%APPDATA%\autometa\...` on Windows). The file is created with mode `0600` (owner read/write only).
+
+Once logged in, commands like `sync` and `plan` will use the stored credentials automatically when you omit the CLI flags.
+
+To remove stored credentials:
+
+```bash
+testrail-cucumber logout
+```
 
 ### Plan vs Sync
 
