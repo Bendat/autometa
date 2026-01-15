@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createContainer } from "@autometa/injection";
+import { createContainer, createToken } from "@autometa/injection";
 import { EventDispatcher, EventDispatcherToken } from "../dispatcher.js";
 import type { FeatureLifecycleEvent } from "../types.js";
 
@@ -37,6 +37,35 @@ describe("EventDispatcher", () => {
     unsubscribe();
     await dispatcher.dispatch(createEvent("second", 2));
     expect(received).toHaveLength(1);
+  });
+
+  it("exposes container resolve() in the event envelope", async () => {
+    const container = createContainer();
+    const MESSAGE = createToken<string>("@autometa/events/test/message");
+    container.registerValue(MESSAGE, "ok");
+
+    const dispatcher = new EventDispatcher(container);
+    const resolved: string[] = [];
+
+    dispatcher.subscribe<FeatureLifecycleEvent>("feature.started", (envelope) => {
+      resolved.push(envelope.resolve(MESSAGE));
+    });
+
+    await dispatcher.dispatch(createEvent("first", 1));
+
+    expect(resolved).toEqual(["ok"]);
+  });
+
+  it("passes tags through to subscribers", async () => {
+    const dispatcher = new EventDispatcher();
+    const received: string[][] = [];
+
+    dispatcher.subscribe<FeatureLifecycleEvent>("feature.started", (envelope) => {
+      received.push(envelope.tags);
+    });
+
+    await dispatcher.dispatch(createEvent("tagged", 1), ["@smoke", "billing"]);
+    expect(received).toEqual([["@smoke", "billing"]]);
   });
 
   it("clears subscribers and resets sequence", async () => {
