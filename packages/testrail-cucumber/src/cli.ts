@@ -47,6 +47,7 @@ export async function createCliProgram(): Promise<Command> {
 
   registerLoginCommand(program);
   registerLogoutCommand(program);
+  registerSetUrlCommand(program);
   registerPlanCommand(program);
   registerSyncCommand(program);
 
@@ -292,6 +293,29 @@ function registerLogoutCommand(program: Command): void {
       } else {
         console.log(pc.dim("No stored credentials found."));
       }
+    });
+}
+
+function registerSetUrlCommand(program: Command): void {
+  program
+    .command("set-url")
+    .argument("<url>", "TestRail base URL (e.g. https://testrail.example.com)")
+    .description("Update the stored TestRail URL without re-entering credentials")
+    .action(async (url: string) => {
+      const existing = await loadStoredCredentials();
+      if (!existing) {
+        console.error(pc.red("No stored credentials found. Run 'login' first."));
+        process.exitCode = 1;
+        return;
+      }
+
+      const updated: StoredCredentials = {
+        ...existing,
+        url: url.trim(),
+      };
+
+      await saveCredentials(updated);
+      console.log(pc.green("URL updated:"), url.trim());
     });
 }
 

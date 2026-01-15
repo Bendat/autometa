@@ -108,6 +108,18 @@ Removes stored credentials from your device.
 testrail-cucumber logout
 ```
 
+### `testrail-cucumber set-url`
+
+Updates the stored TestRail URL without re-entering credentials.
+
+```bash
+testrail-cucumber set-url <url>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<url>` | New TestRail base URL (e.g. `https://testrail.example.com`) |
+
 ### `testrail-cucumber plan`
 
 Plans how feature files would map to TestRail cases.

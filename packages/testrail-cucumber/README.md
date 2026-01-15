@@ -41,6 +41,12 @@ To remove stored credentials:
 testrail-cucumber logout
 ```
 
+To update just the URL without re-entering credentials:
+
+```bash
+testrail-cucumber set-url https://new-testrail.example.com
+```
+
 ### Plan vs Sync
 
 - Plan without touching TestRail:
