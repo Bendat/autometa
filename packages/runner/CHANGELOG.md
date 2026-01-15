@@ -1,5 +1,26 @@
 # @autometa/runner
 
+## 1.0.0-rc.2
+
+### Minor Changes
+
+- 680641ec: feat(runner): expose `ensure` on `runner.bindingsTS()` surface
+
+  - Add `ensure` to the bindings TS surface, delegating to `steps().ensure`.
+  - Enables convenient `const { Binding, Given, ensure } = runner.bindingsTS();` usage.
+  - Typed as `any` to avoid leaking builder facet generics through the bindings API while preserving runtime behavior.
+
+### Patch Changes
+
+- 14eebacf: fix: preserve assertion plugins after world/app changes
+- Updated dependencies [194871e0]
+- Updated dependencies [1bd3dbe5]
+  - @autometa/injection@1.0.0-rc.2
+  - @autometa/executor@1.0.0-rc.2
+  - @autometa/coordinator@1.0.0-rc.2
+  - @autometa/cucumber-expressions@1.0.0-rc.2
+  - @autometa/assertions@1.0.0-rc.2
+
 ## 1.0.0-rc.1
 
 ### Patch Changes

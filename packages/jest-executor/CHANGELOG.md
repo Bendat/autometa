@@ -1,5 +1,15 @@
 # @autometa/jest-executor
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- Updated dependencies [194871e0]
+- Updated dependencies [1bd3dbe5]
+  - @autometa/executor@1.0.0-rc.2
+  - @autometa/config@1.0.0-rc.2
+  - @autometa/test-builder@1.0.0-rc.2
+
 ## 1.0.0-rc.3
 
 ### Patch Changes

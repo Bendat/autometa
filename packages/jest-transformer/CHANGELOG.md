@@ -1,5 +1,17 @@
 # @autometa/jest-transformer
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- Updated dependencies [680641ec]
+- Updated dependencies [14eebacf]
+- Updated dependencies [1bd3dbe5]
+  - @autometa/runner@1.0.0-rc.2
+  - @autometa/gherkin@1.0.0-rc.2
+  - @autometa/config@1.0.0-rc.2
+  - @autometa/jest-executor@1.0.0-rc.4
+
 ## 1.0.0-rc.3
 
 ### Patch Changes

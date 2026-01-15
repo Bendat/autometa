@@ -44,12 +44,19 @@
     "@autometa/testrail-cucumber": "0.0.0",
     "@autometa/types": "0.4.1",
     "@autometa/vitest-executor": "0.0.0",
-    "@autometa/vitest-plugins": "0.0.0"
+    "@autometa/vitest-plugins": "0.0.0",
+    "@autometa/core": "1.0.0-rc.1"
   },
   "changesets": [
+    "bindings-expose-ensure",
+    "cli-config-discovery-upgrade",
     "fix-publish-workflow",
+    "http-transform",
+    "introduce-core-and-playwright-fixes",
     "publish-rc0",
     "rc2-rollup",
+    "runner-assertion-plugins-derivable",
+    "table-keys-and-providers",
     "v1-rewrite-release-candidate"
   ]
 }

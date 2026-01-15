@@ -1,5 +1,11 @@
 # Gherkin
 
+## 1.0.0-rc.2
+
+### Minor Changes
+
+- 1bd3dbe5: feat: add explicit table keys mapping and class/instance table option providers
+
 ## 1.0.0-rc.1
 
 ### Patch Changes

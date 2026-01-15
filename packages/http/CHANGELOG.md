@@ -1,5 +1,21 @@
 # @autometa/http
 
+## 2.0.0-rc.2
+
+### Minor Changes
+
+- 1bd3dbe5: feat(http): add response transform helper
+
+  - New `HTTP.transform(...)` helper to project a response into another shape.
+  - Transformer runs after parsing and schema validation.
+  - Useful for mapping to domain models while keeping return type inference.
+
+### Patch Changes
+
+- Updated dependencies [194871e0]
+  - @autometa/errors@1.0.0-rc.2
+  - @autometa/assertions@1.0.0-rc.2
+
 ## 2.0.0-rc.1
 
 ### Patch Changes

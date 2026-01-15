@@ -1,5 +1,33 @@
 # @autometa/cli
 
+## 1.0.0-rc.4
+
+### Minor Changes
+
+- 1a0eebfa: feat(cli): add --config flag and enhance config discovery
+
+  - New `--config` / `-c` flag to point the CLI at a specific Autometa config file.
+  - Broader default discovery: searches upward from the current directory for:
+    - `autometa.config.{ts,mts,cts,js,mjs,cjs}`
+    - `autometa.<name>.config.{ts,mts,cts,js,mjs,cjs}` (e.g. `autometa.e2e.config.ts`)
+  - This improves "global install" usage and aligns config ergonomics with tools like Vitest/Jest.
+
+### Patch Changes
+
+- Updated dependencies [680641ec]
+- Updated dependencies [1bd3dbe5]
+- Updated dependencies [194871e0]
+- Updated dependencies [14eebacf]
+- Updated dependencies [1bd3dbe5]
+  - @autometa/runner@1.0.0-rc.2
+  - @autometa/http@2.0.0-rc.2
+  - @autometa/errors@1.0.0-rc.2
+  - @autometa/executor@1.0.0-rc.2
+  - @autometa/gherkin@1.0.0-rc.2
+  - @autometa/config@1.0.0-rc.2
+  - @autometa/coordinator@1.0.0-rc.2
+  - @autometa/test-builder@1.0.0-rc.2
+
 ## 1.0.0-rc.3
 
 ### Patch Changes
