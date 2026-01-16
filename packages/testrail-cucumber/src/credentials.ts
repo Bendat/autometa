@@ -20,6 +20,18 @@ export interface StoredCredentials {
   password: string;
   /** Default project ID (optional) */
   projectId?: number;
+  /** Tag prefix for test case IDs (optional, default: @testrail-case-) */
+  caseTagPrefix?: string;
+  /** Tag prefix for suite IDs (optional, default: @testrail-suite-) */
+  suiteTagPrefix?: string;
+  /** Tag prefix for section IDs (optional, default: @testrail-section-) */
+  sectionTagPrefix?: string;
+  /** How to treat scenario outlines: "case" (default, one test case per outline) or "section" (outline becomes a section) */
+  outlineIs?: "case" | "section";
+  /** When outlineIs=section, how to treat Examples tables: "case" (default, rows as cases) or "section" (Examples as subsections) */
+  exampleIs?: "case" | "section";
+  /** Where to place case tags for example rows: "above" (default, tags above Examples) or "inline" (tags in table column) */
+  exampleCaseTagPlacement?: "above" | "inline";
 }
 
 function getCredentialsDir(): string {

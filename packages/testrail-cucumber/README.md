@@ -14,6 +14,22 @@ See also: the Autometa docs page (Reference → TestRail Cucumber CLI).
 pnpm add -D @autometa/testrail-cucumber
 ```
 
+### Interactive Mode
+
+Simply run `testrail-cucumber` without any command to enter interactive mode:
+
+```bash
+testrail-cucumber
+```
+
+Interactive mode provides a guided experience that:
+- Shows your current login status and configuration
+- Only prompts for missing credentials or settings
+- Walks you through sync/plan operations step-by-step
+- Automatically detects single vs multi-suite projects
+
+All commands below are also available for direct CLI usage and automation.
+
 ### Authentication
 
 Credentials can be provided via flags, environment variables, or stored credentials:
@@ -52,6 +68,16 @@ To update the default project ID:
 ```bash
 testrail-cucumber set-project 123
 ```
+
+To customize tag prefixes (these are stored and used by default in subsequent syncs):
+
+```bash
+testrail-cucumber set-case-tag-prefix @C
+testrail-cucumber set-suite-tag-prefix @S
+testrail-cucumber set-section-tag-prefix @SEC
+```
+
+Once set, these prefixes will be used automatically when writing tags with `--write-tags`. You can still override them per-sync using `--case-tag-prefix`, `--suite-tag-prefix`, or `--section-tag-prefix` flags.
 
 ### Plan vs Sync
 
@@ -100,6 +126,67 @@ You can explicitly disable prompting:
   - `--write-tags` (defaults to `@testrail-case-<id>` and `@testrail-suite-<id>`).
 - Tag-only workflow:
   - `sync --dry-run --write-tags --write-tags-on-dry-run` (writes tags without creating/updating cases).
+
+## Scenario Outline Handling
+
+By default, each Scenario Outline becomes a single test case in TestRail. You can change this behaviour to create sections and individual test cases per data row.
+
+### Configuration
+
+Store your preferred settings:
+
+```bash
+# Treat outlines as sections (instead of cases)
+testrail-cucumber set-outline-is section
+
+# Treat Examples tables as sections (instead of flattening rows)
+testrail-cucumber set-example-is section
+
+# Control where case tags are placed (above Examples or inline in table)
+testrail-cucumber set-example-case-tag-placement above  # or "inline"
+```
+
+Or use CLI flags per-sync:
+
+```bash
+testrail-cucumber sync foo --outline-is section --example-is section --example-case-tag-placement inline
+```
+
+### Modes
+
+| `--outline-is` | `--example-is` | Result |
+| --- | --- | --- |
+| `case` (default) | n/a | One test case per Scenario Outline |
+| `section` | `case` | Outline → Section, all rows → Cases under that section |
+| `section` | `section` | Outline → Section, Examples → Subsections, rows → Cases |
+
+### Tag Writeback
+
+When `--outline-is section`:
+
+- If `--example-is case`: Row case tags are written above the Scenario Outline line:
+  ```gherkin
+  @testrail-case-101 @testrail-case-102 @testrail-section-500
+  Scenario Outline: my outline
+  ```
+
+- If `--example-is section` with `--example-case-tag-placement above` (default):
+  ```gherkin
+  @testrail-case-101 @testrail-case-102 @testrail-section-501
+  Examples:
+    | param  |
+    | value1 |
+    | value2 |
+  ```
+
+- If `--example-is section` with `--example-case-tag-placement inline`:
+  ```gherkin
+  @testrail-section-501
+  Examples:
+    | param  | testrail case         |
+    | value1 | @testrail-case-101 |
+    | value2 | @testrail-case-102 |
+  ```
 
 ## Examples
 

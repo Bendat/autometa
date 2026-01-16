@@ -8,3 +8,4 @@ export * from "./steps";
 export * from "./testrail-mapping";
 export * from "./sync";
 export * from "./tag-writeback";
+export * from "./formatter";

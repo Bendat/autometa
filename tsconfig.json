@@ -32,13 +32,13 @@
       "path": "packages/playwright-executor/tsconfig.types.json"
     },
     {
-      "path": "packages/phrases/tsconfig.types.json"
-    },
-    {
       "path": "packages/overloaded/tsconfig.types.json"
     },
     {
       "path": "packages/jest-transformer/tsconfig.types.json"
+    },
+    {
+      "path": "packages/phrases/tsconfig.types.json"
     },
     {
       "path": "packages/jest-executor/tsconfig.types.json"
@@ -65,13 +65,13 @@
       "path": "packages/events/tsconfig.types.json"
     },
     {
+      "path": "packages/errors/tsconfig.types.json"
+    },
+    {
       "path": "packages/dto-builder/tsconfig.types.json"
     },
     {
       "path": "packages/datetime/tsconfig.types.json"
-    },
-    {
-      "path": "packages/errors/tsconfig.types.json"
     },
     {
       "path": "packages/cucumber-expressions/tsconfig.types.json"

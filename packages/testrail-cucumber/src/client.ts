@@ -55,6 +55,13 @@ export interface TestRailClient {
       readonly parent_id?: number;
     }
   ): Promise<TestRailSection>;
+  updateSection(
+    sectionId: number,
+    payload: {
+      readonly name?: string;
+      readonly description?: string;
+    }
+  ): Promise<TestRailSection>;
 
   getCases(
     projectId: number,
@@ -79,7 +86,11 @@ export class HttpTestRailClient implements TestRailClient {
   }
 
   async getSuites(projectId: number): Promise<TestRailSuite[]> {
-    return this.getJson(`/index.php?/api/v2/get_suites/${projectId}`);
+    const response = await this.getJson<TestRailSuite[] | { suites: TestRailSuite[] }>(
+      `/index.php?/api/v2/get_suites/${projectId}`
+    );
+    // Handle both direct array response and wrapped response with pagination metadata
+    return Array.isArray(response) ? response : response.suites;
   }
 
   async addSuite(projectId: number, payload: { readonly name: string; readonly description?: string }): Promise<TestRailSuite> {
@@ -92,7 +103,11 @@ export class HttpTestRailClient implements TestRailClient {
 
   async getSections(projectId: number, options: { readonly suiteId?: number } = {}): Promise<TestRailSection[]> {
     const qs = options.suiteId !== undefined ? `&suite_id=${options.suiteId}` : "";
-    return this.getJson(`/index.php?/api/v2/get_sections/${projectId}${qs}`);
+    const response = await this.getJson<TestRailSection[] | { sections: TestRailSection[] }>(
+      `/index.php?/api/v2/get_sections/${projectId}${qs}`
+    );
+    // Handle both direct array response and wrapped response with pagination metadata
+    return Array.isArray(response) ? response : response.sections;
   }
 
   async addSection(
@@ -107,6 +122,16 @@ export class HttpTestRailClient implements TestRailClient {
     return this.postJson(`/index.php?/api/v2/add_section/${projectId}`, payload);
   }
 
+  async updateSection(
+    sectionId: number,
+    payload: {
+      readonly name?: string;
+      readonly description?: string;
+    }
+  ): Promise<TestRailSection> {
+    return this.postJson(`/index.php?/api/v2/update_section/${sectionId}`, payload);
+  }
+
   async getCases(
     projectId: number,
     options: { readonly suiteId?: number; readonly sectionId?: number } = {}
@@ -119,7 +144,11 @@ export class HttpTestRailClient implements TestRailClient {
       params.push(`section_id=${options.sectionId}`);
     }
     const qs = params.length ? `&${params.join("&")}` : "";
-    return this.getJson(`/index.php?/api/v2/get_cases/${projectId}${qs}`);
+    const response = await this.getJson<TestRailCase[] | { cases: TestRailCase[] }>(
+      `/index.php?/api/v2/get_cases/${projectId}${qs}`
+    );
+    // Handle both direct array response and wrapped response with pagination metadata
+    return Array.isArray(response) ? response : response.cases;
   }
 
   async addCase(sectionId: number, payload: Record<string, unknown>): Promise<TestRailCase> {
