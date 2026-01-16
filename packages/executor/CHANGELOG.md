@@ -1,5 +1,13 @@
 # @autometa/executor
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- Updated dependencies [76a45c2b]
+- Updated dependencies [543dfc69]
+  - @autometa/events@1.0.0-rc.3
+
 ## 1.0.0-rc.2
 
 ### Minor Changes

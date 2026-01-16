@@ -1,5 +1,11 @@
 # @autometa/http
 
+## 2.0.0-rc.3
+
+### Patch Changes
+
+- @autometa/assertions@1.0.0-rc.3
+
 ## 2.0.0-rc.2
 
 ### Minor Changes

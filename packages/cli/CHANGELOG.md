@@ -1,5 +1,14 @@
 # @autometa/cli
 
+## 1.0.0-rc.5
+
+### Patch Changes
+
+- @autometa/executor@1.0.0-rc.3
+- @autometa/coordinator@1.0.0-rc.3
+- @autometa/runner@1.0.0-rc.3
+- @autometa/http@2.0.0-rc.3
+
 ## 1.0.0-rc.4
 
 ### Minor Changes

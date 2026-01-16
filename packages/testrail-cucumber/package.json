@@ -1,6 +1,6 @@
 {
   "name": "@autometa/testrail-cucumber",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Upload Cucumber feature files to TestRail with separated steps and idempotent mapping",
   "type": "module",
   "main": "dist/index.cjs",

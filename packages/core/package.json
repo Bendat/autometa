@@ -1,6 +1,6 @@
 {
   "name": "@autometa/core",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "Unified core entrypoint for Autometa. Re-exports common APIs and provides the autometa CLI.",
   "type": "module",
   "main": "dist/index.cjs",
