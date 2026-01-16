@@ -1,0 +1,21 @@
+{
+  "name": "@autometa/examples-events-di-tags",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "tsx src/index.ts",
+    "type-check": "tsc --project tsconfig.json --noEmit",
+    "coverage": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage',{recursive:true});fs.writeFileSync('coverage/.keep','');\""
+  },
+  "dependencies": {
+    "@autometa/events": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/injection": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "18.19.24",
+    "tsx": "^4.20.6",
+    "typescript": "5.4.5"
+  }
+}

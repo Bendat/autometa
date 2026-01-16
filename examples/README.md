@@ -8,6 +8,7 @@ This workspace hosts living documentation for Autometa. Each example package dem
 examples/
   .api/               # Minimal REST API powering end-to-end scenarios
   .features/          # Authoritative feature files shared by all examples
+  events-di-tags/     # Event listeners with DI resolve() + tags
   jest-functions/     # Jest-based step definitions using functional style
   jest-decorators/    # Jest-based step definitions using decorator APIs
   runner-composition/ # Runner + DI composition patterns (no test framework glue)

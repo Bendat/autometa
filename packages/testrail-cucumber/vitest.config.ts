@@ -10,6 +10,12 @@ export default defineConfig({
       reporter: ["text", "json-summary", "json"],
       include: ["src/**"],
       exclude: ["dist/**", "build/**", "coverage/**", "node_modules/**", "../../documentation/**"],
+      thresholds: {
+        statements: 0,
+        branches: 0,
+        functions: 0,
+        lines: 0,
+      }
     },
   },
 });

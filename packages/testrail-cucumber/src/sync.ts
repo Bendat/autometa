@@ -39,11 +39,26 @@ export interface SyncOptions {
   readonly descriptionField?: string;
   /** Store our signature in `refs` by default; can be overridden for custom fields later. */
   readonly signatureToRefs?: boolean;
+
+  /**
+   * How to treat scenario outlines: "case" (default, one test case per outline) or "section" (outline becomes a section).
+   */
+  readonly outlineIs?: "case" | "section";
+  /**
+   * When outlineIs=section, how to treat Examples tables: "case" (default, rows as cases) or "section" (Examples as subsections).
+   */
+  readonly exampleIs?: "case" | "section";
 }
 
 export interface FeatureSyncResult {
   readonly featurePath: string;
   readonly sectionId: number;
+  /** Mapping from rule name to section id (for rule-based sections). */
+  readonly ruleSectionIdsByName: Readonly<Record<string, number>>;
+  /** Mapping from outline signature to section id (when outlineIs=section). */
+  readonly outlineSectionIdsBySignature?: Readonly<Record<string, number>>;
+  /** Mapping from example key (outlineSignature:exampleIndex) to section id (when exampleIs=section). */
+  readonly exampleSectionIdsByKey?: Readonly<Record<string, number>>;
   readonly suite?: SuiteResolution;
   readonly plan: readonly PlanItem[];
   /** Mapping from scenario signature to the resolved TestRail case id (after create/reuse). */
@@ -81,15 +96,15 @@ export async function syncFeatureToTestRail(
     messages.push(`[testrail] Using section #${featureSection.id} for feature ${feature.path} (${feature.name}).`);
   }
 
+  // Collect all descendant section IDs (feature section + all nested children/grandchildren)
+  const descendantSectionIds = collectDescendantSectionIds(sections, featureSection.id);
+
   const existingCases =
     featureSection.id === -1
       ? []
       : (
           await Promise.all(
-            [
-              featureSection.id,
-              ...sections.filter((s) => s.parent_id === featureSection.id).map((s) => s.id),
-            ].map((sectionId) =>
+            [featureSection.id, ...descendantSectionIds].map((sectionId) =>
               loadExistingCases(client, projectId, {
                 ...(suiteId !== undefined ? { suiteId } : {}),
                 sectionId,
@@ -113,6 +128,8 @@ export async function syncFeatureToTestRail(
     feature,
     existingCases,
     duplicatePolicy: options.duplicatePolicy,
+    ...(options.outlineIs !== undefined ? { outlineIs: options.outlineIs } : {}),
+    ...(options.exampleIs !== undefined ? { exampleIs: options.exampleIs } : {}),
     ...(options.interactive !== undefined ? { interactive: options.interactive } : {}),
     ...(options.forcePrompt !== undefined ? { forcePrompt: options.forcePrompt } : {}),
     ...(options.maxPromptCandidates !== undefined ? { maxPromptCandidates: options.maxPromptCandidates } : {}),
@@ -141,6 +158,7 @@ export async function syncFeatureToTestRail(
     return {
       featurePath: feature.path,
       sectionId: featureSection.id,
+      ruleSectionIdsByName: {},
       suite,
       plan,
       caseIdBySignature: reuseMap,
@@ -155,6 +173,8 @@ export async function syncFeatureToTestRail(
   const caseIdBySignature = new Map<string, number>();
   let mutableSections = [...sections];
   const ruleSectionsByName = new Map<string, TestRailSection>();
+  const outlineSectionsBySignature = new Map<string, TestRailSection>();
+  const exampleSectionsByKey = new Map<string, TestRailSection>();
 
   for (const item of plan) {
     if (item.action === "error") {
@@ -166,6 +186,105 @@ export async function syncFeatureToTestRail(
       continue;
     }
 
+    // Handle section items (outline sections and example subsections)
+    if (item.itemType === "section") {
+      if (item.kind === "outline" && item.exampleIndex === undefined) {
+        // Outline section
+        const result = await ensureOutlineSection(
+          client,
+          mutableSections,
+          projectId,
+          feature,
+          featureSection,
+          suiteId,
+          item.nodeName,
+          item.signature,
+          { dryRun }
+        );
+        mutableSections = result.sections;
+        outlineSectionsBySignature.set(item.signature, result.section);
+        messages.push(
+          result.section.id === -1
+            ? pc.dim(`[testrail] Would create section for outline "${item.nodeName}".`)
+            : pc.green(`[testrail] Using section #${result.section.id} for outline "${item.nodeName}".`)
+        );
+      } else if (item.exampleIndex !== undefined && item.parentSignature) {
+        // Example subsection
+        const parentOutlineSection = outlineSectionsBySignature.get(item.parentSignature);
+        if (!parentOutlineSection) {
+          throw new Error(`[testrail] Internal error: parent outline section not found for example section (${item.nodeName}).`);
+        }
+        const result = await ensureExampleSection(
+          client,
+          mutableSections,
+          projectId,
+          feature,
+          parentOutlineSection,
+          suiteId,
+          item.exampleIndex,
+          item.parentSignature,
+          { dryRun }
+        );
+        mutableSections = result.sections;
+        // Use the item's signature as the key (matches what row cases use as parentSignature)
+        exampleSectionsByKey.set(item.signature, result.section);
+        messages.push(
+          result.section.id === -1
+            ? pc.dim(`[testrail] Would create section for "${item.nodeName}".`)
+            : pc.green(`[testrail] Using section #${result.section.id} for "${item.nodeName}".`)
+        );
+      }
+      continue;
+    }
+
+    // Handle row cases (outline-row kind)
+    if (item.kind === "outline-row") {
+      // Determine the target section for this row
+      let targetSectionId: number;
+      if (item.parentSignature) {
+        // parentSignature is either the example section signature or the outline signature
+        // Check example sections first (when exampleIs=section)
+        const exampleSection = exampleSectionsByKey.get(item.parentSignature);
+        if (exampleSection) {
+          targetSectionId = exampleSection.id;
+        } else {
+          // Parent is the outline section directly (when exampleIs=case)
+          const outlineSection = outlineSectionsBySignature.get(item.parentSignature);
+          if (outlineSection) {
+            targetSectionId = outlineSection.id;
+          } else {
+            // Fallback to feature section
+            targetSectionId = featureSection.id;
+          }
+        }
+      } else {
+        targetSectionId = featureSection.id;
+      }
+
+      if (item.action === "create") {
+        if (targetSectionId === -1) {
+          messages.push(pc.dim(`[testrail] Would create case for row "${item.nodeName}" (dry-run).`));
+          continue;
+        }
+        const payload = buildRowCasePayload(item.nodeName, item.signature, options);
+        const created = await client.addCase(targetSectionId, payload);
+        createdCases.push(created);
+        caseIdBySignature.set(item.signature, created.id);
+        messages.push(pc.green(`[testrail] Created case #${created.id} for row "${item.nodeName}".`));
+        continue;
+      }
+
+      // use action for row
+      const caseId = item.caseId;
+      if (caseId === undefined) {
+        throw new Error(`[testrail] Internal error: plan item missing caseId for use action (${item.nodeName}).`);
+      }
+      caseIdBySignature.set(item.signature, caseId);
+      messages.push(pc.cyan(`[testrail] Reusing case #${caseId} for row "${item.nodeName}".`));
+      continue;
+    }
+
+    // Standard case handling for scenarios and outlines (when outlineIs=case)
     const node = nodeBySignature.get(item.signature);
     if (!node) {
       throw new Error(`[testrail] Internal error: node not found for plan item signature: ${item.nodeName} (${item.signature})`);
@@ -280,6 +399,23 @@ export async function syncFeatureToTestRail(
   return {
     featurePath: feature.path,
     sectionId: featureSection.id,
+    ruleSectionIdsByName: Object.fromEntries(
+      Array.from(ruleSectionsByName.entries()).map(([name, section]) => [name, section.id])
+    ),
+    ...(outlineSectionsBySignature.size > 0
+      ? {
+          outlineSectionIdsBySignature: Object.fromEntries(
+            Array.from(outlineSectionsBySignature.entries()).map(([sig, section]) => [sig, section.id])
+          ),
+        }
+      : {}),
+    ...(exampleSectionsByKey.size > 0
+      ? {
+          exampleSectionIdsByKey: Object.fromEntries(
+            Array.from(exampleSectionsByKey.entries()).map(([key, section]) => [key, section.id])
+          ),
+        }
+      : {}),
     suite,
     plan,
     caseIdBySignature: Object.fromEntries(caseIdBySignature.entries()),
@@ -399,6 +535,181 @@ function ruleDescription(feature: ParsedFeature, ruleName: string): string {
   return parts.join("\n");
 }
 
+/**
+ * Ensure a section exists for a scenario outline when outlineIs=section.
+ * Section is identified by the outline signature marker in description.
+ *
+ * @returns The outline section and updated sections list.
+ */
+export async function ensureOutlineSection(
+  client: TestRailClient,
+  sections: readonly TestRailSection[],
+  projectId: number,
+  feature: ParsedFeature,
+  parentSection: TestRailSection,
+  suiteId: number | undefined,
+  outlineName: string,
+  outlineSignature: string,
+  opts: { readonly dryRun: boolean }
+): Promise<{ section: TestRailSection; sections: TestRailSection[] }> {
+  const signatureMarker = `autometa:signature=${outlineSignature}`;
+  const outlineMarker = "autometa:outlineSection";
+
+  // First, try to find by signature marker
+  const bySignature = sections.find(
+    (s) =>
+      s.parent_id === parentSection.id &&
+      (s.description ?? "").includes(signatureMarker) &&
+      (s.description ?? "").includes(outlineMarker)
+  );
+  if (bySignature) {
+    return { section: bySignature, sections: [...sections] };
+  }
+
+  // Fallback: match by name under parent (for migration)
+  const byName = sections.find(
+    (s) => s.parent_id === parentSection.id && s.name.trim() === outlineName.trim()
+  );
+  if (byName) {
+    // Update description to include markers if missing
+    if (!(byName.description ?? "").includes(signatureMarker)) {
+      if (!opts.dryRun) {
+        const updatedDescription = [byName.description ?? "", outlineMarker, signatureMarker]
+          .filter(Boolean)
+          .join("\n");
+        await client.updateSection(byName.id, { description: updatedDescription });
+      }
+    }
+    return { section: byName, sections: [...sections] };
+  }
+
+  // Create new section
+  if (opts.dryRun) {
+    const fake: TestRailSection = {
+      id: -1,
+      name: outlineName,
+      parent_id: parentSection.id,
+      description: outlineSectionDescription(feature, outlineSignature),
+      ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
+    };
+    return { section: fake, sections: [...sections] };
+  }
+
+  const created = await client.addSection(projectId, {
+    name: outlineName,
+    description: outlineSectionDescription(feature, outlineSignature),
+    parent_id: parentSection.id,
+    ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
+  });
+  return { section: created, sections: [...sections, created] };
+}
+
+function outlineSectionDescription(feature: ParsedFeature, outlineSignature: string): string {
+  return [
+    `autometa:featurePath=${feature.path}`,
+    "autometa:outlineSection",
+    `autometa:signature=${outlineSignature}`,
+  ].join("\n");
+}
+
+/**
+ * Ensure a subsection exists for an Examples table when exampleIs=section.
+ * Section is named "Examples #N" (1-indexed) and identified by exampleIndex marker.
+ *
+ * @returns The example section and updated sections list.
+ */
+export async function ensureExampleSection(
+  client: TestRailClient,
+  sections: readonly TestRailSection[],
+  projectId: number,
+  feature: ParsedFeature,
+  outlineSection: TestRailSection,
+  suiteId: number | undefined,
+  exampleIndex: number,
+  outlineSignature: string,
+  opts: { readonly dryRun: boolean }
+): Promise<{ section: TestRailSection; sections: TestRailSection[] }> {
+  const exampleMarker = `autometa:exampleSection=${exampleIndex}`;
+  const sectionName = `Examples #${exampleIndex + 1}`;
+
+  // Try to find by example marker
+  const byMarker = sections.find(
+    (s) =>
+      s.parent_id === outlineSection.id &&
+      (s.description ?? "").includes(exampleMarker)
+  );
+  if (byMarker) {
+    return { section: byMarker, sections: [...sections] };
+  }
+
+  // Fallback: match by name under outline section
+  const byName = sections.find(
+    (s) => s.parent_id === outlineSection.id && s.name.trim() === sectionName
+  );
+  if (byName) {
+    // Update description to include marker if missing
+    if (!(byName.description ?? "").includes(exampleMarker)) {
+      if (!opts.dryRun) {
+        const updatedDescription = [byName.description ?? "", exampleMarker].filter(Boolean).join("\n");
+        await client.updateSection(byName.id, { description: updatedDescription });
+      }
+    }
+    return { section: byName, sections: [...sections] };
+  }
+
+  // Create new section
+  if (opts.dryRun) {
+    const fake: TestRailSection = {
+      id: -1,
+      name: sectionName,
+      parent_id: outlineSection.id,
+      description: exampleSectionDescription(feature, exampleIndex, outlineSignature),
+      ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
+    };
+    return { section: fake, sections: [...sections] };
+  }
+
+  const created = await client.addSection(projectId, {
+    name: sectionName,
+    description: exampleSectionDescription(feature, exampleIndex, outlineSignature),
+    parent_id: outlineSection.id,
+    ...(suiteId !== undefined ? { suite_id: suiteId } : {}),
+  });
+  return { section: created, sections: [...sections, created] };
+}
+
+function exampleSectionDescription(
+  feature: ParsedFeature,
+  exampleIndex: number,
+  outlineSignature: string
+): string {
+  return [
+    `autometa:featurePath=${feature.path}`,
+    `autometa:exampleSection=${exampleIndex}`,
+    `autometa:parentSignature=${outlineSignature}`,
+  ].join("\n");
+}
+
+/**
+ * Recursively collect all section IDs that are descendants of a given parent section.
+ * This includes children, grandchildren, and so on.
+ */
+function collectDescendantSectionIds(
+  sections: readonly TestRailSection[],
+  parentId: number
+): number[] {
+  const result: number[] = [];
+  const directChildren = sections.filter((s) => s.parent_id === parentId);
+
+  for (const child of directChildren) {
+    result.push(child.id);
+    // Recursively collect grandchildren
+    result.push(...collectDescendantSectionIds(sections, child.id));
+  }
+
+  return result;
+}
+
 async function loadExistingCases(
   client: TestRailClient,
   projectId: number,
@@ -433,6 +744,29 @@ function buildCasePayload(
   // NOTE: suiteTag is intended for feature/scenario tags (write-back); we don't push it into TestRail by default.
   // It remains available in SuiteResolution for CLI messaging and future tag write-back.
   void suite;
+
+  return payload;
+}
+
+/**
+ * Build a minimal case payload for an outline row.
+ * Row cases have interpolated titles and signatures but no direct node reference.
+ */
+function buildRowCasePayload(
+  title: string,
+  signature: string,
+  options: SyncOptions
+): Record<string, unknown> {
+  const descriptionField = options.descriptionField ?? "custom_test_case_description";
+
+  const payload: Record<string, unknown> = {
+    title,
+    [descriptionField]: "",
+  };
+
+  if (options.signatureToRefs !== false) {
+    payload.refs = signature;
+  }
 
   return payload;
 }

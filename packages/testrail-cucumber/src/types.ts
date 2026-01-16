@@ -49,7 +49,33 @@ export interface ScenarioOutlineNode {
   readonly examples: readonly OutlineExampleTable[];
 }
 
-export type FeatureChildNode = ScenarioNode | ScenarioOutlineNode;
+/**
+ * Represents a single row from a scenario outline's Examples table.
+ * Generated when outline-is=section to create individual test cases per row.
+ */
+export interface OutlineRowNode {
+  readonly kind: "outline-row";
+  /** Interpolated name with placeholders replaced by row values. */
+  readonly name: string;
+  /** Line number of the Examples row in the source file (best-effort). */
+  readonly line?: number;
+  readonly rule?: RuleNode;
+  readonly description?: string;
+  /** Steps with placeholders replaced by row values. */
+  readonly steps: readonly StepNode[];
+  readonly tags: readonly string[];
+  readonly backgroundSteps: readonly StepNode[];
+  /** Reference to the parent outline this row came from. */
+  readonly parentOutline: ScenarioOutlineNode;
+  /** Index of the Examples table within the outline (0-based). */
+  readonly exampleIndex: number;
+  /** Index of the row within the Examples table (0-based). */
+  readonly rowIndex: number;
+  /** Actual values from this row. */
+  readonly rowValues: readonly string[];
+}
+
+export type FeatureChildNode = ScenarioNode | ScenarioOutlineNode | OutlineRowNode;
 
 export interface ParsedFeature {
   readonly name: string;

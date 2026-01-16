@@ -17,12 +17,23 @@ concurrency:
 
 jobs:
   publish:
+    # Only publish when:
+    # 1. CI succeeded
+    # 2. The branch is 'main' (not a PR branch)
+    # 3. The workflow run is from the same repository (not a fork)
     if: >-
       ${{ github.event.workflow_run.conclusion == 'success' &&
-          github.event.workflow_run.head_branch == 'main' }}
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.repository.full_name == github.repository }}
     runs-on: ubuntu-latest
     environment:
       name: release
+    env:
+      # Force npm/pnpm to use a known npmrc (rather than relying on runner defaults)
+      NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/.npmrc
+      # Provide token via env for tools that prefer it
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,14 +57,25 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
           registry-url: https://registry.npmjs.org
-      - name: Verify npm credentials
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Configure npm authentication
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
             echo "Missing NPM_TOKEN; aborting before publish to avoid broken releases."
             exit 1
           fi
+
+          umask 077
+          mkdir -p "$(dirname \"$NPM_CONFIG_USERCONFIG\")"
+          {
+            echo "registry=https://registry.npmjs.org/"
+            echo "always-auth=true"
+            echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}"
+          } > "$NPM_CONFIG_USERCONFIG"
+
+          # Basic sanity check: ensure the file exists and is non-empty.
+          test -s "$NPM_CONFIG_USERCONFIG"
+      - name: Verify npm credentials
+        run: |
           npm whoami
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -62,7 +84,5 @@ jobs:
       - name: Publish with Changesets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
         run: pnpm release:publish

@@ -8,7 +8,7 @@ import type {
   SimpleScenario,
   SimpleScenarioOutline,
 } from "@autometa/gherkin";
-import { EventDispatcher } from "./dispatcher.js";
+import { EventDispatcher, type DispatchContext } from "./dispatcher.js";
 import type { HookDescriptor } from "./hooks.js";
 import type {
   BackgroundLifecycleEvent,
@@ -45,6 +45,7 @@ interface BaseEmitOptions {
   id?: string;
   timestamp?: number;
   metadata?: Record<string, unknown>;
+  tags?: string[];
 }
 
 export interface FeatureLifecycleOptions extends BaseEmitOptions {
@@ -132,7 +133,7 @@ export class EventEmitter {
       feature: options.feature,
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async featureCompleted(options: FeatureLifecycleOptions): Promise<void> {
@@ -141,7 +142,7 @@ export class EventEmitter {
       feature: options.feature,
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async ruleStarted(options: RuleLifecycleOptions): Promise<void> {
@@ -151,7 +152,7 @@ export class EventEmitter {
       rule: options.rule,
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async ruleCompleted(options: RuleLifecycleOptions): Promise<void> {
@@ -161,7 +162,7 @@ export class EventEmitter {
       rule: options.rule,
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async scenarioStarted(options: ScenarioLifecycleOptions): Promise<void> {
@@ -173,7 +174,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async scenarioCompleted(options: ScenarioLifecycleOptions): Promise<void> {
@@ -185,7 +186,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async scenarioOutlineStarted(
@@ -198,7 +199,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async scenarioOutlineCompleted(
@@ -211,7 +212,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async exampleStarted(options: ExampleLifecycleOptions): Promise<void> {
@@ -224,7 +225,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async exampleCompleted(options: ExampleLifecycleOptions): Promise<void> {
@@ -237,7 +238,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async backgroundStarted(options: BackgroundLifecycleOptions): Promise<void> {
@@ -249,7 +250,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async backgroundCompleted(
@@ -263,7 +264,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async stepStarted(options: StepLifecycleOptions): Promise<void> {
@@ -276,7 +277,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, this.stepContext(options));
   }
 
   async stepCompleted(options: StepLifecycleOptions): Promise<void> {
@@ -289,7 +290,7 @@ export class EventEmitter {
       ...(options.rule ? { rule: options.rule } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, this.stepContext(options));
   }
 
   async hookStarted(options: HookEmitOptions): Promise<void> {
@@ -308,7 +309,7 @@ export class EventEmitter {
       ...(options.hook.pickle ? { pickle: options.hook.pickle } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async hookCompleted(options: HookEmitOptions): Promise<void> {
@@ -327,7 +328,7 @@ export class EventEmitter {
       ...(options.hook.pickle ? { pickle: options.hook.pickle } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async statusChanged(options: StatusEmitOptions): Promise<void> {
@@ -345,7 +346,7 @@ export class EventEmitter {
       ...(options.pickle ? { pickle: options.pickle } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   async errorRaised(options: ErrorEmitOptions): Promise<void> {
@@ -364,7 +365,7 @@ export class EventEmitter {
       ...(options.pickle ? { pickle: options.pickle } : {}),
       ...this.base(options),
     };
-    await this.dispatcher.dispatch(event);
+    await this.dispatcher.dispatch(event, { tags: options.tags ?? [] });
   }
 
   private base(options: BaseEmitOptions): {
@@ -386,5 +387,29 @@ export class EventEmitter {
     }
 
     return base;
+  }
+
+  /**
+   * Build dispatch context for step events, extracting docstring and table
+   * from the step if present.
+   */
+  private stepContext(options: StepLifecycleOptions): DispatchContext {
+    const { step, tags } = options;
+    const context: DispatchContext = { tags: tags ?? [] };
+
+    if (step.docString) {
+      context.docstring = {
+        content: step.docString,
+        ...(step.docStringMediaType !== undefined && {
+          mediaType: step.docStringMediaType,
+        }),
+      };
+    }
+
+    if (step.dataTable) {
+      context.table = step.dataTable;
+    }
+
+    return context;
   }
 }

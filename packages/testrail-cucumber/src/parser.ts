@@ -10,6 +10,7 @@ import {
   RuleNode,
   ScenarioNode,
   ScenarioOutlineNode,
+  OutlineRowNode,
   StepNode,
   OutlineExampleTable,
 } from "./types";
@@ -183,4 +184,77 @@ function mapSteps(steps: readonly unknown[]): StepNode[] {
       },
     };
   });
+}
+
+/**
+ * Expand a scenario outline into individual row nodes for testing.
+ * This is used when outline-is=section to create test cases per row.
+ *
+ * @param outline The scenario outline to expand
+ * @returns Array of OutlineRowNode, one per row across all Examples tables
+ */
+export function expandOutlineRows(outline: ScenarioOutlineNode): OutlineRowNode[] {
+  const rows: OutlineRowNode[] = [];
+
+  for (let exIdx = 0; exIdx < outline.examples.length; exIdx++) {
+    const example = outline.examples[exIdx];
+    if (!example) continue;
+
+    for (let rowIdx = 0; rowIdx < example.rows.length; rowIdx++) {
+      const rowValues = example.rows[rowIdx] ?? [];
+
+      // Interpolate title: replace <placeholder> with actual values
+      let interpolatedName = outline.name;
+      for (let i = 0; i < example.headers.length; i++) {
+        const header = example.headers[i];
+        const value = rowValues[i] ?? "";
+        if (header) {
+          interpolatedName = interpolatedName.replace(new RegExp(`<${header}>`, "g"), value);
+        }
+      }
+
+      // Interpolate steps: replace <placeholder> with actual values
+      const interpolatedSteps = outline.steps.map((step) => {
+        let text = step.text;
+        for (let i = 0; i < example.headers.length; i++) {
+          const header = example.headers[i];
+          const value = rowValues[i] ?? "";
+          if (header) {
+            text = text.replace(new RegExp(`<${header}>`, "g"), value);
+          }
+        }
+        return { ...step, text };
+      });
+
+      // Interpolate background steps as well
+      const interpolatedBackgroundSteps = outline.backgroundSteps.map((step) => {
+        let text = step.text;
+        for (let i = 0; i < example.headers.length; i++) {
+          const header = example.headers[i];
+          const value = rowValues[i] ?? "";
+          if (header) {
+            text = text.replace(new RegExp(`<${header}>`, "g"), value);
+          }
+        }
+        return { ...step, text };
+      });
+
+      rows.push({
+        kind: "outline-row",
+        name: interpolatedName,
+        ...(outline.line !== undefined ? { line: outline.line } : {}),
+        ...(outline.rule !== undefined ? { rule: outline.rule } : {}),
+        ...(outline.description !== undefined ? { description: outline.description } : {}),
+        steps: interpolatedSteps,
+        tags: outline.tags,
+        backgroundSteps: interpolatedBackgroundSteps,
+        parentOutline: outline,
+        exampleIndex: exIdx,
+        rowIndex: rowIdx,
+        rowValues,
+      });
+    }
+  }
+
+  return rows;
 }

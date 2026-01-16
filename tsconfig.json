@@ -32,13 +32,13 @@
       "path": "packages/playwright-executor/tsconfig.types.json"
     },
     {
-      "path": "packages/phrases/tsconfig.types.json"
-    },
-    {
       "path": "packages/overloaded/tsconfig.types.json"
     },
     {
       "path": "packages/jest-transformer/tsconfig.types.json"
+    },
+    {
+      "path": "packages/phrases/tsconfig.types.json"
     },
     {
       "path": "packages/jest-executor/tsconfig.types.json"

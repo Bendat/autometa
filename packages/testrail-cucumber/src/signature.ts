@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export type NodeKind = "scenario" | "outline";
+export type NodeKind = "scenario" | "outline" | "outline-row";
 
 export interface StepShape {
   readonly keyword: string;
@@ -73,4 +73,53 @@ function normalizeSteps(steps: readonly StepShape[]): readonly unknown[] {
         }
       : undefined,
   }));
+}
+
+/**
+ * Input for computing a signature for a single row of a scenario outline.
+ * Each row becomes a distinct test case when outline-is=section.
+ */
+export interface RowSignatureInput {
+  /** Repo-relative feature path, normalized to forward slashes. */
+  readonly featurePath: string;
+  /** Title of the parent outline (not interpolated). */
+  readonly outlineTitle: string;
+  /** Signature of the parent outline (for linking). */
+  readonly outlineSignature: string;
+  /** Index of the Examples table within the outline (0-based). */
+  readonly exampleIndex: number;
+  /** Index of the row within the Examples table (0-based). */
+  readonly rowIndex: number;
+  /** Actual values from this row. */
+  readonly rowValues: readonly string[];
+  /** Steps with placeholders replaced by row values. */
+  readonly steps: readonly StepShape[];
+  /** Background steps that prepend to the scenario. */
+  readonly backgroundSteps?: readonly StepShape[];
+}
+
+/**
+ * Compute a stable signature for a single outline row.
+ * - Includes rowValues to detect data changes
+ * - Includes rowIndex for stable ordering
+ * - Links back to parent outline via outlineSignature
+ */
+export function computeRowSignature(input: RowSignatureInput): string {
+  const normalizedPath = normalizePath(input.featurePath);
+  const canonical = {
+    featurePath: normalizedPath,
+    kind: "outline-row" as const,
+    outlineSignature: input.outlineSignature,
+    outlineTitle: normalizeText(input.outlineTitle),
+    exampleIndex: input.exampleIndex,
+    rowIndex: input.rowIndex,
+    rowValues: input.rowValues.map(normalizeText),
+    steps: normalizeSteps(input.steps),
+    backgroundSteps: normalizeSteps(input.backgroundSteps ?? []),
+  } as const;
+
+  const json = JSON.stringify(canonical);
+  const hash = createHash("sha256").update(json, "utf8").digest("hex");
+  // Use "row:" prefix to distinguish from outline signatures
+  return `autometa:row:${hash}`;
 }

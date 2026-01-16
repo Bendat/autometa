@@ -63,3 +63,83 @@ Autometa emits these event types:
 
 All events are delivered as an `EventEnvelope` with a monotonically increasing `sequence` field.
 
+## Dependency injection in listeners
+
+Event handlers receive a `resolve` function that provides access to the DI container. This allows listeners to use shared services without manual wiring.
+
+```ts title="src/support/autometa.events.ts"
+import { registerTestListener } from "@autometa/events";
+import { createToken } from "@autometa/injection";
+
+// Define or import your tokens
+const LoggerToken = createToken<Logger>("Logger");
+const MetricsToken = createToken<MetricsService>("Metrics");
+
+registerTestListener({
+  onScenarioStarted({ event, resolve }) {
+    const logger = resolve(LoggerToken);
+    const metrics = resolve(MetricsToken);
+
+    logger.info(`Starting: ${event.scenario.name}`);
+    metrics.increment("scenarios.started");
+  },
+
+  onStepCompleted({ event, resolve }) {
+    const metrics = resolve(MetricsToken);
+    metrics.timing("step.duration", event.metadata?.duration ?? 0);
+  },
+
+  onError({ event, resolve }) {
+    const logger = resolve(LoggerToken);
+    logger.error(`Error in ${event.phase}`, event.error);
+  },
+});
+```
+
+The `resolve` function uses the same container as your step definitions, so services registered there are available to listeners.
+
+## Event tags
+
+Events can be tagged for categorization and filtering. Tags are passed through the `EventEnvelope` and can be accessed by listeners.
+
+```ts title="src/support/autometa.events.ts"
+import { registerTestListener } from "@autometa/events";
+
+registerTestListener({
+  onScenarioStarted({ event, tags }) {
+    // Access tags passed with this event
+    if (tags.includes("smoke")) {
+      console.log(`[smoke-test] ${event.scenario.name}`);
+    }
+  },
+
+  onStepCompleted({ event, tags }) {
+    // Tags can be used for conditional logging or filtering
+    if (tags.includes("critical") && event.metadata?.status === "failed") {
+      // Alert on critical failures
+    }
+  },
+});
+```
+
+Tags are passed when emitting events via the `EventEmitter`:
+
+```ts
+import { EventEmitter } from "@autometa/events";
+
+const emitter = new EventEmitter(dispatcher);
+
+await emitter.scenarioStarted({
+  feature: featureRef,
+  scenario: scenarioRef,
+  pickle: pickle,
+  tags: ["smoke", "critical"], // Pass tags here
+});
+```
+
+Tags enable:
+- Conditional processing based on test type (smoke, regression, integration)
+- Filtering events for specific reporters or loggers
+- Routing events to different handlers based on category
+- Metadata-driven test execution strategies
+
