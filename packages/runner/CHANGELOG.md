@@ -1,5 +1,13 @@
 # @autometa/runner
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- @autometa/executor@1.0.0-rc.3
+- @autometa/assertions@1.0.0-rc.3
+- @autometa/coordinator@1.0.0-rc.3
+
 ## 1.0.0-rc.2
 
 ### Minor Changes
