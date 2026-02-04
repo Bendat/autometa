@@ -1,5 +1,11 @@
 # @autometa/assertions
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- @autometa/executor@1.0.0-rc.4
+
 ## 1.0.0-rc.3
 
 ### Patch Changes

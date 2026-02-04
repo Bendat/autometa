@@ -1,5 +1,14 @@
 # @autometa/playwright-loader
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- Updated dependencies [e5c286b0]
+  - @autometa/config@1.0.0-rc.3
+  - @autometa/playwright-executor@1.0.0-rc.4
+  - @autometa/runner@1.0.0-rc.4
+
 ## 1.0.0-rc.3
 
 ### Patch Changes

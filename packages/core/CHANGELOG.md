@@ -1,5 +1,18 @@
 # @autometa/core
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- e5c286b0: Add configurable directory-based scoping for hoisted feature files (while keeping `@scope(...)` as an override), and improve runner filtering behaviour when using native Vitest.
+- Updated dependencies [e5c286b0]
+  - @autometa/cli@1.0.0-rc.6
+  - @autometa/config@1.0.0-rc.3
+  - @autometa/executor@1.0.0-rc.4
+  - @autometa/runner@1.0.0-rc.4
+  - @autometa/assertions@1.0.0-rc.4
+  - @autometa/http@2.0.0-rc.4
+
 ## 1.0.0-rc.3
 
 ### Patch Changes
