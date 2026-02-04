@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 
 import type { ExecutorConfig } from "@autometa/config";
@@ -209,6 +209,185 @@ describe("runFeatures", () => {
       cacheDir,
       environment: "hoisted",
     });
+  });
+
+  it("selects the root steps environment for hoisted features by default", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["src/features/**/*.feature"],
+        steps: ["steps"],
+      },
+      modules: {
+        stepScoping: "scoped",
+        // Default behavior: hoisted features require @scope tags
+        hoistedFeatures: {
+          scope: "tag",
+        },
+        groups: {
+          api: {
+            root: "src/groups/api",
+            modules: ["example"],
+          },
+        },
+      },
+    };
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+
+    const featureAbs = join(cwd, "src", "features", "api", "example", "get-example.feature");
+    await fs.mkdir(dirname(featureAbs), { recursive: true });
+    await fs.writeFile(featureAbs, "Feature: Hoisted\n", "utf8");
+
+    // Provide at least one module file so the CLI imports the compiled bundle.
+    expandFilePatternsMock.mockImplementation(async (patterns: readonly string[]) => {
+      if (patterns.some((pattern) => String(pattern).includes(".feature"))) {
+        return [featureAbs];
+      }
+      return [join(cwd, "src", "groups", "api", "autometa.steps.ts")];
+    });
+
+    cucumberRunnerBuilderMock.mockReturnValue({
+      steps: () => ({
+        id: "fallback-env",
+        coordinateFeature: () => ({ register: vi.fn() }),
+        getPlan: () => ({
+          root: { id: "root", kind: "root", name: "root", mode: "default", tags: [], steps: [], hooks: [], children: [], pending: false },
+          stepsById: new Map(),
+          hooksById: new Map(),
+          scopesById: new Map(),
+        }),
+        Given: vi.fn(),
+        When: vi.fn(),
+        Then: vi.fn(),
+      }),
+    });
+
+    // Bundle exports root + group environments for selection.
+    await fs.writeFile(
+      bundlePath,
+      `
+        const META = Symbol.for("@autometa/runner:steps-environment-meta");
+        const makePlan = () => ({
+          root: { id: "root", kind: "root", name: "root", mode: "default", tags: [], steps: [], hooks: [], children: [], pending: false },
+          stepsById: new Map(),
+          hooksById: new Map(),
+          scopesById: new Map(),
+        });
+        const rootEnv = { id: "root-env", [META]: { kind: "root" }, coordinateFeature: () => ({ register() {} }), getPlan: makePlan, Given() {}, When() {}, Then() {} };
+        const apiEnv = { id: "api-env", [META]: { kind: "group", group: "api" }, coordinateFeature: () => ({ register() {} }), getPlan: makePlan, Given() {}, When() {}, Then() {} };
+        export default [rootEnv, apiEnv];
+      `,
+      "utf8"
+    );
+
+    parseGherkinMock.mockReturnValue({
+      name: "Hoisted feature",
+      tags: [],
+      elements: [],
+    });
+
+    await runFeatures({ cwd, mode: "standalone" });
+
+    // Without directory scoping or an @scope tag, this hoisted feature should resolve to "root".
+    expect(setStepsMock).toHaveBeenCalledWith(expect.objectContaining({ id: "root-env" }));
+  });
+
+  it("selects the group steps environment for directory-scoped hoisted features", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["src/features/**/*.feature"],
+        steps: ["steps"],
+      },
+      modules: {
+        stepScoping: "scoped",
+        hoistedFeatures: {
+          scope: "directory",
+          strict: true,
+        },
+        groups: {
+          api: {
+            root: "src/groups/api",
+            modules: ["example"],
+          },
+        },
+      },
+    };
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+
+    const featureAbs = join(cwd, "src", "features", "api", "example", "get-example.feature");
+    await fs.mkdir(dirname(featureAbs), { recursive: true });
+    await fs.writeFile(featureAbs, "Feature: Hoisted\n", "utf8");
+
+    expandFilePatternsMock.mockImplementation(async (patterns: readonly string[]) => {
+      if (patterns.some((pattern) => String(pattern).includes(".feature"))) {
+        return [featureAbs];
+      }
+      return [join(cwd, "src", "groups", "api", "autometa.steps.ts")];
+    });
+
+    cucumberRunnerBuilderMock.mockReturnValue({
+      steps: () => ({
+        id: "fallback-env",
+        coordinateFeature: () => ({ register: vi.fn() }),
+        getPlan: () => ({
+          root: { id: "root", kind: "root", name: "root", mode: "default", tags: [], steps: [], hooks: [], children: [], pending: false },
+          stepsById: new Map(),
+          hooksById: new Map(),
+          scopesById: new Map(),
+        }),
+        Given: vi.fn(),
+        When: vi.fn(),
+        Then: vi.fn(),
+      }),
+    });
+
+    await fs.writeFile(
+      bundlePath,
+      `
+        const META = Symbol.for("@autometa/runner:steps-environment-meta");
+        const makePlan = () => ({
+          root: { id: "root", kind: "root", name: "root", mode: "default", tags: [], steps: [], hooks: [], children: [], pending: false },
+          stepsById: new Map(),
+          hooksById: new Map(),
+          scopesById: new Map(),
+        });
+        const rootEnv = { id: "root-env", [META]: { kind: "root" }, coordinateFeature: () => ({ register() {} }), getPlan: makePlan, Given() {}, When() {}, Then() {} };
+        const apiEnv = { id: "api-env", [META]: { kind: "group", group: "api" }, coordinateFeature: () => ({ register() {} }), getPlan: makePlan, Given() {}, When() {}, Then() {} };
+        export default [rootEnv, apiEnv];
+      `,
+      "utf8"
+    );
+
+    parseGherkinMock.mockReturnValue({
+      name: "Hoisted feature",
+      tags: [],
+      elements: [],
+    });
+
+    await runFeatures({ cwd, mode: "standalone" });
+
+    expect(setStepsMock).toHaveBeenCalledWith(expect.objectContaining({ id: "api-env" }));
   });
 
   it("warns when explicit patterns are combined with module selection", async () => {

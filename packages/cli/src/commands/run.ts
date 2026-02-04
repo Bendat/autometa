@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { extname, relative, resolve as resolvePath } from "node:path";
+import { dirname, extname, relative, resolve as resolvePath } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { Command } from "commander";
@@ -67,6 +67,7 @@ const STEP_FILE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cj
 const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
 const FEATURE_FALLBACK_GLOB = "**/*.feature";
 const ROOT_LOAD_ORDER = ["parameterTypes", "support", "hooks", "app"];
+const GLOB_MAGIC_CHARACTERS = new Set(["*", "?", "[", "]", "{", "}", "(", ")", "!"]);
 
 function normalizeGlobLikePath(input: string): string {
   return input.replace(/\\/g, "/").replace(/^\.\//u, "");
@@ -79,6 +80,52 @@ function patternIsUnderRoot(pattern: string, root: string): boolean {
     return false;
   }
   return p === r || p.startsWith(`${r}/`);
+}
+
+function inferGlobBaseDirectory(pattern: string): string {
+  const normalized = normalizeGlobLikePath(pattern).replace(/^!/u, "");
+  for (let i = 0; i < normalized.length; i += 1) {
+    if (!GLOB_MAGIC_CHARACTERS.has(normalized[i] ?? "")) {
+      continue;
+    }
+
+    const prefix = normalized.slice(0, i);
+    const lastSlash = prefix.lastIndexOf("/");
+    if (lastSlash <= 0) {
+      return ".";
+    }
+    const base = prefix.slice(0, lastSlash);
+    return base || ".";
+  }
+
+  if (extname(normalized)) {
+    return dirname(normalized);
+  }
+
+  return normalized || ".";
+}
+
+function inferFeatureRootDirectories(
+  patterns: readonly string[] | undefined,
+  cwd: string
+): readonly string[] {
+  if (!patterns || patterns.length === 0) {
+    return [];
+  }
+
+  const roots = new Set<string>();
+  for (const entry of patterns) {
+    const trimmed = entry.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const base = hasGlobMagic(trimmed) ? inferGlobBaseDirectory(trimmed) : trimmed;
+    const resolved = resolvePath(cwd, base);
+    roots.add(resolved.replace(/\/+$/u, ""));
+  }
+
+  return Array.from(roots).sort((a, b) => b.length - a.length);
 }
 
 type ModuleDeclaration =
@@ -201,6 +248,61 @@ function resolveFileScope(fileAbs: string, groupIndex: readonly GroupIndexEntry[
   return { kind: "root" };
 }
 
+function resolveHoistedDirectoryScope(options: {
+  readonly featureAbsPath: string;
+  readonly hoistedFeatureRootsAbs: readonly string[];
+  readonly groupIndex: readonly GroupIndexEntry[];
+  readonly strict: boolean;
+}): FileScope {
+  const rootAbs = options.hoistedFeatureRootsAbs.find((root) =>
+    isPathUnderRoot(options.featureAbsPath, root)
+  );
+  if (!rootAbs) {
+    return { kind: "root" };
+  }
+
+  const rel = relative(rootAbs, options.featureAbsPath);
+  const segments = normalizePathSegments(rel);
+  const dirSegments = segments.slice(0, -1);
+  if (dirSegments.length === 0) {
+    return { kind: "root" };
+  }
+
+  const group = dirSegments[0];
+  if (!group) {
+    return { kind: "root" };
+  }
+
+  const groupEntry = options.groupIndex.find((entry) => entry.group === group);
+  if (!groupEntry) {
+    if (options.strict) {
+      throw new Error(
+        `[autometa] Feature "${options.featureAbsPath}" is under "${rootAbs}" and implies group "${group}", but "${group}" is not declared in config.modules.groups.`
+      );
+    }
+    return { kind: "root" };
+  }
+
+  const moduleSegments = dirSegments.slice(1);
+  if (moduleSegments.length === 0) {
+    return { kind: "group", group };
+  }
+
+  for (const modulePath of groupEntry.modulePaths) {
+    if (startsWithSegments(moduleSegments, modulePath)) {
+      return { kind: "module", group, modulePath };
+    }
+  }
+
+  if (options.strict) {
+    throw new Error(
+      `[autometa] Feature "${options.featureAbsPath}" is under "${rootAbs}" and implies module "${group}:${moduleSegments.join(":")}", but no matching module is declared in config.modules.groups.${group}.modules.`
+    );
+  }
+
+  return { kind: "group", group };
+}
+
 function parseScopeOverrideTag(tags: readonly string[] | undefined):
   | { readonly group: string; readonly modulePath?: readonly string[] }
   | undefined {
@@ -235,11 +337,16 @@ function parseScopeOverrideTag(tags: readonly string[] | undefined):
 }
 
 function resolveFeatureScope(
-  featureAbsPath: string,
-  feature: SimpleFeature,
-  groupIndex: readonly GroupIndexEntry[]
+  options: {
+    readonly featureAbsPath: string;
+    readonly feature: SimpleFeature;
+    readonly groupIndex: readonly GroupIndexEntry[];
+    readonly hoistedFeatureRootsAbs: readonly string[];
+    readonly hoistedFeatureScopingMode: "tag" | "directory";
+    readonly hoistedFeatureScopingStrict: boolean;
+  }
 ): FileScope {
-  const override = parseScopeOverrideTag(feature.tags);
+  const override = parseScopeOverrideTag(options.feature.tags);
   if (override) {
     if (override.modulePath && override.modulePath.length > 0) {
       return { kind: "module", group: override.group, modulePath: override.modulePath };
@@ -247,7 +354,21 @@ function resolveFeatureScope(
     return { kind: "group", group: override.group };
   }
 
-  return resolveFileScope(featureAbsPath, groupIndex);
+  const fileScope = resolveFileScope(options.featureAbsPath, options.groupIndex);
+  if (fileScope.kind !== "root") {
+    return fileScope;
+  }
+
+  if (options.hoistedFeatureScopingMode !== "directory") {
+    return fileScope;
+  }
+
+  return resolveHoistedDirectoryScope({
+    featureAbsPath: options.featureAbsPath,
+    hoistedFeatureRootsAbs: options.hoistedFeatureRootsAbs,
+    groupIndex: options.groupIndex,
+    strict: options.hoistedFeatureScopingStrict,
+  });
 }
 
 function isVisibleStepScope(stepScope: FileScope, featureScope: FileScope): boolean {
@@ -397,6 +518,7 @@ function createFeatureScopePlan<World>(
     readonly cwd: string;
     readonly config: ExecutorConfig;
     readonly groupIndex: readonly GroupIndexEntry[];
+    readonly hoistedFeatureRootsAbs: readonly string[];
   }
 ): ScopePlan<World> {
   const scopingMode = options.config.modules?.stepScoping ?? "global";
@@ -405,7 +527,14 @@ function createFeatureScopePlan<World>(
   // Get all steps from base plan as an array for convenience
   const allSteps = Array.from(basePlan.stepsById.values());
   const featureFileScope = useScopedSteps
-    ? resolveFeatureScope(options.featureAbsPath, feature, options.groupIndex)
+    ? resolveFeatureScope({
+        featureAbsPath: options.featureAbsPath,
+        feature,
+        groupIndex: options.groupIndex,
+        hoistedFeatureRootsAbs: options.hoistedFeatureRootsAbs,
+        hoistedFeatureScopingMode: options.config.modules?.hoistedFeatures?.scope ?? "tag",
+        hoistedFeatureScopingStrict: options.config.modules?.hoistedFeatures?.strict ?? true,
+      })
     : ({ kind: "root" } as const);
 
   const visibleSteps = useScopedSteps
@@ -719,6 +848,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
 
   const groupIndex = buildGroupIndex(executorConfig, cwd);
   const environmentIndex = indexStepsEnvironments(stepsEnvironments, cwd, groupIndex);
+  const hoistedFeatureRootsAbs = inferFeatureRootDirectories(executorConfig.roots.features, cwd);
 
   for (const featurePath of featureFiles) {
     const feature = await readFeatureFile(featurePath, cwd);
@@ -727,7 +857,9 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
       featureAbsPath,
       feature,
       environmentIndex,
-      groupIndex
+      groupIndex,
+      executorConfig,
+      hoistedFeatureRootsAbs
     );
 
     // Keep legacy compatibility for any code that relies on CucumberRunner.steps().
@@ -739,6 +871,7 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
       cwd,
       config: executorConfig,
       groupIndex,
+      hoistedFeatureRootsAbs,
     });
     const coordinated = selectedStepsEnvironment.coordinateFeature({
       feature,
@@ -886,9 +1019,18 @@ function resolveFeatureStepsEnvironment(
   featureAbsPath: string,
   feature: SimpleFeature,
   environments: readonly StepsEnvironmentIndexEntry[],
-  groupIndex: readonly GroupIndexEntry[]
+  groupIndex: readonly GroupIndexEntry[],
+  config: ExecutorConfig,
+  hoistedFeatureRootsAbs: readonly string[]
 ): RunnerStepsSurface<GlobalWorld> {
-  const featureScope = resolveFeatureScope(featureAbsPath, feature, groupIndex);
+  const featureScope = resolveFeatureScope({
+    featureAbsPath,
+    feature,
+    groupIndex,
+    hoistedFeatureRootsAbs,
+    hoistedFeatureScopingMode: config.modules?.hoistedFeatures?.scope ?? "tag",
+    hoistedFeatureScopingStrict: config.modules?.hoistedFeatures?.strict ?? true,
+  });
   if (featureScope.kind === "root") {
     const root = environments.find((entry) => entry.kind === "root");
     return root?.environment ?? environments[0]?.environment ?? CucumberRunner.steps<GlobalWorld>();

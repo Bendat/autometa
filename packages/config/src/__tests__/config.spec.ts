@@ -388,6 +388,35 @@ describe("defineConfig", () => {
     expect(resolved.config.roots.steps).toEqual(["steps"]);
   });
 
+  it("preserves module scoping settings in resolved config", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        roots: {
+          features: ["features"],
+          steps: ["steps"],
+        },
+        modules: {
+          stepScoping: "scoped",
+          hoistedFeatures: {
+            scope: "directory",
+            strict: true,
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve();
+    expect(resolved.config.modules?.stepScoping).toBe("scoped");
+    expect(resolved.config.modules?.hoistedFeatures).toEqual({ scope: "directory", strict: true });
+  });
+
   it("throws when module filters are used without relativeRoots", () => {
     const config = defineConfig({
       default: {
