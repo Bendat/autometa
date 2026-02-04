@@ -728,6 +728,17 @@ const cloneGroups = (
 const cloneModules = (modules: ModulesConfig): ModulesConfig => {
   const clone: ModulesConfig = {};
 
+  if (modules.stepScoping) {
+    clone.stepScoping = modules.stepScoping;
+  }
+
+  if (modules.hoistedFeatures) {
+    clone.hoistedFeatures = {
+      ...(modules.hoistedFeatures.scope ? { scope: modules.hoistedFeatures.scope } : {}),
+      ...(modules.hoistedFeatures.strict !== undefined ? { strict: modules.hoistedFeatures.strict } : {}),
+    };
+  }
+
   if (modules.relativeRoots) {
     clone.relativeRoots = cloneRootRecord(modules.relativeRoots);
   }

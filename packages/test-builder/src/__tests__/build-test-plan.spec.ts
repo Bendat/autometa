@@ -146,6 +146,45 @@ describe("buildTestPlan", () => {
     expect(scenarioExecution.result.status).toBe("pending");
   });
 
+  it("allows reusing the same step definition multiple times", () => {
+    const noop = vi.fn();
+    const scopes = createScopes<TestWorld>();
+    const { feature, scenario, then } = scopes;
+
+    feature("Reuse feature", () => {
+      scenario("reuses step definition", () => {
+        then("my {string} request succeeded with {string}", noop);
+      });
+    });
+
+    const plan = scopes.plan();
+    const adapter = createExecutionAdapter(plan);
+
+    const simpleScenario = createScenario("scenario-1", "reuses step definition", [
+      createStep("step-1", "And", "my 'Create Example' request succeeded with 'CREATED'"),
+      createStep("step-2", "Then", "my 'View Example' request succeeded with 'OK'"),
+    ]);
+
+    const featureNode: SimpleFeature = {
+      id: "feature-1",
+      keyword: "Feature",
+      language: "en",
+      name: "Reuse feature",
+      description: "",
+      tags: [],
+      elements: [simpleScenario],
+      comments: [],
+      location: { line: 1, column: 1 },
+    };
+
+    const testPlan = buildTestPlan({ feature: featureNode, adapter });
+    const [scenarioExecution] = testPlan.listExecutables();
+
+    expect(scenarioExecution.steps).toHaveLength(2);
+    expect(scenarioExecution.steps[0]?.expression).toBe("my {string} request succeeded with {string}");
+    expect(scenarioExecution.steps[1]?.expression).toBe("my {string} request succeeded with {string}");
+  });
+
   it("provides closest-step suggestions when gherkin has a typo", () => {
     const noop = vi.fn();
     const scopes = createScopes<TestWorld>();

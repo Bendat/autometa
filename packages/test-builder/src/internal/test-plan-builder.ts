@@ -508,7 +508,6 @@ export class TestPlanBuilder<World> {
       );
     }
 
-    const remaining = new Set(summary.steps);
     const ordered: StepDefinition<World>[] = [];
     const matchers = new Map<StepDefinition<World>, StepMatcher>();
     let encounteredMissing = false;
@@ -517,7 +516,6 @@ export class TestPlanBuilder<World> {
       const matched = this.findMatchingStepDefinition(
         step,
         summary.steps,
-        remaining,
         matchers
       );
 
@@ -535,7 +533,6 @@ export class TestPlanBuilder<World> {
       }
 
       ordered.push(matched);
-      remaining.delete(matched);
     }
 
     // Note: It's normal for some step definitions to remain unused in a scenario.
@@ -551,7 +548,6 @@ export class TestPlanBuilder<World> {
   private findMatchingStepDefinition(
     step: SimpleStep,
     definitions: readonly StepDefinition<World>[],
-    remaining: Set<StepDefinition<World>>,
     matchers: Map<StepDefinition<World>, StepMatcher>
   ): StepDefinition<World> | undefined {
     const rawKeyword = normalizeKeyword(step.keyword ?? "");
@@ -559,9 +555,6 @@ export class TestPlanBuilder<World> {
     const keyword = wildcard ? undefined : normalizeGherkinStepKeyword(rawKeyword);
 
     const candidates = definitions.filter((definition) => {
-      if (!remaining.has(definition)) {
-        return false;
-      }
       if (wildcard) {
         return true;
       }

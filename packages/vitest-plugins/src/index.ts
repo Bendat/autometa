@@ -5,6 +5,7 @@ import type { Config } from "@autometa/config";
 import jiti from "jiti";
 
 const STEP_FALLBACK_GLOB = "**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}";
+const FEATURE_FALLBACK_GLOB = "**/*.feature";
 
 type ModuleDeclaration =
   | string
@@ -110,11 +111,17 @@ export function autometa(): Plugin {
 
       const runtimeConfig = JSON.stringify(resolved.config);
       const stepScopingMode = resolved.config.modules?.stepScoping ?? "global";
+      const hoistedFeatureScopingMode = resolved.config.modules?.hoistedFeatures?.scope ?? "tag";
+      const hoistedFeatureScopingStrict = resolved.config.modules?.hoistedFeatures?.strict ?? true;
 
       // Group/module index data is useful even when step scoping is disabled,
       // since we may need it to select the correct steps environment.
       const groupIndexData = buildStepScopingData(resolved.config, rootDir);
       const stepScopingData = stepScopingMode === "scoped" ? groupIndexData : null;
+      const featureRootDirs = buildFeatureRootDirs(resolved.config.roots.features, {
+        configDir,
+        projectRoot: rootDir,
+      });
 
       const featureFile = cleanId;
 
@@ -130,6 +137,9 @@ export function autometa(): Plugin {
             const __AUTOMETA_GROUP_INDEX = ${JSON.stringify(groupIndexData)};
             const __AUTOMETA_STEP_SCOPING = ${JSON.stringify(stepScopingData)};
             const __AUTOMETA_FEATURE_FILE = ${JSON.stringify(featureFile)};
+            const __AUTOMETA_HOISTED_FEATURE_SCOPING_MODE = ${JSON.stringify(hoistedFeatureScopingMode)};
+            const __AUTOMETA_HOISTED_FEATURE_SCOPING_STRICT = ${JSON.stringify(hoistedFeatureScopingStrict)};
+            const __AUTOMETA_HOISTED_FEATURE_ROOTS = ${JSON.stringify(featureRootDirs)};
 
             const __AUTOMETA_EVENT_MODULES = ${eventGlobs.length > 0
               ? `import.meta.glob(${JSON.stringify(eventGlobs)}, { eager: true })`
@@ -227,6 +237,107 @@ export function autometa(): Plugin {
               return true;
             }
 
+            function __isUnderRoot(fileAbs, rootAbs) {
+              const rel = rootAbs ? __pathRelative(String(rootAbs), String(fileAbs)) : '';
+              return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../') && !rel.startsWith('..\\'));
+            }
+
+            function __selectHoistedFeatureRoot(fileAbs) {
+              if (!Array.isArray(__AUTOMETA_HOISTED_FEATURE_ROOTS) || __AUTOMETA_HOISTED_FEATURE_ROOTS.length === 0) {
+                return undefined;
+              }
+
+              const absoluteFile = __pathIsAbsolute(String(fileAbs))
+                ? String(fileAbs)
+                : __pathResolve(process.cwd(), String(fileAbs));
+
+              let best;
+              for (const rootAbs of __AUTOMETA_HOISTED_FEATURE_ROOTS) {
+                if (!rootAbs) continue;
+                if (__isUnderRoot(absoluteFile, rootAbs)) {
+                  if (!best || String(rootAbs).length > String(best).length) {
+                    best = rootAbs;
+                  }
+                }
+              }
+              return best;
+            }
+
+            function __resolveHoistedDirectoryScope(fileAbs, groupIndexData) {
+              if (!groupIndexData || !Array.isArray(groupIndexData.groups)) {
+                return { kind: 'root' };
+              }
+
+              const rootAbs = __selectHoistedFeatureRoot(fileAbs);
+              if (!rootAbs) {
+                return { kind: 'root' };
+              }
+
+              const absoluteFile = __pathIsAbsolute(String(fileAbs))
+                ? String(fileAbs)
+                : __pathResolve(process.cwd(), String(fileAbs));
+
+              const rel = __pathRelative(String(rootAbs), String(absoluteFile));
+              const segments = __normalizePathSegments(rel);
+              const dirSegments = segments.slice(0, -1);
+              if (dirSegments.length === 0) {
+                return { kind: 'root' };
+              }
+
+              const group = dirSegments[0];
+              if (!group) {
+                return { kind: 'root' };
+              }
+
+              const groupEntry = groupIndexData.groups.find((entry) => entry && entry.group === group);
+              if (!groupEntry) {
+                if (__AUTOMETA_HOISTED_FEATURE_SCOPING_STRICT) {
+                  throw new Error(
+                    '[autometa] Feature "' +
+                      absoluteFile +
+                      '" is under "' +
+                      rootAbs +
+                      '" and implies group "' +
+                      group +
+                      '", but "' +
+                      group +
+                      '" is not declared in config.modules.groups.'
+                  );
+                }
+                return { kind: 'root' };
+              }
+
+              const moduleSegments = dirSegments.slice(1);
+              if (moduleSegments.length === 0) {
+                return { kind: 'group', group };
+              }
+
+              const modulePaths = groupEntry.modulePaths || [];
+              for (const modulePath of modulePaths) {
+                if (__startsWithSegments(moduleSegments, modulePath)) {
+                  return { kind: 'module', group, modulePath };
+                }
+              }
+
+              if (__AUTOMETA_HOISTED_FEATURE_SCOPING_STRICT) {
+                throw new Error(
+                  '[autometa] Feature "' +
+                    absoluteFile +
+                    '" is under "' +
+                    rootAbs +
+                    '" and implies module "' +
+                    group +
+                    ':' +
+                    moduleSegments.join(':') +
+                    '", but no matching module is declared in config.modules.groups.' +
+                    group +
+                    '.modules.'
+                );
+              }
+
+              return { kind: 'group', group };
+            }
+
             function __resolveFileScope(fileAbs) {
               if (!__AUTOMETA_GROUP_INDEX || !__AUTOMETA_GROUP_INDEX.groups) {
                 return { kind: 'root' };
@@ -281,7 +392,14 @@ export function autometa(): Plugin {
                 }
                 return { kind: 'group', group: override.group };
               }
-              return __resolveFileScope(__AUTOMETA_FEATURE_FILE);
+              const fileScope = __resolveFileScope(__AUTOMETA_FEATURE_FILE);
+              if (fileScope.kind !== 'root') {
+                return fileScope;
+              }
+              if (__AUTOMETA_HOISTED_FEATURE_SCOPING_MODE !== 'directory') {
+                return fileScope;
+              }
+              return __resolveHoistedDirectoryScope(__AUTOMETA_FEATURE_FILE, __AUTOMETA_GROUP_INDEX);
             }
 
             function __inferEnvironmentGroup(environment) {
@@ -431,7 +549,14 @@ export function autometa(): Plugin {
                   }
                   return { kind: 'group', group: override.group };
                 }
-                return resolveFileScope(__AUTOMETA_FEATURE_FILE);
+                const fileScope = resolveFileScope(__AUTOMETA_FEATURE_FILE);
+                if (fileScope.kind !== 'root') {
+                  return fileScope;
+                }
+                if (__AUTOMETA_HOISTED_FEATURE_SCOPING_MODE !== 'directory') {
+                  return fileScope;
+                }
+                return __resolveHoistedDirectoryScope(__AUTOMETA_FEATURE_FILE, __AUTOMETA_STEP_SCOPING);
               }
 
               function isVisibleStepScope(stepScope, featureScope) {
@@ -617,6 +742,33 @@ interface StepGlobOptions {
   readonly projectRoot: string;
 }
 
+function buildFeatureRootDirs(
+  entries: readonly string[] | undefined,
+  options: StepGlobOptions
+): string[] {
+  if (!entries || entries.length === 0) {
+    return [];
+  }
+
+  const roots = new Set<string>();
+  for (const entry of entries) {
+    const normalized = entry.trim();
+    if (!normalized) {
+      continue;
+    }
+
+    for (const candidate of toPatterns(normalized, FEATURE_FALLBACK_GLOB)) {
+      const base = inferGlobBaseDirectory(candidate);
+      const absolute = isAbsolute(base)
+        ? normalizeSlashes(base)
+        : normalizeSlashes(resolve(options.configDir, base));
+      roots.add(absolute.replace(/\/+$/u, ""));
+    }
+  }
+
+  return Array.from(roots).sort((a, b) => b.length - a.length);
+}
+
 function buildStepGlobs(
   entries: readonly string[] | undefined,
   options: StepGlobOptions
@@ -649,6 +801,30 @@ function toPatterns(entry: string, fallbackGlob: string): string[] {
     return [entry];
   }
   return [appendGlob(entry, fallbackGlob)];
+}
+
+function inferGlobBaseDirectory(pattern: string): string {
+  const normalized = normalizeSlashes(pattern).replace(/^!/u, "");
+
+  for (let i = 0; i < normalized.length; i += 1) {
+    if (!hasGlobMagic(normalized[i] ?? "")) {
+      continue;
+    }
+
+    const prefix = normalized.slice(0, i);
+    const lastSlash = prefix.lastIndexOf("/");
+    if (lastSlash <= 0) {
+      return ".";
+    }
+    const base = prefix.slice(0, lastSlash);
+    return base || ".";
+  }
+
+  if (hasFileExtension(normalized)) {
+    return dirname(normalized);
+  }
+
+  return normalized || ".";
 }
 
 function hasGlobMagic(input: string): boolean {

@@ -1,0 +1,26 @@
+{
+  "name": "@autometa/examples-vitest-modules-scoping",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:tags": "AUTOMETA_HOISTED_SCOPE=tag vitest run --config vitest.tags.config.ts",
+    "test:directory": "AUTOMETA_HOISTED_SCOPE=directory vitest run --config vitest.directory.config.ts",
+    "type-check": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@autometa/core": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/runner": "workspace:*",
+    "@autometa/scopes": "workspace:*",
+    "@autometa/vitest-executor": "workspace:*",
+    "@autometa/vitest-plugins": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "18.19.24",
+    "typescript": "5.4.5",
+    "vite": "^5.0.0",
+    "vitest": "1.4.0"
+  }
+}
+

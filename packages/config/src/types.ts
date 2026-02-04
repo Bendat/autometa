@@ -16,7 +16,8 @@ import type {
 	SourceMapSetting,
 } from "./builder-types";
 
-export type ExecutorConfig = z.infer<typeof ExecutorConfigSchema>;
+export type ExecutorConfig = z.output<typeof ExecutorConfigSchema>;
+export type ExecutorConfigInput = z.input<typeof ExecutorConfigSchema>;
 export type PartialExecutorConfig = z.infer<typeof PartialExecutorConfigSchema>;
 export type PartialRootsConfig = z.infer<typeof PartialRootSchema>;
 export type ModulesConfig = z.infer<typeof ModulesConfigSchema>;
@@ -34,7 +35,7 @@ export type LoggingConfig = ExecutorConfig["logging"];
 export type ReporterConfig = ExecutorConfig["reporting"];
 
 export interface ConfigDefinitionInput {
-	default: ExecutorConfig;
+	default: ExecutorConfigInput;
 	environments?: Record<string, PartialExecutorConfig | undefined>;
 	environment?: (selector: EnvironmentSelector) => void;
 }

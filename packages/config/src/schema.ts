@@ -85,6 +85,12 @@ const ModuleDeclarationSchema: z.ZodType<ModuleDeclaration> = z.lazy(() =>
 
 export const ModulesConfigSchema = z.object({
   stepScoping: z.enum(["global", "scoped"]).optional(),
+  hoistedFeatures: z
+    .object({
+      scope: z.enum(["tag", "directory"]).optional(),
+      strict: z.boolean().optional(),
+    })
+    .optional(),
   relativeRoots: PartialRootSchema.optional(),
   groups: z
     .record(
@@ -129,13 +135,63 @@ export const BuilderConfigSchema: z.ZodType<BuilderConfig> = z
 export const ExecutorConfigSchema = z.object({
   runner: RunnerSchema,
   test: TestSchema.optional(),
-  roots: RootSchema,
+  roots: RootSchema.optional(),
   modules: ModulesConfigSchema.optional(),
   shim: ShimSchema.optional(),
   events: EventsSchema.optional(),
   builder: BuilderConfigSchema.optional(),
   logging: LoggingSchema.optional(),
   reporting: ReporterSchema.optional(),
+}).superRefine((value, ctx) => {
+  if (value.roots) {
+    return;
+  }
+
+  const modules = value.modules;
+  if (!modules) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["roots"],
+      message: '"roots" is required unless "modules.relativeRoots" defines at least "features" and "steps".',
+    });
+    return;
+  }
+
+  const declaredModules =
+    (modules.explicit?.some((entry) => entry.trim().length > 0) ?? false) ||
+    (modules.groups ? Object.keys(modules.groups).length > 0 : false);
+
+  if (!declaredModules) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["modules"],
+      message:
+        'When omitting "roots", at least one module must be declared via "modules.groups" or "modules.explicit".',
+    });
+  }
+
+  const relativeRoots = modules.relativeRoots;
+  const hasFeatures =
+    !!relativeRoots && Array.isArray(relativeRoots.features) && relativeRoots.features.length > 0;
+  const hasSteps =
+    !!relativeRoots && Array.isArray(relativeRoots.steps) && relativeRoots.steps.length > 0;
+
+  if (!hasFeatures || !hasSteps) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["modules", "relativeRoots"],
+      message:
+        'When omitting "roots", "modules.relativeRoots" must include non-empty "features" and "steps" entries.',
+    });
+  }
+}).transform((value) => {
+  return {
+    ...value,
+    roots: value.roots ?? {
+      features: [],
+      steps: [],
+    },
+  };
 });
 
 export const PartialExecutorConfigSchema = z.object({
