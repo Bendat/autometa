@@ -264,6 +264,28 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
+  examples/modules-optional-roots:
+    dependencies:
+      '@autometa/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../../packages/gherkin
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../../packages/runner
+    devDependencies:
+      '@autometa/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@types/node':
+        specifier: 18.19.24
+        version: 18.19.24
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+
   examples/playwright-functions:
     dependencies:
       '@autometa/assertions':
@@ -480,6 +502,40 @@ importers:
       '@autometa/cli':
         specifier: workspace:*
         version: link:../../packages/cli
+      '@types/node':
+        specifier: 18.19.24
+        version: 18.19.24
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.0.0
+        version: 5.1.6(@types/node@18.19.24)(terser@5.16.6)
+      vitest:
+        specifier: 1.4.0
+        version: 1.4.0(@types/node@18.19.24)(terser@5.16.6)
+
+  examples/vitest-modules-scoping:
+    dependencies:
+      '@autometa/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@autometa/gherkin':
+        specifier: workspace:*
+        version: link:../../packages/gherkin
+      '@autometa/runner':
+        specifier: workspace:*
+        version: link:../../packages/runner
+      '@autometa/scopes':
+        specifier: workspace:*
+        version: link:../../packages/scopes
+      '@autometa/vitest-executor':
+        specifier: workspace:*
+        version: link:../../packages/vitest-executor
+      '@autometa/vitest-plugins':
+        specifier: workspace:*
+        version: link:../../packages/vitest-plugins
+    devDependencies:
       '@types/node':
         specifier: 18.19.24
         version: 18.19.24
