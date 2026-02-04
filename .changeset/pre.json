@@ -46,13 +46,16 @@
     "@autometa/vitest-executor": "0.0.0",
     "@autometa/vitest-plugins": "0.0.0",
     "@autometa/core": "1.0.0-rc.1",
-    "@autometa/examples-events-di-tags": "0.1.0"
+    "@autometa/examples-events-di-tags": "0.1.0",
+    "@autometa/examples-modules-optional-roots": "0.1.0",
+    "@autometa/examples-vitest-modules-scoping": "0.1.0"
   },
   "changesets": [
     "bindings-expose-ensure",
     "cli-config-discovery-upgrade",
     "event-envelope-enhancements",
     "fix-publish-workflow",
+    "hoisted-feature-directory-scoping",
     "http-transform",
     "introduce-core-and-playwright-fixes",
     "publish-rc0",
@@ -60,6 +63,7 @@
     "runner-assertion-plugins-derivable",
     "seven-phones-dream",
     "table-keys-and-providers",
+    "test-builder-allow-step-reuse",
     "testrail-cucumber-fixes",
     "v1-rewrite-release-candidate"
   ]

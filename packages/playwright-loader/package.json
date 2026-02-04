@@ -1,6 +1,6 @@
 {
   "name": "@autometa/playwright-loader",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "description": "Node.js loader for Autometa - transforms .feature files for Playwright",
   "type": "module",
   "main": "dist/index.cjs",

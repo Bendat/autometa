@@ -1,5 +1,11 @@
 # @autometa/test-builder
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- 7358725f: Allow the same step definition to be matched and executed multiple times within a scenario (e.g. when reused in a Background and later steps).
+
 ## 1.0.0-rc.2
 
 ### Patch Changes
