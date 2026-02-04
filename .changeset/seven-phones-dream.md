@@ -1,6 +1,5 @@
 ---
 "@autometa/testrail-cucumber": minor
-"@autometa/examples-events-di-tags": minor
 "@autometa/events": minor
 ---
 
