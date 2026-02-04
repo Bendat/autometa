@@ -10,11 +10,14 @@
   "ignore": [
     "@autometa/documentation",
     "@autometa/examples-api",
+    "@autometa/examples-events-di-tags",
     "@autometa/examples-jest-functions",
+    "@autometa/examples-modules-optional-roots",
     "@autometa/examples-playwright-functions",
     "@autometa/examples-runner-composition",
     "@autometa/examples-vitest-decorators",
     "@autometa/examples-vitest-functions",
+    "@autometa/examples-vitest-modules-scoping",
     "@autometa/module-examples"
   ]
 }
