@@ -1,0 +1,20 @@
+{
+  "name": "@autometa/examples-modules-optional-roots",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "AUTOMETA_CACHE_DIR=.autometa-cache autometa run --standalone -g backoffice && AUTOMETA_CACHE_DIR=.autometa-cache autometa run --standalone -g backoffice -m reports && AUTOMETA_CACHE_DIR=.autometa-cache autometa run --standalone -g backoffice -m orders",
+    "type-check": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@autometa/core": "workspace:*",
+    "@autometa/gherkin": "workspace:*",
+    "@autometa/runner": "workspace:*"
+  },
+  "devDependencies": {
+    "@autometa/cli": "workspace:*",
+    "@types/node": "18.19.24",
+    "typescript": "5.4.5"
+  }
+}
