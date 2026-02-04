@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 
 import type { ExecutorConfig } from "@autometa/config";
+import { expandFilePatterns } from "../utils/glob";
 
 export type RunnerType = "vitest" | "jest" | "playwright" | "default";
 
@@ -18,6 +19,8 @@ export interface OrchestratorOptions {
   readonly dryRun?: boolean;
   readonly watch?: boolean;
   readonly verbose?: boolean;
+  readonly groups: readonly string[] | undefined;
+  readonly modules: readonly string[] | undefined;
 }
 
 export interface OrchestratorResult {
@@ -56,27 +59,172 @@ export function detectRunner(config: ExecutorConfig, cwd: string): RunnerType {
   return "default";
 }
 
+interface FilterPatternsOptions {
+  readonly patterns: readonly string[];
+  readonly groups: readonly string[] | undefined;
+  readonly modules: readonly string[] | undefined;
+  readonly config: ExecutorConfig;
+  readonly cwd: string;
+  readonly verbose: boolean;
+}
+
+function normalizeGlobLikePath(input: string): string {
+  return input.replace(/\\/g, "/").replace(/^\.\//u, "");
+}
+
+function patternIsUnderRoot(pattern: string, root: string): boolean {
+  const p = normalizeGlobLikePath(pattern);
+  const r = normalizeGlobLikePath(root).replace(/\/+$/u, "");
+  if (!r) {
+    return false;
+  }
+  return p === r || p.startsWith(`${r}/`);
+}
+
+/**
+ * Filters feature patterns based on group and module selection.
+ * This ensures that -g and -m flags work with native runners (vitest/jest).
+ */
+function filterPatternsByGroupsAndModules(options: FilterPatternsOptions): readonly string[] {
+  const { patterns, groups, modules, config, verbose } = options;
+
+  const hasGroupSelection = (groups?.length ?? 0) > 0;
+  const hasModuleSelection = (modules?.length ?? 0) > 0;
+  const hasAnySelection = hasGroupSelection || hasModuleSelection;
+  const hasExplicitPatterns = patterns.length > 0;
+
+  // If explicit patterns are provided, use them (with optional warning)
+  if (hasExplicitPatterns) {
+    if (hasAnySelection && verbose) {
+      const shouldWarn = (() => {
+        const configGroups = config.modules?.groups;
+        if (!configGroups) {
+          return true;
+        }
+
+        // If groups were explicitly selected, only warn if patterns extend beyond group roots
+        if (hasGroupSelection) {
+          const allowedGroups = new Set(groups);
+          const allowedRoots = Object.entries(configGroups)
+            .filter(([group]) => allowedGroups.has(group))
+            .map(([, groupConfig]) => groupConfig.root);
+
+          if (allowedRoots.length > 0) {
+            return patterns.some((pattern) =>
+              !allowedRoots.some((root) => patternIsUnderRoot(pattern, root))
+            );
+          }
+        }
+
+        return true;
+      })();
+
+      if (shouldWarn) {
+        console.warn(
+          "[autometa] Note: when you pass explicit feature patterns, they are used as-is. " +
+            "Group/module filters (-g/-m) affect module/step loading, but do not automatically filter your feature patterns."
+        );
+      }
+    }
+    return patterns;
+  }
+
+  // No explicit patterns - derive from config roots
+  const roots = [...config.roots.features];
+
+  // If group/module selection is active, filter to only those group/module paths
+  if (hasAnySelection && config.modules?.groups) {
+    const allowedGroups = hasGroupSelection
+      ? new Set(groups)
+      : new Set(Object.keys(config.modules.groups));
+
+    // Build module-specific patterns if modules are specified
+    if (hasModuleSelection && modules && modules.length > 0) {
+      const modulePatterns: string[] = [];
+      const relativeRoots = config.modules.relativeRoots?.features ?? ['.features/**/*.feature'];
+
+      for (const [groupName, groupConfig] of Object.entries(config.modules.groups)) {
+        if (!allowedGroups.has(groupName)) {
+          continue;
+        }
+
+        const groupRoot = groupConfig.root;
+        const groupModules = groupConfig.modules ?? [];
+
+        for (const moduleName of modules) {
+          // Check if this module exists in this group
+          const moduleExists = Array.isArray(groupModules) && groupModules.some((m) => {
+            if (typeof m === 'string') {
+              return m === moduleName || m.endsWith(`/${moduleName}`) || m.endsWith(`:${moduleName}`);
+            }
+            return false;
+          });
+
+          if (moduleExists) {
+            // Build module-specific pattern: <groupRoot>/<moduleName>/<relativeRoot>
+            for (const relativeRoot of relativeRoots) {
+              const normalizedRelative = relativeRoot.replace(/^\.\//, '');
+              const modulePath = join(groupRoot, moduleName, normalizedRelative);
+              modulePatterns.push(modulePath);
+            }
+          }
+        }
+      }
+
+      if (modulePatterns.length > 0) {
+        return modulePatterns;
+      }
+    }
+
+    // No module-specific filtering - just filter by group roots
+    const allowedRoots = Object.entries(config.modules.groups)
+      .filter(([group]) => allowedGroups.has(group))
+      .map(([, groupConfig]) => groupConfig.root);
+
+    const filtered = roots.filter((pattern) =>
+      allowedRoots.some((root) => patternIsUnderRoot(pattern, root))
+    );
+
+    // If filtering worked, use filtered patterns
+    if (filtered.length > 0) {
+      return filtered;
+    }
+  }
+
+  return roots;
+}
+
 /**
  * Smart Orchestrator that delegates to native test runners.
- * 
+ *
  * This is the "One Command to Rule Them All" - users run `autometa run`
  * and we intelligently delegate to Vitest, Jest, or our standalone runtime.
  */
 export async function orchestrate(options: OrchestratorOptions): Promise<OrchestratorResult> {
-  const { cwd, config, patterns = [], runnerArgs = [], dryRun = false, watch = false, verbose = false } = options;
+  const { cwd, config, patterns = [], runnerArgs = [], dryRun = false, watch = false, verbose = false, groups, modules } = options;
   const runner = detectRunner(config, cwd);
 
   if (verbose) {
     console.log(`[autometa] Detected runner: ${runner}`);
   }
 
+  // Apply group/module filtering to patterns
+  const filteredPatterns = filterPatternsByGroupsAndModules({
+    patterns,
+    groups,
+    modules,
+    config,
+    cwd,
+    verbose,
+  });
+
   switch (runner) {
     case "vitest":
-      return spawnVitest({ cwd, patterns, runnerArgs, dryRun, watch, verbose });
+      return spawnVitest({ cwd, patterns: filteredPatterns, runnerArgs, dryRun, watch, verbose });
     case "jest":
-      return spawnJest({ cwd, patterns, runnerArgs, dryRun, watch, verbose });
+      return spawnJest({ cwd, patterns: filteredPatterns, runnerArgs, dryRun, watch, verbose });
     case "playwright":
-      return spawnPlaywright({ cwd, patterns, runnerArgs, dryRun, watch, verbose });
+      return spawnPlaywright({ cwd, patterns: filteredPatterns, runnerArgs, dryRun, watch, verbose });
     case "default":
       // Return indicator that we should use the standalone runtime
       return { success: true, exitCode: 0, runner: "default" };
@@ -107,8 +255,10 @@ async function spawnVitest(options: SpawnRunnerOptions): Promise<OrchestratorRes
 
   // Add pattern filters if provided
   if (patterns.length > 0) {
-    // Vitest accepts file patterns directly
-    args.push(...patterns);
+    // Vitest CLI filters are regex-like; glob patterns (e.g. **/*.feature) won't match.
+    // Expand globs to concrete file paths so -g/-m selection works reliably.
+    const expanded = await expandFilePatterns(patterns, cwd);
+    args.push(...(expanded.length > 0 ? expanded : patterns));
   }
 
   // Dry run mode (vitest doesn't have native dry-run, but we can use --passWithNoTests)

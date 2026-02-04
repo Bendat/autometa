@@ -20,10 +20,10 @@ jobs:
     # 1. Manually triggered, OR
     # 2. Publish workflow succeeded AND it's from the same repository (not a fork)
     if: >-
-      ${{ github.event_name == 'workflow_dispatch' || 
-          (github.event_name == 'workflow_run' && 
-           github.event.workflow_run.conclusion == 'success' &&
-           github.event.workflow_run.repository.full_name == github.repository) }}
+      github.event_name == 'workflow_dispatch' || 
+      (github.event_name == 'workflow_run' && 
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.repository.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - name: Resolve checkout ref

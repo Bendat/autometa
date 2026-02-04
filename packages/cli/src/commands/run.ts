@@ -577,6 +577,8 @@ export async function runFeatures(options: RunCommandOptions = {}): Promise<RunC
       ...(options.dryRun !== undefined ? { dryRun: options.dryRun } : {}),
       ...(options.watch !== undefined ? { watch: options.watch } : {}),
       ...(options.verbose !== undefined ? { verbose: options.verbose } : {}),
+      groups: options.groups,
+      modules: options.modules,
     });
 
     // If a native runner was used (vitest/jest), return its result

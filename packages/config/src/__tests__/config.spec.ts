@@ -162,6 +162,31 @@ describe("defineConfig", () => {
     ]);
   });
 
+  it("allows omitting roots when module relativeRoots provide features and steps", () => {
+    const config = defineConfig({
+      default: {
+        runner: "vitest" as const,
+        modules: {
+          relativeRoots: {
+            features: [".features"],
+            steps: ["steps"],
+          },
+          groups: {
+            backoffice: {
+              root: "apps/backoffice",
+              modules: ["reports"],
+            },
+          },
+        },
+      },
+    });
+
+    const resolved = config.resolve();
+
+    expect(resolved.config.roots.features).toEqual(["apps/backoffice/reports/.features"]);
+    expect(resolved.config.roots.steps).toEqual(["apps/backoffice/reports/steps"]);
+  });
+
   it("filters modules when module selectors are provided", () => {
     const config = defineConfig({
       default: {
@@ -385,6 +410,24 @@ describe("defineConfig", () => {
     expect(() => config.resolve({ groups: ["backoffice"], modules: ["reports"] })).toThrowError(
       AutomationError
     );
+  });
+
+  it("throws when roots are omitted without module relativeRoots", () => {
+    expect(() =>
+      defineConfig({
+        default: {
+          runner: "vitest" as const,
+          modules: {
+            groups: {
+              backoffice: {
+                root: "apps/backoffice",
+                modules: ["reports"],
+              },
+            },
+          },
+        },
+      })
+    ).toThrow();
   });
 
   it("allows hoisted features while expanding only module-relative steps", () => {

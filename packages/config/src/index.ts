@@ -21,6 +21,7 @@ export type {
   ConfigDefinition,
   ConfigDefinitionInput,
   ExecutorConfig,
+  ExecutorConfigInput,
   PartialExecutorConfig,
   BuilderConfig,
   BuilderHooks,
