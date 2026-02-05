@@ -102,7 +102,7 @@ With this shape, Autometa can:
 
 ## 4) Scoping hoisted features into a module
 
-If a feature file lives outside any group/module folder, you can still opt into scoped steps:
+If a feature file lives outside any group/module folder (“hoisted”), you can still opt into scoped steps.
 
 ```gherkin
 @scope(backoffice:reports)
@@ -110,6 +110,28 @@ Feature: ...
 ```
 
 That matches the tag parser used by the CLI (`@scope:<...>`, `@scope=<...>`, or `@scope(<...>)`).
+
+### Hoisted feature scoping modes
+
+By default, hoisted features **must** declare scope via `@scope(...)`. You can configure this:
+
+```ts title="autometa.config.ts"
+export default defineConfig({
+  default: {
+    modules: {
+      hoistedFeatures: {
+        // "tag" (default): hoisted features need @scope(...)
+        // "directory": infer group/module from the feature's directory under roots.features
+        scope: "tag",
+        // When true (default), error if inference doesn't match a declared group/module
+        strict: true,
+      },
+    },
+  },
+});
+```
+
+Note: `@scope(<group>)` assigns the feature to a group, but it does **not** intentionally “downgrade” a feature that already lives under a module directory (path-based module inference still applies).
 
 ## 5) CLI workflow
 

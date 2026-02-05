@@ -347,28 +347,42 @@ function resolveFeatureScope(
   }
 ): FileScope {
   const override = parseScopeOverrideTag(options.feature.tags);
+  const fileScope = resolveFileScope(options.featureAbsPath, options.groupIndex);
+  const inferred = (() => {
+    if (fileScope.kind !== "root") {
+      return fileScope;
+    }
+
+    if (options.hoistedFeatureScopingMode !== "directory") {
+      return fileScope;
+    }
+
+    return resolveHoistedDirectoryScope({
+      featureAbsPath: options.featureAbsPath,
+      hoistedFeatureRootsAbs: options.hoistedFeatureRootsAbs,
+      groupIndex: options.groupIndex,
+      strict: options.hoistedFeatureScopingStrict,
+    });
+  })();
+
   if (override) {
     if (override.modulePath && override.modulePath.length > 0) {
       return { kind: "module", group: override.group, modulePath: override.modulePath };
     }
+
+    // Treat `@scope(<group>)` as "belongs to group", not an instruction to
+    // downgrade a module-scoped feature (inferred from the file path).
+    if (inferred.kind === "module" && inferred.group === override.group) {
+      return inferred;
+    }
+    if (inferred.kind === "group" && inferred.group === override.group) {
+      return inferred;
+    }
+
     return { kind: "group", group: override.group };
   }
 
-  const fileScope = resolveFileScope(options.featureAbsPath, options.groupIndex);
-  if (fileScope.kind !== "root") {
-    return fileScope;
-  }
-
-  if (options.hoistedFeatureScopingMode !== "directory") {
-    return fileScope;
-  }
-
-  return resolveHoistedDirectoryScope({
-    featureAbsPath: options.featureAbsPath,
-    hoistedFeatureRootsAbs: options.hoistedFeatureRootsAbs,
-    groupIndex: options.groupIndex,
-    strict: options.hoistedFeatureScopingStrict,
-  });
+  return inferred;
 }
 
 function isVisibleStepScope(stepScope: FileScope, featureScope: FileScope): boolean {

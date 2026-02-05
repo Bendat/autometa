@@ -1,10 +1,8 @@
 name: Deploy Docs
 
 on:
-  workflow_run:
-    workflows: ["Publish Packages"]
-    types:
-      - completed
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -18,27 +16,15 @@ jobs:
   deploy:
     # Only deploy when:
     # 1. Manually triggered, OR
-    # 2. Publish workflow succeeded AND it's from the same repository (not a fork)
+    # 2. Push to main
     if: >-
-      github.event_name == 'workflow_dispatch' || 
-      (github.event_name == 'workflow_run' && 
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.repository.full_name == github.repository)
+      github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Resolve checkout ref
-        id: ref
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "value=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=main" >> "$GITHUB_OUTPUT"
-          fi
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ steps.ref.outputs.value }}
       - name: Determine tool versions
         id: versions
         run: |
