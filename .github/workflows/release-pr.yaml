@@ -10,6 +10,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  packages: write
+  id-token: write
 
 concurrency:
   group: release-pr-${{ github.ref }}
@@ -18,6 +20,9 @@ concurrency:
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
+    outputs:
+      has_changesets: ${{ steps.changesets_present.outputs.has_changesets }}
+      should_publish: ${{ steps.should_publish.outputs.value }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,7 +46,50 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Detect changesets
+        id: changesets_present
+        shell: bash
+        run: |
+          if ls .changeset/*.md >/dev/null 2>&1; then
+            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Detect publish-worthy release merge
+        id: should_publish
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "value=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "${{ steps.changesets_present.outputs.has_changesets }}" = "true" ]; then
+            echo "value=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          before="${{ github.event.before }}"
+          after="${{ github.sha }}"
+
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            echo "value=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files="$(git diff --name-only "$before" "$after" || true)"
+
+          if echo "$files" | grep -Eq '^packages/[^/]+/(package\\.json|CHANGELOG\\.md)$'; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "value=false" >> "$GITHUB_OUTPUT"
+
       - name: Create or update release PR
+        if: steps.changesets_present.outputs.has_changesets == 'true'
         uses: changesets/action@v1
         with:
           version: pnpm release:prepare
@@ -49,3 +97,69 @@ jobs:
           title: "chore: release packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    needs: prepare-release
+    # Only publish when:
+    # 1. It's a push to main (not schedule/workflow_dispatch)
+    # 2. There are no changesets present (i.e. a release PR was merged)
+    if: >-
+      github.event_name == 'push' &&
+      needs.prepare-release.outputs.has_changesets == 'false' &&
+      needs.prepare-release.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    env:
+      NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/.npmrc
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine tool versions
+        id: versions
+        run: |
+          echo "node-version=$(node -p "(() => { const pkg = require('./package.json'); return (pkg?.volta?.node) ?? process.versions.node; })()")" >> "$GITHUB_OUTPUT"
+          echo "pnpm-version=$(node -p "(() => { const pkg = require('./package.json'); const manager = pkg?.packageManager || ''; const parts = manager.split('@'); return parts.length > 1 ? parts[1] : '9.0.0'; })()")" >> "$GITHUB_OUTPUT"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ steps.versions.outputs.pnpm-version }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.versions.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+          registry-url: https://registry.npmjs.org
+      - name: Configure npm authentication
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "Missing NPM_TOKEN; aborting before publish to avoid broken releases."
+            exit 1
+          fi
+
+          umask 077
+          mkdir -p "$(dirname \"$NPM_CONFIG_USERCONFIG\")"
+          {
+            echo "registry=https://registry.npmjs.org/"
+            echo "always-auth=true"
+            echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}"
+          } > "$NPM_CONFIG_USERCONFIG"
+
+          test -s "$NPM_CONFIG_USERCONFIG"
+      - name: Verify npm credentials
+        run: npm whoami
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build
+      - name: Publish with Changesets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+        run: pnpm release:publish
