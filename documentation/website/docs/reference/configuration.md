@@ -124,3 +124,30 @@ Selector forms for `-m/--module`:
 
 - Exact: `backoffice:orders:cancellations` (or `backoffice/orders/cancellations`)
 - Suffix (must be unambiguous): `orders:cancellations` (use `-g backoffice` to disambiguate)
+
+### Hoisted feature scoping
+
+When `modules.stepScoping: "scoped"` is enabled, Autometa scopes step visibility based on the feature’s group/module.
+
+For features that live outside any group/module folder (“hoisted”), you can control how scoping is determined:
+
+```ts title="autometa.config.ts"
+export default defineConfig({
+  default: {
+    modules: {
+      hoistedFeatures: {
+        // "tag" (default): hoisted features require @scope(...)
+        // "directory": infer scope from the feature's directory under roots.features
+        scope: "tag",
+        // When true (default), error if inference doesn't match a declared group/module
+        strict: true,
+      },
+    },
+  },
+});
+```
+
+Notes:
+
+- `@scope(<group>:<modulePath>)` can always be used to explicitly target a module.
+- `@scope(<group>)` assigns a hoisted feature to a group, but does not intentionally downgrade a module-inferred scope for features already under a module directory.

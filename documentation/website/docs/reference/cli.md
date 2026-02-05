@@ -50,6 +50,10 @@ Feature scoping for step visibility (when `modules.stepScoping: "scoped"`):
 
 - Features under a group/module directory are scoped by their file path.
 - Hoisted features can opt into a scope via `@scope(<group>:<modulePath>)` (example: `@scope(backoffice:reports)`).
+  - Hoisted scoping behavior is configurable via `modules.hoistedFeatures.scope`:
+    - `"tag"` (default): hoisted features require `@scope(...)`
+    - `"directory"`: infer scope from the feature’s directory under `roots.features`
+  - `@scope(<group>)` assigns the feature to the group, but does not intentionally downgrade a module-inferred scope for features already under a module directory.
 
 ### Examples
 

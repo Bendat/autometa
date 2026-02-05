@@ -67,8 +67,14 @@ Feature: Reports
 
 Supported forms:
 
-- `@scope(group)` to target a group’s root steps
+- `@scope(group)` to assign the feature to a group (useful for hoisted features)
 - `@scope(group:module/submodule)` for a specific module path
 
 This is especially useful for “hoisted” features that live outside any specific group root.
 
+Hoisted scoping behavior is configurable via `modules.hoistedFeatures.scope`:
+
+- `"tag"` (default): hoisted features require `@scope(...)`
+- `"directory"`: infer scope from the feature’s directory under `roots.features`
+
+Note: `@scope(<group>)` does not intentionally downgrade a feature that already lives under a module directory; path-based module inference still applies.

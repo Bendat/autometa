@@ -386,20 +386,35 @@ export function autometa(): Plugin {
 
             function __resolveFeatureScope(feature) {
               const override = __parseScopeOverrideTag(feature.tags);
+              const fileScope = __resolveFileScope(__AUTOMETA_FEATURE_FILE);
+              const inferred = (() => {
+                if (fileScope.kind !== 'root') {
+                  return fileScope;
+                }
+                if (__AUTOMETA_HOISTED_FEATURE_SCOPING_MODE !== 'directory') {
+                  return fileScope;
+                }
+                return __resolveHoistedDirectoryScope(__AUTOMETA_FEATURE_FILE, __AUTOMETA_GROUP_INDEX);
+              })();
+
               if (override) {
                 if (override.modulePath && override.modulePath.length > 0) {
                   return { kind: 'module', group: override.group, modulePath: override.modulePath };
                 }
+
+                // Treat `@scope(<group>)` as "belongs to group", not an instruction to
+                // downgrade a module-scoped feature (inferred from the file path).
+                if (inferred.kind === 'module' && inferred.group === override.group) {
+                  return inferred;
+                }
+                if (inferred.kind === 'group' && inferred.group === override.group) {
+                  return inferred;
+                }
+
                 return { kind: 'group', group: override.group };
               }
-              const fileScope = __resolveFileScope(__AUTOMETA_FEATURE_FILE);
-              if (fileScope.kind !== 'root') {
-                return fileScope;
-              }
-              if (__AUTOMETA_HOISTED_FEATURE_SCOPING_MODE !== 'directory') {
-                return fileScope;
-              }
-              return __resolveHoistedDirectoryScope(__AUTOMETA_FEATURE_FILE, __AUTOMETA_GROUP_INDEX);
+
+              return inferred;
             }
 
             function __inferEnvironmentGroup(environment) {
@@ -543,20 +558,35 @@ export function autometa(): Plugin {
 
               function resolveFeatureScope() {
                 const override = parseScopeOverrideTag(feature.tags);
+                const fileScope = resolveFileScope(__AUTOMETA_FEATURE_FILE);
+                const inferred = (() => {
+                  if (fileScope.kind !== 'root') {
+                    return fileScope;
+                  }
+                  if (__AUTOMETA_HOISTED_FEATURE_SCOPING_MODE !== 'directory') {
+                    return fileScope;
+                  }
+                  return __resolveHoistedDirectoryScope(__AUTOMETA_FEATURE_FILE, __AUTOMETA_STEP_SCOPING);
+                })();
+
                 if (override) {
                   if (override.modulePath && override.modulePath.length > 0) {
                     return { kind: 'module', group: override.group, modulePath: override.modulePath };
                   }
+
+                  // Treat `@scope(<group>)` as "belongs to group", not an instruction to
+                  // downgrade a module-scoped feature (inferred from the file path).
+                  if (inferred.kind === 'module' && inferred.group === override.group) {
+                    return inferred;
+                  }
+                  if (inferred.kind === 'group' && inferred.group === override.group) {
+                    return inferred;
+                  }
+
                   return { kind: 'group', group: override.group };
                 }
-                const fileScope = resolveFileScope(__AUTOMETA_FEATURE_FILE);
-                if (fileScope.kind !== 'root') {
-                  return fileScope;
-                }
-                if (__AUTOMETA_HOISTED_FEATURE_SCOPING_MODE !== 'directory') {
-                  return fileScope;
-                }
-                return __resolveHoistedDirectoryScope(__AUTOMETA_FEATURE_FILE, __AUTOMETA_STEP_SCOPING);
+
+                return inferred;
               }
 
               function isVisibleStepScope(stepScope, featureScope) {

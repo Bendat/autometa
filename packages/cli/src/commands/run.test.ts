@@ -390,6 +390,127 @@ describe("runFeatures", () => {
     expect(setStepsMock).toHaveBeenCalledWith(expect.objectContaining({ id: "api-env" }));
   });
 
+  it("does not downgrade inferred module scope when @scope(<group>) is present", async () => {
+    const executorConfig: ExecutorConfig = {
+      runner: "vitest",
+      roots: {
+        features: ["src/groups/**/*.feature"],
+        steps: ["src/groups/**/*.steps.ts"],
+      },
+      modules: {
+        stepScoping: "scoped",
+        hoistedFeatures: {
+          scope: "tag",
+        },
+        groups: {
+          api: {
+            root: "src/groups/api",
+            modules: ["example"],
+          },
+        },
+      },
+    };
+
+    const loadedConfig: LoadedExecutorConfig = {
+      filePath: join(cwd, "autometa.config.ts"),
+      config: {} as never,
+      resolved: {
+        environment: "default",
+        config: executorConfig,
+      },
+    };
+
+    loadExecutorConfigMock.mockResolvedValue(loadedConfig);
+
+    const featureAbs = join(cwd, "src", "groups", "api", "example", "features", "get-example.feature");
+    const stepAbs = join(cwd, "src", "groups", "api", "example", "steps", "example.steps.ts");
+    await fs.mkdir(dirname(featureAbs), { recursive: true });
+    await fs.mkdir(dirname(stepAbs), { recursive: true });
+    await fs.writeFile(featureAbs, "Feature: Example\n", "utf8");
+    await fs.writeFile(stepAbs, "export const noop = 1;\n", "utf8");
+
+    expandFilePatternsMock.mockImplementation(async (patterns: readonly string[]) => {
+      if (patterns.some((pattern) => String(pattern).includes(".feature"))) {
+        return [featureAbs];
+      }
+      return [stepAbs];
+    });
+
+    cucumberRunnerBuilderMock.mockReturnValue({
+      steps: () => ({
+        id: "fallback-env",
+        coordinateFeature: () => ({ register: vi.fn() }),
+        getPlan: () => ({
+          root: { id: "root", kind: "root", name: "root", mode: "default", tags: [], steps: [], hooks: [], children: [], pending: false },
+          stepsById: new Map(),
+          hooksById: new Map(),
+          scopesById: new Map(),
+        }),
+        Given: vi.fn(),
+        When: vi.fn(),
+        Then: vi.fn(),
+      }),
+    });
+
+    await fs.writeFile(
+      bundlePath,
+      `
+        const META = Symbol.for("@autometa/runner:steps-environment-meta");
+        const makePlan = () => {
+          const step = {
+            id: "api-example-step",
+            source: { file: ${JSON.stringify(stepAbs)} },
+          };
+          const stepsById = new Map([["api-example-step", step]]);
+          const root = {
+            id: "root",
+            kind: "root",
+            name: "root",
+            mode: "default",
+            tags: [],
+            steps: [],
+            hooks: [],
+            children: [],
+            pending: false,
+          };
+          const scopesById = new Map([["root", root]]);
+          return { root, stepsById, hooksById: new Map(), scopesById };
+        };
+        export const env = {
+          id: "api-env",
+          [META]: { kind: "group", group: "api" },
+          coordinateFeature: ({ plan }) => {
+            globalThis.__capturedPlan = plan;
+            return { register() {} };
+          },
+          getPlan: makePlan,
+          Given() {},
+          When() {},
+          Then() {},
+        };
+        export default [env];
+      `,
+      "utf8"
+    );
+
+    parseGherkinMock.mockReturnValue({
+      name: "Example",
+      tags: ["@scope(api)"],
+      elements: [],
+    });
+
+    // Ensure we're observing the plan after scoping is applied.
+    (globalThis as unknown as { __capturedPlan?: unknown }).__capturedPlan = undefined;
+
+    await runFeatures({ cwd, mode: "standalone" });
+
+    const captured = (globalThis as unknown as { __capturedPlan?: { stepsById?: Map<string, unknown> } })
+      .__capturedPlan;
+    expect(captured).toBeDefined();
+    expect(captured?.stepsById).toBeInstanceOf(Map);
+    expect(captured?.stepsById?.has("api-example-step")).toBe(true);
+  });
+
   it("warns when explicit patterns are combined with module selection", async () => {
     const executorConfig: ExecutorConfig = {
       runner: "vitest",
