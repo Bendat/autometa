@@ -402,7 +402,7 @@ export function autometa(): Plugin {
                   return { kind: 'module', group: override.group, modulePath: override.modulePath };
                 }
 
-                // Treat `@scope(<group>)` as "belongs to group", not an instruction to
+                // Treat @scope(<group>) as "belongs to group", not an instruction to
                 // downgrade a module-scoped feature (inferred from the file path).
                 if (inferred.kind === 'module' && inferred.group === override.group) {
                   return inferred;
@@ -574,7 +574,7 @@ export function autometa(): Plugin {
                     return { kind: 'module', group: override.group, modulePath: override.modulePath };
                   }
 
-                  // Treat `@scope(<group>)` as "belongs to group", not an instruction to
+                  // Treat @scope(<group>) as "belongs to group", not an instruction to
                   // downgrade a module-scoped feature (inferred from the file path).
                   if (inferred.kind === 'module' && inferred.group === override.group) {
                     return inferred;
