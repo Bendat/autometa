@@ -1,5 +1,12 @@
 # @autometa/http
 
+## 2.0.0-rc.5
+
+### Patch Changes
+
+- Updated dependencies [a96d0fa7]
+  - @autometa/assertions@1.0.0-rc.5
+
 ## 2.0.0-rc.4
 
 ### Patch Changes

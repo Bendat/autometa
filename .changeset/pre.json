@@ -53,6 +53,7 @@
   "changesets": [
     "bindings-expose-ensure",
     "cli-config-discovery-upgrade",
+    "ensure-array-helpers",
     "event-envelope-enhancements",
     "fix-publish-workflow",
     "hoisted-feature-directory-scoping",
@@ -61,6 +62,7 @@
     "publish-rc0",
     "rc2-rollup",
     "runner-assertion-plugins-derivable",
+    "scope-tag-keeps-module-inference",
     "seven-phones-dream",
     "table-keys-and-providers",
     "test-builder-allow-step-reuse",
