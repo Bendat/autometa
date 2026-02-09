@@ -1,5 +1,16 @@
 # @autometa/core
 
+## 1.0.0-rc.5
+
+### Patch Changes
+
+- Updated dependencies [a96d0fa7]
+- Updated dependencies [fa33083c]
+  - @autometa/assertions@1.0.0-rc.5
+  - @autometa/cli@1.0.0-rc.7
+  - @autometa/http@2.0.0-rc.5
+  - @autometa/runner@1.0.0-rc.5
+
 ## 1.0.0-rc.4
 
 ### Patch Changes

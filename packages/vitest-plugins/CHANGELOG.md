@@ -1,5 +1,12 @@
 # @autometa/vitest-plugins
 
+## 1.0.0-rc.5
+
+### Patch Changes
+
+- fa33083c: Fix `@scope(<group>)` so it does not downgrade module-inferred feature scope when the feature file lives under a configured module directory.
+  - @autometa/runner@1.0.0-rc.5
+
 ## 1.0.0-rc.4
 
 ### Patch Changes
