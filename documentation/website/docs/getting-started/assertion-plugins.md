@@ -66,6 +66,22 @@ Then("it should be awesome", () => {
 
 Inside step handlers and hooks, `ensure` is already bound to the current world. Outside of execution (e.g. module scope utilities), call `ensure(world).custom.*` or use `createEnsureFactory(...)`.
 
+### Using plugins from an `ensure(value)` chain
+
+Plugin facets remain on the `ensure` facade (`ensure.custom.*`), not on `EnsureChain` values. When you need to bridge from a value chain into plugin assertions, use `tap(...)`:
+
+```ts
+ensure(items)
+  .pluck("item")
+  .tap((values, context) => {
+    const plugin = context.isNot ? ensure.not.custom : ensure.custom;
+    plugin.assertInventoryItems(values);
+  })
+  .each((item) => item.toBeTypeOf("string"));
+```
+
+`tap(...)` does not transform the chain value; it executes your callback and returns the same chain so you can keep chaining.
+
 ## Example: HTTP Response Plugin
 
 Here is a real-world example of a plugin for asserting against HTTP responses.

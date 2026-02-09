@@ -1,5 +1,11 @@
 export { EnsureError } from "./assertion-error";
-export { ensure, type EnsureChain, type EnsureOptions } from "./ensure";
+export {
+  ensure,
+  type EnsureChain,
+  type EnsureEachOptions,
+  type EnsureOptions,
+  type EnsureTapContext,
+} from "./ensure";
 export {
 	createDefaultEnsureFactory,
 	createEnsureFactory,

@@ -48,6 +48,28 @@ describe("ensure", () => {
     expect(() => ensure<string | null>(null).toBeDefined()).toThrowError(EnsureError);
   });
 
+  it("supports null/undefined assertions including negated null checks", () => {
+    const nullChain = ensure<string | null>(null).toBeNull();
+    expect(nullChain.value).toBeNull();
+
+    const negatedNull = ensure("value").not.toBeNull();
+    expect(negatedNull.value).toBe("value");
+
+    const undefinedChain = ensure<string | undefined>(undefined).toBeUndefined();
+    expect(undefinedChain.value).toBeUndefined();
+
+    expect(() => ensure(null).not.toBeNull()).toThrowError(EnsureError);
+    expect(() => ensure("value").toBeUndefined()).toThrowError(EnsureError);
+  });
+
+  it("supports truthiness and falsiness assertions", () => {
+    ensure("value").toBeTruthy();
+    ensure("").toBeFalsy();
+
+    expect(() => ensure(0).toBeTruthy()).toThrowError(EnsureError);
+    expect(() => ensure(1).toBeFalsy()).toThrowError(EnsureError);
+  });
+
   it("narrows type after toBeInstanceOf", () => {
     const error: Error | CustomError = new CustomError("boom");
     const chain = ensure(error).toBeInstanceOf(CustomError);
@@ -103,9 +125,21 @@ describe("ensure", () => {
     expect(chain.value).toEqual([1, { nested: true }]);
   });
 
+  it("supports negated contain-equal checks", () => {
+    const values = [1, { nested: true }];
+    const chain = ensure(values).not.toContainEqual({ nested: false });
+    expect(chain.value).toBe(values);
+  });
+
   it("asserts iterables contain expected values", () => {
     const set = new Set([1, 2, 3]);
     const chain = ensure(set).toBeIterableContaining([2, 3]);
+    expect(chain.value).toBe(set);
+  });
+
+  it("supports negated iterable containment checks", () => {
+    const set = new Set([1, 2, 3]);
+    const chain = ensure(set).not.toBeIterableContaining([5]);
     expect(chain.value).toBe(set);
   });
 
@@ -128,6 +162,39 @@ describe("ensure", () => {
       const chain = ensure(10).toBeGreaterThan(5);
       expect(chain.value).toBe(10);
       expect(() => ensure(5).toBeGreaterThan(10)).toThrowError(EnsureError);
+    });
+
+    it("supports toBeGreaterThanOrEqual including negated path", () => {
+      const chain = ensure(10).toBeGreaterThanOrEqual(10);
+      expect(chain.value).toBe(10);
+
+      const negated = ensure(10).not.toBeGreaterThanOrEqual(11);
+      expect(negated.value).toBe(10);
+
+      expect(() => ensure(10).toBeGreaterThanOrEqual(11)).toThrowError(EnsureError);
+      expect(() => ensure(10).not.toBeGreaterThanOrEqual(10)).toThrowError(EnsureError);
+    });
+
+    it("supports toBeLessThan including negated path", () => {
+      const chain = ensure(5).toBeLessThan(10);
+      expect(chain.value).toBe(5);
+
+      const negated = ensure(5).not.toBeLessThan(4);
+      expect(negated.value).toBe(5);
+
+      expect(() => ensure(10).toBeLessThan(5)).toThrowError(EnsureError);
+      expect(() => ensure(5).not.toBeLessThan(10)).toThrowError(EnsureError);
+    });
+
+    it("supports toBeLessThanOrEqual including negated path", () => {
+      const chain = ensure(5).toBeLessThanOrEqual(5);
+      expect(chain.value).toBe(5);
+
+      const negated = ensure(5).not.toBeLessThanOrEqual(4);
+      expect(negated.value).toBe(5);
+
+      expect(() => ensure(6).toBeLessThanOrEqual(5)).toThrowError(EnsureError);
+      expect(() => ensure(5).not.toBeLessThanOrEqual(5)).toThrowError(EnsureError);
     });
 
     it("supports toBeCloseTo with precision", () => {
@@ -191,6 +258,101 @@ describe("ensure", () => {
       expect(union).toBe(value);
       const roundtrip: typeof result = value;
       void roundtrip;
+    });
+  });
+
+  describe("tap helper", () => {
+    it("invokes the callback and preserves the original chain value", () => {
+      const values = [1, 2, 3];
+      const chain = ensure(values)
+        .tap((value, context) => {
+          expect(value).toBe(values);
+          expect(context.isNot).toBe(false);
+        })
+        .toHaveLength(3);
+
+      expect(chain.value).toBe(values);
+    });
+
+    it("exposes negation state to the callback", () => {
+      ensure(5)
+        .not
+        .tap((value, context) => {
+          expect(value).toBe(5);
+          expect(context.isNot).toBe(true);
+        })
+        .toBe(4);
+    });
+  });
+
+  describe("array helpers", () => {
+    it("maps arrays and rewraps the mapped output", () => {
+      const chain = ensure([1, 2, 3]).map((value) => value * 2);
+      expect(chain.value).toEqual([2, 4, 6]);
+    });
+
+    it("runs each assertion with an element ensure chain", () => {
+      ensure([1, 2, 3])
+        .map((value) => typeof value, { label: "value should be a number" })
+        .each((valueType) => valueType.toStrictEqual("number"));
+    });
+
+    it("includes the index in the propagated label", () => {
+      try {
+        ensure([1, 2])
+          .map((value) => value, { label: "expected one" })
+          .each((value) => value.toBe(1));
+        expect.unreachable();
+      } catch (error) {
+        expect(error).toBeInstanceOf(EnsureError);
+        expect((error as EnsureError).message).toContain("Received expected one (index 1): 2");
+      }
+    });
+
+    it("supports function labels for each() elements", () => {
+      try {
+        ensure([1, 2]).each((value) => value.toBe(1), {
+          label: ({ index, value }) => `expected one at ${index}, got ${value}`,
+        });
+        expect.unreachable();
+      } catch (error) {
+        expect(error).toBeInstanceOf(EnsureError);
+        expect((error as EnsureError).message).toContain("Received expected one at 1, got 2: 2");
+      }
+    });
+
+    it("plucks properties from array elements", () => {
+      const chain = ensure([{ item: "a" }, { item: "b" }]).pluck("item");
+      expect(chain.value).toEqual(["a", "b"]);
+    });
+
+    it("fails pluck when an element is not an object", () => {
+      expect(() => ensure([{ item: "a" }, null as unknown as { item: string }]).pluck("item"))
+        .toThrowError(EnsureError);
+    });
+  });
+
+  describe("type matchers", () => {
+    it("asserts typeof matches the expected type", () => {
+      ensure("abc").toBeTypeOf("string");
+      ensure(123).toBeTypeOf("number");
+      expect(() => ensure(123).toBeTypeOf("string")).toThrowError(EnsureError);
+    });
+
+    it("supports negated type assertions", () => {
+      ensure(123).not.toBeTypeOf("string");
+      expect(() => ensure("abc").not.toBeTypeOf("string")).toThrowError(EnsureError);
+    });
+  });
+
+  describe("object helpers", () => {
+    it("extracts properties via prop()", () => {
+      ensure({ item: "a", count: 2 }).prop("item").toBe("a");
+    });
+
+    it("fails prop() when the value is not an object", () => {
+      expect(() => (ensure(null) as unknown as { prop: (key: string) => unknown }).prop("x"))
+        .toThrowError(EnsureError);
     });
   });
 });

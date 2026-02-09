@@ -263,11 +263,18 @@ When the crew roster is loaded
 Then read them using a table shape:
 
 ```ts title="src/steps/crew.steps.ts"
-import { When } from "../step-definitions";
+import { When, ensure } from "../step-definitions";
 
 When("the crew roster is loaded", (world) => {
   const table = world.runtime.requireTable("horizontal");
-  world.state.crew = table.records();
+  const crew = table.records<{ name: unknown; role: unknown }>();
+
+  // Validate required fields concisely.
+  ensure(crew)
+    .pluck("name", { label: "Crew name should be a string." })
+    .each((name) => name.toBeTypeOf("string"));
+
+  world.state.crew = crew;
 });
 ```
 
@@ -363,6 +370,7 @@ Table transformers let you transform *individual cells* as the table is read.
 Transformers receive `(value, context)`, where `context` includes the table shape, the cell coordinates, and (when available) the header names.
 
 For complete examples (including matrix precedence rules and the full `CellContext` shape), see [Reference → Step runtime helpers](../reference/step-runtime#table-transformers).
+That reference section also includes class-based options provider patterns (including a static getter convention like `InventoryRow.table`).
 
 ### Step metadata and pickle context
 

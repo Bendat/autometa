@@ -21,6 +21,11 @@ describe("collection matchers", () => {
       expect(() => assertObjectContaining(ctx, { id: 1 })).toThrowError(TestMatcherError);
     });
 
+    it("skips failure for non-object values when negated", () => {
+      const ctx = createMatcherContext<number | undefined>(undefined, { negated: true });
+      expect(() => assertObjectContaining(ctx, { id: 1 })).not.toThrow();
+    });
+
     it("fails when subset does not match", () => {
       const ctx = createMatcherContext({ id: 1, name: "Ada" });
       expect(() => assertObjectContaining(ctx, { id: 2 })).toThrowError(TestMatcherError);
@@ -76,6 +81,11 @@ describe("collection matchers", () => {
       expect(() => assertContainEqual(ctx, { id: 2 })).not.toThrow();
       expect(() => assertContainEqual(ctx, { id: 1 })).toThrowError(TestMatcherError);
     });
+
+    it("skips type failure for non-array values when negated", () => {
+      const ctx = createMatcherContext("not array", { negated: true });
+      expect(() => assertContainEqual(ctx, { id: 1 })).not.toThrow();
+    });
   });
 
   describe("assertIterableContaining", () => {
@@ -94,6 +104,11 @@ describe("collection matchers", () => {
     it("throws when value is not iterable", () => {
       const ctx = createMatcherContext(123);
       expect(() => assertIterableContaining(ctx, [1])).toThrowError(TestMatcherError);
+    });
+
+    it("skips type failure for non-iterables when negated", () => {
+      const ctx = createMatcherContext(123, { negated: true });
+      expect(() => assertIterableContaining(ctx, [1])).not.toThrow();
     });
 
     it("respects negation logic", () => {
@@ -124,6 +139,11 @@ describe("collection matchers", () => {
       const ctx = createMatcherContext([1, 2, 3], { negated: true });
       expect(() => assertHasLength(ctx, 2)).not.toThrow();
       expect(() => assertHasLength(ctx, 3)).toThrowError(TestMatcherError);
+    });
+
+    it("skips type failure for non-length values when negated", () => {
+      const ctx = createMatcherContext({}, { negated: true });
+      expect(() => assertHasLength(ctx, 0)).not.toThrow();
     });
   });
 });

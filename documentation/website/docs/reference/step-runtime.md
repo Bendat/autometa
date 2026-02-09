@@ -322,6 +322,47 @@ world.runtime.requireTable("horizontal", MyTableTransform);
 world.runtime.requireTable("horizontal", new MyTableTransform());
 ```
 
+You can also use a static getter pattern to keep row shape + table options in one place.
+Autometa does not read static members automatically, so pass the getter result explicitly:
+
+```ts title="src/steps/inventory.steps.ts"
+class InventoryRow {
+  item = "";
+  quantity = 0;
+
+  static get table() {
+    return {
+      keys: {
+        Item: "item",
+        Quantity: "quantity",
+      } as const,
+      transformers: {
+        quantity: (value: string) => Number.parseInt(value, 10),
+      },
+    };
+  }
+}
+
+const table = world.runtime.requireTable("horizontal", InventoryRow.table);
+const rows = table.asInstances(InventoryRow);
+```
+
+If you want to keep the `asInstances(...)` header mapping on the class, use a second getter:
+
+```ts
+class InventoryRow {
+  item = "";
+  quantity = 0;
+
+  static get headerMap() {
+    return { Item: "item", Quantity: "quantity" } as const;
+  }
+}
+
+const table = world.runtime.requireTable("horizontal");
+const rows = table.asInstances(InventoryRow, { headerMap: InventoryRow.headerMap });
+```
+
 Given this table:
 
 ```gherkin
