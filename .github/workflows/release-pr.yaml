@@ -111,7 +111,7 @@ jobs:
     environment:
       name: release
     env:
-      NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/.npmrc
+      NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
