@@ -1,6 +1,12 @@
 Feature: Share recipe knowledge through data tables
   Brew Buddy crafts consistent drinks by following structured recipes and sharing tasting notes.
 
+  Scenario: Materialise inventory rows as instances
+    Then the table can be materialised as instances
+      | Item    | Quantity |
+      | Beans   | 2        |
+      | Filters | 4        |
+
   Scenario: Import multiple recipes using a data table
     When I register the following recipes
       | name          | base     | additions         |

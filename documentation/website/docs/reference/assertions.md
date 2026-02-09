@@ -29,6 +29,7 @@ ensure(value).toBeNull();
 ### Types
 
 ```ts
+ensure(value).toBeTypeOf("string");
 ensure(value).toBeInstanceOf(MyClass);
 ```
 
@@ -40,6 +41,39 @@ ensure(array).toContainEqual(item);
 ensure(array).toBeArrayContaining([1, 2]);
 ensure(object).toBeObjectContaining({ id: 1 });
 ```
+
+### Array helpers
+
+For common “assert each row / each field” patterns, `ensure` provides a small set of array/object helpers:
+
+```ts
+ensure(items)
+  .pluck("item", { label: "Inventory item should be a string." })
+  .each((item) => item.toBeTypeOf("string"));
+
+ensure(items)
+  .map((row) => row.quantity)
+  .each((quantity) => quantity.toBeTypeOf("number"));
+```
+
+For chain-to-plugin integration without changing the current value, use `tap(...)`:
+
+```ts
+ensure(items)
+  .pluck("item")
+  .tap((values, context) => {
+    const plugin = context.isNot ? ensure.not.custom : ensure.custom;
+    plugin.assertInventoryItems(values);
+  })
+  .each((item) => item.toBeTypeOf("string"));
+```
+
+Notes:
+
+- `each(...)` propagates the current label and appends `(index N)` automatically.
+- `tap(...)` is non-transforming: it executes your callback and returns the same chain value.
+- If your value is already typed (e.g. `InventoryRow[]`), `ensure(items).toBeInstanceOf(Array)` preserves that typing (it won’t collapse element types to `unknown`).
+- The `EnsureChain` passed to `each(...)` callbacks is the base chain (plugin facets live on the `ensure.<facet>` surface, not on per-element chains).
 
 ## HTTP Assertions
 
